@@ -38,6 +38,7 @@ import {EditBig_Stroke2_Corner2_Rounded as EditBigIcon} from '#/components/icons
 import {useAnalytics} from '#/analytics'
 import {IS_NATIVE} from '#/env'
 import {app} from '#/lexicons'
+import {useLocalFeedPreferences} from '#/state/preferences/local-feed'
 
 const POLL_FREQ = 60e3 // 60sec
 
@@ -62,6 +63,8 @@ export function FeedPage({
   savedFeedConfig?: app.bsky.actor.defs.SavedFeed
   feedInfo: FeedSourceInfo
 }) {
+  const {enabled: localFeedEnabled, preferences: localFeedPreferences} =
+    useLocalFeedPreferences()
   const ax = useAnalytics()
   const {hasSession} = useSession()
   const {_} = useLingui()
@@ -156,6 +159,8 @@ export function FeedPage({
             onHasNew={setHasNew}
             renderEmptyState={renderEmptyState}
             renderEndOfFeed={renderEndOfFeed}
+            localRerank={localFeedEnabled && feed === 'following'}
+            localFeedPreferences={localFeedPreferences}
             headerOffset={headerOffset}
             savedFeedConfig={savedFeedConfig}
             isVideoFeed={isVideoFeed}

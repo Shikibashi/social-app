@@ -43,6 +43,7 @@ import {
   RQKEY,
   usePostFeedQuery,
 } from '#/state/queries/post-feed'
+import {type FeedPreferences, explainCandidate, rerankLocally} from '#/lib/feed-sovereignty/profile'
 import {truncateAndInvalidate} from '#/state/queries/util'
 import {useSession} from '#/state/session'
 import {useProgressGuide} from '#/state/shell/progress-guide'
@@ -228,6 +229,8 @@ let PostFeed = ({
   extraData,
   savedFeedConfig,
   initialNumToRender: initialNumToRenderOverride,
+  localRerank,
+  localFeedPreferences,
   isVideoFeed = false,
   ref,
 }: {
@@ -254,6 +257,8 @@ let PostFeed = ({
   initialNumToRender?: number
   isVideoFeed?: boolean
   lastFetchDate?: () => number
+  localRerank?: boolean
+  localFeedPreferences?: FeedPreferences
   ref?: React.Ref<PostFeedRef>
 }): React.ReactNode => {
   const ax = useAnalytics()
@@ -425,6 +430,31 @@ let PostFeed = ({
     feed.startsWith('author|') ? undefined : data?.pages,
   )
 
+  const renderPages = useMemo(() => {
+    if (!localRerank || !localFeedPreferences || !data) return data?.pages
+    return data.pages.map(page => {
+      const slices = rerankLocally(
+        page.slices.map(slice => {
+          const item = slice.items[0]
+          const ageHours = item ? (Date.now() - Date.parse(item.post.indexedAt)) / 3_600_000 : 24
+          return {
+            uri: slice.feedPostUri,
+            authorDid: item?.post.author.did ?? slice.feedPostUri,
+            freshness: Math.exp(-Math.max(0, ageHours) / 24),
+            networkRelevance: 0.5,
+            conversationActivity: item?.post.replyCount ? 1 : 0,
+            integrityWeight: 1,
+            explorationEligible: !item?.post.author.viewer?.following,
+            seen: false,
+          }
+        }),
+        localFeedPreferences,
+        {maxAuthorPerWindow: 2, explorationFloor: 0.1},
+      )
+      const byUri = new Map(page.slices.map(slice => [slice.feedPostUri, slice]))
+      return {...page, slices: slices.map(candidate => byUri.get(candidate.uri)!).filter(Boolean)}
+    })
+  }, [data, localFeedPreferences, localRerank])
   const feedItems: FeedRow[] = useMemo(() => {
     // wraps a slice item, and replaces it with a showLessFollowup item
     // if the user has pressed show less on it
@@ -479,7 +509,7 @@ let PostFeed = ({
             feedContext: string | undefined
             reqId: string | undefined
           }[] = []
-          for (const page of data.pages) {
+          for (const page of renderPages ?? []) {
             for (const slice of page.slices) {
               const item = slice.items.find(
                 item => item.uri === slice.feedPostUri,
@@ -531,7 +561,7 @@ let PostFeed = ({
             })
           }
         } else {
-          for (const page of data?.pages) {
+          for (const page of renderPages ?? []) {
             for (const slice of page.slices) {
               sliceIndex++
 
@@ -873,9 +903,26 @@ let PostFeed = ({
         const slice = row.slice
         const indexInSlice = row.indexInSlice
         const item = slice.items[indexInSlice]
+        const localExplanation =
+          localRerank && localFeedPreferences
+            ? explainCandidate(
+                {
+                  uri: item.uri,
+                  authorDid: item.post.author.did,
+                  freshness: 0.5,
+                  networkRelevance: 0.5,
+                  conversationActivity: item.post.replyCount ? 1 : 0,
+                  integrityWeight: 1,
+                  explorationEligible: !item.post.author.viewer?.following,
+                  seen: false,
+                },
+                localFeedPreferences,
+              )
+            : undefined
         return (
           <PostFeedItem
             post={item.post}
+            localExplanation={localExplanation}
             record={item.record}
             reason={indexInSlice === 0 ? slice.reason : undefined}
             feedContext={slice.feedContext}

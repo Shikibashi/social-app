@@ -10,6 +10,7 @@ import {
   usePreferencesQuery,
   useSetFeedViewPreferencesMutation,
 } from '#/state/queries/preferences'
+import {useLocalFeedPreferences} from '#/state/preferences/local-feed'
 import {atoms as a} from '#/alf'
 import {Admonition} from '#/components/Admonition'
 import * as Toggle from '#/components/forms/Toggle'
@@ -26,6 +27,8 @@ type Props = NativeStackScreenProps<
 >
 export function FollowingFeedPreferencesScreen({}: Props) {
   const {_} = useLingui()
+  const {enabled: localFeedEnabled, setEnabled: setLocalFeedEnabled} =
+    useLocalFeedPreferences()
 
   const {data: preferences} = usePreferencesQuery()
   const {mutate: setFeedViewPref, variables} =
@@ -66,6 +69,19 @@ export function FollowingFeedPreferencesScreen({}: Props) {
               <Trans>These settings only apply to the Following feed.</Trans>
             </Admonition>
           </SettingsList.Item>
+          <Toggle.Item
+            type="checkbox"
+            name="local-reranking"
+            label={_(msg`Use local feed reranking`)}
+            value={localFeedEnabled}
+            onChange={setLocalFeedEnabled}>
+            <SettingsList.Item>
+              <SettingsList.ItemText>
+                <Trans>Use local feed reranking</Trans>
+              </SettingsList.ItemText>
+              <Toggle.Platform />
+            </SettingsList.Item>
+          </Toggle.Item>
           <Toggle.Item
             type="checkbox"
             name="show-replies"

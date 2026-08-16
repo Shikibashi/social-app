@@ -1,5 +1,5 @@
 import {memo, useCallback, useMemo, useState} from 'react'
-import {StyleSheet, View} from 'react-native'
+import {StyleSheet, Text, View} from 'react-native'
 import {AtUri} from '@atproto/syntax'
 import {type ModerationDecision} from '@bsky/sdk/moderation'
 import {RichText as RichTextAPI} from '@bsky/sdk/richtext'
@@ -70,6 +70,7 @@ interface FeedItemProps {
   hideTopBorder?: boolean
   isParentBlocked?: boolean
   isParentNotFound?: boolean
+  localExplanation?: string[]
 }
 
 export function PostFeedItem({
@@ -89,6 +90,7 @@ export function PostFeedItem({
   isParentNotFound,
   rootPost,
   onShowLess,
+  localExplanation,
 }: FeedItemProps & {
   post: app.bsky.feed.defs.PostView
   rootPost: app.bsky.feed.defs.PostView
@@ -127,6 +129,7 @@ export function PostFeedItem({
           isParentNotFound={isParentNotFound}
           rootPost={rootPost}
           onShowLess={onShowLess}
+          localExplanation={localExplanation}
         />
       </ReportDialogMetadataContext.Provider>
     )
@@ -152,6 +155,7 @@ let FeedItemInner = ({
   isParentNotFound,
   rootPost,
   onShowLess,
+  localExplanation,
 }: FeedItemProps & {
   richText: RichTextAPI
   post: Shadow<app.bsky.feed.defs.PostView>
@@ -370,6 +374,11 @@ let FeedItemInner = ({
                 onOpenReposter={onOpenReposter}
               />
             )}
+            {localExplanation?.length ? (
+              <Text style={styles.localExplanation}>
+                Why this post? {localExplanation.join(', ')}
+              </Text>
+            ) : null}
           </View>
         </View>
 
@@ -577,5 +586,10 @@ const styles = StyleSheet.create({
   },
   translateLink: {
     marginBottom: 6,
+  },
+  localExplanation: {
+    fontSize: 12,
+    opacity: 0.7,
+    marginBottom: 4,
   },
 })
