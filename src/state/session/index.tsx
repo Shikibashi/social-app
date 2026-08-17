@@ -672,6 +672,7 @@ export function Provider({children}: React.PropsWithChildren<{}>) {
       const provider = getAppViewProviders().find(item => item.id === providerId)
       if (!provider) throw new Error('Unknown AppView provider')
       if (persist) await selectAppViewProvider(account.did, providerId)
+      await clearPersistedQueryStorage(account.did)
       const newBundle = switchBundleAppViewProvider(currentBundle, provider)
       store.dispatch({
         type: 'replaced-current-bundle',
