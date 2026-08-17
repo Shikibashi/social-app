@@ -5,7 +5,11 @@ import {
   CHAT_PROXY_SERVICE,
   PUBLIC_BSKY_SERVICE,
 } from '#/lib/constants'
-import {type AppViewProvider, DEFAULT_APPVIEW_PROVIDER} from './providers'
+import {
+  DEFAULT_APPVIEW_PROVIDER,
+  getAppViewFallback,
+  type AppViewProvider,
+} from './providers'
 import {createLexClient} from '#/lib/lexClient'
 import {networkAwareFetch} from './network'
 
@@ -36,16 +40,20 @@ export function buildAppviewClient(
     async fetchHandler(path, init) {
       const nsid = path.startsWith('/xrpc/') ? path.slice('/xrpc/'.length).split('?')[0] : ''
       if (!nsid) throw new Error('AppView requests must be XRPC paths')
+      const effectiveProvider =
+        getAppViewFallback(agent.did ?? '', nsid) ??
+        getAppViewFallback(agent.did ?? '', 'appview-selection') ??
+        provider
       const authUrl =
-        `/xrpc/com.atproto.server.getServiceAuth?aud=${encodeURIComponent(provider.serviceDid)}&lxm=${encodeURIComponent(nsid)}`
+        `/xrpc/com.atproto.server.getServiceAuth?aud=${encodeURIComponent(effectiveProvider.serviceDid)}&lxm=${encodeURIComponent(nsid)}`
       const authResponse = await agent.fetchHandler(authUrl as `/${string}`, {method: 'GET'})
       if (!authResponse.ok) throw new Error(`Service-auth issuance failed: HTTP ${authResponse.status}`)
       const authBody = (await authResponse.json()) as {token?: string}
       if (!authBody.token) throw new Error('Service-auth issuance returned no token')
       const headers = new Headers(init.headers)
       headers.set('authorization', `Bearer ${authBody.token}`)
-      headers.set('atproto-proxy', `${provider.serviceDid}#${provider.serviceFragment}`)
-      return fetch(new URL(path, provider.endpoint), {
+      headers.set('atproto-proxy', `${effectiveProvider.serviceDid}#${effectiveProvider.serviceFragment}`)
+      return fetch(new URL(path, effectiveProvider.endpoint), {
         ...init,
         headers,
         redirect: 'error',

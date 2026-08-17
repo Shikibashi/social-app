@@ -68,6 +68,27 @@ export function getSelectedAppViewProvider(did: string): AppViewProvider {
   return providers.find(provider => provider.id === selected) ?? providers[0] ?? DEFAULT_APPVIEW_PROVIDER
 }
 
+export function getAppViewFallback(did: string, feature: string): AppViewProvider | undefined {
+  const providerId = persisted.get('appviewFallbacks')?.[did]?.[feature]
+  return getAppViewProviders().find(provider => provider.id === providerId)
+}
+
+export async function setAppViewFallback(
+  did: string,
+  feature: string,
+  providerId: string,
+): Promise<void> {
+  const provider = getAppViewProviders().find(item => item.id === providerId)
+  if (!provider) throw new Error('Unknown AppView provider')
+  await persisted.write('appviewFallbacks', {
+    ...(persisted.get('appviewFallbacks') ?? {}),
+    [did]: {
+      ...(persisted.get('appviewFallbacks')?.[did] ?? {}),
+      [feature]: provider.id,
+    },
+  })
+}
+
 export async function registerAppViewProvider(provider: AppViewProvider): Promise<AppViewProvider> {
   const validated = validateAppViewProvider(provider)
   const providers = getAppViewProviders().filter(item => item.id !== provider.id)

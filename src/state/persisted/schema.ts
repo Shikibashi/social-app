@@ -70,6 +70,7 @@ export type PersistedCurrentAccount = z.infer<typeof currentAccountSchema>
 const schema = z.object({
   appviewProviders: z.array(appviewProviderSchema).optional(),
   appviewSelections: z.record(z.string(), z.string()).optional(),
+  appviewFallbacks: z.record(z.string(), z.record(z.string(), z.string())).optional(),
   colorMode: z.enum(['system', 'light', 'dark']),
   darkTheme: z.enum(['dim', 'dark']).optional(),
   session: z.object({
@@ -169,6 +170,7 @@ export const defaults: Schema = {
     },
   ],
   appviewSelections: {},
+  appviewFallbacks: {},
   colorMode: 'system',
   darkTheme: 'dim',
   session: {

@@ -11,6 +11,7 @@ import {useSession, useSessionApi} from '#/state/session'
 import {
   getAppViewProviders,
   getSelectedAppViewProvider,
+  setAppViewFallback,
   type AppViewProvider,
 } from '#/state/session/providers'
 import type {CommonNavigatorParams} from '#/lib/routes/types'
@@ -49,7 +50,12 @@ export function ServicesSettingsScreen({}: Props) {
           },
           {
             text: _(msg`Always use Bluesky for this feature`),
-            onPress: () => void switchAppViewProvider('bluesky-appview', true),
+            onPress: () => {
+              if (!currentAccount) return
+              void setAppViewFallback(currentAccount.did, 'appview-selection', 'bluesky-appview').then(
+                () => switchAppViewProvider('bluesky-appview', false),
+              )
+            },
           },
         ],
       )
