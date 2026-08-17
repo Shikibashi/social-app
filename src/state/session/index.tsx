@@ -32,7 +32,12 @@ import {
   type PublicSessionBundle,
   type SessionBundle,
   sessionDataToSessionAccount,
+  switchAppViewProvider as switchBundleAppViewProvider,
 } from './session-core'
+import {
+  getAppViewProviders,
+  selectAppViewProvider,
+} from './providers'
 export {isSignupQueued} from './session-data'
 import {
   addSessionDebugLog,
@@ -75,6 +80,7 @@ const ApiContext = createContext<SessionApiContext>({
   logoutEveryAccount: () => {},
   resumeSession: async () => {},
   removeAccount: () => {},
+  switchAppViewProvider: async () => {},
   partialRefreshSession: async () => {},
   refreshSession: () => Promise.resolve(undefined),
 })
@@ -656,6 +662,25 @@ export function Provider({children}: React.PropsWithChildren<{}>) {
     }),
     [state],
   )
+  const switchAppView = useCallback(
+    async (providerId: string) => {
+      const account = state.accounts.find(
+        item => item.did === state.currentBundleState.did,
+      )
+      const currentBundle = state.currentBundleState.bundle as SessionBundle
+      if (!account || !currentBundle.session) return
+      const provider = getAppViewProviders().find(item => item.id === providerId)
+      if (!provider) throw new Error('Unknown AppView provider')
+      await selectAppViewProvider(account.did, providerId)
+      const newBundle = switchBundleAppViewProvider(currentBundle, provider)
+      store.dispatch({
+        type: 'replaced-current-bundle',
+        newBundle,
+        newAccount: account,
+      })
+    },
+    [state, store],
+  )
 
   const api = useMemo(
     () => ({
@@ -667,6 +692,7 @@ export function Provider({children}: React.PropsWithChildren<{}>) {
       removeAccount,
       partialRefreshSession,
       refreshSession,
+      switchAppViewProvider: switchAppView,
     }),
     [
       createAccount,
@@ -677,6 +703,7 @@ export function Provider({children}: React.PropsWithChildren<{}>) {
       removeAccount,
       partialRefreshSession,
       refreshSession,
+      switchAppView,
     ],
   )
 

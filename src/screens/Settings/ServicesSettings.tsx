@@ -7,11 +7,10 @@ import {type NativeStackScreenProps} from '@react-navigation/native-stack'
 
 import * as Layout from '#/components/Layout'
 import * as SettingsList from '#/screens/Settings/components/SettingsList'
-import {useSession} from '#/state/session'
+import {useSession, useSessionApi} from '#/state/session'
 import {
   getAppViewProviders,
   getSelectedAppViewProvider,
-  selectAppViewProvider,
   type AppViewProvider,
 } from '#/state/session/providers'
 import type {CommonNavigatorParams} from '#/lib/routes/types'
@@ -21,6 +20,7 @@ type Props = NativeStackScreenProps<CommonNavigatorParams, 'ServicesSettings'>
 export function ServicesSettingsScreen({}: Props) {
   const {currentAccount} = useSession()
   const {_} = useLingui()
+  const {switchAppViewProvider} = useSessionApi()
   const [providers, setProviders] = useState<AppViewProvider[]>(() => getAppViewProviders())
   const [selected, setSelected] = useState<string | undefined>(() =>
     currentAccount ? getSelectedAppViewProvider(currentAccount.did).id : undefined,
@@ -34,7 +34,7 @@ export function ServicesSettingsScreen({}: Props) {
   async function choose(provider: AppViewProvider) {
     if (!currentAccount) return
     try {
-      await selectAppViewProvider(currentAccount.did, provider.id)
+      await switchAppViewProvider(provider.id)
       setSelected(provider.id)
       Alert.alert(_(msg`AppView changed`), _(msg`New reads will use ${provider.displayName}. PDS writes remain on your account host.`))
     } catch (error) {

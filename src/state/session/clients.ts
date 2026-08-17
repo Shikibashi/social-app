@@ -45,7 +45,12 @@ export function buildAppviewClient(
       const headers = new Headers(init.headers)
       headers.set('authorization', `Bearer ${authBody.token}`)
       headers.set('atproto-proxy', `${provider.serviceDid}#${provider.serviceFragment}`)
-      return fetch(new URL(path, provider.endpoint), {...init, headers})
+      return fetch(new URL(path, provider.endpoint), {
+        ...init,
+        headers,
+        redirect: 'error',
+        signal: AbortSignal.timeout(15_000),
+      })
     },
   }
   return createLexClient(appviewAgent)

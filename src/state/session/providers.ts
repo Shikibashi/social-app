@@ -25,10 +25,33 @@ export function validateAppViewProvider(provider: AppViewProvider): AppViewProvi
   if (!provider.id || !provider.displayName || !isDidString(provider.serviceDid)) {
     throw new Error('AppView provider identity is invalid')
   }
-  if (!provider.serviceFragment || !/^https:\/\//i.test(provider.endpoint)) {
-    throw new Error('AppView provider endpoint must use HTTPS')
+  let endpoint: URL
+  try {
+    endpoint = new URL(provider.endpoint)
+  } catch {
+    throw new Error('AppView provider endpoint is invalid')
   }
-  return provider
+  const hostname = endpoint.hostname.toLowerCase()
+  if (
+    endpoint.protocol !== 'https:' ||
+    endpoint.username ||
+    endpoint.password ||
+    endpoint.search ||
+    endpoint.hash ||
+    hostname === 'localhost' ||
+    hostname === 'localhost.localdomain' ||
+    hostname === '0.0.0.0' ||
+    hostname === '::1' ||
+    hostname.endsWith('.local') ||
+    /^127\./.test(hostname) ||
+    /^10\./.test(hostname) ||
+    /^192\.168\./.test(hostname) ||
+    /^172\.(1[6-9]|2\d|3[01])\./.test(hostname)
+  ) {
+    throw new Error('AppView provider endpoint is not a safe HTTPS origin')
+  }
+  if (!provider.serviceFragment) throw new Error('AppView provider service fragment is required')
+  return {...provider, endpoint: endpoint.toString().replace(/\/$/, '')}
 }
 
 export function getAppViewProviders(): AppViewProvider[] {
