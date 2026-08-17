@@ -2,10 +2,12 @@ import {type Agent, type Client} from '@atproto/lex'
 import {type PasswordSession} from '@atproto/lex-password-session'
 
 import {
+  APPVIEW_ENDPOINT,
   BLUESKY_PROXY_HEADER,
   CHAT_PROXY_SERVICE,
   PUBLIC_BSKY_SERVICE,
 } from '#/lib/constants'
+import {BLUESKY_PROXY_DID} from '#/env'
 import {createLexClient} from '#/lib/lexClient'
 import {networkAwareFetch} from './network'
 
@@ -24,11 +26,29 @@ import {networkAwareFetch} from './network'
  * instance, and that function filters out the Bluesky moderation DID so the
  * globally redacted authority is not also listed unredacted.
  *
- * No `fetch` option: a client built over a session uses that session's own
- * fetch, which is `networkAwareFetch` wrapped in the disposal kill switch.
+ * Each authenticated AppView request receives a short-lived, endpoint-scoped
+ * service-auth JWT minted by the account PDS. The PDS access token is used only
+ * for that PDS-side minting call and is never sent to the AppView endpoint.
  */
 export function buildAppviewClient(agent: Agent): Client {
-  return createLexClient(agent, {service: BLUESKY_PROXY_HEADER.get()})
+  const appviewAgent: Agent = {
+    did: agent.did,
+    async fetchHandler(path, init) {
+      const nsid = path.startsWith('/xrpc/') ? path.slice('/xrpc/'.length).split('?')[0] : ''
+      if (!nsid) throw new Error('AppView requests must be XRPC paths')
+      const authUrl =
+        `/xrpc/com.atproto.server.getServiceAuth?aud=${encodeURIComponent(BLUESKY_PROXY_DID)}&lxm=${encodeURIComponent(nsid)}`
+      const authResponse = await agent.fetchHandler(authUrl as `/${string}`, {method: 'GET'})
+      if (!authResponse.ok) throw new Error(`Service-auth issuance failed: HTTP ${authResponse.status}`)
+      const authBody = (await authResponse.json()) as {token?: string}
+      if (!authBody.token) throw new Error('Service-auth issuance returned no token')
+      const headers = new Headers(init.headers)
+      headers.set('authorization', `Bearer ${authBody.token}`)
+      headers.set('atproto-proxy', BLUESKY_PROXY_HEADER.get())
+      return fetch(new URL(path, APPVIEW_ENDPOINT), {...init, headers})
+    },
+  }
+  return createLexClient(appviewAgent)
 }
 
 /**
