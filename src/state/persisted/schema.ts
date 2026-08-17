@@ -157,6 +157,10 @@ const schema = z.object({
 })
 export type Schema = z.infer<typeof schema>
 
+const configuredProjectAppViewDid =
+  process.env.EXPO_PUBLIC_APPVIEW_SERVICE_DID || 'did:web:appview.invalid'
+const configuredProjectAppViewEndpoint =
+  process.env.EXPO_PUBLIC_APPVIEW_ENDPOINT || 'https://appview.invalid'
 export const defaults: Schema = {
   appviewProviders: [
     {
@@ -167,6 +171,15 @@ export const defaults: Schema = {
       endpoint: 'https://api.bsky.app',
       builtin: true,
       enabled: true,
+    },
+    {
+      id: 'project-appview',
+      displayName: 'Project AppView',
+      serviceDid: configuredProjectAppViewDid,
+      serviceFragment: 'appview',
+      endpoint: configuredProjectAppViewEndpoint,
+      builtin: true,
+      enabled: Boolean(process.env.EXPO_PUBLIC_APPVIEW_SERVICE_DID),
     },
   ],
   appviewSelections: {},
