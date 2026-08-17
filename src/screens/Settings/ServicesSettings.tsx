@@ -38,7 +38,21 @@ export function ServicesSettingsScreen({}: Props) {
       setSelected(provider.id)
       Alert.alert(_(msg`AppView changed`), _(msg`New reads will use ${provider.displayName}. PDS writes remain on your account host.`))
     } catch (error) {
-      Alert.alert(_(msg`Provider unavailable`), error instanceof Error ? error.message : String(error))
+      Alert.alert(
+        _(msg`Provider unavailable`),
+        error instanceof Error ? error.message : String(error),
+        [
+          {text: _(msg`Cancel`), style: 'cancel'},
+          {
+            text: _(msg`Use Bluesky once`),
+            onPress: () => void switchAppViewProvider('bluesky-appview', false),
+          },
+          {
+            text: _(msg`Always use Bluesky for this feature`),
+            onPress: () => void switchAppViewProvider('bluesky-appview', true),
+          },
+        ],
+      )
     }
   }
 
@@ -55,13 +69,23 @@ export function ServicesSettingsScreen({}: Props) {
       </Layout.Header.Outer>
       <Layout.Content>
         <SettingsList.Container>
+          {currentAccount && (
+            <SettingsList.Item>
+              <SettingsList.ItemText>Account host (PDS)</SettingsList.ItemText>
+              <SettingsList.BadgeText>{currentAccount.pdsUrl || currentAccount.service}</SettingsList.BadgeText>
+            </SettingsList.Item>
+          )}
           {providers.map(provider => (
             <SettingsList.PressableItem
               key={provider.id}
               label={provider.displayName}
               onPress={() => void choose(provider)}>
               <SettingsList.ItemText>{provider.displayName}</SettingsList.ItemText>
-              <SettingsList.BadgeText>{selected === provider.id ? <Trans>Selected</Trans> : provider.serviceDid}</SettingsList.BadgeText>
+              <SettingsList.BadgeText>
+                {selected === provider.id
+                  ? `${provider.serviceDid} · ${provider.endpoint}`
+                  : provider.serviceDid}
+              </SettingsList.BadgeText>
             </SettingsList.PressableItem>
           ))}
         </SettingsList.Container>

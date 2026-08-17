@@ -19,6 +19,7 @@ const appviewProviderSchema = z.object({
   serviceFragment: z.string().min(1),
   endpoint: z.string().url(),
   builtin: z.boolean(),
+  enabled: z.boolean(),
 })
 export type PersistedAppViewProvider = z.infer<typeof appviewProviderSchema>
 const accountSchema = z.object({
@@ -67,8 +68,8 @@ const currentAccountSchema = accountSchema.extend({
 export type PersistedCurrentAccount = z.infer<typeof currentAccountSchema>
 
 const schema = z.object({
-  appviewProviders: z.array(appviewProviderSchema),
-  appviewSelections: z.record(z.string(), z.string()),
+  appviewProviders: z.array(appviewProviderSchema).optional(),
+  appviewSelections: z.record(z.string(), z.string()).optional(),
   colorMode: z.enum(['system', 'light', 'dark']),
   darkTheme: z.enum(['dim', 'dark']).optional(),
   session: z.object({
@@ -164,6 +165,7 @@ export const defaults: Schema = {
       serviceFragment: 'bsky_appview',
       endpoint: 'https://api.bsky.app',
       builtin: true,
+      enabled: true,
     },
   ],
   appviewSelections: {},

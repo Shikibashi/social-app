@@ -10,6 +10,7 @@ export type AppViewProvider = {
   serviceFragment: string
   endpoint: string
   builtin: boolean
+  enabled: boolean
 }
 
 export const DEFAULT_APPVIEW_PROVIDER: AppViewProvider = {
@@ -19,6 +20,7 @@ export const DEFAULT_APPVIEW_PROVIDER: AppViewProvider = {
   serviceFragment: 'bsky_appview',
   endpoint: APPVIEW_ENDPOINT,
   builtin: true,
+  enabled: true,
 }
 
 export function validateAppViewProvider(provider: AppViewProvider): AppViewProvider {
@@ -55,12 +57,14 @@ export function validateAppViewProvider(provider: AppViewProvider): AppViewProvi
 }
 
 export function getAppViewProviders(): AppViewProvider[] {
-  return persisted.get('appviewProviders')
+  return (persisted.get('appviewProviders') ?? [DEFAULT_APPVIEW_PROVIDER]).filter(
+    provider => provider.enabled,
+  )
 }
 
 export function getSelectedAppViewProvider(did: string): AppViewProvider {
   const providers = getAppViewProviders()
-  const selected = persisted.get('appviewSelections')[did]
+  const selected = persisted.get('appviewSelections')?.[did]
   return providers.find(provider => provider.id === selected) ?? providers[0] ?? DEFAULT_APPVIEW_PROVIDER
 }
 
@@ -75,7 +79,7 @@ export async function selectAppViewProvider(did: string, providerId: string): Pr
   if (!provider) throw new Error('Unknown AppView provider')
   validateAppViewProvider(provider)
   await persisted.write('appviewSelections', {
-    ...persisted.get('appviewSelections'),
+    ...(persisted.get('appviewSelections') ?? {}),
     [did]: provider.id,
   })
   return provider

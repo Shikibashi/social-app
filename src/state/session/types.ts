@@ -65,5 +65,5 @@ export type SessionApiContext = {
    * and `SignupQueued` branches synchronously on the fresh `accessJwt`.
    */
   refreshSession: () => Promise<SessionAccount | undefined>
-  switchAppViewProvider: (providerId: string) => Promise<void>
+  switchAppViewProvider: (providerId: string, persist?: boolean) => Promise<void>
 }

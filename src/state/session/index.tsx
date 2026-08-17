@@ -663,7 +663,7 @@ export function Provider({children}: React.PropsWithChildren<{}>) {
     [state],
   )
   const switchAppView = useCallback(
-    async (providerId: string) => {
+    async (providerId: string, persist = true) => {
       const account = state.accounts.find(
         item => item.did === state.currentBundleState.did,
       )
@@ -671,7 +671,7 @@ export function Provider({children}: React.PropsWithChildren<{}>) {
       if (!account || !currentBundle.session) return
       const provider = getAppViewProviders().find(item => item.id === providerId)
       if (!provider) throw new Error('Unknown AppView provider')
-      await selectAppViewProvider(account.did, providerId)
+      if (persist) await selectAppViewProvider(account.did, providerId)
       const newBundle = switchBundleAppViewProvider(currentBundle, provider)
       store.dispatch({
         type: 'replaced-current-bundle',
