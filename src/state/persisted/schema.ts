@@ -12,6 +12,15 @@ const externalEmbedOptions = ['show', 'hide'] as const
  * A account persisted to storage. Stored in the `accounts[]` array. Contains
  * base account info and access tokens.
  */
+const appviewProviderSchema = z.object({
+  id: z.string().min(1),
+  displayName: z.string().min(1),
+  serviceDid: z.string().refine(isDidString),
+  serviceFragment: z.string().min(1),
+  endpoint: z.string().url(),
+  builtin: z.boolean(),
+})
+export type PersistedAppViewProvider = z.infer<typeof appviewProviderSchema>
 const accountSchema = z.object({
   service: z.string(),
   /**
@@ -58,6 +67,8 @@ const currentAccountSchema = accountSchema.extend({
 export type PersistedCurrentAccount = z.infer<typeof currentAccountSchema>
 
 const schema = z.object({
+  appviewProviders: z.array(appviewProviderSchema),
+  appviewSelections: z.record(z.string(), z.string()),
   colorMode: z.enum(['system', 'light', 'dark']),
   darkTheme: z.enum(['dim', 'dark']).optional(),
   session: z.object({
@@ -145,6 +156,17 @@ const schema = z.object({
 export type Schema = z.infer<typeof schema>
 
 export const defaults: Schema = {
+  appviewProviders: [
+    {
+      id: 'bluesky-appview',
+      displayName: 'Bluesky AppView',
+      serviceDid: 'did:web:api.bsky.app',
+      serviceFragment: 'bsky_appview',
+      endpoint: 'https://api.bsky.app',
+      builtin: true,
+    },
+  ],
+  appviewSelections: {},
   colorMode: 'system',
   darkTheme: 'dim',
   session: {

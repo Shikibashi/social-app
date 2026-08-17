@@ -18,6 +18,7 @@ import {
   getUnauthenticatedThrowingClient,
   routeSessionToPds,
 } from './clients'
+import {getSelectedAppViewProvider, type AppViewProvider} from './providers'
 import {addSessionErrorLog} from './logging'
 import {
   configureModerationForAccount,
@@ -95,6 +96,7 @@ export function registerBundleKillSwitch(
 export function buildBundle(
   session: PasswordSession,
   storedPdsUrl?: string,
+  provider: AppViewProvider = getSelectedAppViewProvider(session.did ?? ''),
 ): SessionBundle {
   /*
    * The stored url is persisted data and may be malformed (legacy writes,
@@ -108,7 +110,7 @@ export function buildBundle(
       : session
   return {
     session,
-    appviewClient: buildAppviewClient(agent),
+    appviewClient: buildAppviewClient(agent, provider),
     pdsClient: buildPdsClient(agent),
     chatClient: buildChatClient(agent),
     get service() {
@@ -117,6 +119,12 @@ export function buildBundle(
   }
 }
 
+export function switchAppViewProvider(
+  bundle: SessionBundle,
+  provider: AppViewProvider,
+): SessionBundle {
+  return buildBundle(bundle.session, bundle.session.session.service, provider)
+}
 /**
  * PasswordSession delivers `sessionData` before updating its live getter. The
  * provider uses that payload for rotated tokens and expiry rescue.

@@ -2,22 +2,19 @@ import {type Agent, type Client} from '@atproto/lex'
 import {type PasswordSession} from '@atproto/lex-password-session'
 
 import {
-  APPVIEW_ENDPOINT,
-  BLUESKY_PROXY_HEADER,
   CHAT_PROXY_SERVICE,
   PUBLIC_BSKY_SERVICE,
 } from '#/lib/constants'
-import {BLUESKY_PROXY_DID} from '#/env'
+import {type AppViewProvider, DEFAULT_APPVIEW_PROVIDER} from './providers'
 import {createLexClient} from '#/lib/lexClient'
 import {networkAwareFetch} from './network'
 
 /**
  * Build the signed-in appview {@link Client}.
  *
- * {@link BLUESKY_PROXY_HEADER} is passed as the client's `service`, so lex sets
- * `atproto-proxy: <that value>` on every request and raw calls are proxied to
- * the appview. Record helpers force `service: null`, so they still target the
- * account host.
+ * AppView service identity and endpoint are supplied by the explicit provider
+ * model. Record helpers force `service: null`, so they still target the account
+ * host. Authenticated reads use endpoint-scoped service-auth tokens.
  *
  * The class-wide `Client.appLabelers` static is deliberately NOT suppressed
  * here: this client is the only producer of `atproto-accept-labelers` on an
@@ -30,22 +27,25 @@ import {networkAwareFetch} from './network'
  * service-auth JWT minted by the account PDS. The PDS access token is used only
  * for that PDS-side minting call and is never sent to the AppView endpoint.
  */
-export function buildAppviewClient(agent: Agent): Client {
+export function buildAppviewClient(
+  agent: Agent,
+  provider: AppViewProvider = DEFAULT_APPVIEW_PROVIDER,
+): Client {
   const appviewAgent: Agent = {
     did: agent.did,
     async fetchHandler(path, init) {
       const nsid = path.startsWith('/xrpc/') ? path.slice('/xrpc/'.length).split('?')[0] : ''
       if (!nsid) throw new Error('AppView requests must be XRPC paths')
       const authUrl =
-        `/xrpc/com.atproto.server.getServiceAuth?aud=${encodeURIComponent(BLUESKY_PROXY_DID)}&lxm=${encodeURIComponent(nsid)}`
+        `/xrpc/com.atproto.server.getServiceAuth?aud=${encodeURIComponent(provider.serviceDid)}&lxm=${encodeURIComponent(nsid)}`
       const authResponse = await agent.fetchHandler(authUrl as `/${string}`, {method: 'GET'})
       if (!authResponse.ok) throw new Error(`Service-auth issuance failed: HTTP ${authResponse.status}`)
       const authBody = (await authResponse.json()) as {token?: string}
       if (!authBody.token) throw new Error('Service-auth issuance returned no token')
       const headers = new Headers(init.headers)
       headers.set('authorization', `Bearer ${authBody.token}`)
-      headers.set('atproto-proxy', BLUESKY_PROXY_HEADER.get())
-      return fetch(new URL(path, APPVIEW_ENDPOINT), {...init, headers})
+      headers.set('atproto-proxy', `${provider.serviceDid}#${provider.serviceFragment}`)
+      return fetch(new URL(path, provider.endpoint), {...init, headers})
     },
   }
   return createLexClient(appviewAgent)
