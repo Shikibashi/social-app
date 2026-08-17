@@ -180,6 +180,12 @@ export function SettingsScreen({}: Props) {
               <Trans>Account</Trans>
             </SettingsList.ItemText>
           </SettingsList.LinkItem>
+          <SettingsList.LinkItem to="/settings/services" label={l`Services`}>
+            <SettingsList.ItemIcon icon={EarthIcon} />
+            <SettingsList.ItemText>
+              <Trans>Services</Trans>
+            </SettingsList.ItemText>
+          </SettingsList.LinkItem>
           <SettingsList.LinkItem
             to="/settings/privacy-and-security"
             label={l`Privacy and security`}>
