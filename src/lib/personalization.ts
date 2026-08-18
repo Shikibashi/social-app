@@ -156,12 +156,12 @@ export function exportPersonalization(
   provenance: Partial<PersonalizationExport['provenance']> = {},
 ): string {
   validatePersonalizationState(state)
-  const profile: PersonalizationExport['profile'] = {explicit: state.explicit}
-  if (exportLevel !== 'settings') profile.learned = state.learned
-  if (exportLevel === 'archive') {
-    profile.ephemeral = state.ephemeral
-    profile.services = state.services
+  const profile: PersonalizationExport['profile'] = {
+    explicit: state.explicit,
+    services: state.services,
   }
+  if (exportLevel !== 'settings') profile.learned = state.learned
+  if (exportLevel === 'archive') profile.ephemeral = state.ephemeral
   const output: PersonalizationExport = {
     format: PERSONALIZATION_FORMAT,
     version: PERSONALIZATION_VERSION,
