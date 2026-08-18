@@ -21,6 +21,7 @@ interface Props {
   onQuote: () => void
   big?: boolean
   embeddingDisabled: boolean
+  hideCount?: boolean
 }
 
 export const RepostButton = ({
@@ -30,6 +31,7 @@ export const RepostButton = ({
   onQuote,
   big,
   embeddingDisabled,
+  hideCount = false,
 }: Props) => {
   const t = useTheme()
   const {_} = useLingui()
@@ -51,11 +53,13 @@ export const RepostButton = ({
                 big={big}
                 {...props}>
                 <PostControlButtonIcon icon={Repost} />
-                {typeof repostCount !== 'undefined' && repostCount > 0 && (
-                  <PostControlButtonText testID="repostCount">
-                    {formatPostStatCount(repostCount)}
-                  </PostControlButtonText>
-                )}
+                {!hideCount &&
+                  typeof repostCount !== 'undefined' &&
+                  repostCount > 0 && (
+                    <PostControlButtonText testID="repostCount">
+                      {formatPostStatCount(repostCount)}
+                    </PostControlButtonText>
+                  )}
               </PostControlButton>
             )
           }}
@@ -103,7 +107,7 @@ export const RepostButton = ({
       label={_(msg`Repost or quote post`)}
       big={big}>
       <PostControlButtonIcon icon={Repost} />
-      {typeof repostCount !== 'undefined' && repostCount > 0 && (
+      {!hideCount && typeof repostCount !== 'undefined' && repostCount > 0 && (
         <PostControlButtonText testID="repostCount">
           {formatPostStatCount(repostCount)}
         </PostControlButtonText>

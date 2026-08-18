@@ -9,6 +9,7 @@ import {AnimatedLikeIcon} from '#/lib/custom-animations/LikeIcon'
 import {useOpenComposer} from '#/lib/hooks/useOpenComposer'
 import {type Shadow} from '#/state/cache/types'
 import {useFeedFeedbackContext} from '#/state/feed-feedback'
+import {useQuietMetrics} from '#/state/preferences/local-feed'
 import {
   usePostLikeMutationQueue,
   usePostRepostMutationQueue,
@@ -87,6 +88,7 @@ let PostControls = ({
   )
   const requireAuth = useRequireAuth()
   const {sendInteraction} = useFeedFeedbackContext()
+  const {enabled: quietMetricsEnabled} = useQuietMetrics()
   const {captureAction} = useProgressGuideControls()
   const isBlocked = Boolean(
     post.author.viewer?.blocking ||
@@ -233,21 +235,27 @@ let PostControls = ({
                     })
                 : undefined
             }
-            label={l({
-              message: `Reply (${plural(post.replyCount || 0, {
-                one: '# reply',
-                other: '# replies',
-              })})`,
-              comment:
-                'Accessibility label for the reply button, verb form followed by number of replies and noun form',
-            })}
+            label={
+              quietMetricsEnabled
+                ? l`Reply`
+                : l({
+                    message: `Reply (${plural(post.replyCount || 0, {
+                      one: '# reply',
+                      other: '# replies',
+                    })})`,
+                    comment:
+                      'Accessibility label for the reply button, verb form followed by number of replies and noun form',
+                  })
+            }
             big={big}>
             <PostControlButtonIcon icon={Bubble} />
-            {typeof post.replyCount !== 'undefined' && post.replyCount > 0 && (
-              <PostControlButtonText>
-                {formatPostStatCount(post.replyCount)}
-              </PostControlButtonText>
-            )}
+            {!quietMetricsEnabled &&
+              typeof post.replyCount !== 'undefined' &&
+              post.replyCount > 0 && (
+                <PostControlButtonText>
+                  {formatPostStatCount(post.replyCount)}
+                </PostControlButtonText>
+              )}
           </PostControlButton>
         </View>
         <View style={[a.flex_1, a.align_start]}>
@@ -258,6 +266,7 @@ let PostControls = ({
             onQuote={onQuote}
             big={big}
             embeddingDisabled={Boolean(post.viewer?.embeddingDisabled)}
+            hideCount={quietMetricsEnabled}
           />
         </View>
         <View style={[a.flex_1, a.align_start]}>
@@ -268,39 +277,45 @@ let PostControls = ({
             activeColor={t.palette.pink}
             onPress={() => requireAuth(() => onPressToggleLike())}
             label={
-              post.viewer?.like
-                ? l({
-                    message: `Unlike (${plural(post.likeCount || 0, {
-                      one: '# like',
-                      other: '# likes',
-                    })})`,
-                    comment:
-                      'Accessibility label for the like button when the post has been liked, verb followed by number of likes and noun',
-                  })
-                : l({
-                    message: `Like (${plural(post.likeCount || 0, {
-                      one: '# like',
-                      other: '# likes',
-                    })})`,
-                    comment:
-                      'Accessibility label for the like button when the post has not been liked, verb form followed by number of likes and noun form',
-                  })
+              quietMetricsEnabled
+                ? post.viewer?.like
+                  ? l`Unlike`
+                  : l`Like`
+                : post.viewer?.like
+                  ? l({
+                      message: `Unlike (${plural(post.likeCount || 0, {
+                        one: '# like',
+                        other: '# likes',
+                      })})`,
+                      comment:
+                        'Accessibility label for the like button when the post has been liked, verb followed by number of likes and noun',
+                    })
+                  : l({
+                      message: `Like (${plural(post.likeCount || 0, {
+                        one: '# like',
+                        other: '# likes',
+                      })})`,
+                      comment:
+                        'Accessibility label for the like button when the post has not been liked, verb form followed by number of likes and noun form',
+                    })
             }>
             <AnimatedLikeIcon
               isLiked={Boolean(post.viewer?.like)}
               big={big}
               hasBeenToggled={hasLikeIconBeenToggled}
             />
-            <CountWheel
-              count={post.likeCount ?? 0}
-              isToggled={Boolean(post.viewer?.like)}
-              hasBeenToggled={hasLikeIconBeenToggled}
-              renderCount={({count}) => (
-                <PostControlButtonText testID="likeCount">
-                  {formatPostStatCount(count)}
-                </PostControlButtonText>
-              )}
-            />
+            {!quietMetricsEnabled && (
+              <CountWheel
+                count={post.likeCount ?? 0}
+                isToggled={Boolean(post.viewer?.like)}
+                hasBeenToggled={hasLikeIconBeenToggled}
+                renderCount={({count}) => (
+                  <PostControlButtonText testID="likeCount">
+                    {formatPostStatCount(count)}
+                  </PostControlButtonText>
+                )}
+              />
+            )}
           </PostControlButton>
         </View>
         {/* Spacer! */}

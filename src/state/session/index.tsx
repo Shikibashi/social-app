@@ -18,10 +18,15 @@ import {useGlobalDialogsControlContext} from '#/components/dialogs/Context'
 import {AnalyticsContext, useAnalyticsBase, utils} from '#/analytics'
 import {IS_WEB} from '#/env'
 import {com} from '#/lexicons'
-import {emitSessionDropped} from '../events'
+import {emitAppViewProviderChanged, emitSessionDropped} from '../events'
 import {getPublicAppviewClient} from './clients'
 import {createSessionBundleAndCreateAccount} from './create-account'
 import {pickExpiryRescueCandidate} from './expiry-rescue'
+import {
+  getAppViewProviders,
+  probeAppViewProvider,
+  selectAppViewProvider,
+} from './providers'
 import {type Action, getInitialState, reducer, type State} from './reducer'
 import {
   type AtpSessionEvent,
@@ -34,10 +39,6 @@ import {
   sessionDataToSessionAccount,
   switchAppViewProvider as switchBundleAppViewProvider,
 } from './session-core'
-import {
-  getAppViewProviders,
-  selectAppViewProvider,
-} from './providers'
 export {isSignupQueued} from './session-data'
 import {
   addSessionDebugLog,
@@ -669,8 +670,11 @@ export function Provider({children}: React.PropsWithChildren<{}>) {
       )
       const currentBundle = state.currentBundleState.bundle as SessionBundle
       if (!account || !currentBundle.session) return
-      const provider = getAppViewProviders().find(item => item.id === providerId)
+      const provider = getAppViewProviders().find(
+        item => item.id === providerId,
+      )
       if (!provider) throw new Error('Unknown AppView provider')
+      await probeAppViewProvider(provider)
       if (persist) await selectAppViewProvider(account.did, providerId)
       await clearPersistedQueryStorage(account.did)
       const newBundle = switchBundleAppViewProvider(currentBundle, provider)
@@ -679,6 +683,7 @@ export function Provider({children}: React.PropsWithChildren<{}>) {
         newBundle,
         newAccount: account,
       })
+      emitAppViewProviderChanged(account.did, provider.id)
     },
     [state, store],
   )

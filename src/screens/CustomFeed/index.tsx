@@ -34,6 +34,7 @@ import {type ListRef} from '#/view/com/util/List'
 import {LoadLatestBtn} from '#/view/com/util/load-latest/LoadLatestBtn'
 import {PostFeedLoadingPlaceholder} from '#/view/com/util/LoadingPlaceholder'
 import {useTheme} from '#/alf'
+import {ActiveFeedProvenance} from '#/components/FeedProvenanceCard'
 import {EditBig_Stroke2_Corner2_Rounded as EditBigIcon} from '#/components/icons/EditBig'
 import {HashtagWide_Stroke1_Corner0_Rounded as HashtagWideIcon} from '#/components/icons/Hashtag'
 import * as Layout from '#/components/Layout'
@@ -187,6 +188,12 @@ export function CustomFeedScreenInner({
   return (
     <>
       <CustomFeedHeader info={feedInfo} isTrending={isTrending} />
+      <ActiveFeedProvenance
+        feedName={feedInfo.displayName}
+        algorithmName="Provider-supplied ranking"
+        objective="The feed source does not declare a public ranking objective"
+        feedOwnerDid={feedInfo.creatorDid}
+      />
       <FeedFeedbackProvider value={feedFeedback}>
         <PostFeed
           enabled

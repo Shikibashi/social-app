@@ -18,13 +18,13 @@ import {
   getUnauthenticatedThrowingClient,
   routeSessionToPds,
 } from './clients'
-import {getSelectedAppViewProvider, type AppViewProvider} from './providers'
 import {addSessionErrorLog} from './logging'
 import {
   configureModerationForAccount,
   configureModerationForGuest,
 } from './moderation'
 import {networkAwareFetch} from './network'
+import {type AppViewProvider, getSelectedAppViewProvider} from './providers'
 import {
   isSessionExpired,
   sessionAccountToSessionData,
@@ -60,6 +60,8 @@ export type SessionBundle = {
   appviewClient: Client
   pdsClient: Client
   chatClient: Client
+  /** The persisted account PDS route, retained when AppView changes. */
+  pdsUrl?: string
   readonly service: URL
 }
 
@@ -113,6 +115,7 @@ export function buildBundle(
     appviewClient: buildAppviewClient(agent, provider),
     pdsClient: buildPdsClient(agent),
     chatClient: buildChatClient(agent),
+    pdsUrl: storedPdsUrl,
     get service() {
       return deriveServiceUrl(session)
     },
@@ -123,7 +126,7 @@ export function switchAppViewProvider(
   bundle: SessionBundle,
   provider: AppViewProvider,
 ): SessionBundle {
-  return buildBundle(bundle.session, bundle.session.session.service, provider)
+  return buildBundle(bundle.session, bundle.pdsUrl, provider)
 }
 /**
  * PasswordSession delivers `sessionData` before updating its live getter. The

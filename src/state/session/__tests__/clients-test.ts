@@ -80,10 +80,18 @@ function headersFor(mock: MockFetch, nsid: string): Headers {
 
 describe('buildAppviewClient', () => {
   let fetchMock: MockFetch
+  let globalFetchSpy: jest.SpiedFunction<typeof fetch>
 
   beforeEach(() => {
     fetchMock = makeProfileFetch()
+    globalFetchSpy = jest
+      .spyOn(globalThis, 'fetch')
+      .mockImplementation(asFetch(fetchMock))
     configureGlobalAppLabelers([])
+  })
+
+  afterEach(() => {
+    globalFetchSpy.mockRestore()
   })
 
   it('passes through the session did', () => {
@@ -152,14 +160,14 @@ describe('buildAppviewClient', () => {
     expect(entries).toEqual(['did:plc:global-labeler;redact'])
   })
 
-  it('sends the session access token', async () => {
+  it('sends a PDS-issued service-auth token to the selected AppView', async () => {
     const client = buildAppviewClient(makeSession(fetchMock))
 
     await client.call(app.bsky.actor.getProfile, {actor: HANDLE})
 
     expect(
       headersFor(fetchMock, 'app.bsky.actor.getProfile').get('authorization'),
-    ).toBe('Bearer access-jwt')
+    ).toBe('Bearer service-auth-jwt')
   })
 })
 

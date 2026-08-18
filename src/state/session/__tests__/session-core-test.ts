@@ -90,6 +90,8 @@ jest.mock('jwt-decode', () => ({
   },
 }))
 
+import {com} from '#/lexicons'
+import {type AppViewProvider} from '../providers'
 import {
   type AtpSessionEvent,
   buildBundle,
@@ -101,6 +103,7 @@ import {
   sessionAccountToSessionData,
   type SessionBundle,
   sessionDataToSessionAccount,
+  switchAppViewProvider,
 } from '../session-core'
 import {
   asFetch,
@@ -111,6 +114,7 @@ import {
   makeMockFetch,
   PDS_HOST as PDS_URL,
   SERVICE,
+  urlsOf,
 } from './mock-fetch'
 
 function synthDidDoc(
@@ -381,6 +385,38 @@ describe('createSessionBundleFromStoredAccount', () => {
     await expect(
       result.bundle.session.fetchHandler('/xrpc/test', {}),
     ).rejects.toThrow('session disposed')
+  })
+
+  it('keeps the account PDS route when AppView changes', async () => {
+    const provider: AppViewProvider = {
+      id: 'alternate-appview',
+      displayName: 'Alternate AppView',
+      serviceDid: 'did:web:alternate.example',
+      serviceFragment: 'appview',
+      endpoint: 'https://alternate.example',
+      builtin: false,
+      enabled: true,
+    }
+    const fetchMock = makeMockFetch()
+    const session = new PasswordSession(
+      {
+        ...sessionAccountToSessionData(makeAccount({pdsUrl: `${PDS_URL}/`})),
+        didDoc: makeDidDoc(PDS_URL),
+      },
+      {fetch: asFetch(fetchMock)},
+    )
+    const original = buildBundle(session, PDS_URL)
+    const switched = switchAppViewProvider(original, provider)
+
+    expect(switched.pdsUrl).toBe(PDS_URL)
+    expect(switched.appviewClient).not.toBe(original.appviewClient)
+    expect(switched.pdsClient).not.toBe(original.pdsClient)
+    await switched.pdsClient.call(com.atproto.server.getSession, {})
+    expect(urlsOf(fetchMock)).toContain(
+      `${PDS_URL}/xrpc/com.atproto.server.getSession`,
+    )
+    disposeBundle(original)
+    disposeBundle(switched)
   })
 
   it('disposes a bundle rejected by the activation guard', async () => {

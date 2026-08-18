@@ -19,6 +19,7 @@ import {type AllNavigatorParams} from '#/lib/routes/types'
 import {listenSoftReset} from '#/state/events'
 import {FeedFeedbackProvider, useFeedFeedback} from '#/state/feed-feedback'
 import {useSetHomeBadge} from '#/state/home-badge'
+import {useLocalFeedPreferences} from '#/state/preferences/local-feed'
 import {type FeedSourceInfo} from '#/state/queries/feed'
 import {
   type FeedDescriptor,
@@ -33,12 +34,12 @@ import {type ListMethods} from '#/view/com/util/List'
 import {LoadLatestBtn} from '#/view/com/util/load-latest/LoadLatestBtn'
 import {MainScrollProvider} from '#/view/com/util/MainScrollProvider'
 import {useTheme} from '#/alf'
+import {ActiveFeedProvenance} from '#/components/FeedProvenanceCard'
 import {useHeaderOffset} from '#/components/hooks/useHeaderOffset'
 import {EditBig_Stroke2_Corner2_Rounded as EditBigIcon} from '#/components/icons/EditBig'
 import {useAnalytics} from '#/analytics'
 import {IS_NATIVE} from '#/env'
 import {app} from '#/lexicons'
-import {useLocalFeedPreferences} from '#/state/preferences/local-feed'
 
 const POLL_FREQ = 60e3 // 60sec
 
@@ -146,6 +147,22 @@ export function FeedPage({
       // @ts-expect-error web only -sfn
       dataSet={{nosnippet: isDiscoverFeed ? '' : undefined}}>
       <MainScrollProvider>
+        <ActiveFeedProvenance
+          feedName={feedInfo.displayName}
+          algorithmName={
+            feed === 'following'
+              ? localFeedEnabled
+                ? 'Local Following reranker'
+                : 'Following / chronological'
+              : 'Provider-supplied ranking'
+          }
+          objective={
+            feed === 'following' && !localFeedEnabled
+              ? 'Chronological access'
+              : 'The feed source does not declare a public ranking objective'
+          }
+          feedOwnerDid={feedInfo.creatorDid}
+        />
         <FeedFeedbackProvider value={feedFeedback}>
           <PostFeed
             testID={testID ? `${testID}-feed` : undefined}

@@ -1,17 +1,10 @@
 import {type Agent, type Client} from '@atproto/lex'
 import {type PasswordSession} from '@atproto/lex-password-session'
 
-import {
-  CHAT_PROXY_SERVICE,
-  PUBLIC_BSKY_SERVICE,
-} from '#/lib/constants'
-import {
-  DEFAULT_APPVIEW_PROVIDER,
-  getAppViewFallback,
-  type AppViewProvider,
-} from './providers'
+import {CHAT_PROXY_SERVICE, PUBLIC_BSKY_SERVICE} from '#/lib/constants'
 import {createLexClient} from '#/lib/lexClient'
 import {networkAwareFetch} from './network'
+import {type AppViewProvider, DEFAULT_APPVIEW_PROVIDER} from './providers'
 
 /**
  * Build the signed-in appview {@link Client}.
@@ -38,22 +31,28 @@ export function buildAppviewClient(
   const appviewAgent: Agent = {
     did: agent.did,
     async fetchHandler(path, init) {
-      const nsid = path.startsWith('/xrpc/') ? path.slice('/xrpc/'.length).split('?')[0] : ''
+      const nsid = path.startsWith('/xrpc/')
+        ? path.slice('/xrpc/'.length).split('?')[0]
+        : ''
       if (!nsid) throw new Error('AppView requests must be XRPC paths')
-      const effectiveProvider =
-        getAppViewFallback(agent.did ?? '', nsid) ??
-        getAppViewFallback(agent.did ?? '', 'appview-selection') ??
-        provider
-      const authUrl =
-        `/xrpc/com.atproto.server.getServiceAuth?aud=${encodeURIComponent(effectiveProvider.serviceDid)}&lxm=${encodeURIComponent(nsid)}`
-      const authResponse = await agent.fetchHandler(authUrl as `/${string}`, {method: 'GET'})
-      if (!authResponse.ok) throw new Error(`Service-auth issuance failed: HTTP ${authResponse.status}`)
+      const authUrl = `/xrpc/com.atproto.server.getServiceAuth?aud=${encodeURIComponent(provider.serviceDid)}&lxm=${encodeURIComponent(nsid)}`
+      const authResponse = await agent.fetchHandler(authUrl as `/${string}`, {
+        method: 'GET',
+      })
+      if (!authResponse.ok)
+        throw new Error(
+          `Service-auth issuance failed: HTTP ${authResponse.status}`,
+        )
       const authBody = (await authResponse.json()) as {token?: string}
-      if (!authBody.token) throw new Error('Service-auth issuance returned no token')
+      if (!authBody.token)
+        throw new Error('Service-auth issuance returned no token')
       const headers = new Headers(init.headers)
       headers.set('authorization', `Bearer ${authBody.token}`)
-      headers.set('atproto-proxy', `${effectiveProvider.serviceDid}#${effectiveProvider.serviceFragment}`)
-      return fetch(new URL(path, effectiveProvider.endpoint), {
+      headers.set(
+        'atproto-proxy',
+        `${provider.serviceDid}#${provider.serviceFragment}`,
+      )
+      return fetch(new URL(path, provider.endpoint), {
         ...init,
         headers,
         redirect: 'error',

@@ -5,16 +5,16 @@ import {useLingui} from '@lingui/react'
 import {Trans} from '@lingui/react/macro'
 import {type NativeStackScreenProps} from '@react-navigation/native-stack'
 
-import * as Layout from '#/components/Layout'
-import * as SettingsList from '#/screens/Settings/components/SettingsList'
+import type {CommonNavigatorParams} from '#/lib/routes/types'
 import {useSession, useSessionApi} from '#/state/session'
 import {
+  type AppViewProvider,
   getAppViewProviders,
   getSelectedAppViewProvider,
   setAppViewFallback,
-  type AppViewProvider,
 } from '#/state/session/providers'
-import type {CommonNavigatorParams} from '#/lib/routes/types'
+import * as SettingsList from '#/screens/Settings/components/SettingsList'
+import * as Layout from '#/components/Layout'
 
 type Props = NativeStackScreenProps<CommonNavigatorParams, 'ServicesSettings'>
 
@@ -22,14 +22,19 @@ export function ServicesSettingsScreen({}: Props) {
   const {currentAccount} = useSession()
   const {_} = useLingui()
   const {switchAppViewProvider} = useSessionApi()
-  const [providers, setProviders] = useState<AppViewProvider[]>(() => getAppViewProviders())
+  const [providers, setProviders] = useState<AppViewProvider[]>(() =>
+    getAppViewProviders(),
+  )
   const [selected, setSelected] = useState<string | undefined>(() =>
-    currentAccount ? getSelectedAppViewProvider(currentAccount.did).id : undefined,
+    currentAccount
+      ? getSelectedAppViewProvider(currentAccount.did).id
+      : undefined,
   )
 
   useEffect(() => {
     setProviders(getAppViewProviders())
-    if (currentAccount) setSelected(getSelectedAppViewProvider(currentAccount.did).id)
+    if (currentAccount)
+      setSelected(getSelectedAppViewProvider(currentAccount.did).id)
   }, [currentAccount])
 
   async function choose(provider: AppViewProvider) {
@@ -37,7 +42,12 @@ export function ServicesSettingsScreen({}: Props) {
     try {
       await switchAppViewProvider(provider.id)
       setSelected(provider.id)
-      Alert.alert(_(msg`AppView changed`), _(msg`New reads will use ${provider.displayName}. PDS writes remain on your account host.`))
+      Alert.alert(
+        _(msg`AppView changed`),
+        _(
+          msg`New reads will use ${provider.displayName}. PDS writes remain on your account host.`,
+        ),
+      )
     } catch (error) {
       Alert.alert(
         _(msg`Provider unavailable`),
@@ -49,12 +59,18 @@ export function ServicesSettingsScreen({}: Props) {
             onPress: () => void switchAppViewProvider('bluesky-appview', false),
           },
           {
-            text: _(msg`Always use Bluesky for this feature`),
+            text: _(msg`Use Bluesky and remember this choice`),
             onPress: () => {
               if (!currentAccount) return
-              void setAppViewFallback(currentAccount.did, 'appview-selection', 'bluesky-appview').then(
-                () => switchAppViewProvider('bluesky-appview', false),
-              )
+              void switchAppViewProvider('bluesky-appview', false)
+                .then(() =>
+                  setAppViewFallback(
+                    currentAccount.did,
+                    'appview-selection',
+                    'bluesky-appview',
+                  ),
+                )
+                .then(() => setSelected('bluesky-appview'))
             },
           },
         ],
@@ -78,7 +94,9 @@ export function ServicesSettingsScreen({}: Props) {
           {currentAccount && (
             <SettingsList.Item>
               <SettingsList.ItemText>Account host (PDS)</SettingsList.ItemText>
-              <SettingsList.BadgeText>{currentAccount.pdsUrl || currentAccount.service}</SettingsList.BadgeText>
+              <SettingsList.BadgeText>
+                {currentAccount.pdsUrl || currentAccount.service}
+              </SettingsList.BadgeText>
             </SettingsList.Item>
           )}
           {providers.map(provider => (
@@ -86,7 +104,9 @@ export function ServicesSettingsScreen({}: Props) {
               key={provider.id}
               label={provider.displayName}
               onPress={() => void choose(provider)}>
-              <SettingsList.ItemText>{provider.displayName}</SettingsList.ItemText>
+              <SettingsList.ItemText>
+                {provider.displayName}
+              </SettingsList.ItemText>
               <SettingsList.BadgeText>
                 {selected === provider.id
                   ? `${provider.serviceDid} · ${provider.endpoint}`

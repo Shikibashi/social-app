@@ -23,6 +23,11 @@ import {useLingui} from '@lingui/react/macro'
 import {useQueryClient} from '@tanstack/react-query'
 
 import {DISCOVER_FEED_URI, KNOWN_SHUTDOWN_FEEDS} from '#/lib/constants'
+import {
+  explorationFloorForLevel,
+  type FeedPreferences,
+  rankLocallyWithTrace,
+} from '#/lib/feed-sovereignty/profile'
 import {useBottomBarOffset} from '#/lib/hooks/useBottomBarOffset'
 import {useInitialNumToRender} from '#/lib/hooks/useInitialNumToRender'
 import {useNonReactiveCallback} from '#/lib/hooks/useNonReactiveCallback'
@@ -43,7 +48,6 @@ import {
   RQKEY,
   usePostFeedQuery,
 } from '#/state/queries/post-feed'
-import {type FeedPreferences, explainCandidate, rerankLocally} from '#/lib/feed-sovereignty/profile'
 import {truncateAndInvalidate} from '#/state/queries/util'
 import {useSession} from '#/state/session'
 import {useProgressGuide} from '#/state/shell/progress-guide'
@@ -430,31 +434,51 @@ let PostFeed = ({
     feed.startsWith('author|') ? undefined : data?.pages,
   )
 
-  const renderPages = useMemo(() => {
-    if (!localRerank || !localFeedPreferences || !data) return data?.pages
-    return data.pages.map(page => {
-      const slices = rerankLocally(
-        page.slices.map(slice => {
-          const item = slice.items[0]
-          const ageHours = item ? (Date.now() - Date.parse(item.post.indexedAt)) / 3_600_000 : 24
-          return {
-            uri: slice.feedPostUri,
-            authorDid: item?.post.author.did ?? slice.feedPostUri,
-            freshness: Math.exp(-Math.max(0, ageHours) / 24),
-            networkRelevance: 0.5,
-            conversationActivity: item?.post.replyCount ? 1 : 0,
-            integrityWeight: 1,
-            explorationEligible: !item?.post.author.viewer?.following,
-            seen: false,
-          }
-        }),
-        localFeedPreferences,
-        {maxAuthorPerWindow: 2, explorationFloor: 0.1},
+  const localRanking = useMemo(() => {
+    const explanations = new Map<string, string[]>()
+    if (!localRerank || !localFeedPreferences || !data) {
+      return {pages: data?.pages, explanations}
+    }
+
+    const pages = data.pages.map(page => {
+      const candidates = page.slices.map(slice => {
+        const item = slice.items[0]
+        const ageHours = item
+          ? (Date.now() - Date.parse(item.post.indexedAt)) / 3_600_000
+          : 24
+        return {
+          uri: slice.feedPostUri,
+          authorDid: item?.post.author.did ?? slice.feedPostUri,
+          freshness: Math.exp(-Math.max(0, ageHours) / 24),
+          networkRelevance: 0.5,
+          conversationActivity: item?.post.replyCount ? 1 : 0,
+          integrityWeight: 1,
+          explorationEligible: !item?.post.author.viewer?.following,
+          seen: false,
+        }
+      })
+      const ranked = rankLocallyWithTrace(candidates, localFeedPreferences, {
+        maxAuthorPerWindow: 2,
+        explorationFloor: explorationFloorForLevel(
+          localFeedPreferences.explorationLevel,
+        ),
+      })
+      for (const trace of ranked.traces) {
+        if (trace.selected) explanations.set(trace.uri, trace.reasons)
+      }
+      const byUri = new Map(
+        page.slices.map(slice => [slice.feedPostUri, slice]),
       )
-      const byUri = new Map(page.slices.map(slice => [slice.feedPostUri, slice]))
-      return {...page, slices: slices.map(candidate => byUri.get(candidate.uri)!).filter(Boolean)}
+      return {
+        ...page,
+        slices: ranked.ordered
+          .map(candidate => byUri.get(candidate.uri)!)
+          .filter(Boolean),
+      }
     })
+    return {pages, explanations}
   }, [data, localFeedPreferences, localRerank])
+  const renderPages = localRanking.pages
   const feedItems: FeedRow[] = useMemo(() => {
     // wraps a slice item, and replaces it with a showLessFollowup item
     // if the user has pressed show less on it
@@ -903,22 +927,7 @@ let PostFeed = ({
         const slice = row.slice
         const indexInSlice = row.indexInSlice
         const item = slice.items[indexInSlice]
-        const localExplanation =
-          localRerank && localFeedPreferences
-            ? explainCandidate(
-                {
-                  uri: item.uri,
-                  authorDid: item.post.author.did,
-                  freshness: 0.5,
-                  networkRelevance: 0.5,
-                  conversationActivity: item.post.replyCount ? 1 : 0,
-                  integrityWeight: 1,
-                  explorationEligible: !item.post.author.viewer?.following,
-                  seen: false,
-                },
-                localFeedPreferences,
-              )
-            : undefined
+        const localExplanation = localRanking.explanations.get(item.uri)
         return (
           <PostFeedItem
             post={item.post}
