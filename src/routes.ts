@@ -54,6 +54,7 @@ export const router = new Router<AllNavigatableRoutes>({
   SavedFeeds: '/settings/saved-feeds',
   AccountSettings: '/settings/account',
   ServicesSettings: '/settings/services',
+  PersonalizationSettings: '/settings/personalization',
   AutomationLabelSettings: '/settings/automation-label',
   PrivacyAndSecuritySettings: '/settings/privacy-and-security',
   ActivityPrivacySettings: '/settings/privacy-and-security/activity',

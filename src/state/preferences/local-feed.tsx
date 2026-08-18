@@ -2,8 +2,10 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 import {useCallback, useEffect, useState} from 'react'
 
 import {type FeedPreferences} from '#/lib/feed-sovereignty/profile'
+import {loadPersonalization, savePersonalization} from '#/lib/personalization'
+import {useSession} from '#/state/session'
 
-const STORAGE_KEY = 'LOCAL_FEED_PREFERENCES_V1'
+const ENABLED_KEY = 'LOCAL_FEED_ENABLED:'
 type StoredState = {enabled: boolean; preferences: FeedPreferences}
 
 export const defaultLocalFeedPreferences: FeedPreferences = {
@@ -19,45 +21,71 @@ export const defaultLocalFeedPreferences: FeedPreferences = {
 const defaults: StoredState = {enabled: false, preferences: defaultLocalFeedPreferences}
 
 export function useLocalFeedPreferences() {
+  const {currentAccount} = useSession()
+  const accountDid = currentAccount?.did
   const [state, setState] = useState<StoredState>(defaults)
 
   useEffect(() => {
-    void AsyncStorage.getItem(STORAGE_KEY).then(value => {
-      if (!value) return
-      try {
-        const parsed = JSON.parse(value) as Partial<StoredState>
-        setState({
-          enabled: Boolean(parsed.enabled),
-          preferences: {...defaultLocalFeedPreferences, ...parsed.preferences},
-        })
-      } catch {
-        // Corrupt local preference data is ignored; defaults remain active.
-      }
+    let cancelled = false
+    if (!accountDid) {
+      setState(defaults)
+      return () => { cancelled = true }
+    }
+    void Promise.all([
+      AsyncStorage.getItem(ENABLED_KEY + accountDid),
+      loadPersonalization(accountDid),
+    ]).then(([enabled, personalization]) => {
+      if (cancelled) return
+      const explicit = personalization.explicit
+      setState({
+        enabled: enabled === 'true',
+        preferences: {
+          freshness: explicit.freshness,
+          discovery: explicit.discovery,
+          familiarity: explicit.familiarity,
+          conversationActivity: explicit.conversationActivity,
+          languages: explicit.languages,
+          topics: explicit.topics,
+          classifierModules: explicit.classifierModules,
+        },
+      })
     })
-  }, [])
+    return () => { cancelled = true }
+  }, [accountDid])
 
-  const persist = useCallback((next: StoredState) => {
+  const persist = useCallback(async (next: StoredState) => {
+    if (!accountDid) return
     setState(next)
-    void AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(next))
-  }, [])
+    const personalization = await loadPersonalization(accountDid)
+    await savePersonalization({
+      ...personalization,
+      explicit: {
+        ...personalization.explicit,
+        freshness: next.preferences.freshness,
+        discovery: next.preferences.discovery,
+        familiarity: next.preferences.familiarity,
+        conversationActivity: next.preferences.conversationActivity,
+        languages: next.preferences.languages,
+        topics: next.preferences.topics,
+        classifierModules: next.preferences.classifierModules,
+      },
+    })
+    await AsyncStorage.setItem(ENABLED_KEY + accountDid, String(next.enabled))
+  }, [accountDid])
 
   const update = useCallback((patch: Partial<FeedPreferences>) => {
     setState(current => {
       const next = {...current, preferences: {...current.preferences, ...patch}}
-      void AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(next))
+      void persist(next)
       return next
     })
-  }, [])
+  }, [persist])
 
   const setEnabled = useCallback((enabled: boolean) => {
-    setState(current => {
-      const next = {...current, enabled}
-      void AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(next))
-      return next
-    })
-  }, [])
+    void persist({...state, enabled})
+  }, [persist, state])
 
-  const reset = useCallback(() => persist(defaults), [persist])
+  const reset = useCallback(() => void persist(defaults), [persist])
 
   return {enabled: state.enabled, preferences: state.preferences, update, setEnabled, reset}
 }
