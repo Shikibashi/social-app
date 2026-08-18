@@ -105,6 +105,7 @@ import {AccessibilitySettingsScreen} from '#/screens/Settings/AccessibilitySetti
 import {AccountSettingsScreen} from '#/screens/Settings/AccountSettings'
 import {ServicesSettingsScreen} from '#/screens/Settings/ServicesSettings'
 import {PersonalizationSettingsScreen} from '#/screens/Settings/PersonalizationSettings'
+import {IdentitySovereigntySettingsScreen} from '#/screens/Settings/IdentitySovereigntySettings'
 import {ActivityPrivacySettingsScreen} from '#/screens/Settings/ActivityPrivacySettings'
 import {AppearanceSettingsScreen} from '#/screens/Settings/AppearanceSettings'
 import {AppIconSettingsScreen} from '#/screens/Settings/AppIconSettings'
@@ -422,6 +423,14 @@ function commonScreens(Stack: typeof Flat, unreadCountLabel?: string) {
         getComponent={() => PersonalizationSettingsScreen}
         options={{
           title: title(msg`Personalization & data`),
+          requireAuth: true,
+        }}
+      />
+      <Stack.Screen
+        name="IdentitySovereigntySettings"
+        getComponent={() => IdentitySovereigntySettingsScreen}
+        options={{
+          title: title(msg`Identity sovereignty`),
           requireAuth: true,
         }}
       />

@@ -1,0 +1,2 @@
+import {AUTHORITY_MAP,capabilityLabel,redactDiagnostics} from './identity-sovereignty-ui'
+describe('identity sovereignty UI',()=>{it('maps capabilities and authority domains',()=>{expect(capabilityLabel('simulated')).toBe('Simulated');expect(AUTHORITY_MAP.some(x=>x.actor==='PDS'&&x.domain==='Identity')).toBe(true)});it('redacts secrets from diagnostics',()=>{expect(redactDiagnostics({token:'secret',privateKey:'key',did:'did:plc:x'})).toContain('[REDACTED]');expect(redactDiagnostics({token:'secret'})).not.toContain('secret')})})
