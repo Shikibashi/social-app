@@ -13,6 +13,7 @@ import {
 import {app} from '#/lexicons'
 import {type FeedAPI, type FeedAPIResponse} from './types'
 import {createBskyTopicsHeader, isBlueskyOwnedFeed} from './utils'
+import {validateFeedBatch} from '#/lib/feed-provider-security'
 
 type GetCustomFeedParams = XrpcRequestParams<typeof app.bsky.feed.getFeed.main>
 
@@ -89,15 +90,12 @@ export class CustomFeedAPI implements FeedAPI {
       }
     }
 
-    // NOTE
-    // some custom feeds fail to enforce the pagination limit
-    // so we manually truncate here
-    // -prf
-    const feed =
-      data.feed.length > limit ? data.feed.slice(0, limit) : data.feed
+    // custom providers are untrusted: enforce response and candidate bounds
+    // before the feed enters local rendering or pagination state.
+    const validated = validateFeedBatch<typeof data.feed[number]>(data, limit)
     return {
-      cursor: feed.length ? data.cursor : undefined,
-      feed,
+      cursor: validated.feed.length ? validated.cursor : undefined,
+      feed: validated.feed,
     }
   }
 }
@@ -174,11 +172,15 @@ async function getFeedOrNull(
   contentLangs: string,
 ): Promise<app.bsky.feed.getFeed.$OutputBody | null> {
   try {
-    return await getLoggedOutAppviewClient().call(
+    const response = await getLoggedOutAppviewClient().call(
       app.bsky.feed.getFeed,
       params,
       {headers: {'Accept-Language': contentLangs}},
     )
+    return validateFeedBatch<typeof response.feed[number]>(
+      response,
+      params.limit,
+    ) as app.bsky.feed.getFeed.$OutputBody
   } catch (e) {
     if (e instanceof XrpcResponseError) {
       return null
