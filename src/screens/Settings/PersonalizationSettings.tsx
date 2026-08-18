@@ -82,6 +82,21 @@ export function PersonalizationSettingsScreen({}: Props) {
     setState(await loadPersonalization(currentAccount.did))
   }
 
+  async function updateExplicit(key: 'discovery' | 'variety' | 'freshness' | 'explorationLevel', value: number) {
+    if (!state) return
+    const next = {...state, explicit: {...state.explicit, [key]: value}, updatedAt: new Date().toISOString()}
+    await savePersonalization(next)
+    setState(next)
+  }
+
+  async function removeInferredTopic(topic: string) {
+    if (!state) return
+    const inferredTopics = {...state.learned.inferredTopics}
+    delete inferredTopics[topic]
+    const next = {...state, learned: {...state.learned, inferredTopics}, updatedAt: new Date().toISOString()}
+    await savePersonalization(next)
+    setState(next)
+  }
   const learnedCount = state ? Object.keys(state.learned.inferredTopics).length + Object.keys(state.learned.authorAffinity).length : 0
   return (
     <Layout.Screen>
@@ -92,6 +107,31 @@ export function PersonalizationSettingsScreen({}: Props) {
       </Layout.Header.Outer>
       <Layout.Content>
         <SettingsList.Container>
+          <SettingsList.Item><SettingsList.ItemText>Attention controls</SettingsList.ItemText></SettingsList.Item>
+          <SettingsList.PressableItem label="Change discovery level" onPress={() => void updateExplicit('discovery', state?.explicit.discovery === 1 ? 0 : 1)}>
+            <SettingsList.ItemText>Discovery</SettingsList.ItemText>
+            <SettingsList.BadgeText>{state?.explicit.discovery === 1 ? 'High' : 'Low'}</SettingsList.BadgeText>
+          </SettingsList.PressableItem>
+          <SettingsList.PressableItem label="Change variety" onPress={() => void updateExplicit('variety', state?.explicit.variety === 1 ? 0 : 1)}>
+            <SettingsList.ItemText>Variety</SettingsList.ItemText>
+            <SettingsList.BadgeText>{state?.explicit.variety === 1 ? 'High' : 'Low'}</SettingsList.BadgeText>
+          </SettingsList.PressableItem>
+          <SettingsList.PressableItem label="Change freshness" onPress={() => void updateExplicit('freshness', state?.explicit.freshness === 1 ? 0 : 1)}>
+            <SettingsList.ItemText>Freshness</SettingsList.ItemText>
+            <SettingsList.BadgeText>{state?.explicit.freshness === 1 ? 'High' : 'Low'}</SettingsList.BadgeText>
+          </SettingsList.PressableItem>
+          <SettingsList.PressableItem label="Change exploration" onPress={() => void updateExplicit('explorationLevel', state?.explicit.explorationLevel === 1 ? 0 : 1)}>
+            <SettingsList.ItemText>Exploration / serendipity</SettingsList.ItemText>
+            <SettingsList.BadgeText>{state?.explicit.explorationLevel === 1 ? 'High' : 'Low'}</SettingsList.BadgeText>
+          </SettingsList.PressableItem>
+          <SettingsList.Item><SettingsList.ItemText>Quiet Metrics hides counts and trending badges while preserving your own likes.</SettingsList.ItemText></SettingsList.Item>
+          <SettingsList.Item><SettingsList.ItemText>Inferred interests</SettingsList.ItemText></SettingsList.Item>
+          {Object.keys(state?.learned.inferredTopics ?? {}).map(topic => (
+            <SettingsList.PressableItem key={topic} label={`Remove inferred interest ${topic}`} onPress={() => void removeInferredTopic(topic)}>
+              <SettingsList.ItemText>{topic}</SettingsList.ItemText>
+              <SettingsList.BadgeText>Remove</SettingsList.BadgeText>
+            </SettingsList.PressableItem>
+          ))}
           <SettingsList.Item>
             <SettingsList.ItemText>Feed preferences</SettingsList.ItemText>
             <SettingsList.BadgeText>{state?.explicit.selectedFeedPreset ?? 'Following'}</SettingsList.BadgeText>
