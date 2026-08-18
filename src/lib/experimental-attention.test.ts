@@ -1,0 +1,5 @@
+import {EXPERIMENTAL_MANIFESTS, rankExperimental} from './experimental-attention'
+import type {CandidateBatch} from './candidate-protocol'
+const prefs:any={explicitInterests:[],explicitAuthors:[],explorationLevel:.5}; const learned:any={inferredTopics:{},explorationHistory:[],interactionWeights:{}}
+const batch:any={candidates:[{uri:'at://a/x/1',candidateTimestamp:'2030-01-01T00:00:00Z',hydration:{state:'visible',checkedAt:'2030-01-01T00:00:01Z'},features:{novelty:.1}}]} as CandidateBatch
+describe('experimental attention modules',()=>{it('publishes five explicit opt-in manifests',()=>{expect(Object.keys(EXPERIMENTAL_MANIFESTS)).toHaveLength(5); for(const m of Object.values(EXPERIMENTAL_MANIFESTS)) expect(m.status).toBe('experimental')});it('is deterministic and exits through common ranker',()=>{const a=rankExperimental('news',batch,prefs,learned,Date.parse('2030-01-02T00:00:00Z'));const b=rankExperimental('news',batch,prefs,learned,Date.parse('2030-01-02T00:00:00Z'));expect(a.ordered.map(x=>x.uri)).toEqual(b.ordered.map(x=>x.uri));expect(a.traces[0].uri).toBe('at://a/x/1')})})
