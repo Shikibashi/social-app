@@ -6,6 +6,7 @@ import {Trans} from '@lingui/react/macro'
 
 import {PROD_DEFAULT_FEED} from '#/lib/constants'
 import {logger} from '#/logger'
+import {feedUriToHref} from '#/lib/strings/url-helpers'
 import {
   usePreferencesQuery,
   useRemoveFeedMutation,
@@ -105,7 +106,7 @@ export function FeedShutdownMsg({feedUri}: {feedUri: string}) {
           This feed is no longer online. We are showing{' '}
           <InlineLinkText
             label={_(msg`The Discover feed`)}
-            to="/profile/bsky.app/feed/whats-hot"
+            to={feedUriToHref(PROD_DEFAULT_FEED('whats-hot'))}
             style={[a.text_md]}>
             Discover
           </InlineLinkText>{' '}

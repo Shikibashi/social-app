@@ -1,6 +1,6 @@
 import {useMemo, useRef} from 'react'
 import {AtUri} from '@atproto/syntax'
-import {moderatePost} from '@bsky/sdk/moderation'
+import {moderatePost} from '#/lib/moderation'
 import {msg} from '@lingui/core/macro'
 import {useLingui} from '@lingui/react'
 import {
@@ -19,6 +19,7 @@ import {
   type FeedPostSliceItem,
 } from '#/state/queries/post-feed'
 import {usePreferencesQuery} from '#/state/queries/preferences'
+import {stripNonLocalBlockVisibility} from '#/state/queries/public-visibility'
 import {
   didOrHandleUriMatches,
   embedViewRecordToPostView,
@@ -204,12 +205,16 @@ export function useFeedPreviews(
             for (const item of tuner.tune(page.posts)) {
               if (item.isFallbackMarker) continue
 
-              const moderations = item.items.map(item =>
+              const visibleItems = item.items.map(item => ({
+                ...item,
+                post: stripNonLocalBlockVisibility(item.post),
+              }))
+              const moderations = visibleItems.map(item =>
                 moderatePost(item.post, moderationOpts!),
               )
 
               // apply moderation filters
-              item.items = item.items.filter((_, i) => {
+              item.items = visibleItems.filter((_, i) => {
                 return !moderations[i]?.ui('contentList').filter
               })
 

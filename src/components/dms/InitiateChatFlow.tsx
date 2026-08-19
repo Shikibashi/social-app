@@ -7,7 +7,7 @@ import {
   useState,
 } from 'react'
 import {LayoutAnimation, type TextInput, View} from 'react-native'
-import {moderateProfile, type ModerationOpts} from '@bsky/sdk/moderation'
+import {moderateProfile, type ModerationOpts} from '#/lib/moderation'
 import {Plural, Trans, useLingui} from '@lingui/react/macro'
 
 import {MAX_GROUP_NAME_GRAPHEME_LENGTH} from '#/lib/constants'
@@ -51,7 +51,6 @@ import {ProfileBadges} from '#/components/ProfileBadges'
 import * as ProfileCard from '#/components/ProfileCard'
 import * as Prompt from '#/components/Prompt'
 import {Text} from '#/components/Typography'
-import {useAgeAssurance} from '#/ageAssurance'
 import {IS_NATIVE, IS_WEB} from '#/env'
 import type * as bsky from '#/types/bsky'
 
@@ -248,7 +247,6 @@ export function InitiateChatFlow({
   const [footerHeight, setFooterHeight] = useState(0)
   const listRef = useRef<ListMethods>(null)
   const {currentAccount} = useSession()
-  const aa = useAgeAssurance()
   const inputRef = useRef<TextInput>(null)
   const accountTooNewPromptControl = Dialog.useDialogControl()
 
@@ -433,11 +431,7 @@ export function InitiateChatFlow({
       })
     }
 
-    if (
-      chatState === ChatState.NEW_CHAT &&
-      searchText === '' &&
-      !aa.flags.groupChatDisabled
-    ) {
+    if (chatState === ChatState.NEW_CHAT && searchText === '') {
       _items.unshift({type: 'newGroupChat', key: 'newGroupChat'})
     }
 
@@ -460,7 +454,6 @@ export function InitiateChatFlow({
     results,
     currentAccount?.did,
     follows,
-    aa.flags.groupChatDisabled,
     showRecentConvos,
     sortByMessageDeclaration,
   ])

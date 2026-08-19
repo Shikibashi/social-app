@@ -11,7 +11,6 @@ import {
   type AppViewProvider,
   getAppViewProviders,
   getSelectedAppViewProvider,
-  setAppViewFallback,
 } from '#/state/session/providers'
 import * as SettingsList from '#/screens/Settings/components/SettingsList'
 import * as Layout from '#/components/Layout'
@@ -51,35 +50,25 @@ export function ServicesSettingsScreen({}: Props) {
     } catch (error) {
       Alert.alert(
         _(msg`Provider unavailable`),
-        error instanceof Error ? error.message : String(error),
+        `${error instanceof Error ? error.message : String(error)}\n\nNo provider was substituted. Choose an explicitly registered provider below.`,
         [
           {text: _(msg`Cancel`), style: 'cancel'},
-          {
-            text: _(msg`Use Bluesky once`),
-            onPress: () => void switchAppViewProvider('bluesky-appview', false),
-          },
-          {
-            text: _(msg`Use Bluesky and remember this choice`),
-            onPress: () => {
-              if (!currentAccount) return
-              void switchAppViewProvider('bluesky-appview', false)
-                .then(() =>
-                  setAppViewFallback(
-                    currentAccount.did,
-                    'appview-selection',
-                    'bluesky-appview',
-                  ),
-                )
-                .then(() => setSelected('bluesky-appview'))
-            },
-          },
+          ...providers
+            .filter(candidate => candidate.id !== provider.id)
+            .map(candidate => ({
+              text: _(msg`Use ${candidate.displayName}`),
+              onPress: () =>
+                void switchAppViewProvider(candidate.id).then(() =>
+                  setSelected(candidate.id),
+                ),
+            })),
         ],
       )
     }
   }
 
   return (
-    <Layout.Screen>
+    <Layout.Screen ecwMode="workbench">
       <Layout.Header.Outer>
         <Layout.Header.BackButton />
         <Layout.Header.Content>

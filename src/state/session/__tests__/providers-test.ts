@@ -45,6 +45,24 @@ describe('AppView provider validation and health probing', () => {
     ).toThrow('safe HTTPS origin')
   })
 
+  it('allows a deliberately configured local HTTP provider only through the dev escape hatch', () => {
+    const local = {
+      ...DEFAULT_APPVIEW_PROVIDER,
+      id: 'local-appview',
+      displayName: 'Local read provider',
+      serviceDid: 'did:web:local-read-provider.test' as typeof DEFAULT_APPVIEW_PROVIDER.serviceDid,
+      endpoint: 'http://127.0.0.1:19180',
+      healthPath: '/xrpc/com.atproto.server.describeServer',
+      builtin: false,
+    }
+
+    expect(() => validateAppViewProvider(local)).toThrow('safe HTTPS origin')
+    expect(validateAppViewProvider(local, {allowInsecureLocal: true})).toMatchObject({
+      endpoint: 'http://127.0.0.1:19180',
+      healthPath: '/xrpc/com.atproto.server.describeServer',
+    })
+  })
+
   it('probes the selected provider before a switch', async () => {
     const fetchMock = jest
       .spyOn(globalThis, 'fetch')
@@ -58,6 +76,22 @@ describe('AppView provider validation and health probing', () => {
     )
   })
 
+  it('uses the provider-declared health path', async () => {
+    const provider = {
+      ...DEFAULT_APPVIEW_PROVIDER,
+      healthPath: '/xrpc/com.atproto.server.describeServer',
+    }
+    const fetchMock = jest
+      .spyOn(globalThis, 'fetch')
+      .mockResolvedValue(new Response('{}', {status: 200}))
+
+    await expect(probeAppViewProvider(provider)).resolves.toBeUndefined()
+    expect(fetchMock).toHaveBeenCalledWith(
+      new URL(`${DEFAULT_APPVIEW_PROVIDER.endpoint}/xrpc/com.atproto.server.describeServer`),
+      expect.objectContaining({method: 'GET', redirect: 'error'}),
+    )
+  })
+
   it('names an unavailable provider and does not treat failure as a switch', async () => {
     jest
       .spyOn(globalThis, 'fetch')
@@ -65,7 +99,7 @@ describe('AppView provider validation and health probing', () => {
     await expect(
       probeAppViewProvider(DEFAULT_APPVIEW_PROVIDER),
     ).rejects.toThrow(
-      'AppView provider Bluesky AppView is unavailable (HTTP 503)',
+      'AppView provider Project AppView is unavailable (HTTP 503)',
     )
   })
 

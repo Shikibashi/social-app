@@ -1,7 +1,7 @@
 import {useCallback, useMemo} from 'react'
 import {View} from 'react-native'
 import {Image} from 'expo-image'
-import {moderateStatus} from '@bsky/sdk/moderation'
+import {moderateStatus} from '#/lib/moderation'
 import {Trans, useLingui} from '@lingui/react/macro'
 import {useNavigation} from '@react-navigation/native'
 import {useQueryClient} from '@tanstack/react-query'

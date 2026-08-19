@@ -103,9 +103,6 @@ import {SearchScreen} from '#/screens/Search'
 import {AboutSettingsScreen} from '#/screens/Settings/AboutSettings'
 import {AccessibilitySettingsScreen} from '#/screens/Settings/AccessibilitySettings'
 import {AccountSettingsScreen} from '#/screens/Settings/AccountSettings'
-import {ServicesSettingsScreen} from '#/screens/Settings/ServicesSettings'
-import {PersonalizationSettingsScreen} from '#/screens/Settings/PersonalizationSettings'
-import {IdentitySovereigntySettingsScreen} from '#/screens/Settings/IdentitySovereigntySettings'
 import {ActivityPrivacySettingsScreen} from '#/screens/Settings/ActivityPrivacySettings'
 import {AppearanceSettingsScreen} from '#/screens/Settings/AppearanceSettings'
 import {AppIconSettingsScreen} from '#/screens/Settings/AppIconSettings'
@@ -116,12 +113,15 @@ import {ContentAndMediaSettingsScreen} from '#/screens/Settings/ContentAndMediaS
 import {ExternalMediaPreferencesScreen} from '#/screens/Settings/ExternalMediaPreferences'
 import {FindContactsSettingsScreen} from '#/screens/Settings/FindContactsSettings'
 import {FollowingFeedPreferencesScreen} from '#/screens/Settings/FollowingFeedPreferences'
+import {IdentitySovereigntySettingsScreen} from '#/screens/Settings/IdentitySovereigntySettings'
 import {InterestsSettingsScreen} from '#/screens/Settings/InterestsSettings'
 import {LanguageSettingsScreen} from '#/screens/Settings/LanguageSettings'
 import {LegacyNotificationSettingsScreen} from '#/screens/Settings/LegacyNotificationSettings'
 import {NotificationSettingsScreen} from '#/screens/Settings/NotificationSettings'
 import {ActivityNotificationSettingsScreen} from '#/screens/Settings/NotificationSettings/ActivityNotificationSettings'
+import {PersonalizationSettingsScreen} from '#/screens/Settings/PersonalizationSettings'
 import {PrivacyAndSecuritySettingsScreen} from '#/screens/Settings/PrivacyAndSecuritySettings'
+import {ServicesSettingsScreen} from '#/screens/Settings/ServicesSettings'
 import {SettingsScreen} from '#/screens/Settings/Settings'
 import {ThreadPreferencesScreen} from '#/screens/Settings/ThreadPreferences'
 import {
@@ -422,7 +422,7 @@ function commonScreens(Stack: typeof Flat, unreadCountLabel?: string) {
         name="PersonalizationSettings"
         getComponent={() => PersonalizationSettingsScreen}
         options={{
-          title: title(msg`Personalization & data`),
+          title: title(msg`Feed customization & data`),
           requireAuth: true,
         }}
       />

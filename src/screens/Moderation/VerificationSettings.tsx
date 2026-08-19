@@ -26,7 +26,9 @@ export function Screen() {
   const {data: preferences} = usePreferencesQuery()
 
   return (
-    <Layout.Screen testID="ModerationVerificationSettingsScreen">
+    <Layout.Screen
+      testID="ModerationVerificationSettingsScreen"
+      ecwMode="workbench">
       <Layout.Header.Outer>
         <Layout.Header.BackButton />
         <Layout.Header.Content>

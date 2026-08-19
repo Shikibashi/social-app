@@ -11,15 +11,7 @@ import {
   TIMELINE_SAVED_FEED,
 } from '#/lib/constants'
 import {logger} from '#/logger'
-import {snoozeBirthdateUpdateAllowedForDid} from '#/state/birthdate'
-import {restrictChatSettings} from '#/state/queries/messages/restrictChatSettings'
 import {snoozeEmailConfirmationPrompt} from '#/state/shell/reminders'
-import {
-  prefetchAgeAssuranceServerData,
-  setBirthdateForDid,
-  setCreatedAtForDid,
-} from '#/ageAssurance/data'
-import {unsafeGetAndComputeAgeAssurance} from '#/ageAssurance/state'
 import {features} from '#/analytics'
 import {type app} from '#/lexicons'
 import {configureModerationForAccount} from './moderation'
@@ -88,24 +80,8 @@ export async function createSessionBundleAndCreateAccount(
   configureModerationForAccount(bundle, earlyAccount)
 
   const createdAt = toDatetimeString(new Date())
-  const birthdate = birthDate.toISOString()
-
-  /*
-   * Since we have a race with account creation, profile creation, and AA
-   * state, set these values locally to ensure sync reads. Values are written
-   * to the server in the next step, so on subsequent reloads, the server will
-   * be the source of truth.
-   */
-  setCreatedAtForDid({did: earlyAccount.did, createdAt})
-  setBirthdateForDid({did: earlyAccount.did, birthdate})
-  snoozeBirthdateUpdateAllowedForDid(earlyAccount.did)
   // Post-signup writes all target the account's own repo and actor store.
   const pdsClient = bundle.pdsClient
-  // Start the prefetch after seeding its synchronous birthdate inputs.
-  const aa = prefetchAgeAssuranceServerData({
-    appviewClient: bundle.appviewClient,
-    accountClient: pdsClient,
-  })
 
   const isProd = Boolean(IS_PROD_SERVICE(service))
   const postSignupTasks: Promise<unknown>[] = [
@@ -113,10 +89,7 @@ export async function createSessionBundleAndCreateAccount(
     initializeProfile(pdsClient, {handle, createdAt, isProd}),
   ]
   if (isProd) {
-    postSignupTasks.push(
-      initializeSavedFeeds(pdsClient),
-      restrictChatAfterAgeAssurance(aa, pdsClient, earlyAccount.did),
-    )
+    postSignupTasks.push(initializeSavedFeeds(pdsClient))
   }
   // Post-signup writes are not required to enter onboarding.
   void reportPostSignupFailures(postSignupTasks)
@@ -131,10 +104,8 @@ export async function createSessionBundleAndCreateAccount(
   }
 
   // Preparation may auto-refresh the session while hooks are still disarmed.
-  const account = await finishPreparation(
-    bundle,
-    Promise.all([gates, aa]),
-    () => snapshotNewAccount(session, email),
+  const account = await finishPreparation(bundle, gates, () =>
+    snapshotNewAccount(session, email),
   )
   hooks.arm()
   return {account, bundle}
@@ -207,23 +178,6 @@ function initializeSavedFeeds(client: Client) {
       {...TIMELINE_SAVED_FEED, id: TID.nextStr()},
     ]),
   )
-}
-
-function restrictChatAfterAgeAssurance(
-  ageAssurance: Promise<unknown>,
-  client: Client,
-  did: string,
-) {
-  return ageAssurance.then(() => {
-    const {flags} = unsafeGetAndComputeAgeAssurance({did})
-    if (flags?.chatDisabled || flags?.groupChatDisabled) {
-      void restrictChatSettings({
-        client,
-        restrictIncoming: flags.chatDisabled,
-        restrictGroupInvites: flags.groupChatDisabled,
-      })
-    }
-  })
 }
 
 function retryPostSignupTask<T>(

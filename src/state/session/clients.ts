@@ -1,8 +1,9 @@
 import {type Agent, type Client} from '@atproto/lex'
 import {type PasswordSession} from '@atproto/lex-password-session'
 
-import {CHAT_PROXY_SERVICE, PUBLIC_BSKY_SERVICE} from '#/lib/constants'
+import {APPVIEW_ENDPOINT, CHAT_PROXY_SERVICE} from '#/lib/constants'
 import {createLexClient} from '#/lib/lexClient'
+import {serviceBoundaryError} from '#/lib/service-boundary'
 import {networkAwareFetch} from './network'
 import {type AppViewProvider, DEFAULT_APPVIEW_PROVIDER} from './providers'
 
@@ -17,8 +18,8 @@ import {type AppViewProvider, DEFAULT_APPVIEW_PROVIDER} from './providers'
  * here: this client is the only producer of `atproto-accept-labelers` on an
  * appview request now that no agent sits underneath it. The account's own
  * subscriptions arrive separately, through `applyLabelersToClient` on the
- * instance, and that function filters out the Bluesky moderation DID so the
- * globally redacted authority is not also listed unredacted.
+ * instance, and that function filters out any DIDs already configured as
+ * globally redacted authorities so they are not also listed unredacted.
  *
  * Each authenticated AppView request receives a short-lived, endpoint-scoped
  * service-auth JWT minted by the account PDS. The PDS access token is used only
@@ -41,7 +42,7 @@ export function buildAppviewClient(
       })
       if (!authResponse.ok)
         throw new Error(
-          `Service-auth issuance failed: HTTP ${authResponse.status}`,
+          `Account PDS could not authorize ${provider.displayName} (${provider.serviceDid}); HTTP ${authResponse.status}`,
         )
       const authBody = (await authResponse.json()) as {token?: string}
       if (!authBody.token)
@@ -52,12 +53,23 @@ export function buildAppviewClient(
         'atproto-proxy',
         `${provider.serviceDid}#${provider.serviceFragment}`,
       )
-      return fetch(new URL(path, provider.endpoint), {
+      const response = await fetch(new URL(path, provider.endpoint), {
         ...init,
         headers,
         redirect: 'error',
         signal: AbortSignal.timeout(15_000),
       })
+      if (response.status === 401) {
+        throw serviceBoundaryError(
+          {
+            kind: 'AppView provider',
+            displayName: provider.displayName,
+            serviceDid: provider.serviceDid,
+          },
+          new Error('HTTP 401 from the selected AppView'),
+        )
+      }
+      return response
     },
   }
   return createLexClient(appviewAgent)
@@ -160,16 +172,17 @@ export function getUnauthenticatedThrowingClient(): Client {
   }))
 }
 
-let publicLexClient: Client | undefined
+const publicLexClients = new Map<string, Client>()
 
 /**
  * The unauthenticated {@link Client} for public reads, pointed at the public
  * appview.
  *
- * A single module-level instance: there is no session to scope it to, so it
- * lives for the lifetime of the process, and its identity is therefore stable
- * enough for a React Query key. Requests go through {@link networkAwareFetch} so
- * public reads feed the app's reachability signal like authenticated ones do.
+ * Public clients are cached by endpoint: there is no session to scope them to,
+ * so each selected provider's client lives for the lifetime of the process and
+ * is stable enough for a React Query key. Requests go through
+ * {@link networkAwareFetch} so public reads feed the app's reachability signal
+ * like authenticated ones do.
  *
  * Like the session appview client, it carries the class-wide
  * `Client.appLabelers`, so a logged-out read gets the same `;redact` moderation
@@ -178,9 +191,15 @@ let publicLexClient: Client | undefined
  * this client's first request, and `createPublicSessionBundle` runs it while
  * building the bundle.
  */
-export function getPublicAppviewClient(): Client {
-  return (publicLexClient ??= createLexClient({
-    service: PUBLIC_BSKY_SERVICE,
-    fetch: networkAwareFetch,
-  }))
+export function getPublicAppviewClient(endpoint = APPVIEW_ENDPOINT): Client {
+  const normalizedEndpoint = endpoint.replace(/\/$/, '')
+  let client = publicLexClients.get(normalizedEndpoint)
+  if (!client) {
+    client = createLexClient({
+      service: normalizedEndpoint,
+      fetch: networkAwareFetch,
+    })
+    publicLexClients.set(normalizedEndpoint, client)
+  }
+  return client
 }

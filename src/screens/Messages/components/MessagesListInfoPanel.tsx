@@ -1,5 +1,5 @@
 import {View} from 'react-native'
-import {moderateProfile} from '@bsky/sdk/moderation'
+import {moderateProfile} from '#/lib/moderation'
 import {Trans, useLingui} from '@lingui/react/macro'
 import {useNavigation} from '@react-navigation/native'
 

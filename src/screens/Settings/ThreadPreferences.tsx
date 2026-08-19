@@ -10,6 +10,7 @@ import {
 import {
   normalizeSort,
   normalizeView,
+  type ThreadCurationViewOption,
   useThreadPreferences,
 } from '#/state/queries/preferences/useThreadPreferences'
 import {atoms as a, useTheme} from '#/alf'
@@ -24,7 +25,14 @@ type Props = NativeStackScreenProps<CommonNavigatorParams, 'PreferencesThreads'>
 export function ThreadPreferencesScreen({}: Props) {
   const t = useTheme()
   const {_} = useLingui()
-  const {sort, setSort, view, setView} = useThreadPreferences({save: true})
+  const {
+    sort,
+    setSort,
+    view,
+    setView,
+    curationView,
+    setCurationView,
+  } = useThreadPreferences({save: true})
 
   return (
     <Layout.Screen testID="threadPreferencesScreen">
@@ -74,6 +82,47 @@ export function ThreadPreferencesScreen({}: Props) {
                     <Toggle.Radio />
                     <Toggle.LabelText>
                       <Trans>Newest replies first</Trans>
+                    </Toggle.LabelText>
+                  </Toggle.Item>
+                </View>
+              </Toggle.Group>
+            </View>
+          </SettingsList.Group>
+
+          <SettingsList.Group>
+            <SettingsList.ItemIcon icon={BubblesIcon} />
+            <SettingsList.ItemText>
+              <Trans>Public reply view</Trans>
+            </SettingsList.ItemText>
+            <View style={[a.w_full, a.gap_md]}>
+              <Text style={[a.flex_1, t.atoms.text_contrast_medium]}>
+                <Trans>
+                  Choose whether the default thread shows every public reply or
+                  follows the post author's curation.
+                </Trans>
+              </Text>
+              <Toggle.Group
+                label={_(msg`Public reply view`)}
+                type="radio"
+                values={[curationView]}
+                onChange={values =>
+                  setCurationView(values[0] as ThreadCurationViewOption)
+                }>
+                <View style={[a.gap_sm, a.flex_1]}>
+                  <Toggle.Item
+                    name="all"
+                    label={_(msg`Everyone's replies`)}>
+                    <Toggle.Radio />
+                    <Toggle.LabelText>
+                      <Trans>Everyone's replies</Trans>
+                    </Toggle.LabelText>
+                  </Toggle.Item>
+                  <Toggle.Item
+                    name="author"
+                    label={_(msg`Author's curation`)}>
+                    <Toggle.Radio />
+                    <Toggle.LabelText>
+                      <Trans>Author's curation</Trans>
                     </Toggle.LabelText>
                   </Toggle.Item>
                 </View>

@@ -24,6 +24,7 @@ import {
   NotAuthenticatedError,
   routeSessionToPds,
 } from '../clients'
+import {DEFAULT_APPVIEW_PROVIDER} from '../providers'
 import {sessionAccountToSessionData} from '../session-data'
 import {
   asFetch,
@@ -109,6 +110,63 @@ describe('buildAppviewClient', () => {
     expect(urlsOf(fetchMock).join()).toContain(`actor=${HANDLE}`)
   })
 
+  it('routes authenticated reads to the explicitly selected project provider', async () => {
+    const provider = {
+      ...DEFAULT_APPVIEW_PROVIDER,
+      id: 'project-owned-appview',
+      displayName: 'Project-owned AppView',
+      serviceDid:
+        'did:web:appview.project.test' as typeof DEFAULT_APPVIEW_PROVIDER.serviceDid,
+      serviceFragment: 'appview',
+      endpoint: 'https://appview.project.test',
+      builtin: false,
+    }
+    const client = buildAppviewClient(makeSession(fetchMock), provider)
+
+    await client.call(app.bsky.actor.getProfile, {actor: HANDLE})
+
+    expect(urlsOf(fetchMock)).toContain(
+      `${provider.endpoint}/xrpc/app.bsky.actor.getProfile?actor=${HANDLE}`,
+    )
+    expect(
+      headersFor(fetchMock, 'app.bsky.actor.getProfile').get('atproto-proxy'),
+    ).toBe(`${provider.serviceDid}#${provider.serviceFragment}`)
+  })
+
+  it('attributes an AppView identity rejection to the selected provider', async () => {
+    globalFetchSpy.mockImplementation(async input => {
+      const url =
+        input instanceof URL
+          ? input.href
+          : typeof input === 'string'
+            ? input
+            : input.url
+      if (url.startsWith(DEFAULT_APPVIEW_PROVIDER.endpoint)) {
+        return json(
+          {error: 'AuthenticationRequired', message: 'identity unknown'},
+          401,
+        )
+      }
+      return asFetch(fetchMock)(input)
+    })
+
+    const client = buildAppviewClient(makeSession(fetchMock))
+
+    await expect(
+      client.call(app.bsky.actor.getProfile, {actor: HANDLE}),
+    ).rejects.toMatchObject({
+      name: 'XrpcFetchError',
+      cause: expect.objectContaining({
+        name: 'ServiceBoundaryError',
+        boundary: {
+          kind: 'AppView provider',
+          displayName: DEFAULT_APPVIEW_PROVIDER.displayName,
+          serviceDid: DEFAULT_APPVIEW_PROVIDER.serviceDid,
+        },
+      }),
+    })
+  })
+
   it('emits the appview proxy header', async () => {
     const client = buildAppviewClient(makeSession(fetchMock))
 
@@ -168,6 +226,39 @@ describe('buildAppviewClient', () => {
     expect(
       headersFor(fetchMock, 'app.bsky.actor.getProfile').get('authorization'),
     ).toBe('Bearer service-auth-jwt')
+  })
+
+  it('requests service auth from the account PDS when its route is pinned', async () => {
+    const client = buildAppviewClient(
+      routeSessionToPds(makeSession(fetchMock), PDS_HOST),
+    )
+
+    await client.call(app.bsky.actor.getProfile, {actor: HANDLE})
+
+    expect(urlsOf(fetchMock)).toContain(
+      `${PDS_HOST}/xrpc/com.atproto.server.getServiceAuth?aud=${encodeURIComponent(DEFAULT_APPVIEW_PROVIDER.serviceDid)}&lxm=app.bsky.actor.getProfile`,
+    )
+  })
+
+  it('attributes service-auth rejection to the account PDS and selected provider', async () => {
+    const failingFetch = makeMockFetch({
+      'app.bsky.actor.getProfile': () => json(PROFILE_BODY),
+      'com.atproto.server.getServiceAuth': () =>
+        json({error: 'InvalidRequest', message: 'provider not allowed'}, 400),
+    })
+    globalFetchSpy.mockImplementation(asFetch(failingFetch))
+
+    await expect(
+      buildAppviewClient(makeSession(failingFetch)).call(
+        app.bsky.actor.getProfile,
+        {actor: HANDLE},
+      ),
+    ).rejects.toMatchObject({
+      name: 'XrpcFetchError',
+      cause: expect.objectContaining({
+        message: `Account PDS could not authorize ${DEFAULT_APPVIEW_PROVIDER.displayName} (${DEFAULT_APPVIEW_PROVIDER.serviceDid}); HTTP 400`,
+      }),
+    })
   })
 })
 

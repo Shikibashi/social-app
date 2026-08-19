@@ -18,6 +18,7 @@ const appviewProviderSchema = z.object({
   serviceDid: z.string().refine(isDidString),
   serviceFragment: z.string().min(1),
   endpoint: z.string().url(),
+  healthPath: z.string().regex(/^\/xrpc\/[A-Za-z0-9._-]+$/).optional(),
   builtin: z.boolean(),
   enabled: z.boolean(),
 })
@@ -71,6 +72,8 @@ const schema = z.object({
   appviewProviders: z.array(appviewProviderSchema).optional(),
   appviewSelections: z.record(z.string(), z.string()).optional(),
   appviewFallbacks: z.record(z.string(), z.record(z.string(), z.string())).optional(),
+  /** Local read preference; does not change the public data returned by an AppView. */
+  threadCurationView: z.enum(['all', 'author']).optional(),
   colorMode: z.enum(['system', 'light', 'dark']),
   darkTheme: z.enum(['dim', 'dark']).optional(),
   session: z.object({
@@ -158,32 +161,32 @@ const schema = z.object({
 export type Schema = z.infer<typeof schema>
 
 const configuredProjectAppViewDid =
-  process.env.EXPO_PUBLIC_APPVIEW_SERVICE_DID || 'did:web:appview.invalid'
+  process.env.EXPO_PUBLIC_APPVIEW_SERVICE_DID ||
+  (__DEV__ ? 'did:plc:dw4kbjf5mn7nhenabiqpkyh3' : 'did:example:unconfigured-appview')
 const configuredProjectAppViewEndpoint =
-  process.env.EXPO_PUBLIC_APPVIEW_ENDPOINT || 'https://appview.invalid'
+  process.env.EXPO_PUBLIC_PUBLIC_APPVIEW_URL ||
+  process.env.EXPO_PUBLIC_APPVIEW_ENDPOINT ||
+  (__DEV__ ? 'http://localhost:2584' : 'https://appview.invalid')
+const configuredProjectAppViewHealthPath =
+  process.env.EXPO_PUBLIC_APPVIEW_HEALTH_PATH || '/xrpc/_health'
 export const defaults: Schema = {
   appviewProviders: [
     {
-      id: 'bluesky-appview',
-      displayName: 'Bluesky AppView',
-      serviceDid: 'did:web:api.bsky.app',
-      serviceFragment: 'bsky_appview',
-      endpoint: 'https://api.bsky.app',
-      builtin: true,
-      enabled: true,
-    },
-    {
       id: 'project-appview',
-      displayName: 'Project AppView',
+      displayName:
+        process.env.EXPO_PUBLIC_APPVIEW_DISPLAY_NAME || 'Project AppView',
       serviceDid: configuredProjectAppViewDid,
-      serviceFragment: 'appview',
+      serviceFragment:
+        process.env.EXPO_PUBLIC_APPVIEW_SERVICE_FRAGMENT || 'bsky_appview',
       endpoint: configuredProjectAppViewEndpoint,
+      healthPath: configuredProjectAppViewHealthPath,
       builtin: true,
-      enabled: Boolean(process.env.EXPO_PUBLIC_APPVIEW_SERVICE_DID),
+      enabled: configuredProjectAppViewEndpoint !== 'https://appview.invalid',
     },
   ],
   appviewSelections: {},
   appviewFallbacks: {},
+  threadCurationView: 'all',
   colorMode: 'system',
   darkTheme: 'dim',
   session: {

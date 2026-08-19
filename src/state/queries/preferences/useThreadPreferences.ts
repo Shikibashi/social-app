@@ -11,12 +11,14 @@ import {type ThreadViewPreferences} from '#/state/queries/preferences/types'
 import {useAnalytics} from '#/analytics'
 import {type app} from '#/lexicons'
 import {type Literal} from '#/types/utils'
+import * as persisted from '#/state/persisted'
 
 export type ThreadSortOption = Literal<
   app.bsky.unspecced.getPostThreadV2.$Params['sort'],
   string
 >
 export type ThreadViewOption = 'linear' | 'tree'
+export type ThreadCurationViewOption = 'all' | 'author'
 export type ThreadPreferences = {
   isLoaded: boolean
   isSaving: boolean
@@ -24,6 +26,8 @@ export type ThreadPreferences = {
   setSort: (sort: string) => void
   view: ThreadViewOption
   setView: (view: ThreadViewOption) => void
+  curationView: ThreadCurationViewOption
+  setCurationView: (view: ThreadCurationViewOption) => void
 }
 
 export function useThreadPreferences({
@@ -42,6 +46,9 @@ export function useThreadPreferences({
     normalizeView({
       treeViewEnabled: !!serverPrefs?.lab_treeViewEnabled,
     }),
+  )
+  const [curationView, setCurationView] = useState<ThreadCurationViewOption>(
+    () => persisted.get('threadCurationView') ?? 'all',
   )
 
   /**
@@ -125,6 +132,13 @@ export function useThreadPreferences({
     },
     [setView],
   )
+  const setCurationViewWrapped = useCallback(
+    (next: ThreadCurationViewOption) => {
+      setCurationView(next)
+      void persisted.write('threadCurationView', next)
+    },
+    [],
+  )
 
   return useMemo(
     () => ({
@@ -134,8 +148,19 @@ export function useThreadPreferences({
       setSort: setSortWrapped,
       view,
       setView: setViewWrapped,
+      curationView,
+      setCurationView: setCurationViewWrapped,
     }),
-    [isLoaded, isSaving, sort, setSortWrapped, view, setViewWrapped],
+    [
+      isLoaded,
+      isSaving,
+      sort,
+      setSortWrapped,
+      view,
+      setViewWrapped,
+      curationView,
+      setCurationViewWrapped,
+    ],
   )
 }
 

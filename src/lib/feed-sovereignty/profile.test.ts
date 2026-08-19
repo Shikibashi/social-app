@@ -166,6 +166,43 @@ describe('local feed sovereignty', () => {
     expect(withMore[0].uri).toBe(moreUri)
   })
 
+  it('matches explicit interests against candidate text, not only coarse topics', () => {
+    const result = rankLocallyWithTrace(
+      [
+        {
+          uri: 'at://audio',
+          authorDid: 'did:example:audio',
+          text: 'A new audio gear review of a DAC',
+          topic: 'science',
+          freshness: 0.1,
+          networkRelevance: 0.1,
+          conversationActivity: 0,
+          integrityWeight: 1,
+          explorationEligible: true,
+          seen: false,
+        },
+        {
+          uri: 'at://neutral',
+          authorDid: 'did:example:neutral',
+          text: 'A neutral post',
+          topic: 'science',
+          freshness: 1,
+          networkRelevance: 1,
+          conversationActivity: 1,
+          integrityWeight: 1,
+          explorationEligible: false,
+          seen: false,
+        },
+      ],
+      {...preferences, explicitInterests: ['audio gear', 'k-pop']},
+      {explorationFloor: 0},
+    )
+
+    expect(
+      result.traces.find(trace => trace.uri === 'at://audio'),
+    ).toMatchObject({explicitPreference: 'prefer', rank: 1})
+  })
+
   it('changes the exploratory composition with the explicit discovery control', () => {
     const candidates = Array.from({length: 10}, (_, index) => ({
       uri: `at://${index}`,
@@ -187,6 +224,95 @@ describe('local feed sovereignty', () => {
       items.traces.filter(item => item.selected && item.explorationSelected)
         .length
     expect(exploratory(high)).toBeGreaterThan(exploratory(low))
+  })
+
+  it('makes familiarity and variety controls change local ordering', () => {
+    const candidates = [
+      {
+        uri: 'at://familiar',
+        authorDid: 'did:familiar',
+        freshness: 0.5,
+        networkRelevance: 0.5,
+        conversationActivity: 0,
+        familiarity: 1,
+        variety: 0,
+        integrityWeight: 1,
+        explorationEligible: false,
+        seen: false,
+      },
+      {
+        uri: 'at://varied',
+        authorDid: 'did:varied',
+        freshness: 0.5,
+        networkRelevance: 0.5,
+        conversationActivity: 0,
+        familiarity: 0,
+        variety: 1,
+        integrityWeight: 1,
+        explorationEligible: true,
+        seen: false,
+      },
+    ]
+    const familiarFirst = rerankLocally(
+      candidates,
+      {...preferences, familiarity: 1, variety: 0},
+      {explorationFloor: 0},
+    )
+    const variedFirst = rerankLocally(
+      candidates,
+      {...preferences, familiarity: 0, variety: 1},
+      {explorationFloor: 0},
+    )
+    expect(familiarFirst[0].uri).toBe('at://familiar')
+    expect(variedFirst[0].uri).toBe('at://varied')
+  })
+
+  it('allows the user to disable passive inferred interests', () => {
+    const candidates = [
+      {
+        uri: 'at://inferred',
+        authorDid: 'did:inferred',
+        topic: 'technology',
+        freshness: 0.5,
+        networkRelevance: 0.5,
+        conversationActivity: 0,
+        integrityWeight: 1,
+        explorationEligible: false,
+        seen: false,
+      },
+      {
+        uri: 'at://neutral',
+        authorDid: 'did:neutral',
+        freshness: 0.5,
+        networkRelevance: 0.5,
+        conversationActivity: 0,
+        integrityWeight: 1,
+        explorationEligible: false,
+        seen: false,
+      },
+    ]
+    const withoutInference = rerankLocally(
+      candidates,
+      {
+        ...preferences,
+        topics: {},
+        inferredTopics: {technology: 1},
+        inferredInterestsEnabled: false,
+      },
+      {explorationFloor: 0},
+    )
+    expect(withoutInference.map(item => item.uri)).toEqual([
+      'at://inferred',
+      'at://neutral',
+    ])
+    expect(
+      explainCandidate(candidates[0], {
+        ...preferences,
+        topics: {},
+        inferredTopics: {technology: 1},
+        inferredInterestsEnabled: false,
+      }),
+    ).not.toContain('an interest inferred on this device')
   })
 
   it('uses the same trace for ordering and Why-this-post reasons', () => {

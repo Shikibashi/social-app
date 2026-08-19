@@ -1,4 +1,4 @@
-import {createContext, useCallback, useContext, useState} from 'react'
+import {createContext, useCallback, useContext, useEffect, useState} from 'react'
 
 import {type FeedDescriptor} from '#/state/queries/post-feed'
 import {useSession} from '#/state/session'
@@ -7,6 +7,16 @@ import {account} from '#/storage'
 
 type StateContext = FeedDescriptor | null
 type SetContext = (v: FeedDescriptor) => void
+type SelectedFeedState = {
+  accountDid?: string
+  feed: FeedDescriptor | null
+}
+
+const SESSION_FEED_KEY_PREFIX = 'lastSelectedHomeFeed:'
+
+function sessionFeedKey(did?: string) {
+  return SESSION_FEED_KEY_PREFIX + (did ?? 'logged-out')
+}
 
 const stateContext = createContext<StateContext>(null)
 stateContext.displayName = 'SelectedFeedStateContext'
@@ -24,7 +34,7 @@ function getInitialFeed(did?: string): FeedDescriptor | null {
       }
     }
 
-    const feedFromSession = sessionStorage.getItem('lastSelectedHomeFeed')
+    const feedFromSession = sessionStorage.getItem(sessionFeedKey(did))
     if (feedFromSession) {
       // Fall back to a previously chosen feed for this browser tab.
       return feedFromSession as FeedDescriptor
@@ -44,25 +54,40 @@ function getInitialFeed(did?: string): FeedDescriptor | null {
 
 export function Provider({children}: React.PropsWithChildren<{}>) {
   const {currentAccount} = useSession()
-  const [state, setState] = useState(() => getInitialFeed(currentAccount?.did))
+  const accountDid = currentAccount?.did
+  const [state, setState] = useState<SelectedFeedState>(() => ({
+    accountDid,
+    feed: getInitialFeed(accountDid),
+  }))
+
+  useEffect(() => {
+    // Feed selection is account-local. Reset immediately so a sign-in or
+    // account switch cannot display the previous account's selected feed.
+    setState({accountDid, feed: getInitialFeed(accountDid)})
+  }, [accountDid])
+
+  // Effects run after paint. Guard the rendered value as well so a previous
+  // account's selected feed cannot be used for even an intermediate render.
+  const selectedFeed =
+    state.accountDid === accountDid ? state.feed : getInitialFeed(accountDid)
 
   const saveState = useCallback(
     (feed: FeedDescriptor) => {
-      setState(feed)
+      setState({accountDid, feed})
       if (IS_WEB) {
         try {
-          sessionStorage.setItem('lastSelectedHomeFeed', feed)
+          sessionStorage.setItem(sessionFeedKey(accountDid), feed)
         } catch {}
       }
-      if (currentAccount?.did) {
-        account.set([currentAccount?.did, 'lastSelectedHomeFeed'], feed)
+      if (accountDid) {
+        account.set([accountDid, 'lastSelectedHomeFeed'], feed)
       }
     },
-    [currentAccount?.did],
+    [accountDid],
   )
 
   return (
-    <stateContext.Provider value={state}>
+    <stateContext.Provider value={selectedFeed}>
       <setContext.Provider value={saveState}>{children}</setContext.Provider>
     </stateContext.Provider>
   )

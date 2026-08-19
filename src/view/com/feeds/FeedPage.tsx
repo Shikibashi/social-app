@@ -12,6 +12,7 @@ import {useLingui} from '@lingui/react'
 import {type NavigationProp, useNavigation} from '@react-navigation/native'
 import {useQueryClient} from '@tanstack/react-query'
 
+import {isBlueskyOwnedFeed} from '#/lib/api/feed/utils'
 import {DISCOVER_FEED_URI, VIDEO_FEED_URIS} from '#/lib/constants'
 import {useOpenComposer} from '#/lib/hooks/useOpenComposer'
 import {getRootNavigation, getTabState, TabState} from '#/lib/routes/helpers'
@@ -66,6 +67,14 @@ export function FeedPage({
 }) {
   const {enabled: localFeedEnabled, preferences: localFeedPreferences} =
     useLocalFeedPreferences()
+  const radlibCurationEnabled = Boolean(
+    localFeedPreferences.radlibCuration?.enabled,
+  )
+  const contentFilterEnabled = Boolean(
+    localFeedPreferences.contentFilterPolicy?.enabled,
+  )
+  const balancedEnabled =
+    localFeedEnabled && localFeedPreferences.rankingPreset === 'balanced'
   const ax = useAnalytics()
   const {hasSession} = useSession()
   const {_} = useLingui()
@@ -73,6 +82,7 @@ export function FeedPage({
   const queryClient = useQueryClient()
   const {openComposer} = useOpenComposer()
   const [isScrolledDown, setIsScrolledDown] = useState(false)
+  const [feedContext, setFeedContext] = useState<string>()
   const headerOffset = useHeaderOffset()
   const feedFeedback = useFeedFeedback(feedInfo, hasSession)
   const scrollElRef = useRef<ListMethods>(null)
@@ -124,6 +134,10 @@ export function FeedPage({
     return listenSoftReset(onSoftReset)
   }, [onSoftReset, isPageFocused])
 
+  useEffect(() => {
+    setFeedContext(undefined)
+  }, [feed])
+
   const onPressCompose = useCallback(() => {
     openComposer({logContext: 'Fab'})
   }, [openComposer])
@@ -151,17 +165,69 @@ export function FeedPage({
           feedName={feedInfo.displayName}
           algorithmName={
             feed === 'following'
-              ? localFeedEnabled
-                ? 'Local Following reranker'
-                : 'Following / chronological'
-              : 'Provider-supplied ranking'
+              ? balancedEnabled
+                ? 'Balanced local algorithm'
+                : radlibCurationEnabled && contentFilterEnabled
+                  ? 'Filtered Following + local curation'
+                  : radlibCurationEnabled || contentFilterEnabled
+                    ? contentFilterEnabled
+                      ? 'Filtered Following (local content policy)'
+                      : 'Local curation over Following'
+                    : localFeedEnabled
+                      ? 'Local Following reranker'
+                      : 'Following / chronological'
+              : radlibCurationEnabled && contentFilterEnabled
+                ? `Filtered ${feedInfo.displayName} + local curation`
+                : radlibCurationEnabled || contentFilterEnabled
+                  ? contentFilterEnabled
+                    ? `Filtered ${feedInfo.displayName} (local content policy)`
+                    : `Local curation over ${feedInfo.displayName}`
+                  : 'Feed generator ranking'
+          }
+          algorithmVersion={
+            balancedEnabled
+              ? 'balanced/1'
+              : radlibCurationEnabled && contentFilterEnabled
+                ? 'content-filter/1 + local-curation/1'
+                : contentFilterEnabled
+                  ? 'content-filter/1'
+                  : radlibCurationEnabled
+                    ? '1'
+                    : 'not declared'
           }
           objective={
-            feed === 'following' && !localFeedEnabled
-              ? 'Chronological access'
-              : 'The feed source does not declare a public ranking objective'
+            balancedEnabled
+              ? 'Bounded structural variety, freshness, explicit preferences, and exploration; no ideological quota'
+              : radlibCurationEnabled && contentFilterEnabled
+                ? 'User-selected hard content exclusions plus a user-selected topic and exclusion overlay; follows, blocks, and ranking remain separate'
+                : contentFilterEnabled
+                  ? 'User-selected hard content exclusions; follows, blocks, and ranking remain separate'
+                  : radlibCurationEnabled
+                    ? 'User-selected topic and exclusion overlay; no ideological quota'
+                    : feed === 'following' && !localFeedEnabled
+                      ? 'Chronological access'
+                      : 'Not declared by the feed source'
           }
           feedOwnerDid={feedInfo.creatorDid}
+          feedUri={feedInfo.uri}
+          feedContext={feedContext}
+          privacy={
+            balancedEnabled
+              ? 'Candidate posts are supplied by the selected provider; Balanced ordering and preferences stay on this device'
+              : radlibCurationEnabled && contentFilterEnabled
+                ? 'Custom filter terms and curation state stay on this device; the selected provider supplies candidates'
+                : contentFilterEnabled
+                  ? 'Custom terms and excluded authors stay on this device; the selected provider supplies candidates'
+                  : radlibCurationEnabled
+                    ? 'Local curation stays on this device; the selected provider supplies candidates'
+                    : feed === 'following'
+                      ? localFeedEnabled
+                        ? 'Local reranking stays on this device'
+                        : 'Chronological access; no local reranking is applied'
+                      : isBlueskyOwnedFeed(feedInfo.uri)
+                        ? 'Selected interests may be sent to this AppView'
+                        : 'Local ranking preferences stay on this device'
+          }
         />
         <FeedFeedbackProvider value={feedFeedback}>
           <PostFeed
@@ -177,7 +243,11 @@ export function FeedPage({
             renderEmptyState={renderEmptyState}
             renderEndOfFeed={renderEndOfFeed}
             localRerank={localFeedEnabled && feed === 'following'}
+            balancedMode={balancedEnabled && feed === 'following'}
             localFeedPreferences={localFeedPreferences}
+            radlibCuration={localFeedPreferences.radlibCuration}
+            contentFilterPolicy={localFeedPreferences.contentFilterPolicy}
+            onFeedContext={setFeedContext}
             headerOffset={headerOffset}
             savedFeedConfig={savedFeedConfig}
             isVideoFeed={isVideoFeed}

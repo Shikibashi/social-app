@@ -4,7 +4,7 @@ import {
   moderateProfile,
   type ModerationOpts,
   type ModerationUI,
-} from '@bsky/sdk/moderation'
+} from '#/lib/moderation'
 import {msg} from '@lingui/core/macro'
 import {useLingui} from '@lingui/react'
 import {Trans} from '@lingui/react/macro'

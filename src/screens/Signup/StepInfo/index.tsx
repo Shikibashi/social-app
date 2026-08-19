@@ -1,6 +1,6 @@
 import {useEffect, useRef, useState} from 'react'
 import {type TextInput, View} from 'react-native'
-import {Plural, Trans, useLingui} from '@lingui/react/macro'
+import {Trans, useLingui} from '@lingui/react/macro'
 import * as EmailValidator from 'email-validator'
 import type tldts from 'tldts'
 
@@ -10,8 +10,6 @@ import {useSignupContext} from '#/screens/Signup/state'
 import {Policies} from '#/screens/Signup/StepInfo/Policies'
 import {atoms as a, native} from '#/alf'
 import * as Admonition from '#/components/Admonition'
-import * as Dialog from '#/components/Dialog'
-import {DeviceLocationRequestDialog} from '#/components/dialogs/DeviceLocationRequestDialog'
 import * as DateField from '#/components/forms/DateField'
 import {type DateFieldRef} from '#/components/forms/DateField/types'
 import {HostingProvider} from '#/components/forms/HostingProvider'
@@ -19,21 +17,9 @@ import * as TextField from '#/components/forms/TextField'
 import {Envelope_Stroke2_Corner0_Rounded as Envelope} from '#/components/icons/Envelope'
 import {Lock_Stroke2_Corner0_Rounded as Lock} from '#/components/icons/Lock'
 import {Ticket_Stroke2_Corner0_Rounded as Ticket} from '#/components/icons/Ticket'
-import {createStaticClick, SimpleInlineLinkText} from '#/components/Link'
 import {Loader} from '#/components/Loader'
 import {usePreemptivelyCompleteActivePolicyUpdate} from '#/components/PolicyUpdateOverlay/usePreemptivelyCompleteActivePolicyUpdate'
-import * as Toast from '#/components/Toast'
-import {MIN_ACCESS_AGE} from '#/ageAssurance/const'
-import {
-  isUnderAge,
-  useAgeAssuranceRegionConfigWithFallback,
-} from '#/ageAssurance/util'
 import {useAnalytics} from '#/analytics'
-import {IS_NATIVE} from '#/env'
-import {
-  useDeviceGeolocationApi,
-  useIsDeviceGeolocationGranted,
-} from '#/geolocation'
 import {BackNextButtons} from '../BackNextButtons'
 
 function sanitizeDate(date: Date): Date {
@@ -72,20 +58,6 @@ export function StepInfo({
   const passwordInputRef = useRef<TextInput>(null)
   const birthdateInputRef = useRef<DateFieldRef>(null)
 
-  const aaRegionConfig = useAgeAssuranceRegionConfigWithFallback()
-  const {setDeviceGeolocation} = useDeviceGeolocationApi()
-  const locationControl = Dialog.useDialogControl()
-  const isOverRegionMinAccessAge = state.dateOfBirth
-    ? !isUnderAge(state.dateOfBirth.toISOString(), aaRegionConfig.minAccessAge)
-    : true
-  const isOverAppMinAccessAge = state.dateOfBirth
-    ? !isUnderAge(state.dateOfBirth.toISOString(), MIN_ACCESS_AGE)
-    : true
-  const isOverMinAdultAge = state.dateOfBirth
-    ? !isUnderAge(state.dateOfBirth.toISOString(), 18)
-    : true
-  const isDeviceGeolocationGranted = useIsDeviceGeolocationGranted()
-
   const [hasWarnedEmail, setHasWarnedEmail] = useState<boolean>(false)
 
   const tldtsRef = useRef<typeof tldts>(undefined)
@@ -104,10 +76,6 @@ export function StepInfo({
     const email = emailValueRef.current
     const emailChanged = prevEmailValueRef.current !== email
     const password = passwordValueRef.current
-
-    if (!isOverRegionMinAccessAge) {
-      return
-    }
 
     if (state.serviceDescription?.inviteCodeRequired && !inviteCode) {
       return dispatch({
@@ -304,67 +272,11 @@ export function StepInfo({
 
             <View style={[a.gap_sm]}>
               <Policies serviceDescription={state.serviceDescription} />
-
-              {!isOverRegionMinAccessAge || !isOverAppMinAccessAge ? (
-                <Admonition.Outer type="error">
-                  <Admonition.Row>
-                    <Admonition.Icon />
-                    <Admonition.Content>
-                      <Admonition.Text>
-                        <Plural
-                          value={aaRegionConfig.minAccessAge}
-                          other="You must be # years of age or older to create an account in your region."
-                        />
-                      </Admonition.Text>
-                      {IS_NATIVE &&
-                        !isDeviceGeolocationGranted &&
-                        isOverAppMinAccessAge && (
-                          <Admonition.Text>
-                            <Trans>
-                              Have we got your location wrong?{' '}
-                              <SimpleInlineLinkText
-                                label={l`Tap here to update your location with GPS.`}
-                                {...createStaticClick(() => {
-                                  locationControl.open()
-                                })}>
-                                Tap here to update your location with GPS.
-                              </SimpleInlineLinkText>
-                            </Trans>
-                          </Admonition.Text>
-                        )}
-                    </Admonition.Content>
-                  </Admonition.Row>
-                </Admonition.Outer>
-              ) : !isOverMinAdultAge ? (
-                <Admonition.Admonition type="warning">
-                  <Trans>
-                    If you are not yet an adult according to the laws of your
-                    country, your parent or legal guardian must read these Terms
-                    on your behalf.
-                  </Trans>
-                </Admonition.Admonition>
-              ) : undefined}
             </View>
-
-            {IS_NATIVE && (
-              <DeviceLocationRequestDialog
-                control={locationControl}
-                onLocationAcquired={props => {
-                  props.closeDialog(() => {
-                    // set this after close!
-                    setDeviceGeolocation(props.geolocation)
-                    Toast.show(l`Your location has been updated.`, {
-                      type: 'success',
-                    })
-                  })
-                }}
-              />
-            )}
           </>
         ) : undefined}
       </View>
       <BackNextButtons
-        hideNext={!isOverRegionMinAccessAge}
         showRetry={isServerError}
         isLoading={state.isLoading}
         onBackPress={onPressBack}

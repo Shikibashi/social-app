@@ -2,7 +2,7 @@ import {useState} from 'react'
 import {Alert, LayoutAnimation, Linking, Pressable, View} from 'react-native'
 import {useReducedMotion} from 'react-native-reanimated'
 import {removeNuxs} from '@bsky/sdk'
-import {moderateProfile} from '@bsky/sdk/moderation'
+import {moderateProfile} from '#/lib/moderation'
 import {Trans, useLingui} from '@lingui/react/macro'
 import {useNavigation} from '@react-navigation/native'
 import {type NativeStackScreenProps} from '@react-navigation/native-stack'
@@ -31,7 +31,6 @@ import {UserAvatar} from '#/view/com/util/UserAvatar'
 import {GrowthbookDialog} from '#/screens/Settings/components/GrowthbookDialog'
 import * as SettingsList from '#/screens/Settings/components/SettingsList'
 import {atoms as a, platform, tokens, useBreakpoints, useTheme} from '#/alf'
-import {AgeAssuranceDismissibleNotice} from '#/components/ageAssurance/AgeAssuranceDismissibleNotice'
 import {AvatarStackWithFetch} from '#/components/AvatarStack'
 import {Button, ButtonText} from '#/components/Button'
 import {useIsFindContactsFeatureEnabledBasedOnGeolocation} from '#/components/contacts/country-allowlist'
@@ -94,7 +93,7 @@ export function SettingsScreen({}: Props) {
     useIsFindContactsFeatureEnabledBasedOnGeolocation()
 
   return (
-    <Layout.Screen>
+    <Layout.Screen ecwMode="workbench">
       <Layout.Header.Outer>
         <Layout.Header.BackButton />
         <Layout.Header.Content>
@@ -106,8 +105,6 @@ export function SettingsScreen({}: Props) {
       </Layout.Header.Outer>
       <Layout.Content>
         <SettingsList.Container>
-          <AgeAssuranceDismissibleNotice style={[a.px_lg, a.pt_xs, a.pb_xl]} />
-
           <View
             style={[
               a.px_xl,
@@ -186,10 +183,12 @@ export function SettingsScreen({}: Props) {
               <Trans>Services</Trans>
             </SettingsList.ItemText>
           </SettingsList.LinkItem>
-          <SettingsList.LinkItem to="/settings/personalization" label={l`Personalization & data`}>
+          <SettingsList.LinkItem
+            to="/settings/personalization"
+            label={l`Feed customization & data`}>
             <SettingsList.ItemIcon icon={EarthIcon} />
             <SettingsList.ItemText>
-              <Trans>Personalization & data</Trans>
+              <Trans>Feed customization & data</Trans>
             </SettingsList.ItemText>
           </SettingsList.LinkItem>
           <SettingsList.LinkItem

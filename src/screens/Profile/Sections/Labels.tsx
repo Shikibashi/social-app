@@ -4,12 +4,13 @@ import {
   type InterpretedLabelValueDefinition,
   interpretLabelValueDefinitions,
   type ModerationOpts,
-} from '@bsky/sdk/moderation'
+} from '#/lib/moderation'
 import {msg} from '@lingui/core/macro'
 import {useLingui} from '@lingui/react'
 import {Trans} from '@lingui/react/macro'
 
 import {isLabelerSubscribed, lookupLabelValueDefinition} from '#/lib/moderation'
+import {hasDirectViewerBlock} from '#/state/queries/public-visibility'
 import {List, type ListRef} from '#/view/com/util/List'
 import {findListNativeTag} from '#/view/com/util/listNativeTag'
 import {atoms as a, ios, tokens, useTheme} from '#/alf'
@@ -197,7 +198,7 @@ export function LabelerListHeader({
           warn, and categorize the network.
         </Trans>
       </Text>
-      {labelerInfo?.creator.viewer?.blocking ? (
+      {hasDirectViewerBlock(labelerInfo.creator) ? (
         <View style={[a.flex_row, a.gap_sm, a.align_center, a.mt_md]}>
           <CircleInfo size="sm" fill={t.atoms.text_contrast_medium.color} />
           <Text style={[t.atoms.text_contrast_high, a.leading_snug, a.text_sm]}>

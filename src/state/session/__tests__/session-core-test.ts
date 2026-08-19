@@ -38,22 +38,13 @@ jest.mock('#/logger', () => {
 })
 
 /*
- * `prefetchAgeAssuranceServerData` is a genuine prep await in each factory
- * (moderation config is synchronous, so the AA prefetch is where the factory
- * tests inject a mid-prep token rotation). The default is a no-op;
- * individual tests install behavior via `mockImplementationOnce`.
- */
-const mockPrefetchAgeAssuranceServerData = jest.fn<() => void | Promise<void>>()
-jest.mock('#/ageAssurance/data', () => ({
-  prefetchAgeAssuranceServerData: () => mockPrefetchAgeAssuranceServerData(),
-}))
-/*
  * The factory tail awaits `features.refresh(...)`; stub the analytics module so
  * the factory does not pull GrowthBook (and its native deps) into this
  * lightweight suite.
  */
+const mockFeaturesRefresh = jest.fn<() => void | Promise<void>>()
 jest.mock('#/analytics', () => ({
-  features: {refresh: () => Promise.resolve()},
+  features: {refresh: () => mockFeaturesRefresh()},
 }))
 
 /*
@@ -61,7 +52,8 @@ jest.mock('#/analytics', () => ({
  * MMKV read), so it is not a prep await - but it still runs inside each factory
  * with the freshly built bundle, before the awaited prep steps. The factory
  * tests capture the bundle with this mock, then inject a real refresh into the
- * awaited AA prefetch so a token rotation happens during prep, before arm().
+ * awaited feature-gate refresh so a token rotation happens during prep, before
+ * arm().
  * The default is a no-op so other tests are unaffected.
  * (jest requires out-of-scope factory references to be `mock`-prefixed.)
  */
@@ -109,6 +101,7 @@ import {
   asFetch,
   DID,
   HANDLE,
+  json,
   makeAccount,
   makeDidDoc,
   makeMockFetch,
@@ -851,9 +844,9 @@ async function withFreshFactory(
  * which is dead on the next cold start.
  *
  * We simulate the mid-prep rotation by capturing the bundle from the mocked
- * `configureModerationForAccount` and making the mocked
- * `prefetchAgeAssuranceServerData` (a genuine prep await in each factory) run a
- * real `session.refresh()`. The factory itself is re-required inside
+ * `configureModerationForAccount` and making the mocked feature-gate refresh
+ * (a genuine prep await in each factory) run a real `session.refresh()`. The
+ * factory itself is re-required inside
  * `jest.isolateModulesAsync` AFTER overriding `globalThis.fetch`, because
  * the network leaf captures `globalThis.fetch` at module load - and that
  * captured fetch is what PasswordSession's auto-refresh routes through.
@@ -861,7 +854,7 @@ async function withFreshFactory(
 describe('factory account snapshot after preparation', () => {
   beforeEach(() => {
     mockConfigureModerationForAccount.mockReset()
-    mockPrefetchAgeAssuranceServerData.mockReset()
+    mockFeaturesRefresh.mockReset()
   })
 
   it('resume: returned account carries the tokens rotated DURING prep', async () => {
@@ -870,7 +863,7 @@ describe('factory account snapshot after preparation', () => {
      * `valid-access-jwt` decodes as non-expired, so resume() takes the sync
      * fast path and the only refresh is the one prep triggers. The bundle is
      * captured from the (synchronous) moderation call, and the rotation is
-     * injected into the awaited AA prefetch.
+     * injected into the awaited feature-gate refresh.
      */
     let capturedBundle: SessionBundle | undefined
     mockConfigureModerationForAccount.mockImplementationOnce(
@@ -878,16 +871,24 @@ describe('factory account snapshot after preparation', () => {
         capturedBundle = bundle as SessionBundle
       },
     )
-    mockPrefetchAgeAssuranceServerData.mockImplementationOnce(async () => {
-      await capturedBundle!.session.refresh()
+    let releasePreparation!: () => Promise<void>
+    const preparation = new Promise<void>(resolve => {
+      releasePreparation = async () => {
+        await capturedBundle!.session.refresh()
+        resolve()
+      }
     })
+    mockFeaturesRefresh.mockImplementationOnce(() => preparation)
     const fetchMock = makeMockFetch()
 
     await withFreshFactory(asFetch(fetchMock), async core => {
-      const {account, bundle} = await core.createSessionBundleAndResume(
-        makeAccount({accessJwt: 'valid-access-jwt'}),
+      const result = core.createSessionBundleAndResume(
+        makeAccount({accessJwt: 'valid-access-jwt', pdsUrl: PDS_URL}),
         jest.fn(),
       )
+      expect(capturedBundle).toBeDefined()
+      await releasePreparation()
+      const {account, bundle} = await result
       /* the moderation prep step ran the refresh */
       expect(mockConfigureModerationForAccount).toHaveBeenCalledTimes(1)
       /* the RETURNED account carries the POST-prep (rotated) tokens */
@@ -915,6 +916,37 @@ describe('factory account snapshot after preparation', () => {
       expect(account.refreshJwt).toBe('refresh-jwt')
     })
   })
+
+  it('resume: discovers a missing PDS route for an older entryway session', async () => {
+    mockConfigureModerationForAccount.mockReturnValueOnce(undefined)
+    const fetchMock = makeMockFetch()
+    const didDocFetch = jest.fn(
+      async (input: URL | string, init?: RequestInit) => {
+        const url = input instanceof URL ? input.href : input
+        if (url === `https://plc.directory/${DID}`) {
+          return json(makeDidDoc(PDS_URL, DID))
+        }
+        return asFetch(fetchMock)(input, init)
+      },
+    )
+
+    await withFreshFactory(didDocFetch as typeof fetch, async core => {
+      const {account, bundle} = await core.createSessionBundleAndResume(
+        makeAccount({accessJwt: 'valid-access-jwt'}),
+        jest.fn(),
+      )
+
+      await bundle.session.fetchHandler(
+        '/xrpc/com.atproto.server.getSession',
+        {},
+      )
+
+      expect(account.pdsUrl).toBe(`${PDS_URL}/`)
+      expect(urlsOf(fetchMock)).toContain(
+        `${PDS_URL}/xrpc/com.atproto.server.getSession`,
+      )
+    })
+  })
 })
 
 /*
@@ -927,7 +959,7 @@ describe('factory account snapshot after preparation', () => {
 describe('a session destroyed or rejected during preparation', () => {
   beforeEach(() => {
     mockConfigureModerationForAccount.mockReset()
-    mockPrefetchAgeAssuranceServerData.mockReset()
+    mockFeaturesRefresh.mockReset()
   })
 
   it('resume: rejects with the revoked-during-prep error and disposes the bundle', async () => {
@@ -943,9 +975,14 @@ describe('a session destroyed or rejected during preparation', () => {
         capturedBundle = bundle as SessionBundle
       },
     )
-    mockPrefetchAgeAssuranceServerData.mockImplementationOnce(async () => {
-      await capturedBundle!.session.logout()
+    let releasePreparation!: () => Promise<void>
+    const preparation = new Promise<void>(resolve => {
+      releasePreparation = async () => {
+        await capturedBundle!.session.logout()
+        resolve()
+      }
     })
+    mockFeaturesRefresh.mockImplementationOnce(() => preparation)
     const fetchMock = makeMockFetch()
 
     await withFreshFactory(asFetch(fetchMock), async core => {
@@ -954,12 +991,15 @@ describe('a session destroyed or rejected during preparation', () => {
        * throw, which is what a naive `snapshot()` on a destroyed session would
        * surface.
        */
-      await expect(
-        core.createSessionBundleAndResume(
-          makeAccount({accessJwt: 'valid-access-jwt'}),
-          jest.fn(),
-        ),
-      ).rejects.toThrow('Session was revoked while it was being prepared')
+      const result = core.createSessionBundleAndResume(
+        makeAccount({accessJwt: 'valid-access-jwt', pdsUrl: PDS_URL}),
+        jest.fn(),
+      )
+      expect(capturedBundle).toBeDefined()
+      await releasePreparation()
+      await expect(result).rejects.toThrow(
+        'Session was revoked while it was being prepared',
+      )
 
       /* the bundle the caller never received reads as logged out */
       expect(capturedBundle!.session.destroyed).toBe(true)
@@ -973,7 +1013,7 @@ describe('a session destroyed or rejected during preparation', () => {
         capturedBundle = bundle as SessionBundle
       },
     )
-    mockPrefetchAgeAssuranceServerData.mockImplementationOnce(() =>
+    mockFeaturesRefresh.mockImplementationOnce(() =>
       Promise.reject(new Error('prefetch blew up')),
     )
     const fetchMock = makeMockFetch()

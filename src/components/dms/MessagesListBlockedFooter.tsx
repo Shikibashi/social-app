@@ -1,6 +1,6 @@
 import {useCallback, useMemo} from 'react'
 import {View} from 'react-native'
-import {type ModerationDecision} from '@bsky/sdk/moderation'
+import {type ModerationDecision} from '#/lib/moderation'
 import {Trans, useLingui} from '@lingui/react/macro'
 
 import {useProfileShadow} from '#/state/cache/profile-shadow'
@@ -8,7 +8,6 @@ import {useProfileBlockMutationQueue} from '#/state/queries/profile'
 import {atoms as a, useTheme} from '#/alf'
 import {Button, ButtonIcon, ButtonText} from '#/components/Button'
 import {useDialogControl} from '#/components/Dialog'
-import {BlockedByListDialog} from '#/components/dms/BlockedByListDialog'
 import {LeaveConvoPrompt} from '#/components/dms/LeaveConvoPrompt'
 import {ArrowBoxLeft_Stroke2_Corner0_Rounded as LeaveIcon} from '#/components/icons/ArrowBoxLeft'
 import {
@@ -35,28 +34,17 @@ export function MessagesListBlockedFooter({
   const [_queueBlock, queueUnblock] = useProfileBlockMutationQueue(recipient)
 
   const leaveConvoControl = useDialogControl()
-  const blockedByListControl = useDialogControl()
-
-  const {listBlocks, userBlock} = useMemo(() => {
+  const userBlock = useMemo(() => {
     const modui = moderation.ui('profileView')
     const blocks = modui.alerts.filter(alert => alert.type === 'blocking')
-    const listBlocks = blocks.filter(alert => alert.source.type === 'list')
-    const userBlock = blocks.find(alert => alert.source.type === 'user')
-    return {
-      listBlocks,
-      userBlock,
-    }
+    return blocks.find(alert => alert.source.type === 'user')
   }, [moderation])
 
-  const isBlocking = !!userBlock || !!listBlocks.length
+  const isBlocking = !!userBlock
 
   const onUnblockPress = useCallback(() => {
-    if (listBlocks.length) {
-      blockedByListControl.open()
-    } else {
-      void queueUnblock()
-    }
-  }, [blockedByListControl, listBlocks, queueUnblock])
+    void queueUnblock()
+  }, [queueUnblock])
 
   return (
     <View style={[a.p_md]}>
@@ -120,10 +108,6 @@ export function MessagesListBlockedFooter({
           control={leaveConvoControl}
           currentScreen="conversation"
           convoId={convoId}
-        />
-        <BlockedByListDialog
-          control={blockedByListControl}
-          listBlocks={listBlocks}
         />
       </View>
     </View>

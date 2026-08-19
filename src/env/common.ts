@@ -66,10 +66,35 @@ export const LOG_LEVEL = (process.env.EXPO_PUBLIC_LOG_LEVEL || 'info') as
 export const LOG_DEBUG: string = process.env.EXPO_PUBLIC_LOG_DEBUG || ''
 
 /**
- * The DID of the Bluesky appview to proxy to
+ * The DID of this deployment's AppView read service.
+ *
+ * Public reads must have an explicit, deployment-owned authority.  There is
+ * deliberately no Bluesky fallback here: an unset production configuration
+ * must fail as an unavailable service rather than silently switching the
+ * product's read authority.
  */
-export const BLUESKY_PROXY_DID: DidString =
-  process.env.EXPO_PUBLIC_BLUESKY_PROXY_DID || 'did:web:api.bsky.app'
+export const APPVIEW_PROXY_DID: DidString =
+  (process.env.EXPO_PUBLIC_APPVIEW_SERVICE_DID ||
+    (IS_DEV ? 'did:plc:dw4kbjf5mn7nhenabiqpkyh3' : 'did:example:unconfigured-appview')) as DidString
+
+export const APPVIEW_PROXY_FRAGMENT =
+  process.env.EXPO_PUBLIC_APPVIEW_SERVICE_FRAGMENT || 'bsky_appview'
+
+export const APPVIEW_PROXY_SERVICE = `${APPVIEW_PROXY_DID}#${APPVIEW_PROXY_FRAGMENT}` as `${DidString}#${string}`
+
+export const PUBLIC_APPVIEW_URL =
+  process.env.EXPO_PUBLIC_PUBLIC_APPVIEW_URL ||
+  process.env.EXPO_PUBLIC_APPVIEW_ENDPOINT ||
+  'https://appview.invalid'
+
+/** Default labelers are an operator/user configuration, never a hidden app authority. */
+export const DEFAULT_LABELER_DIDS: DidString[] = (
+  process.env.EXPO_PUBLIC_DEFAULT_LABELER_DIDS || ''
+)
+  .split(',')
+  .map((value: string) => value.trim())
+  .filter(Boolean)
+  .map((value: string) => value as DidString)
 
 /**
  * The DID of the chat service to proxy to

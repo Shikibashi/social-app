@@ -45,6 +45,7 @@ import {
   useProfileBlockMutationQueue,
   useProfileMuteMutationQueue,
 } from '#/state/queries/profile'
+import {hasDirectViewerBlock} from '#/state/queries/public-visibility'
 import {
   InvalidInteractionSettingsError,
   MAX_HIDDEN_REPLIES,
@@ -776,7 +777,7 @@ let PostMenuItems = ({
                     />
                   </Menu.Item>
 
-                  {!postAuthor.viewer?.blocking && (
+                  {!hasDirectViewerBlock(postAuthor) && (
                     <Menu.Item
                       testID="postDropdownBlockBtn"
                       label={l`Block account`}

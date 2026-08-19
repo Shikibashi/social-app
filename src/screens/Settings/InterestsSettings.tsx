@@ -42,7 +42,7 @@ export function InterestsSettingsScreen({}: Props) {
   const [isSaving, setIsSaving] = useState(false)
 
   return (
-    <Layout.Screen>
+    <Layout.Screen ecwMode="workbench">
       <Layout.Header.Outer>
         <Layout.Header.BackButton />
         <Layout.Header.Content>

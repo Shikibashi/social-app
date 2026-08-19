@@ -1,8 +1,9 @@
 import {type $Typed} from '@atproto/lex'
 import {AtUri} from '@atproto/syntax'
-import {moderatePost, type ModerationOpts} from '@bsky/sdk/moderation'
+import {moderatePost, type ModerationOpts} from '#/lib/moderation'
 
 import {makeProfileLink} from '#/lib/routes/links'
+import {stripNonLocalBlockVisibility} from '#/state/queries/public-visibility'
 import {
   type ApiThreadItem,
   type ThreadItem,
@@ -67,12 +68,13 @@ export function threadPost({
   moderationOpts: ModerationOpts
   threadgateHiddenReplies: Set<string>
 }): Extract<ThreadItem, {type: 'threadPost'}> {
-  const moderation = moderatePost(value.post, moderationOpts)
+  const post = stripNonLocalBlockVisibility(value.post)
+  const moderation = moderatePost(post, moderationOpts)
   const modui = moderation.ui('contentList')
   const blurred = modui.blur || modui.filter
   const muted = (modui.blurs[0] || modui.filters[0])?.type === 'muted'
   const hiddenByThreadgate = threadgateHiddenReplies.has(uri)
-  const isOwnPost = value.post.author.did === moderationOpts.userDid
+  const isOwnPost = post.author.did === moderationOpts.userDid
   const isBlurred = (hiddenByThreadgate || blurred || muted) && !isOwnPost
   return {
     type: 'threadPost',
@@ -85,7 +87,7 @@ export function threadPost({
        * Do not spread anything here, load bearing for post shadow strict
        * equality reference checks.
        */
-      post: value.post as Omit<app.bsky.feed.defs.PostView, 'record'> & {
+      post: post as Omit<app.bsky.feed.defs.PostView, 'record'> & {
         record: app.bsky.feed.post.Main
       },
     },

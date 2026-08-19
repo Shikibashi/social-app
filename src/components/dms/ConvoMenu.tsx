@@ -1,6 +1,5 @@
 import {memo, useCallback} from 'react'
 import {Keyboard, View} from 'react-native'
-import {type ModerationCause} from '@bsky/sdk/moderation'
 import {Trans, useLingui} from '@lingui/react/macro'
 import {useNavigation} from '@react-navigation/native'
 import {useQueryClient} from '@tanstack/react-query'
@@ -22,7 +21,6 @@ import {atoms as a} from '#/alf'
 import {Button, ButtonIcon} from '#/components/Button'
 import {AfterReportConversationDialog} from '#/components/dms/AfterReportConversationDialog'
 import {AfterReportDialog} from '#/components/dms/AfterReportDialog'
-import {BlockedByListDialog} from '#/components/dms/BlockedByListDialog'
 import {LeaveConvoPrompt} from '#/components/dms/LeaveConvoPrompt'
 import {
   type ConvoWithDetails,
@@ -62,8 +60,7 @@ let ConvoMenu = ({
   showMarkAsRead?: boolean
   hideTrigger?: boolean
   blockInfo: {
-    listBlocks: ModerationCause[]
-    userBlock?: ModerationCause
+    userBlock?: unknown
   }
   style?: ViewStyleProp['style']
 }): React.ReactNode => {
@@ -73,10 +70,7 @@ let ConvoMenu = ({
 
   const leaveConvoControl = Prompt.usePromptControl()
   const reportControl = Prompt.usePromptControl()
-  const blockedByListControl = Prompt.usePromptControl()
   const afterReportControl = Prompt.usePromptControl()
-
-  const {listBlocks} = blockInfo
 
   const reportSubject = getConvoReportSubject(convo, currentAccount?.did)
 
@@ -115,7 +109,6 @@ let ConvoMenu = ({
             canReport={!!reportSubject}
             leaveConvoControl={leaveConvoControl}
             reportControl={reportControl}
-            blockedByListControl={blockedByListControl}
           />
         </Menu.Outer>
       </Menu.Root>
@@ -153,10 +146,6 @@ let ConvoMenu = ({
           }}
         />
       )}
-      <BlockedByListDialog
-        control={blockedByListControl}
-        listBlocks={listBlocks}
-      />
     </>
   )
 }
@@ -170,26 +159,23 @@ function MenuContent({
   blockInfo,
   leaveConvoControl,
   reportControl,
-  blockedByListControl,
 }: {
   convo: ConvoWithDetails
   profile: Shadow<bsky.profile.AnyProfileView>
   canReport: boolean
   showMarkAsRead?: boolean
   blockInfo: {
-    listBlocks: ModerationCause[]
-    userBlock?: ModerationCause
+    userBlock?: unknown
   }
   leaveConvoControl: Prompt.PromptControlProps
   reportControl: Prompt.PromptControlProps
-  blockedByListControl: Prompt.PromptControlProps
 }) {
   const navigation = useNavigation<NavigationProp>()
   const {t: l} = useLingui()
   const {mutate: markAsRead} = useMarkAsReadMutation()
 
-  const {listBlocks, userBlock} = blockInfo
-  const isBlocking = userBlock || !!listBlocks.length
+  const {userBlock} = blockInfo
+  const isBlocking = !!userBlock
   const isDeletedAccount = profile.handle === 'missing.invalid'
   const isGroupConvo = initialConvo.kind === 'group'
 
@@ -218,17 +204,12 @@ function MenuContent({
   const [queueBlock, queueUnblock] = useProfileBlockMutationQueue(profile)
 
   const toggleBlock = useCallback(() => {
-    if (listBlocks.length) {
-      blockedByListControl.open()
-      return
-    }
-
     if (userBlock) {
       void queueUnblock()
     } else {
       void queueBlock()
     }
-  }, [userBlock, listBlocks, blockedByListControl, queueBlock, queueUnblock])
+  }, [userBlock, queueBlock, queueUnblock])
 
   return isDeletedAccount ? (
     <Menu.Item

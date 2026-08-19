@@ -1,15 +1,23 @@
 import {useCallback, useEffect, useState, useSyncExternalStore} from 'react'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 
+import {defaultContentFilterPolicy} from '#/lib/feed-sovereignty/content-filter'
+import {
+  applyRankingPreset,
+  type LocalFeedState,
+  type RankingPreset,
+} from '#/lib/feed-sovereignty/local-feed-state'
 import {type FeedPreferences} from '#/lib/feed-sovereignty/profile'
+import {defaultLocalCurationConfig} from '#/lib/feed-sovereignty/radlib-curation'
 import {loadPersonalization, savePersonalization} from '#/lib/personalization'
 import {listenPersonalizationChanged} from '#/state/events'
 import {useSession} from '#/state/session'
 
 export const LOCAL_FEED_ENABLED_KEY = 'LOCAL_FEED_ENABLED:'
-type StoredState = {enabled: boolean; preferences: FeedPreferences}
+type StoredState = LocalFeedState
 
 export const defaultLocalFeedPreferences: FeedPreferences = {
+  rankingPreset: 'following',
   freshness: 0.65,
   discovery: 0.4,
   familiarity: 0.55,
@@ -21,12 +29,38 @@ export const defaultLocalFeedPreferences: FeedPreferences = {
   explicitInterests: [],
   explicitAuthors: [],
   explicitPostPreferences: [],
+  inferredInterestsEnabled: true,
   inferredTopics: {},
+  contentFilterPolicy: defaultContentFilterPolicy,
+  radlibCuration: defaultLocalCurationConfig,
 }
 
-const defaults: StoredState = {
-  enabled: false,
-  preferences: defaultLocalFeedPreferences,
+function createDefaultLocalFeedState(): StoredState {
+  return {
+    enabled: false,
+    preferences: {
+      ...defaultLocalFeedPreferences,
+      languages: [],
+      topics: {},
+      classifierModules: {},
+      explicitInterests: [],
+      explicitAuthors: [],
+      explicitPostPreferences: [],
+      inferredTopics: {},
+      contentFilterPolicy: {
+        ...defaultContentFilterPolicy,
+        termPacks: [...defaultContentFilterPolicy.termPacks],
+        customTerms: [...defaultContentFilterPolicy.customTerms],
+        excludedAuthorDids: [...defaultContentFilterPolicy.excludedAuthorDids],
+      },
+      radlibCuration: {
+        ...defaultLocalCurationConfig,
+        curationTerms: [...(defaultLocalCurationConfig.curationTerms ?? [])],
+        excludedTerms: [...defaultLocalCurationConfig.excludedTerms],
+        excludedAuthorDids: [...defaultLocalCurationConfig.excludedAuthorDids],
+      },
+    },
+  }
 }
 
 type QuietMetricsEntry = {
@@ -39,7 +73,7 @@ const quietMetrics = new Map<string, QuietMetricsEntry>()
 function getQuietMetricsEntry(accountDid: string): QuietMetricsEntry {
   let entry = quietMetrics.get(accountDid)
   if (!entry) {
-    entry = {enabled: false, loading: false, listeners: new Set()}
+    entry = {enabled: true, loading: false, listeners: new Set()}
     quietMetrics.set(accountDid, entry)
   }
   return entry
@@ -54,9 +88,20 @@ async function loadQuietMetrics(accountDid: string) {
   if (entry.loading) return
   entry.loading = true
   try {
-    entry.enabled = (
-      await loadPersonalization(accountDid)
-    ).explicit.quietMode.enabled
+    const state = await loadPersonalization(accountDid)
+    const quietMode = state.explicit.quietMode
+    if (quietMode.userConfigured === undefined) {
+      entry.enabled = true
+      await savePersonalization({
+        ...state,
+        explicit: {
+          ...state.explicit,
+          quietMode: {...quietMode, enabled: true, userConfigured: true},
+        },
+      })
+    } else {
+      entry.enabled = quietMode.enabled
+    }
     notifyQuietMetrics(accountDid)
   } finally {
     entry.loading = false
@@ -69,7 +114,11 @@ export async function setQuietMetrics(accountDid: string, enabled: boolean) {
     ...state,
     explicit: {
       ...state.explicit,
-      quietMode: {...state.explicit.quietMode, enabled},
+      quietMode: {
+        ...state.explicit.quietMode,
+        enabled,
+        userConfigured: true,
+      },
     },
   })
   getQuietMetricsEntry(accountDid).enabled = enabled
@@ -89,10 +138,10 @@ export function useQuietMetrics() {
     [accountDid],
   )
   const getSnapshot = useCallback(
-    () => (accountDid ? getQuietMetricsEntry(accountDid).enabled : false),
+    () => (accountDid ? getQuietMetricsEntry(accountDid).enabled : true),
     [accountDid],
   )
-  const enabled = useSyncExternalStore(subscribe, getSnapshot, () => false)
+  const enabled = useSyncExternalStore(subscribe, getSnapshot, () => true)
 
   useEffect(() => {
     if (!accountDid) return
@@ -114,12 +163,14 @@ export function useQuietMetrics() {
 export function useLocalFeedPreferences() {
   const {currentAccount} = useSession()
   const accountDid = currentAccount?.did
-  const [state, setState] = useState<StoredState>(defaults)
+  const [state, setState] = useState<StoredState>(createDefaultLocalFeedState)
 
   useEffect(() => {
     let cancelled = false
+    // Do not let the previous account's ranking or filter state remain active
+    // while the newly selected account is loading its own local state.
+    setState(createDefaultLocalFeedState())
     if (!accountDid) {
-      setState(defaults)
       return () => {
         cancelled = true
       }
@@ -134,6 +185,10 @@ export function useLocalFeedPreferences() {
         setState({
           enabled: enabled === 'true',
           preferences: {
+            rankingPreset:
+              explicit.selectedFeedPreset === 'balanced'
+                ? 'balanced'
+                : 'following',
             freshness: explicit.freshness,
             discovery: explicit.discovery,
             familiarity: explicit.familiarity,
@@ -145,7 +200,12 @@ export function useLocalFeedPreferences() {
             explicitInterests: explicit.explicitInterests,
             explicitAuthors: explicit.explicitAuthors,
             explicitPostPreferences: explicit.explicitPostPreferences,
+            inferredInterestsEnabled: explicit.inferredInterestsEnabled,
             inferredTopics: personalization.learned.inferredTopics,
+            contentFilterPolicy:
+              explicit.contentFilterPolicy ?? defaultContentFilterPolicy,
+            radlibCuration:
+              explicit.radlibCuration ?? defaultLocalCurationConfig,
           },
         })
       })
@@ -162,7 +222,6 @@ export function useLocalFeedPreferences() {
   const persist = useCallback(
     async (next: StoredState) => {
       if (!accountDid) return
-      setState(next)
       const personalization = await loadPersonalization(accountDid)
       await AsyncStorage.setItem(
         LOCAL_FEED_ENABLED_KEY + accountDid,
@@ -172,6 +231,10 @@ export function useLocalFeedPreferences() {
         ...personalization,
         explicit: {
           ...personalization.explicit,
+          selectedFeedPreset:
+            next.preferences.rankingPreset === 'balanced'
+              ? 'balanced'
+              : 'following',
           freshness: next.preferences.freshness,
           discovery: next.preferences.discovery,
           familiarity: next.preferences.familiarity,
@@ -183,6 +246,10 @@ export function useLocalFeedPreferences() {
           explicitInterests: next.preferences.explicitInterests,
           explicitAuthors: next.preferences.explicitAuthors,
           explicitPostPreferences: next.preferences.explicitPostPreferences,
+          inferredInterestsEnabled:
+            next.preferences.inferredInterestsEnabled ?? true,
+          contentFilterPolicy: next.preferences.contentFilterPolicy,
+          radlibCuration: next.preferences.radlibCuration,
         },
         learned: {
           ...personalization.learned,
@@ -209,18 +276,41 @@ export function useLocalFeedPreferences() {
 
   const setEnabled = useCallback(
     (enabled: boolean) => {
-      void persist({...state, enabled})
+      if (!accountDid) return
+      setState(current => {
+        const next = {...current, enabled}
+        void persist(next)
+        return next
+      })
     },
-    [persist, state],
+    [accountDid, persist],
   )
 
-  const reset = useCallback(() => void persist(defaults), [persist])
+  const setRankingPreset = useCallback(
+    (rankingPreset: RankingPreset) => {
+      if (!accountDid) return
+      setState(current => {
+        const next = applyRankingPreset(current, rankingPreset)
+        void persist(next)
+        return next
+      })
+    },
+    [accountDid, persist],
+  )
+
+  const reset = useCallback(() => {
+    if (!accountDid) return
+    const next = createDefaultLocalFeedState()
+    setState(next)
+    void persist(next)
+  }, [accountDid, persist])
 
   return {
     enabled: state.enabled,
     preferences: state.preferences,
     update,
     setEnabled,
+    setRankingPreset,
     reset,
   }
 }

@@ -1,7 +1,12 @@
 import {type DidString, isDidString} from '@atproto/lex'
 
-import {APPVIEW_ENDPOINT} from '#/lib/constants'
+import {
+  APPVIEW_PROXY_DID,
+  APPVIEW_PROXY_FRAGMENT,
+  PUBLIC_APPVIEW_URL,
+} from '#/env'
 import * as persisted from '#/state/persisted'
+import {IS_DEV} from '#/env'
 
 export type AppViewProvider = {
   id: string
@@ -9,22 +14,34 @@ export type AppViewProvider = {
   serviceDid: DidString
   serviceFragment: string
   endpoint: string
+  healthPath?: string
   builtin: boolean
   enabled: boolean
 }
 
 export const DEFAULT_APPVIEW_PROVIDER: AppViewProvider = {
-  id: 'bluesky-appview',
-  displayName: 'Bluesky AppView',
-  serviceDid: 'did:web:api.bsky.app',
-  serviceFragment: 'bsky_appview',
-  endpoint: APPVIEW_ENDPOINT,
+  id: 'project-appview',
+  displayName:
+    process.env.EXPO_PUBLIC_APPVIEW_DISPLAY_NAME || 'Project AppView',
+  serviceDid: APPVIEW_PROXY_DID,
+  serviceFragment: APPVIEW_PROXY_FRAGMENT,
+  endpoint: PUBLIC_APPVIEW_URL,
+  healthPath: '/xrpc/_health',
   builtin: true,
+  // Keep the named provider visible even when deployment configuration is
+  // absent so failure is attributable to this service, never silently routed
+  // to a stock AppView.
   enabled: true,
+}
+
+export type AppViewProviderValidationOptions = {
+  /** Development-only escape hatch for a deliberately configured local node. */
+  allowInsecureLocal?: boolean
 }
 
 export function validateAppViewProvider(
   provider: AppViewProvider,
+  options: AppViewProviderValidationOptions = {},
 ): AppViewProvider {
   if (
     !provider.id ||
@@ -40,31 +57,46 @@ export function validateAppViewProvider(
     throw new Error('AppView provider endpoint is invalid')
   }
   const hostname = endpoint.hostname.toLowerCase()
+  const localHostname = isLocalHostname(hostname)
+  const allowInsecureLocal =
+    options.allowInsecureLocal ??
+    (IS_DEV && process.env.EXPO_PUBLIC_ALLOW_INSECURE_LOCAL_APPVIEW === '1')
   if (
-    endpoint.protocol !== 'https:' ||
+    ((!allowInsecureLocal || !localHostname) && endpoint.protocol !== 'https:') ||
     endpoint.username ||
     endpoint.password ||
     endpoint.search ||
     endpoint.hash ||
-    hostname === 'localhost' ||
-    hostname === 'localhost.localdomain' ||
-    hostname === '0.0.0.0' ||
-    hostname === '::1' ||
-    hostname.endsWith('.local') ||
-    /^127\./.test(hostname) ||
-    /^10\./.test(hostname) ||
-    /^192\.168\./.test(hostname) ||
-    /^172\.(1[6-9]|2\d|3[01])\./.test(hostname)
+    (!allowInsecureLocal && localHostname)
   ) {
     throw new Error('AppView provider endpoint is not a safe HTTPS origin')
   }
   if (!provider.serviceFragment)
     throw new Error('AppView provider service fragment is required')
-  return {...provider, endpoint: endpoint.toString().replace(/\/$/, '')}
+  const healthPath = provider.healthPath ?? '/xrpc/_health'
+  if (!/^\/xrpc\/[A-Za-z0-9._-]+$/.test(healthPath))
+    throw new Error('AppView provider health path is invalid')
+  return {
+    ...provider,
+    endpoint: endpoint.toString().replace(/\/$/, ''),
+    healthPath,
+  }
 }
 
 export function getAppViewProviders(): AppViewProvider[] {
-  return (persisted.get('appviewProviders') ?? [DEFAULT_APPVIEW_PROVIDER])
+  const configured = configuredProjectProvider()
+  const persistedProviders = (
+    persisted.get('appviewProviders') ?? [DEFAULT_APPVIEW_PROVIDER]
+  ).filter(provider => provider.id !== 'bluesky-appview')
+  const candidates = configured
+    ? persistedProviders.some(provider => provider.id === configured.id)
+      ? persistedProviders.map(provider =>
+          provider.id === configured.id ? configured : provider,
+        )
+      : [...persistedProviders, configured]
+    : persistedProviders
+
+  return candidates
     .map(provider => {
       try {
         return validateAppViewProvider(provider)
@@ -77,14 +109,22 @@ export function getAppViewProviders(): AppViewProvider[] {
     )
 }
 
+function configuredProjectProvider(): AppViewProvider | undefined {
+  return DEFAULT_APPVIEW_PROVIDER
+}
+
 export function getSelectedAppViewProvider(did: string): AppViewProvider {
   const providers = getAppViewProviders()
   const selected = persisted.get('appviewSelections')?.[did]
-  return (
+  const provider =
     providers.find(provider => provider.id === selected) ??
-    providers[0] ??
-    DEFAULT_APPVIEW_PROVIDER
-  )
+    providers[0]
+  if (!provider) {
+    throw new Error(
+      'No AppView provider is configured; set EXPO_PUBLIC_PUBLIC_APPVIEW_URL and EXPO_PUBLIC_APPVIEW_SERVICE_DID',
+    )
+  }
+  return provider
 }
 
 export function getAppViewFallback(
@@ -157,7 +197,7 @@ export async function probeAppViewProvider(
   provider: AppViewProvider,
 ): Promise<void> {
   const healthUrl = new URL(
-    '/xrpc/_health',
+    validateAppViewProvider(provider).healthPath ?? '/xrpc/_health',
     validateAppViewProvider(provider).endpoint,
   )
   let response: Response
@@ -175,4 +215,18 @@ export async function probeAppViewProvider(
       `AppView provider ${provider.displayName} is unavailable (HTTP ${response.status})`,
     )
   }
+}
+
+function isLocalHostname(hostname: string): boolean {
+  return (
+    hostname === 'localhost' ||
+    hostname === 'localhost.localdomain' ||
+    hostname === '0.0.0.0' ||
+    hostname === '::1' ||
+    hostname.endsWith('.local') ||
+    /^127\./.test(hostname) ||
+    /^10\./.test(hostname) ||
+    /^192\.168\./.test(hostname) ||
+    /^172\.(1[6-9]|2\d|3[01])\./.test(hostname)
+  )
 }

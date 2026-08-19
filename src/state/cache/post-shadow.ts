@@ -13,6 +13,7 @@ import {findAllPostsInQueryData as findAllPostsInSearchQueryData} from '#/state/
 import {findAllPostsInQueryData as findAllPostsInThreadV2QueryData} from '#/state/queries/usePostThread/queryCache'
 import {app} from '#/lexicons'
 import * as bsky from '#/types/bsky'
+import {findDirectPostsInQueryCache} from './post-shadow-cache'
 import {castAsShadow, type Shadow} from './types'
 export type {Shadow} from './types'
 
@@ -185,6 +186,12 @@ function* findPostsInCache(
   queryClient: QueryClient,
   uri: string,
 ): Generator<app.bsky.feed.defs.PostView, void> {
+  // A post opened directly (including its quotes/likes views) is cached under
+  // the single-post query rather than one of the collection query shapes below.
+  // Include both the normal and public-fallback keys so likes feel immediate
+  // on direct views as well as in feeds. The shadow is still reconciled with
+  // the PDS result by the mutation queue; this is only local UI state.
+  yield* findDirectPostsInQueryCache(queryClient, uri)
   for (let post of findAllPostsInFeedQueryData(queryClient, uri)) {
     yield post
   }

@@ -30,7 +30,7 @@ import {
 import {ScrollbarOffsetContext} from '#/components/Layout/context'
 import {Text} from '#/components/Typography'
 import {useAnalytics} from '#/analytics'
-import {IS_IOS} from '#/env'
+import {IS_IOS, IS_WEB} from '#/env'
 
 const HEADER_BUTTON_HITSLOP = {top: 30, bottom: 10, left: 30, right: 30}
 
@@ -55,6 +55,7 @@ export function Outer({
   return (
     <View
       ref={headerRef}
+      {...(IS_WEB ? {dataSet: {ecwRegion: 'header'}} : {})}
       style={[
         a.w_full,
         !noBottomBorder && a.border_b,
@@ -198,6 +199,11 @@ export function TitleText({
         a.leading_tight,
         IS_IOS && align === 'platform' && a.text_center,
         gtMobile && a.text_xl,
+        web({
+          fontFamily:
+            'Georgia, "Noto Serif", "DejaVu Serif", "Times New Roman", serif',
+          textShadow: '1px 1px 0 var(--ecw-surface-raised)',
+        }),
         style,
       ]}
       numberOfLines={2}

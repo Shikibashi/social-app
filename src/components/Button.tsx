@@ -140,6 +140,7 @@ export const Button = forwardRef<View, ButtonProps>(
       size,
       shape = 'default',
       label,
+      accessibilityState: accessibilityStateProp,
       disabled = false,
       style,
       hoverStyle: hoverStyleProp,
@@ -570,6 +571,11 @@ export const Button = forwardRef<View, ButtonProps>(
       [state, variant, color, size, shape, disabled],
     )
 
+    const resolvedAccessibilityState = {
+      ...accessibilityStateProp,
+      disabled: disabled || false,
+    }
+
     return (
       <PressableComponent
         role="button"
@@ -578,12 +584,10 @@ export const Button = forwardRef<View, ButtonProps>(
         // @ts-ignore - this will always be a pressable
         ref={ref}
         aria-label={label}
-        aria-pressed={state.pressed}
+        aria-pressed={accessibilityStateProp?.selected}
         accessibilityLabel={label}
         disabled={disabled || false}
-        accessibilityState={{
-          disabled: disabled || false,
-        }}
+        accessibilityState={resolvedAccessibilityState}
         style={[
           a.flex_row,
           a.align_center,

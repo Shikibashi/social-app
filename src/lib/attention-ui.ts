@@ -4,11 +4,49 @@ export type FeedProvenance = {
   algorithmVersion: string
   provider: string
   providerDid?: string
+  feedProviderDid?: string
   feedOwnerDid?: string
+  feedUri?: string
   manifestStatus: 'verified' | 'unverified' | 'revoked'
   objective: string
   privacy: string
   health?: 'healthy' | 'degraded' | 'circuit-open' | 'stale'
+}
+
+export type FeedProviderContext = {
+  provider?: string
+  algorithm?: string
+  version?: string
+  policyVersion?: string
+}
+
+/**
+ * Feed context is an untrusted, provider-supplied explanation channel. Keep
+ * parsing deliberately narrow: it may improve attribution, but it must not
+ * be treated as a verified manifest or a permission to expose private data.
+ */
+export function parseFeedProviderContext(
+  value?: string,
+): FeedProviderContext | undefined {
+  if (!value) return
+
+  try {
+    const parsed: unknown = JSON.parse(value)
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return
+
+    const context = parsed as Record<string, unknown>
+    const result: FeedProviderContext = {}
+    for (const key of ['provider', 'algorithm', 'version', 'policyVersion']) {
+      const field = context[key]
+      if (typeof field === 'string' && field.length > 0) {
+        result[key as keyof FeedProviderContext] = field.slice(0, 200)
+      }
+    }
+
+    return Object.keys(result).length ? result : undefined
+  } catch {
+    return
+  }
 }
 
 export type WhyPostCategory =

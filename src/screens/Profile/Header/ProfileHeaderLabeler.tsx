@@ -1,6 +1,6 @@
 import {memo, useCallback, useMemo, useState} from 'react'
 import {View} from 'react-native'
-import {moderateProfile, type ModerationOpts} from '@bsky/sdk/moderation'
+import {moderateProfile, type ModerationOpts} from '#/lib/moderation'
 import {type RichText as RichTextAPI} from '@bsky/sdk/richtext'
 import {msg, plural} from '@lingui/core/macro'
 import {useLingui} from '@lingui/react'
@@ -15,6 +15,7 @@ import {type Shadow} from '#/state/cache/types'
 import {useLabelerSubscriptionMutation} from '#/state/queries/labeler'
 import {useLikeMutation, useUnlikeMutation} from '#/state/queries/like'
 import {usePreferencesQuery} from '#/state/queries/preferences'
+import {hasViewerInteractionBoundary} from '#/state/queries/public-visibility'
 import {useRequireAuth, useSession} from '#/state/session'
 import {ProfileMenu} from '#/view/com/profile/ProfileMenu'
 import {atoms as a, tokens, useTheme} from '#/alf'
@@ -285,8 +286,9 @@ export function HeaderLabelerButtons({
     <>
       {hasSession &&
         !isMe &&
-        !profile.viewer?.blockedBy &&
-        !profile.viewer?.blocking && <MessageProfileButton profile={profile} />}
+        !hasViewerInteractionBoundary(profile) && (
+          <MessageProfileButton profile={profile} />
+        )}
 
       {isMe ? (
         <>

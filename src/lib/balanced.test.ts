@@ -2,9 +2,10 @@ import {
   BALANCED_MANIFEST,
   type BalancedCandidate,
   rankBalanced,
+  rankBalancedCandidates,
 } from './balanced'
-import type {CandidateBatch} from './candidate-protocol'
-import type {ExplicitPreferences, LearnedProfile} from './personalization'
+import {type CandidateBatch} from './candidate-protocol'
+import {type ExplicitPreferences, type LearnedProfile} from './personalization'
 
 const explicit = {
   selectedFeedPreset: 'balanced',
@@ -85,7 +86,7 @@ describe('Balanced v1', () => {
   it('honors explicit author avoidance and soft concentration controls', () => {
     const avoid = {
       ...explicit,
-      explicitAuthors: [{did: 'did:plc:author', preference: 'avoid'}],
+      explicitAuthors: [{did: 'did:plc:author', preference: 'avoid' as const}],
     }
     const input = batch([
       candidate('at://did:plc:author/app.bsky.feed.post/a'),
@@ -118,6 +119,63 @@ describe('Balanced v1', () => {
       result.traces.find(trace => trace.uri === 'at://avoid')?.contributions
         .explicitPreferenceOverride,
     ).toBeLessThan(0)
+  })
+
+  it('applies explicit familiarity and variety controls', () => {
+    const familiar = candidate('at://familiar', {
+      familiarity: 1,
+      variety: 0,
+      conversationActivity: 0,
+      freshness: 0,
+      graphProximity: 0,
+      novelty: 0,
+      exploration: 0,
+      integrity: 0,
+    })
+    const varied = candidate('at://varied', {
+      familiarity: 0,
+      variety: 1,
+      conversationActivity: 0,
+      freshness: 0,
+      graphProximity: 0,
+      novelty: 0,
+      exploration: 0,
+      integrity: 0,
+    })
+    const common = {
+      ...explicit,
+      explicitInterests: [],
+      familiarity: 1,
+      variety: 0,
+      freshness: 0,
+      discovery: 0,
+      explorationLevel: 0,
+    }
+    const familiarResult = rankBalancedCandidates(
+      [familiar, varied],
+      common,
+      {...learned, inferredTopics: {}},
+      {now: Date.parse('2030-01-02T00:00:00.000Z')},
+    )
+    const variedResult = rankBalancedCandidates(
+      [familiar, varied],
+      {...common, familiarity: 0, variety: 1},
+      {...learned, inferredTopics: {}},
+      {now: Date.parse('2030-01-02T00:00:00.000Z')},
+    )
+    expect(familiarResult.ordered[0].uri).toBe('at://familiar')
+    expect(variedResult.ordered[0].uri).toBe('at://varied')
+  })
+  it('ranks local hydrated candidates without a provider envelope', () => {
+    const result = rankBalancedCandidates(
+      [candidate('at://local/one'), candidate('at://local/two')],
+      explicit,
+      learned,
+      {now: Date.parse('2030-01-02T00:00:00.000Z')},
+    )
+    expect(result.algorithm).toBe('org.radical-liberal.balanced')
+    expect(result.ordered).toHaveLength(2)
+    expect(result.traces.every(trace => trace.reason.length > 0)).toBe(true)
   })
   it('subtracts harassment amplification risk', () => {
     const lowRisk = candidate('at://low', {harassmentAmplificationRisk: 0})

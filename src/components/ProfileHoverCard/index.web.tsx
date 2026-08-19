@@ -1,6 +1,6 @@
 import {memo, useCallback, useEffect, useMemo, useReducer, useRef} from 'react'
 import {View} from 'react-native'
-import {moderateProfile, type ModerationOpts} from '@bsky/sdk/moderation'
+import {moderateProfile, type ModerationOpts} from '#/lib/moderation'
 import {flip, offset, shift, size, useFloating} from '@floating-ui/react-dom'
 import {msg, plural} from '@lingui/core/macro'
 import {useLingui} from '@lingui/react'
@@ -14,6 +14,10 @@ import {sanitizeHandle} from '#/lib/strings/handles'
 import {useProfileShadow} from '#/state/cache/profile-shadow'
 import {useModerationOpts} from '#/state/preferences/moderation-opts'
 import {usePrefetchProfileQuery, useProfileQuery} from '#/state/queries/profile'
+import {
+  hasViewerInteractionBoundary,
+  viewerHidesActor,
+} from '#/state/queries/public-visibility'
 import {useSession} from '#/state/session'
 import {formatCount} from '#/view/com/util/numeric/format'
 import {UserAvatar} from '#/view/com/util/UserAvatar'
@@ -432,10 +436,8 @@ function Inner({
     profile: profileShadow,
     logContext: 'ProfileHoverCard',
   })
-  const isBlockedUser =
-    profile.viewer?.blocking ||
-    profile.viewer?.blockedBy ||
-    profile.viewer?.blockingByList
+  const isBlockedUser = hasViewerInteractionBoundary(profile)
+  const hidesPublicContent = viewerHidesActor(profile)
   const following = formatCount(i18n, profile.followsCount || 0)
   const followers = formatCount(i18n, profile.followersCount || 0)
   const pluralizedFollowers = plural(profile.followersCount || 0, {
@@ -551,7 +553,7 @@ function Inner({
         </View>
       )}
 
-      {!isBlockedUser && (
+      {!hidesPublicContent && (
         <>
           <View style={[a.flex_row, a.flex_wrap, a.gap_md, a.pt_xs]}>
             <InlineLinkText

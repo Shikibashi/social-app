@@ -19,6 +19,7 @@ import {InlineLinkText} from '#/components/Link'
 import {type app} from '#/lexicons'
 import {Email2FAToggle} from './components/Email2FAToggle'
 import {PwiOptOut} from './components/PwiOptOut'
+import {ProtectedAccountToggle} from './components/ProtectedAccountToggle'
 import {ItemTextWithSubtitle} from './NotificationSettings/components/ItemTextWithSubtitle'
 
 type Props = NativeStackScreenProps<
@@ -100,6 +101,14 @@ export function PrivacyAndSecuritySettingsScreen({}: Props) {
               showSkeleton={isPending}
             />
           </SettingsList.LinkItem>
+          <SettingsList.Divider />
+          <SettingsList.Group>
+            <SettingsList.ItemIcon icon={ShieldIcon} />
+            <SettingsList.ItemText>
+              <Trans>Account visibility</Trans>
+            </SettingsList.ItemText>
+            <ProtectedAccountToggle />
+          </SettingsList.Group>
           <SettingsList.Divider />
           <SettingsList.Group>
             <SettingsList.ItemIcon icon={EyeSlashIcon} />

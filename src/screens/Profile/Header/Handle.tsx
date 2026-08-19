@@ -5,6 +5,7 @@ import {Trans} from '@lingui/react/macro'
 
 import {isInvalidHandle, sanitizeHandle} from '#/lib/strings/handles'
 import {type Shadow} from '#/state/cache/types'
+import {viewerHidesActor} from '#/state/queries/public-visibility'
 import {atoms as a, useTheme, web} from '#/alf'
 import {NewskieDialog} from '#/components/NewskieDialog'
 import {Text} from '#/components/Typography'
@@ -21,7 +22,7 @@ export function ProfileHeaderHandle({
   const t = useTheme()
   const {_} = useLingui()
   const invalidHandle = isInvalidHandle(profile.handle)
-  const blockHide = profile.viewer?.blocking || profile.viewer?.blockedBy
+  const blockHide = viewerHidesActor(profile)
   return (
     <View
       style={[a.flex_row, a.gap_sm, a.align_center, {maxWidth: '100%'}]}

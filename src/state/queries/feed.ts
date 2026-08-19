@@ -1,6 +1,7 @@
 import {useCallback, useEffect, useMemo, useRef} from 'react'
+import {type Client} from '@atproto/lex'
 import {AtUri, type AtUriString} from '@atproto/syntax'
-import {moderateFeedGenerator} from '@bsky/sdk/moderation'
+import {moderateFeedGenerator} from '#/lib/moderation'
 import {RichText} from '@bsky/sdk/richtext'
 import {t} from '@lingui/core/macro'
 import {
@@ -20,12 +21,20 @@ import {GCTIME, STALE} from '#/state/queries'
 import {RQKEY as listQueryKey} from '#/state/queries/list'
 import {usePreferencesQuery} from '#/state/queries/preferences'
 import {createQueryKey} from '#/state/queries/util'
-import {useAppviewClient, useSession} from '#/state/session'
+import {
+  useAppviewClient,
+  usePublicAppviewClient,
+  useSession,
+} from '#/state/session'
+import {getSelectedAppViewProvider} from '#/state/session/providers'
 import {app} from '#/lexicons'
 import {router} from '#/routes'
 import {useModerationOpts} from '../preferences/moderation-opts'
+import {callSameProviderPublicFallback} from './feed-provider-fallback'
 import {type FeedDescriptor} from './post-feed'
 import {precacheResolvedUri} from './resolve-uri'
+
+export {callSameProviderPublicFallback} from './feed-provider-fallback'
 
 export type FeedSourceFeedInfo = {
   type: 'feed'
@@ -181,7 +190,7 @@ export function getAvatarTypeFromUri(uri: string) {
 
 export function useFeedSourceInfoQuery({uri}: {uri: string}) {
   const type = getFeedTypeFromUri(uri)
-  const client = useAppviewClient()
+  const {client, publicClient} = useFeedReadClients()
 
   return useQuery({
     staleTime: STALE.INFINITY,
@@ -190,9 +199,16 @@ export function useFeedSourceInfoQuery({uri}: {uri: string}) {
       let view: FeedSourceInfo
 
       if (type === 'feed') {
-        const data = await client.call(app.bsky.feed.getFeedGenerator, {
-          feed: uri as AtUriString,
-        })
+        const data = await callSameProviderPublicFallback(
+          () =>
+            client.call(app.bsky.feed.getFeedGenerator, {
+              feed: uri as AtUriString,
+            }),
+          () =>
+            publicClient.call(app.bsky.feed.getFeedGenerator, {
+              feed: uri as AtUriString,
+            }),
+        )
         view = hydrateFeedGenerator(data.view)
       } else {
         const data = await client.call(app.bsky.graph.getList, {
@@ -225,6 +241,42 @@ export const KNOWN_AUTHED_ONLY_FEEDS = [
 
 type GetPopularFeedsOptions = {limit?: number; enabled?: boolean}
 
+function useFeedReadClients() {
+  const session = useSession()
+  const client = useAppviewClient()
+  const provider = getSelectedAppViewProvider(session.currentAccount?.did ?? '')
+  const publicClient = usePublicAppviewClient(provider.endpoint)
+  return {
+    hasSession: session.hasSession,
+    client,
+    publicClient,
+  }
+}
+
+async function addDeploymentFeedFallback(
+  data: app.bsky.unspecced.getPopularFeedGenerators.$OutputBody,
+  publicClient: Client,
+  pageParam: string | undefined,
+) {
+  if (pageParam || data.feeds.some(feed => feed.uri === DISCOVER_FEED_URI)) {
+    return data
+  }
+
+  try {
+    const {view} = await publicClient.call(app.bsky.feed.getFeedGenerator, {
+      feed: DISCOVER_FEED_URI as AtUriString,
+    })
+    return {
+      ...data,
+      feeds: [view, ...data.feeds],
+    }
+  } catch {
+    // An unconfigured or unavailable deployment feed should not turn an
+    // otherwise valid provider response into a query failure.
+    return data
+  }
+}
+
 export function createGetPopularFeedsQueryKey(
   options?: GetPopularFeedsOptions,
 ) {
@@ -232,8 +284,7 @@ export function createGetPopularFeedsQueryKey(
 }
 
 export function useGetPopularFeedsQuery(options?: GetPopularFeedsOptions) {
-  const {hasSession} = useSession()
-  const client = useAppviewClient()
+  const {hasSession, client, publicClient} = useFeedReadClients()
   const limit = options?.limit || 10
   const {data: preferences} = usePreferencesQuery()
   const queryClient = useQueryClient()
@@ -254,13 +305,19 @@ export function useGetPopularFeedsQuery(options?: GetPopularFeedsOptions) {
     enabled: Boolean(moderationOpts) && options?.enabled !== false,
     queryKey: createGetPopularFeedsQueryKey(options),
     queryFn: async ({pageParam}) => {
-      const data = await client.call(
-        app.bsky.unspecced.getPopularFeedGenerators,
-        {
-          limit,
-          cursor: pageParam,
-        },
+      let data = await callSameProviderPublicFallback(
+        () =>
+          client.call(app.bsky.unspecced.getPopularFeedGenerators, {
+            limit,
+            cursor: pageParam,
+          }),
+        () =>
+          publicClient.call(app.bsky.unspecced.getPopularFeedGenerators, {
+            limit,
+            cursor: pageParam,
+          }),
       )
+      data = await addDeploymentFeedFallback(data, publicClient, pageParam)
 
       // precache feeds
       for (const feed of data.feeds) {
@@ -338,17 +395,22 @@ export function useGetPopularFeedsQuery(options?: GetPopularFeedsOptions) {
 }
 
 export function useSearchPopularFeedsMutation() {
-  const client = useAppviewClient()
+  const {client, publicClient} = useFeedReadClients()
   const moderationOpts = useModerationOpts()
 
   return useMutation({
     mutationFn: async (query: string) => {
-      const data = await client.call(
-        app.bsky.unspecced.getPopularFeedGenerators,
-        {
-          limit: 10,
-          query: query,
-        },
+      const data = await callSameProviderPublicFallback(
+        () =>
+          client.call(app.bsky.unspecced.getPopularFeedGenerators, {
+            limit: 10,
+            query: query,
+          }),
+        () =>
+          publicClient.call(app.bsky.unspecced.getPopularFeedGenerators, {
+            limit: 10,
+            query: query,
+          }),
       )
 
       if (moderationOpts) {
@@ -410,6 +472,9 @@ export type SavedFeedSourceInfo = FeedSourceInfo & {
 
 const PWI_DISCOVER_FEED_STUB: SavedFeedSourceInfo = {
   type: 'feed',
+  // This placeholder is used before the provider can hydrate the generator.
+  // Keep the deployment-owned feed distinct from Bluesky's operator feed even
+  // while logged out or while the selected provider is unavailable.
   displayName: 'Discover',
   uri: DISCOVER_FEED_URI,
   feedDescriptor: `feedgen|${DISCOVER_FEED_URI}`,
@@ -451,8 +516,7 @@ const createPinnedFeedInfosQueryKey = (
   )
 
 export function usePinnedFeedsInfos() {
-  const {hasSession} = useSession()
-  const client = useAppviewClient()
+  const {hasSession, client, publicClient} = useFeedReadClients()
   const {data: preferences, isLoading: isLoadingPrefs} = usePreferencesQuery()
   const pinnedItems = preferences?.savedFeeds.filter(feed => feed.pinned) ?? []
 
@@ -475,16 +539,21 @@ export function usePinnedFeedsInfos() {
       const pinnedFeeds = pinnedItems.filter(feed => feed.type === 'feed')
       let feedsPromise = Promise.resolve()
       if (pinnedFeeds.length > 0) {
-        feedsPromise = client
-          .call(app.bsky.feed.getFeedGenerators, {
-            feeds: pinnedFeeds.map(f => f.value as AtUriString),
-          })
-          .then(data => {
-            for (let i = 0; i < data.feeds.length; i++) {
-              const feedView = data.feeds[i]
-              resolved.set(feedView.uri, hydrateFeedGenerator(feedView))
-            }
-          })
+        feedsPromise = callSameProviderPublicFallback(
+          () =>
+            client.call(app.bsky.feed.getFeedGenerators, {
+              feeds: pinnedFeeds.map(f => f.value as AtUriString),
+            }),
+          () =>
+            publicClient.call(app.bsky.feed.getFeedGenerators, {
+              feeds: pinnedFeeds.map(f => f.value as AtUriString),
+            }),
+        ).then(data => {
+          for (let i = 0; i < data.feeds.length; i++) {
+            const feedView = data.feeds[i]
+            resolved.set(feedView.uri, hydrateFeedGenerator(feedView))
+          }
+        })
       }
 
       // Get all lists. This currently has to be done individually.
@@ -559,7 +628,7 @@ export type SavedFeedItem =
     }
 
 export function useSavedFeeds() {
-  const client = useAppviewClient()
+  const {client, publicClient} = useFeedReadClients()
   const {data: preferences, isLoading: isLoadingPrefs} = usePreferencesQuery()
   const savedItems = preferences?.savedFeeds ?? []
   const queryClient = useQueryClient()
@@ -590,15 +659,20 @@ export function useSavedFeeds() {
 
       let feedsPromise = Promise.resolve()
       if (savedFeeds.length > 0) {
-        feedsPromise = client
-          .call(app.bsky.feed.getFeedGenerators, {
-            feeds: savedFeeds.map(f => f.value as AtUriString),
+        feedsPromise = callSameProviderPublicFallback(
+          () =>
+            client.call(app.bsky.feed.getFeedGenerators, {
+              feeds: savedFeeds.map(f => f.value as AtUriString),
+            }),
+          () =>
+            publicClient.call(app.bsky.feed.getFeedGenerators, {
+              feeds: savedFeeds.map(f => f.value as AtUriString),
+            }),
+        ).then(data => {
+          data.feeds.forEach(f => {
+            resolvedFeeds.set(f.uri, f)
           })
-          .then(data => {
-            data.feeds.forEach(f => {
-              resolvedFeeds.set(f.uri, f)
-            })
-          })
+        })
       }
 
       const listsPromises = savedLists.map(list =>

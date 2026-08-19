@@ -1,7 +1,7 @@
 import {useEffect, useMemo} from 'react'
 import {View} from 'react-native'
 import {AtUri} from '@atproto/syntax'
-import {moderateUserList, type ModerationUI} from '@bsky/sdk/moderation'
+import {moderateUserList, type ModerationUI} from '#/lib/moderation'
 import {msg} from '@lingui/core/macro'
 import {useLingui} from '@lingui/react'
 import {Trans} from '@lingui/react/macro'

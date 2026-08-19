@@ -1,7 +1,7 @@
 import {useMemo} from 'react'
 import {View} from 'react-native'
 import {api} from '@bsky/sdk'
-import {type ModerationCause} from '@bsky/sdk/moderation'
+import {type ModerationCause} from '#/lib/moderation'
 import {Trans, useLingui} from '@lingui/react/macro'
 
 import {useModerationCauseDescription} from '#/lib/moderation/useModerationCauseDescription'

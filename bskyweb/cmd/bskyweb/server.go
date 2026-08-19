@@ -1,12 +1,8 @@
 package main
 
 import (
-	"bytes"
 	"context"
 	"crypto/subtle"
-	"crypto/tls"
-	"encoding/base64"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -14,7 +10,6 @@ import (
 	"log/slog"
 	"net"
 	"net/http"
-	"net/netip"
 	"net/url"
 	"os"
 	"os/signal"
@@ -48,8 +43,6 @@ type Server struct {
 	chatXrpcc    *xrpc.Client
 	cfg          *Config
 
-	ipccClient http.Client
-
 	// sitemapClient is used for fetching sitemaps from the appview. It has
 	// DisableCompression set to true so that gzipped responses are passed
 	// through without being decompressed.
@@ -63,7 +56,6 @@ type Config struct {
 	chatHost      string
 	ogcardHost    string
 	linkHost      string
-	ipccHost      string
 	staticCDNHost string
 }
 
@@ -75,7 +67,6 @@ func serve(cctx *cli.Context) error {
 	chatHost := cctx.String("chat-host")
 	ogcardHost := cctx.String("ogcard-host")
 	linkHost := cctx.String("link-host")
-	ipccHost := cctx.String("ipcc-host")
 	basicAuthPassword := cctx.String("basic-auth-password")
 	corsOrigins := cctx.StringSlice("cors-allowed-origins")
 	staticCDNHost := cctx.String("static-cdn-host")
@@ -134,15 +125,7 @@ func serve(cctx *cli.Context) error {
 			chatHost:      chatHost,
 			ogcardHost:    ogcardHost,
 			linkHost:      linkHost,
-			ipccHost:      ipccHost,
 			staticCDNHost: staticCDNHost,
-		},
-		ipccClient: http.Client{
-			Transport: &http.Transport{
-				TLSClientConfig: &tls.Config{
-					InsecureSkipVerify: true,
-				},
-			},
 		},
 		sitemapClient: http.Client{
 			Transport: &http.Transport{
@@ -339,7 +322,6 @@ func serve(cctx *cli.Context) error {
 	e.GET("/support/copyright", server.WebGeneric)
 	e.GET("/intent/compose", server.WebGenericNoindexNofollow)
 	e.GET("/intent/verify-email", server.WebGenericNoindexNofollow)
-	e.GET("/intent/age-assurance", server.WebGenericNoindexNofollow)
 	e.GET("/messages", server.WebGenericNoindex)
 	e.GET("/messages/inbox", server.WebGenericNoindex)
 	e.GET("/messages/:conversation", server.WebGenericNoindex)
@@ -376,9 +358,6 @@ func serve(cctx *cli.Context) error {
 
 	// bookmarks
 	e.GET("/saved", server.WebGenericNoindex)
-
-	// ipcc
-	e.GET("/ipcc", server.WebIpCC)
 
 	// sitemap handlers
 	e.GET("/sitemap/users.xml.gz", server.handleSitemapUsersIndex)
@@ -925,60 +904,6 @@ func (srv *Server) WebFeed(c echo.Context) error {
 	data["requestURI"] = fmt.Sprintf("https://%s%s", req.Host, req.URL.Path)
 
 	return c.Render(http.StatusOK, "feed.html", data)
-}
-
-type IPCCRequest struct {
-	IP string `json:"ip"`
-}
-type IPCCResponse struct {
-	CC               string `json:"countryCode"`
-	AgeRestrictedGeo bool   `json:"isAgeRestrictedGeo,omitempty"`
-	AgeBlockedGeo    bool   `json:"isAgeBlockedGeo,omitempty"`
-}
-
-// This product includes GeoLite2 Data created by MaxMind, available from https://www.maxmind.com.
-func (srv *Server) WebIpCC(c echo.Context) error {
-	realIP := c.RealIP()
-	addr, err := netip.ParseAddr(realIP)
-	if err != nil {
-		log.Warnf("could not parse IP %q %s", realIP, err)
-		return c.JSON(400, IPCCResponse{})
-	}
-	var request []byte
-	if addr.Is4() {
-		ip4 := addr.As4()
-		var dest [8]byte
-		base64.StdEncoding.Encode(dest[:], ip4[:])
-		request, _ = json.Marshal(IPCCRequest{IP: string(dest[:])})
-	} else if addr.Is6() {
-		ip6 := addr.As16()
-		var dest [24]byte
-		base64.StdEncoding.Encode(dest[:], ip6[:])
-		request, _ = json.Marshal(IPCCRequest{IP: string(dest[:])})
-	}
-
-	ipccUrlBuilder, err := url.Parse(srv.cfg.ipccHost)
-	if err != nil {
-		log.Errorf("ipcc misconfigured bad url %s", err)
-		return c.JSON(500, IPCCResponse{})
-	}
-	ipccUrlBuilder.Path = "ipccdata.IpCcService/Lookup"
-	ipccUrl := ipccUrlBuilder.String()
-	postBodyReader := bytes.NewReader(request)
-	response, err := srv.ipccClient.Post(ipccUrl, "application/json", postBodyReader)
-	if err != nil {
-		log.Warnf("ipcc backend error %s", err)
-		return c.JSON(500, IPCCResponse{})
-	}
-	defer response.Body.Close()
-	dec := json.NewDecoder(response.Body)
-	var outResponse IPCCResponse
-	err = dec.Decode(&outResponse)
-	if err != nil {
-		log.Warnf("ipcc bad response %s", err)
-		return c.JSON(500, IPCCResponse{})
-	}
-	return c.JSON(200, outResponse)
 }
 
 func (srv *Server) handleSitemapUsersIndex(c echo.Context) error {

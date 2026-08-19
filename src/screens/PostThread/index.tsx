@@ -566,6 +566,8 @@ export function PostThread({uri}: {uri: string}) {
             setSort={setSortWrapped}
             view={thread.state.view}
             setView={setViewWrapped}
+            curationView={thread.state.curationView}
+            setCurationView={thread.actions.setCurationView}
           />
         </Layout.Header.Slot>
       </Layout.Header.Outer>

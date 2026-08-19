@@ -1,7 +1,13 @@
+import {type ContentFilterPolicy} from './content-filter'
+import {type RadlibCurationConfig} from './radlib-curation'
+
 export type FeedPreferences = {
+  /** The local ordering preset; chronological/following remains the default. */
+  rankingPreset?: 'following' | 'balanced'
   freshness: number
   discovery: number
   familiarity: number
+  variety?: number
   conversationActivity: number
   explorationLevel: number
   languages: string[]
@@ -10,19 +16,30 @@ export type FeedPreferences = {
   explicitInterests: string[]
   explicitAuthors: Array<{did: string; preference: 'prefer' | 'avoid'}>
   explicitPostPreferences: Array<{uri: string; preference: 'prefer' | 'avoid'}>
+  inferredInterestsEnabled?: boolean
   inferredTopics: Record<string, number>
+  /** Portable user policy, evaluated before any ranking signals. */
+  contentFilterPolicy?: ContentFilterPolicy
+  radlibCuration?: RadlibCurationConfig
 }
 
 export type Candidate = {
   uri: string
   authorDid: string
+  text?: string
   topic?: string
   freshness: number
   networkRelevance: number
   conversationActivity: number
+  /** 1 means familiar/followed context; 0 means unfamiliar context. */
+  familiarity?: number
+  /** 1 means a variety/novelty opportunity; 0 means concentrated context. */
+  variety?: number
   integrityWeight: number
   explorationEligible: boolean
   seen: boolean
+  curationScore?: number
+  curationReasons?: string[]
 }
 
 export type PortableProfile = {
@@ -57,6 +74,17 @@ export type LocalRankingResult = {
 const clamp = (value: number) => Math.max(0, Math.min(1, value))
 const EXPLICIT_PREFERENCE_WEIGHT = 2.5
 
+function explicitInterestMatches(text: string, interest: string): boolean {
+  const normalizedText = text.toLocaleLowerCase('und')
+  const normalizedInterest = interest.toLocaleLowerCase('und').trim()
+  if (!normalizedInterest) return false
+  const escaped = normalizedInterest.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  return new RegExp(
+    `(^|[^\\p{L}\\p{N}_'])${escaped}(?=$|[^\\p{L}\\p{N}_'])`,
+    'u',
+  ).test(normalizedText)
+}
+
 function getExplicitPreference(
   candidate: Candidate,
   preferences: FeedPreferences,
@@ -78,6 +106,14 @@ function getExplicitPreference(
   ) {
     return 'prefer'
   }
+  if (
+    candidate.text &&
+    preferences.explicitInterests.some(interest =>
+      explicitInterestMatches(candidate.text!, interest),
+    )
+  ) {
+    return 'prefer'
+  }
   return undefined
 }
 
@@ -94,16 +130,25 @@ export function traceCandidate(
 > {
   const topic = candidate.topic ? (preferences.topics[candidate.topic] ?? 0) : 0
   const topicScore = (topic + 1) / 2
+  const familiarity =
+    candidate.familiarity ?? (candidate.explorationEligible ? 0 : 1)
+  const variety =
+    candidate.variety ?? (candidate.explorationEligible ? 1 : 0.25)
   const inferredInterest = candidate.topic
-    ? (preferences.inferredTopics[candidate.topic] ?? 0)
+    ? preferences.inferredInterestsEnabled === false
+      ? 0
+      : (preferences.inferredTopics[candidate.topic] ?? 0)
     : 0
   const baseScore =
     preferences.freshness * clamp(candidate.freshness) +
     preferences.discovery * clamp(candidate.networkRelevance) +
     preferences.conversationActivity * clamp(candidate.conversationActivity) +
+    0.12 * preferences.familiarity * clamp(familiarity) +
+    0.12 * (preferences.variety ?? 0.5) * clamp(variety) +
     0.2 * clamp(candidate.integrityWeight) +
     0.2 * topicScore +
-    0.15 * clamp(inferredInterest)
+    0.15 * clamp(inferredInterest) +
+    (candidate.curationScore ?? 0)
   const explicitPreference = getExplicitPreference(candidate, preferences)
   const unadjustedScore =
     baseScore + explicitTier(explicitPreference) * EXPLICIT_PREFERENCE_WEIGHT
@@ -236,9 +281,21 @@ export function explainCandidate(
     reasons.push('an interest you chose')
   } else if (
     candidate.topic &&
+    preferences.inferredInterestsEnabled !== false &&
     (preferences.inferredTopics[candidate.topic] ?? 0) > 0.5
   ) {
     reasons.push('an interest inferred on this device')
+  }
+  const familiarity =
+    candidate.familiarity ?? (candidate.explorationEligible ? 0 : 1)
+  const variety =
+    candidate.variety ?? (candidate.explorationEligible ? 1 : 0.25)
+  if (preferences.familiarity > 0.6 && familiarity > 0.7)
+    reasons.push('familiarity setting')
+  if ((preferences.variety ?? 0.5) > 0.6 && variety > 0.7)
+    reasons.push('variety setting')
+  if (candidate.curationReasons?.length) {
+    reasons.push(...candidate.curationReasons)
   }
   if (candidate.freshness >= 0.7) reasons.push('freshness')
   if (current.explorationSelected) reasons.push('exploration setting')

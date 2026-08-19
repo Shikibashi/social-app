@@ -38,6 +38,7 @@ export type ScreenProps = React.ComponentProps<typeof View> & {
   style?: StyleProp<ViewStyle>
   noInsetTop?: boolean
   minimalShell?: boolean
+  ecwMode?: 'page' | 'workbench'
 }
 
 /**
@@ -47,6 +48,7 @@ export const Screen = memo(function Screen({
   style,
   noInsetTop,
   minimalShell = false,
+  ecwMode = 'page',
   ...props
 }: ScreenProps) {
   const {top} = useSafeAreaInsets()
@@ -58,6 +60,7 @@ export const Screen = memo(function Screen({
     <>
       {IS_WEB && !isWithinSplitView && <WebCenterBorders />}
       <View
+        {...(IS_WEB ? {dataSet: {ecwMode}} : {})}
         style={[
           a.util_screen_outer,
           {paddingTop: noInsetTop ? 0 : top},
@@ -105,6 +108,7 @@ export const Content = memo(function Content({
     <Animated.ScrollView
       ref={ref}
       id="content"
+      {...(IS_WEB ? {dataSet: {ecwRegion: 'content'}} : {})}
       automaticallyAdjustsScrollIndicatorInsets={false}
       indicatorStyle={t.scheme === 'dark' ? 'white' : 'black'}
       style={[

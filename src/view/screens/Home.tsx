@@ -119,8 +119,9 @@ function HomeScreenReady({
     () => pinnedFeedInfos.map(f => f.feedDescriptor),
     [pinnedFeedInfos],
   )
+  const defaultFeed = allFeeds.includes('following') ? 'following' : allFeeds[0]
   const maybeRawSelectedFeed: FeedDescriptor | undefined =
-    useSelectedFeed() ?? allFeeds[0]
+    useSelectedFeed() ?? defaultFeed
   const setSelectedFeed = useSetSelectedFeed()
   const maybeFoundIndex = allFeeds.indexOf(maybeRawSelectedFeed)
   const selectedIndex = Math.max(0, maybeFoundIndex)

@@ -2,6 +2,7 @@ import {type app} from '#/lexicons'
 
 export interface FeedAPIResponse {
   cursor?: string
+  feedContext?: string
   feed: app.bsky.feed.defs.FeedViewPost[]
 }
 

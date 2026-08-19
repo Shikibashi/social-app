@@ -1,6 +1,5 @@
 import {useMemo} from 'react'
 import {api} from '@bsky/sdk'
-import {type ModerationCause} from '@bsky/sdk/moderation'
 import {msg} from '@lingui/core/macro'
 import {useLingui} from '@lingui/react'
 
@@ -13,6 +12,7 @@ import {type Props as SVGIconProps} from '#/components/icons/common'
 import {EyeSlash_Stroke2_Corner0_Rounded as EyeSlash} from '#/components/icons/EyeSlash'
 import {Warning_Stroke2_Corner0_Rounded as Warning} from '#/components/icons/Warning'
 import {type AppModerationCause} from '#/components/Pills'
+import {type ModerationCause} from '../moderation'
 import {useGlobalLabelStrings} from './useGlobalLabelStrings'
 import {getDefinition, getLabelStrings} from './useLabelInfo'
 

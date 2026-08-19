@@ -36,8 +36,8 @@ appId: xyz.blueskyweb.app
 - tapOn: "Unmute"
 
 - tapOn: "Subscribe to this list"
-- tapOn: "Block accounts"
-- tapOn: "Block list"
-- tapOn: "Unblock"
+- tapOn: "Review accounts"
+- assertVisible: "Review accounts"
+- assertVisible: "Select accounts to block"
 
   # the rest of the behaviors are tested in curate-lists.yml

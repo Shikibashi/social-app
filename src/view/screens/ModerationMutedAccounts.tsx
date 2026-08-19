@@ -99,7 +99,7 @@ export function ModerationMutedAccounts({}: Props) {
     )
   }
   return (
-    <Layout.Screen testID="mutedAccountsScreen">
+    <Layout.Screen testID="mutedAccountsScreen" ecwMode="workbench">
       <Layout.Header.Outer>
         <Layout.Header.BackButton />
         <Layout.Header.Content>

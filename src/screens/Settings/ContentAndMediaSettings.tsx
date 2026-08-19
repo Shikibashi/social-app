@@ -45,7 +45,7 @@ export function ContentAndMediaSettingsScreen({}: Props) {
     useTrendingSettingsApi()
 
   return (
-    <Layout.Screen>
+    <Layout.Screen ecwMode="workbench">
       <Layout.Header.Outer>
         <Layout.Header.BackButton />
         <Layout.Header.Content>

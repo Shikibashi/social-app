@@ -1,6 +1,10 @@
 import {useCallback} from 'react'
 import {type Client} from '@atproto/lex'
-import {AtUri, type AtUriString, type HandleString} from '@atproto/syntax'
+import {
+  AtUri,
+  type AtUriString,
+  type HandleString,
+} from '@atproto/syntax'
 import {deleteLike, deletePost, deleteRepost, like, repost} from '@bsky/sdk'
 import {
   type QueryClient,
@@ -12,7 +16,14 @@ import {
 import {useToggleMutationQueue} from '#/lib/hooks/useToggleMutationQueue'
 import {updatePostShadow} from '#/state/cache/post-shadow'
 import {type Shadow} from '#/state/cache/types'
-import {useAppviewClient, usePdsClient, useSession} from '#/state/session'
+import {hasDirectViewerBlock} from '#/state/queries/public-visibility'
+import {hasViewerBlockBoundary} from '#/state/queries/usePostThread/blocked'
+import {
+  useAppviewClient,
+  usePdsClient,
+  usePublicAppviewClient,
+  useSession,
+} from '#/state/session'
 import * as userActionHistory from '#/state/userActionHistory'
 import {useAnalytics} from '#/analytics'
 import {type Metrics, toClout} from '#/analytics/metrics'
@@ -20,17 +31,78 @@ import {app, com} from '#/lexicons'
 import {useIsThreadMuted, useSetThreadMute} from '../cache/thread-mutes'
 import {findProfileQueryData} from './profile'
 
-const RQKEY_ROOT = 'post'
-export const RQKEY = (postUri: string) => [RQKEY_ROOT, postUri]
+async function viewerOwnsDirectBlockForPost(
+  client: Client,
+  uri: string,
+): Promise<boolean> {
+  try {
+    const urip = new AtUri(uri)
+    if (!urip.host.startsWith('did:')) {
+      const data = await client.call(com.atproto.identity.resolveHandle, {
+        handle: urip.host as HandleString,
+      })
+      urip.host = data.did
+    }
+    const profile = await client.call(app.bsky.actor.getProfile, {
+      actor: urip.host,
+    })
+    return hasDirectViewerBlock(profile)
+  } catch {
+    // Relationship authority is required before crossing to a public read.
+    return true
+  }
+}
 
-export function usePostQuery(uri: string | undefined) {
+const RQKEY_ROOT = 'post'
+export const RQKEY = (postUri: string, allowPublicFallback = false) =>
+  allowPublicFallback
+    ? [RQKEY_ROOT, postUri, true]
+    : [RQKEY_ROOT, postUri]
+
+export function usePostQuery(
+  uri: string | undefined,
+  opts: {allowPublicFallback?: boolean} = {},
+) {
   const client = useAppviewClient()
+  const publicClient = usePublicAppviewClient()
+  const allowPublicFallback = opts.allowPublicFallback === true
   return useQuery<app.bsky.feed.defs.PostView>({
-    queryKey: RQKEY(uri || ''),
+    queryKey: RQKEY(uri || '', allowPublicFallback),
     queryFn: async () => {
       if (!uri) throw new Error('[unreachable] No URI provided')
 
-      const post = await fetchPost(client, uri)
+      let post: app.bsky.feed.defs.PostView | undefined
+      try {
+        post = await fetchPost(client, uri)
+      } catch (error) {
+        if (!allowPublicFallback) throw error
+        if (await viewerOwnsDirectBlockForPost(client, uri)) {
+          throw error
+        }
+        try {
+          post = await fetchPost(publicClient, uri)
+        } catch {
+          throw error
+        }
+      }
+
+      const viewer = post?.author.viewer
+      const needsPublicRead = Boolean(
+        allowPublicFallback &&
+        post &&
+        viewer?.blockedBy &&
+        !hasViewerBlockBoundary(post),
+      )
+      if (allowPublicFallback && (!post || needsPublicRead)) {
+        if (!post || !hasDirectViewerBlock(post.author)) {
+          try {
+            const publicPost = await fetchPost(publicClient, uri)
+            if (publicPost) post = publicPost
+          } catch {
+            // Keep the authenticated post when the public retry is unavailable.
+          }
+        }
+      }
       if (post) {
         return post
       }

@@ -1,6 +1,18 @@
 import {isDidString} from '@atproto/lex'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 
+import {
+  defaultContentFilterPolicy,
+  isContextualContentFilterPolicy,
+  type ContentFilterPolicy,
+  validateContentFilterPolicy,
+} from '#/lib/feed-sovereignty/content-filter'
+import {
+  defaultLocalCurationConfig,
+  isLegacyRadlibCurationConfig,
+  type RadlibCurationConfig,
+  validateRadlibCurationConfig,
+} from '#/lib/feed-sovereignty/radlib-curation'
 import {emitPersonalizationChanged} from '#/state/events'
 
 export const PERSONALIZATION_FORMAT = 'org.radical-liberal.personalization'
@@ -29,11 +41,19 @@ export type ExplicitPreferences = {
     uri: string
     preference: 'prefer' | 'avoid'
   }>
-  quietMode: {enabled: boolean; start?: string; end?: string}
+  inferredInterestsEnabled?: boolean
+  quietMode: {
+    enabled: boolean
+    start?: string
+    end?: string
+    userConfigured?: boolean
+  }
   visibleMetrics: string[]
   languages: string[]
   topics: Record<string, number>
   classifierModules: Record<string, 'prefer' | 'neutral' | 'avoid'>
+  contentFilterPolicy?: ContentFilterPolicy
+  radlibCuration?: RadlibCurationConfig
 }
 
 export type LearnedProfile = {
@@ -114,11 +134,14 @@ export const defaultExplicitPreferences: ExplicitPreferences = {
   explicitInterests: [],
   explicitAuthors: [],
   explicitPostPreferences: [],
-  quietMode: {enabled: false},
+  inferredInterestsEnabled: true,
+  quietMode: {enabled: true, userConfigured: false},
   visibleMetrics: [],
   languages: [],
   topics: {},
   classifierModules: {},
+  contentFilterPolicy: defaultContentFilterPolicy,
+  radlibCuration: defaultLocalCurationConfig,
 }
 
 export const defaultLearnedProfile: LearnedProfile = {
@@ -142,6 +165,31 @@ export const defaultServiceConfiguration: ServiceConfiguration = {
   labelers: [],
 }
 
+function freshDefaultExplicitPreferences(): ExplicitPreferences {
+  return {
+    ...defaultExplicitPreferences,
+    quietMode: {...defaultExplicitPreferences.quietMode},
+    explicitInterests: [],
+    explicitAuthors: [],
+    explicitPostPreferences: [],
+    languages: [],
+    topics: {},
+    classifierModules: {},
+    contentFilterPolicy: {
+      ...defaultContentFilterPolicy,
+      termPacks: [...defaultContentFilterPolicy.termPacks],
+      customTerms: [...defaultContentFilterPolicy.customTerms],
+      excludedAuthorDids: [...defaultContentFilterPolicy.excludedAuthorDids],
+    },
+    radlibCuration: {
+      ...defaultLocalCurationConfig,
+      curationTerms: [...(defaultLocalCurationConfig.curationTerms ?? [])],
+      excludedTerms: [...defaultLocalCurationConfig.excludedTerms],
+      excludedAuthorDids: [...defaultLocalCurationConfig.excludedAuthorDids],
+    },
+  }
+}
+
 export function createPersonalizationState(
   accountDid: string,
   patch: Partial<
@@ -157,7 +205,7 @@ export function createPersonalizationState(
     format: PERSONALIZATION_FORMAT,
     version: PERSONALIZATION_VERSION,
     accountDid,
-    explicit: {...defaultExplicitPreferences, ...patch.explicit},
+    explicit: {...freshDefaultExplicitPreferences(), ...patch.explicit},
     learned: {...defaultLearnedProfile, ...patch.learned},
     ephemeral: {...defaultEphemeralState, ...patch.ephemeral},
     services: {...defaultServiceConfiguration, ...patch.services},
@@ -186,7 +234,7 @@ export function exportPersonalization(
     accountDid: state.accountDid,
     profile,
     provenance: {
-      client: provenance.client ?? 'radical-liberal-social-app',
+      client: provenance.client ?? 'social-app',
       clientVersion: provenance.clientVersion,
       algorithmProfiles: provenance.algorithmProfiles ?? [],
     },
@@ -251,7 +299,7 @@ export function migratePersonalization(input: unknown): PersonalizationState {
     version: PERSONALIZATION_VERSION,
     accountDid,
     explicit: {
-      ...defaultExplicitPreferences,
+      ...freshDefaultExplicitPreferences(),
       ...explicit,
     },
     learned: isPlainObject(profile.learned)
@@ -435,9 +483,36 @@ export function resetExplicitState(
   validatePersonalizationState(state)
   return {
     ...state,
-    explicit: {...defaultExplicitPreferences},
+    explicit: freshDefaultExplicitPreferences(),
     updatedAt: new Date().toISOString(),
   }
+}
+
+function migrateImplicitDefaults(
+  state: PersonalizationState,
+): PersonalizationState {
+  let explicit = state.explicit
+  let changed = false
+
+  // Early builds persisted the project-specific profile merely by touching
+  // another setting. Replace that implicit state for accounts that never
+  // changed it, while leaving any edited profile untouched.
+  if (isContextualContentFilterPolicy(explicit.contentFilterPolicy)) {
+    explicit = {
+      ...explicit,
+      contentFilterPolicy: freshDefaultExplicitPreferences().contentFilterPolicy,
+    }
+    changed = true
+  }
+  if (isLegacyRadlibCurationConfig(explicit.radlibCuration)) {
+    explicit = {
+      ...explicit,
+      radlibCuration: freshDefaultExplicitPreferences().radlibCuration,
+    }
+    changed = true
+  }
+
+  return changed ? {...state, explicit} : state
 }
 
 export async function loadPersonalization(
@@ -456,12 +531,24 @@ export async function loadPersonalization(
       parsed.version === PERSONALIZATION_VERSION &&
       'profile' in parsed
     ) {
-      return importPersonalization(value, accountDid)
+      return migrateImplicitDefaults(importPersonalization(value, accountDid))
     }
-    validatePersonalizationState(parsed as PersonalizationState)
-    if ((parsed as PersonalizationState).accountDid !== accountDid)
+    const stored = parsed as PersonalizationState
+    const migrated =
+      isPlainObject(stored.explicit) &&
+      stored.explicit.inferredInterestsEnabled === undefined
+        ? {
+            ...stored,
+            explicit: {
+              ...stored.explicit,
+              inferredInterestsEnabled: true,
+            },
+          }
+        : stored
+    validatePersonalizationState(migrated)
+    if (migrated.accountDid !== accountDid)
       throw new Error('Personalization account mismatch')
-    return parsed as PersonalizationState
+    return migrateImplicitDefaults(migrated)
   } catch {
     return createPersonalizationState(accountDid)
   }
@@ -496,6 +583,32 @@ export async function setExplicitPostPreference(
     explicit: {
       ...state.explicit,
       explicitPostPreferences: nextPreferences.slice(-MAX_ARRAY_ITEMS),
+    },
+    updatedAt: new Date().toISOString(),
+  })
+}
+
+export async function clearExplicitPostPreference(
+  accountDid: string,
+  uri: string,
+): Promise<void> {
+  if (!uri || uri.length > MAX_STRING_LENGTH) {
+    throw new Error('Invalid explicit post preference URI')
+  }
+  const state = await loadPersonalization(accountDid)
+  const nextPreferences = state.explicit.explicitPostPreferences.filter(
+    item => item.uri !== uri,
+  )
+  if (
+    nextPreferences.length === state.explicit.explicitPostPreferences.length
+  ) {
+    return
+  }
+  await savePersonalization({
+    ...state,
+    explicit: {
+      ...state.explicit,
+      explicitPostPreferences: nextPreferences,
     },
     updatedAt: new Date().toISOString(),
   })
@@ -572,11 +685,14 @@ function validateExplicit(
     'explicitInterests',
     'explicitAuthors',
     'explicitPostPreferences',
+    'inferredInterestsEnabled',
     'quietMode',
     'visibleMetrics',
     'languages',
     'topics',
     'classifierModules',
+    'contentFilterPolicy',
+    'radlibCuration',
   ])
   for (const field of [
     'discovery',
@@ -595,6 +711,11 @@ function validateExplicit(
   )
     throw new Error('Invalid selected feed preset')
   validateStringArray(value.explicitInterests, 'explicitInterests')
+  if (
+    value.inferredInterestsEnabled !== undefined &&
+    typeof value.inferredInterestsEnabled !== 'boolean'
+  )
+    throw new Error('Invalid inferred interest setting')
   validateStringArray(value.languages, 'languages')
   validateStringArray(value.visibleMetrics, 'visibleMetrics')
   if (
@@ -626,9 +747,23 @@ function validateExplicit(
   }
   validateNumberMap(value.topics, 'topics')
   validateChoiceMap(value.classifierModules, 'classifierModules')
+  if (value.contentFilterPolicy !== undefined) {
+    validateContentFilterPolicy(value.contentFilterPolicy)
+    for (const did of value.contentFilterPolicy.excludedAuthorDids) {
+      assertDid(did, 'content filter excluded author DID')
+    }
+  }
+  if (value.radlibCuration !== undefined) {
+    validateRadlibCurationConfig(value.radlibCuration)
+    for (const did of value.radlibCuration.excludedAuthorDids) {
+      assertDid(did, 'radical-liberal curation excluded author DID')
+    }
+  }
   if (
     !isPlainObject(value.quietMode) ||
-    typeof value.quietMode.enabled !== 'boolean'
+    typeof value.quietMode.enabled !== 'boolean' ||
+    (value.quietMode.userConfigured !== undefined &&
+      typeof value.quietMode.userConfigured !== 'boolean')
   )
     throw new Error('Invalid quiet mode')
 }

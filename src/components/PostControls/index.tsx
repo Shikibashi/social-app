@@ -14,6 +14,7 @@ import {
   usePostLikeMutationQueue,
   usePostRepostMutationQueue,
 } from '#/state/queries/post'
+import {hasViewerInteractionBoundary} from '#/state/queries/public-visibility'
 import {useRequireAuth} from '#/state/session'
 import {
   ProgressGuideAction,
@@ -33,6 +34,7 @@ import {
   PostControlButtonText,
 } from './PostControlButton'
 import {PostMenuButton} from './PostMenu'
+import {PostVoteButtons} from './PostVoteButtons'
 import {RepostButton} from './RepostButton'
 import {ShareMenuButton} from './ShareMenu'
 
@@ -90,11 +92,10 @@ let PostControls = ({
   const {sendInteraction} = useFeedFeedbackContext()
   const {enabled: quietMetricsEnabled} = useQuietMetrics()
   const {captureAction} = useProgressGuideControls()
-  const isBlocked = Boolean(
-    post.author.viewer?.blocking ||
-    post.author.viewer?.blockedBy ||
-    post.author.viewer?.blockingByList,
-  )
+  const isBlocked = hasViewerInteractionBoundary(post.author)
+  // The shadow cache uses this sentinel while the PDS write is in flight. It
+  // is intentionally not a protocol value and is only used for local UX.
+  const isLikePending = (post.viewer?.like as string | undefined) === 'pending'
   const replyDisabled = post.viewer?.replyDisabled
   const {gtPhone} = useBreakpoints()
   const formatPostStatCount = useFormatPostStatCount()
@@ -202,166 +203,177 @@ let PostControls = ({
   })
 
   return (
-    <View
-      style={[
-        a.flex_row,
-        a.justify_between,
-        a.align_center,
-        !big && a.pt_2xs,
-        a.gap_md,
-        style,
-      ]}>
-      <View style={[a.flex_row, a.flex_1, {maxWidth: 320}]}>
-        <View
-          style={[
-            a.flex_1,
-            a.align_start,
-            {marginLeft: big ? -2 : -6},
-            replyDisabled ? {opacity: 0.6} : undefined,
-          ]}>
-          <PostControlButton
-            testID="replyBtn"
-            onPress={
-              !replyDisabled
-                ? () =>
-                    requireAuth(() => {
-                      ax.metric('post:clickReply', {
-                        uri: post.uri,
-                        authorDid: post.author.did,
-                        logContext,
-                        feedDescriptor,
+    <View style={[a.gap_2xs, style]}>
+      <View
+        style={[
+          a.flex_row,
+          a.justify_between,
+          a.align_center,
+          !big && a.pt_2xs,
+          a.gap_md,
+        ]}>
+        <View style={[a.flex_row, a.flex_1, {maxWidth: 320}]}>
+          <View
+            style={[
+              a.flex_1,
+              a.align_start,
+              {marginLeft: big ? -2 : -6},
+              replyDisabled ? {opacity: 0.6} : undefined,
+            ]}>
+            <PostControlButton
+              testID="replyBtn"
+              onPress={
+                !replyDisabled
+                  ? () =>
+                      requireAuth(() => {
+                        ax.metric('post:clickReply', {
+                          uri: post.uri,
+                          authorDid: post.author.did,
+                          logContext,
+                          feedDescriptor,
+                        })
+                        onPressReply()
                       })
-                      onPressReply()
-                    })
-                : undefined
-            }
-            label={
-              quietMetricsEnabled
-                ? l`Reply`
-                : l({
-                    message: `Reply (${plural(post.replyCount || 0, {
-                      one: '# reply',
-                      other: '# replies',
-                    })})`,
-                    comment:
-                      'Accessibility label for the reply button, verb form followed by number of replies and noun form',
-                  })
-            }
-            big={big}>
-            <PostControlButtonIcon icon={Bubble} />
-            {!quietMetricsEnabled &&
-              typeof post.replyCount !== 'undefined' &&
-              post.replyCount > 0 && (
-                <PostControlButtonText>
-                  {formatPostStatCount(post.replyCount)}
-                </PostControlButtonText>
-              )}
-          </PostControlButton>
-        </View>
-        <View style={[a.flex_1, a.align_start]}>
-          <RepostButton
-            isReposted={!!post.viewer?.repost}
-            repostCount={(post.repostCount ?? 0) + (post.quoteCount ?? 0)}
-            onRepost={() => void onRepost()}
-            onQuote={onQuote}
-            big={big}
-            embeddingDisabled={Boolean(post.viewer?.embeddingDisabled)}
-            hideCount={quietMetricsEnabled}
-          />
-        </View>
-        <View style={[a.flex_1, a.align_start]}>
-          <PostControlButton
-            testID="likeBtn"
-            big={big}
-            active={Boolean(post.viewer?.like)}
-            activeColor={t.palette.pink}
-            onPress={() => requireAuth(() => onPressToggleLike())}
-            label={
-              quietMetricsEnabled
-                ? post.viewer?.like
-                  ? l`Unlike`
-                  : l`Like`
-                : post.viewer?.like
-                  ? l({
-                      message: `Unlike (${plural(post.likeCount || 0, {
-                        one: '# like',
-                        other: '# likes',
-                      })})`,
-                      comment:
-                        'Accessibility label for the like button when the post has been liked, verb followed by number of likes and noun',
-                    })
+                  : undefined
+              }
+              label={
+                quietMetricsEnabled
+                  ? l`Reply`
                   : l({
-                      message: `Like (${plural(post.likeCount || 0, {
-                        one: '# like',
-                        other: '# likes',
+                      message: `Reply (${plural(post.replyCount || 0, {
+                        one: '# reply',
+                        other: '# replies',
                       })})`,
                       comment:
-                        'Accessibility label for the like button when the post has not been liked, verb form followed by number of likes and noun form',
+                        'Accessibility label for the reply button, verb form followed by number of replies and noun form',
                     })
-            }>
-            <AnimatedLikeIcon
-              isLiked={Boolean(post.viewer?.like)}
-              big={big}
-              hasBeenToggled={hasLikeIconBeenToggled}
-            />
-            {!quietMetricsEnabled && (
-              <CountWheel
-                count={post.likeCount ?? 0}
-                isToggled={Boolean(post.viewer?.like)}
-                hasBeenToggled={hasLikeIconBeenToggled}
-                renderCount={({count}) => (
-                  <PostControlButtonText testID="likeCount">
-                    {formatPostStatCount(count)}
+              }
+              big={big}>
+              <PostControlButtonIcon icon={Bubble} />
+              {!quietMetricsEnabled &&
+                typeof post.replyCount !== 'undefined' &&
+                post.replyCount > 0 && (
+                  <PostControlButtonText>
+                    {formatPostStatCount(post.replyCount)}
                   </PostControlButtonText>
                 )}
+            </PostControlButton>
+          </View>
+          <View style={[a.flex_1, a.align_start]}>
+            <RepostButton
+              isReposted={!!post.viewer?.repost}
+              repostCount={(post.repostCount ?? 0) + (post.quoteCount ?? 0)}
+              onRepost={() => void onRepost()}
+              onQuote={onQuote}
+              big={big}
+              embeddingDisabled={Boolean(post.viewer?.embeddingDisabled)}
+              hideCount={quietMetricsEnabled}
+            />
+          </View>
+          <View style={[a.flex_1, a.align_start]}>
+            <PostControlButton
+              testID="likeBtn"
+              big={big}
+              active={Boolean(post.viewer?.like)}
+              activeColor={t.palette.pink}
+              onPress={() => requireAuth(() => onPressToggleLike())}
+              accessibilityState={{busy: isLikePending}}
+              label={
+                quietMetricsEnabled
+                  ? post.viewer?.like
+                    ? l`Unlike`
+                    : l`Like`
+                  : post.viewer?.like
+                    ? l({
+                        message: `Unlike (${plural(post.likeCount || 0, {
+                          one: '# like',
+                          other: '# likes',
+                        })})`,
+                        comment:
+                          'Accessibility label for the like button when the post has been liked, verb followed by number of likes and noun',
+                      })
+                    : l({
+                        message: `Like (${plural(post.likeCount || 0, {
+                          one: '# like',
+                          other: '# likes',
+                        })})`,
+                        comment:
+                          'Accessibility label for the like button when the post has not been liked, verb form followed by number of likes and noun form',
+                      })
+              }>
+              <AnimatedLikeIcon
+                isLiked={Boolean(post.viewer?.like)}
+                big={big}
+                hasBeenToggled={hasLikeIconBeenToggled}
               />
-            )}
-          </PostControlButton>
+              {isLikePending && (
+                <PostControlButtonText>…</PostControlButtonText>
+              )}
+              {!quietMetricsEnabled && (
+                <CountWheel
+                  count={post.likeCount ?? 0}
+                  isToggled={Boolean(post.viewer?.like)}
+                  hasBeenToggled={hasLikeIconBeenToggled}
+                  renderCount={({count}) => (
+                    <PostControlButtonText testID="likeCount">
+                      {formatPostStatCount(count)}
+                    </PostControlButtonText>
+                  )}
+                />
+              )}
+            </PostControlButton>
+          </View>
+          <PostVoteButtons
+            post={post}
+            big={big}
+            feedContext={feedContext}
+            onShowLess={onShowLess}
+            style={a.ml_xs}
+          />
         </View>
-        {/* Spacer! */}
-        <View />
-      </View>
-      <View style={[a.flex_row, a.justify_end, secondaryControlSpacingStyles]}>
-        <BookmarkButton
-          post={post}
-          big={big}
-          logContext={logContext}
-          hitSlop={{
-            right: secondaryControlSpacingStyles.gap / 2,
-          }}
-        />
-        <ShareMenuButton
-          testID="postShareBtn"
-          post={post}
-          big={big}
-          record={record}
-          richText={richText}
-          timestamp={post.indexedAt}
-          threadgateRecord={threadgateRecord}
-          onShare={onShare}
-          hitSlop={{
-            left: secondaryControlSpacingStyles.gap / 2,
-            right: secondaryControlSpacingStyles.gap / 2,
-          }}
-          logContext={logContext}
-        />
-        <PostMenuButton
-          testID="postDropdownBtn"
-          post={post}
-          postFeedContext={feedContext}
-          postReqId={reqId}
-          big={big}
-          record={record}
-          richText={richText}
-          timestamp={post.indexedAt}
-          threadgateRecord={threadgateRecord}
-          onShowLess={onShowLess}
-          hitSlop={{
-            left: secondaryControlSpacingStyles.gap / 2,
-          }}
-          logContext={logContext}
-          forceGoogleTranslate={forceGoogleTranslate}
-        />
+        <View
+          style={[a.flex_row, a.justify_end, secondaryControlSpacingStyles]}>
+          <BookmarkButton
+            post={post}
+            big={big}
+            logContext={logContext}
+            hitSlop={{
+              right: secondaryControlSpacingStyles.gap / 2,
+            }}
+          />
+          <ShareMenuButton
+            testID="postShareBtn"
+            post={post}
+            big={big}
+            record={record}
+            richText={richText}
+            timestamp={post.indexedAt}
+            threadgateRecord={threadgateRecord}
+            onShare={onShare}
+            hitSlop={{
+              left: secondaryControlSpacingStyles.gap / 2,
+              right: secondaryControlSpacingStyles.gap / 2,
+            }}
+            logContext={logContext}
+          />
+          <PostMenuButton
+            testID="postDropdownBtn"
+            post={post}
+            postFeedContext={feedContext}
+            postReqId={reqId}
+            big={big}
+            record={record}
+            richText={richText}
+            timestamp={post.indexedAt}
+            threadgateRecord={threadgateRecord}
+            onShowLess={onShowLess}
+            hitSlop={{
+              left: secondaryControlSpacingStyles.gap / 2,
+            }}
+            logContext={logContext}
+            forceGoogleTranslate={forceGoogleTranslate}
+          />
+        </View>
       </View>
     </View>
   )

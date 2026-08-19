@@ -1,0 +1,38 @@
+{
+  "lexicon": 1,
+  "id": "org.radlib.private.createCommunity",
+  "defs": {
+    "main": {
+      "type": "procedure",
+      "description": "Create a community with an explicit public, restricted, invite-only, or private boundary.",
+      "input": {
+        "encoding": "application/json",
+        "schema": {
+          "type": "object",
+          "required": ["visibility", "name"],
+          "properties": {
+            "visibility": { "type": "string", "knownValues": ["public", "restricted", "invite-only", "private"] },
+            "name": { "type": "string", "minLength": 1, "maxLength": 120 },
+            "description": { "type": "string", "maxLength": 1000 }
+          }
+        }
+      },
+      "output": {
+        "encoding": "application/json",
+        "schema": {
+          "type": "object",
+          "required": ["uri", "authorityDid", "ownerDid", "visibility", "name", "createdAt"],
+          "properties": {
+            "uri": { "type": "string" },
+            "authorityDid": { "type": "string", "format": "did" },
+            "ownerDid": { "type": "string", "format": "did" },
+            "visibility": { "type": "string", "knownValues": ["public", "restricted", "invite-only", "private"] },
+            "name": { "type": "string" },
+            "description": { "type": "string" },
+            "createdAt": { "type": "string", "format": "datetime" }
+          }
+        }
+      }
+    }
+  }
+}

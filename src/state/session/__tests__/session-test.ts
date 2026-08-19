@@ -12,10 +12,6 @@ jest.mock('jwt-decode', () => ({
 }))
 
 jest.mock('../../birthdate')
-jest.mock('../../../ageAssurance/data')
-jest.mock('../../../ageAssurance/state', () => ({
-  unsafeGetAndComputeAgeAssurance: () => ({state: {}}),
-}))
 jest.mock('#/lib/notifications/notifications', () => ({
   unregisterPushToken(_clients: unknown[]) {
     return Promise.resolve()
@@ -70,7 +66,7 @@ describe('session', () => {
         "accounts": [],
         "currentBundleState": {
           "bundle": {
-            "service": "https://public.api.bsky.app/",
+            "service": "https://bsky.social/",
           },
           "did": undefined,
         },
@@ -159,7 +155,7 @@ describe('session', () => {
         ],
         "currentBundleState": {
           "bundle": {
-            "service": "https://public.api.bsky.app/",
+            "service": "https://bsky.social/",
           },
           "did": undefined,
         },
@@ -497,7 +493,7 @@ describe('session', () => {
         ],
         "currentBundleState": {
           "bundle": {
-            "service": "https://public.api.bsky.app/",
+            "service": "https://bsky.social/",
           },
           "did": undefined,
         },
@@ -559,7 +555,7 @@ describe('session', () => {
         ],
         "currentBundleState": {
           "bundle": {
-            "service": "https://public.api.bsky.app/",
+            "service": "https://bsky.social/",
           },
           "did": undefined,
         },
@@ -652,7 +648,7 @@ describe('session', () => {
         "accounts": [],
         "currentBundleState": {
           "bundle": {
-            "service": "https://public.api.bsky.app/",
+            "service": "https://bsky.social/",
           },
           "did": undefined,
         },
@@ -832,7 +828,7 @@ describe('session', () => {
         ],
         "currentBundleState": {
           "bundle": {
-            "service": "https://public.api.bsky.app/",
+            "service": "https://bsky.social/",
           },
           "did": undefined,
         },
@@ -1524,7 +1520,7 @@ describe('session', () => {
         ],
         "currentBundleState": {
           "bundle": {
-            "service": "https://public.api.bsky.app/",
+            "service": "https://bsky.social/",
           },
           "did": undefined,
         },
@@ -1681,7 +1677,7 @@ describe('session', () => {
         ],
         "currentBundleState": {
           "bundle": {
-            "service": "https://public.api.bsky.app/",
+            "service": "https://bsky.social/",
           },
           "did": undefined,
         },

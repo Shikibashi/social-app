@@ -4,7 +4,7 @@ import {
   hasMutedWord,
   moderateNotification,
   type ModerationOpts,
-} from '@bsky/sdk/moderation'
+} from '#/lib/moderation'
 import {type QueryClient} from '@tanstack/react-query'
 import chunk from 'lodash.chunk'
 

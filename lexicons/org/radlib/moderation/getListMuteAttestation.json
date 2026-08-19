@@ -1,0 +1,35 @@
+{
+  "lexicon": 1,
+  "id": "org.radlib.moderation.getListMuteAttestation",
+  "defs": {
+    "main": {
+      "type": "procedure",
+      "description": "Returns a provider-signed private-list-mute claim. Fork-specific; not an AT Protocol standard.",
+      "input": {
+        "encoding": "application/json",
+        "schema": {
+          "type": "object",
+          "required": ["list", "listUriHash", "nonce"],
+          "properties": {
+            "list": {"type": "string", "format": "at-uri"},
+            "listUriHash": {"type": "string", "maxLength": 64},
+            "nonce": {"type": "string", "minLength": 16, "maxLength": 128}
+          }
+        }
+      },
+      "output": {
+        "encoding": "application/json",
+        "schema": {
+          "type": "object",
+          "required": ["attestation"],
+          "properties": {
+            "attestation": {
+              "type": "ref",
+              "ref": "org.radlib.moderation.defs#attestation"
+            }
+          }
+        }
+      }
+    }
+  }
+}

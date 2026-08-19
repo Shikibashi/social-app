@@ -1,5 +1,5 @@
 import {useCallback} from 'react'
-import {moderateProfile, type ModerationOpts} from '@bsky/sdk/moderation'
+import {moderateProfile, type ModerationOpts} from '#/lib/moderation'
 import {keepPreviousData, useQuery, useQueryClient} from '@tanstack/react-query'
 
 import {isJustAMute, moduiContainsHideableOffense} from '#/lib/moderation'

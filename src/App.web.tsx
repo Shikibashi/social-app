@@ -1,5 +1,6 @@
 import '#/logger/sentry/setup' // must be near top
 import './style.css'
+import './ecw.css'
 
 import {Fragment, useEffect, useState} from 'react'
 import {KeyboardProvider as KeyboardControllerProvider} from 'react-native-keyboard-controller'
@@ -7,6 +8,7 @@ import {SafeAreaProvider} from 'react-native-safe-area-context'
 import {useLingui} from '@lingui/react/macro'
 import * as Sentry from '@sentry/react-native'
 
+import {PRODUCT_NAME, PUBLIC_WEB_ORIGIN} from '#/lib/brand'
 import {Provider as HotkeysProvider} from '#/lib/hotkeys'
 import {QueryProvider} from '#/lib/react-query'
 import {ThemeProvider} from '#/lib/ThemeContext'
@@ -60,10 +62,6 @@ import {Provider as VideoVolumeProvider} from '#/components/Post/Embed/VideoEmbe
 import * as Toast from '#/components/Toast'
 import {ToastOutlet} from '#/components/Toast'
 import {
-  prefetchAgeAssuranceConfig,
-  Provider as AgeAssuranceV2Provider,
-} from '#/ageAssurance'
-import {
   AnalyticsContext,
   AnalyticsFeaturesContext,
   features,
@@ -82,9 +80,36 @@ import {Provider as HideBottomBarBorderProvider} from './lib/hooks/useHideBottom
  * Begin geolocation ASAP
  */
 void Geo.resolve()
-void prefetchAgeAssuranceConfig()
 void prefetchLiveEvents()
 void prefetchAppConfig()
+
+function WebMetadata() {
+  useEffect(() => {
+    const canonicalId = 'social-site-canonical'
+    let canonical = document.getElementById(
+      canonicalId,
+    ) as HTMLLinkElement | null
+    if (!canonical) {
+      canonical = document.createElement('link')
+      canonical.id = canonicalId
+      canonical.rel = 'canonical'
+      document.head.appendChild(canonical)
+    }
+    canonical.href = `${PUBLIC_WEB_ORIGIN}/`
+
+    let applicationName = document.querySelector(
+      'meta[name="application-name"]',
+    ) as HTMLMetaElement | null
+    if (!applicationName) {
+      applicationName = document.createElement('meta')
+      applicationName.name = 'application-name'
+      document.head.appendChild(applicationName)
+    }
+    applicationName.content = PRODUCT_NAME
+  }, [])
+
+  return null
+}
 
 function InnerApp() {
   const [isReady, setIsReady] = useState(false)
@@ -136,49 +161,47 @@ function InnerApp() {
                       <BetaUserStorageSync />
                       <PolicyUpdateOverlayProvider>
                         <LiveEventsProvider>
-                          <AgeAssuranceV2Provider>
-                            <ComposerProvider>
-                              <MessagesProvider>
-                                {/* LabelDefsProvider MUST come before ModerationOptsProvider */}
-                                <LabelDefsProvider>
-                                  <ModerationOptsProvider>
-                                    <LoggedOutViewProvider>
-                                      <SelectedFeedProvider>
-                                        <HiddenRepliesProvider>
-                                          <HomeBadgeProvider>
-                                            <UnreadNotifsProvider>
-                                              <BackgroundNotificationPreferencesProvider>
-                                                <MutedThreadsProvider>
-                                                  <SafeAreaProvider>
-                                                    <ProgressGuideProvider>
-                                                      <ServiceConfigProvider>
-                                                        <EmailVerificationProvider>
-                                                          <HideBottomBarBorderProvider>
-                                                            <IntentDialogProvider>
-                                                              <TranslateOnDeviceProvider>
-                                                                <HotkeysProvider>
-                                                                  <Shell />
-                                                                  <ToastOutlet />
-                                                                </HotkeysProvider>
-                                                              </TranslateOnDeviceProvider>
-                                                            </IntentDialogProvider>
-                                                          </HideBottomBarBorderProvider>
-                                                        </EmailVerificationProvider>
-                                                      </ServiceConfigProvider>
-                                                    </ProgressGuideProvider>
-                                                  </SafeAreaProvider>
-                                                </MutedThreadsProvider>
-                                              </BackgroundNotificationPreferencesProvider>
-                                            </UnreadNotifsProvider>
-                                          </HomeBadgeProvider>
-                                        </HiddenRepliesProvider>
-                                      </SelectedFeedProvider>
-                                    </LoggedOutViewProvider>
-                                  </ModerationOptsProvider>
-                                </LabelDefsProvider>
-                              </MessagesProvider>
-                            </ComposerProvider>
-                          </AgeAssuranceV2Provider>
+                          <ComposerProvider>
+                            <MessagesProvider>
+                              {/* LabelDefsProvider MUST come before ModerationOptsProvider */}
+                              <LabelDefsProvider>
+                                <ModerationOptsProvider>
+                                  <LoggedOutViewProvider>
+                                    <SelectedFeedProvider>
+                                      <HiddenRepliesProvider>
+                                        <HomeBadgeProvider>
+                                          <UnreadNotifsProvider>
+                                            <BackgroundNotificationPreferencesProvider>
+                                              <MutedThreadsProvider>
+                                                <SafeAreaProvider>
+                                                  <ProgressGuideProvider>
+                                                    <ServiceConfigProvider>
+                                                      <EmailVerificationProvider>
+                                                        <HideBottomBarBorderProvider>
+                                                          <IntentDialogProvider>
+                                                            <TranslateOnDeviceProvider>
+                                                              <HotkeysProvider>
+                                                                <Shell />
+                                                                <ToastOutlet />
+                                                              </HotkeysProvider>
+                                                            </TranslateOnDeviceProvider>
+                                                          </IntentDialogProvider>
+                                                        </HideBottomBarBorderProvider>
+                                                      </EmailVerificationProvider>
+                                                    </ServiceConfigProvider>
+                                                  </ProgressGuideProvider>
+                                                </SafeAreaProvider>
+                                              </MutedThreadsProvider>
+                                            </BackgroundNotificationPreferencesProvider>
+                                          </UnreadNotifsProvider>
+                                        </HomeBadgeProvider>
+                                      </HiddenRepliesProvider>
+                                    </SelectedFeedProvider>
+                                  </LoggedOutViewProvider>
+                                </ModerationOptsProvider>
+                              </LabelDefsProvider>
+                            </MessagesProvider>
+                          </ComposerProvider>
                         </LiveEventsProvider>
                       </PolicyUpdateOverlayProvider>
                     </QueryProvider>
@@ -212,6 +235,7 @@ function App() {
    */
   return (
     <Geo.Provider>
+      <WebMetadata />
       <AppConfigProvider>
         <A11yProvider>
           <KeyboardControllerProvider>

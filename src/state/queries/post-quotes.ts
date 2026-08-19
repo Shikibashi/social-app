@@ -1,4 +1,4 @@
-import {AtUri, type AtUriString} from '@atproto/syntax'
+import {AtUri} from '@atproto/syntax'
 import {
   type InfiniteData,
   type QueryClient,
@@ -6,23 +6,30 @@ import {
   useInfiniteQuery,
 } from '@tanstack/react-query'
 
-import {useAppviewClient} from '#/state/session'
-import {app} from '#/lexicons'
-import * as bsky from '#/types/bsky'
+import {useAppviewClient, usePublicAppviewClient} from '#/state/session'
+import {type app} from '#/lexicons'
+import {fetchPostQuotesPage, type RQPageParam} from './post-quotes-fetch'
 import {
   didOrHandleUriMatches,
   embedViewRecordToPostView,
   getEmbeddedPost,
 } from './util'
 
-const PAGE_SIZE = 30
-type RQPageParam = string | undefined
-
 const RQKEY_ROOT = 'post-quotes'
-export const RQKEY = (resolvedUri: string) => [RQKEY_ROOT, resolvedUri]
+export const RQKEY = (resolvedUri: string, expectedQuoteCount = 0) => [
+  RQKEY_ROOT,
+  resolvedUri,
+  expectedQuoteCount,
+]
 
-export function usePostQuotesQuery(resolvedUri: string | undefined) {
+export {isQuotePostForUri, quoteSearchPostsToPage} from './post-quotes-helpers'
+
+export function usePostQuotesQuery(
+  resolvedUri: string | undefined,
+  expectedQuoteCount = 0,
+) {
   const client = useAppviewClient()
+  const publicClient = usePublicAppviewClient()
   return useInfiniteQuery<
     app.bsky.feed.getQuotes.$OutputBody,
     Error,
@@ -30,44 +37,18 @@ export function usePostQuotesQuery(resolvedUri: string | undefined) {
     QueryKey,
     RQPageParam
   >({
-    queryKey: RQKEY(resolvedUri || ''),
-    async queryFn({pageParam}: {pageParam: RQPageParam}) {
-      return await client.call(app.bsky.feed.getQuotes, {
-        // the enabled flag prevents this from running until resolvedUri is set
-        uri: (resolvedUri || '') as AtUriString,
-        limit: PAGE_SIZE,
-        cursor: pageParam,
-      })
-    },
+    queryKey: RQKEY(resolvedUri || '', expectedQuoteCount),
+    queryFn: ({pageParam}: {pageParam: RQPageParam}) =>
+      fetchPostQuotesPage({
+        client,
+        publicClient,
+        resolvedUri: resolvedUri || '',
+        expectedQuoteCount,
+        pageParam,
+      }),
     initialPageParam: undefined,
     getNextPageParam: lastPage => lastPage.cursor,
     enabled: !!resolvedUri,
-    select: data => {
-      return {
-        ...data,
-        pages: data.pages.map(page => {
-          return {
-            ...page,
-            posts: page.posts.filter(post => {
-              if (
-                post.embed &&
-                bsky.isType(app.bsky.embed.record.view, post.embed)
-              ) {
-                if (
-                  bsky.isType(
-                    app.bsky.embed.record.viewDetached,
-                    post.embed.record,
-                  )
-                ) {
-                  return false
-                }
-              }
-              return true
-            }),
-          }
-        }),
-      }
-    },
   })
 }
 

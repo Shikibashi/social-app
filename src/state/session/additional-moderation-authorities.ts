@@ -1,6 +1,6 @@
 import {Client} from '@atproto/lex'
 
-import {device} from '#/storage'
+import {DEFAULT_LABELER_DIDS} from '#/env'
 
 export const BR_LABELER = 'did:plc:ekitcvx7uwnauoqy5oest3hm' // Brazil
 export const DE_LABELER = 'did:plc:r55ow3tocux5kafs5dq445fy' // Germany
@@ -18,79 +18,21 @@ export const IN_LABELER = 'did:plc:srr4rdvgzkbx6t7fxqtt6j5t' // India
  */
 export const EU_LABELER = 'did:plc:z57lz5dhgz2dkjogoysm3vut'
 
-const MODERATION_AUTHORITIES: {
-  [countryCode: string]: string[]
-} = {
-  BR: [BR_LABELER], // Brazil
-  RU: [RU_LABELER], // Russia
-  GB: [GB_LABELER], // United Kingdom
-  AU: [AU_LABELER], // Australia
-  TR: [TR_LABELER], // Turkey
-  JP: [JP_LABELER], // Japan
-  PK: [PK_LABELER], // Pakistan
-  IN: [IN_LABELER], // India
-
-  // EU countries
-  AT: [EU_LABELER], // Austria
-  BE: [EU_LABELER], // Belgium
-  BG: [EU_LABELER], // Bulgaria
-  HR: [EU_LABELER], // Croatia
-  CY: [EU_LABELER], // Cyprus
-  CZ: [EU_LABELER], // Czech Republic
-  DK: [EU_LABELER], // Denmark
-  EE: [EU_LABELER], // Estonia
-  FI: [EU_LABELER], // Finland
-  FR: [EU_LABELER], // France
-  DE: [EU_LABELER, DE_LABELER], // Germany
-  GR: [EU_LABELER], // Greece
-  HU: [EU_LABELER], // Hungary
-  IE: [EU_LABELER], // Ireland
-  IT: [EU_LABELER], // Italy
-  LV: [EU_LABELER], // Latvia
-  LT: [EU_LABELER], // Lithuania
-  LU: [EU_LABELER], // Luxembourg
-  MT: [EU_LABELER], // Malta
-  NL: [EU_LABELER], // Netherlands
-  PL: [EU_LABELER], // Poland
-  PT: [EU_LABELER], // Portugal
-  RO: [EU_LABELER], // Romania
-  SK: [EU_LABELER], // Slovakia
-  SI: [EU_LABELER], // Slovenia
-  ES: [EU_LABELER, ES_LABELER], // Spain
-  SE: [EU_LABELER], // Sweden
-}
-
-const MODERATION_AUTHORITIES_DIDS = Array.from(
-  new Set(Object.values(MODERATION_AUTHORITIES).flat()),
-)
+/*
+ * The old implementation derived a mandatory global labeler set from
+ * geolocation.  That made a third-party judgment look like a platform-wide
+ * decision and made the default impossible to audit.  Keep the legacy
+ * country constants for compatibility with the settings UI, but make the
+ * active set explicit deployment configuration.
+ */
+const MODERATION_AUTHORITIES_DIDS = DEFAULT_LABELER_DIDS
 
 export function isNonConfigurableModerationAuthority(did: string) {
-  return MODERATION_AUTHORITIES_DIDS.includes(did)
+  return MODERATION_AUTHORITIES_DIDS.some(item => item === did)
 }
 
 export function configureAdditionalModerationAuthorities() {
-  const geolocation = device.get(['mergedGeolocation'])
-  // default to all
-  let additionalLabelers: string[] = MODERATION_AUTHORITIES_DIDS
-
-  if (geolocation?.countryCode) {
-    // overwrite with only those necessary
-    additionalLabelers = MODERATION_AUTHORITIES[geolocation.countryCode] ?? []
-  }
-
-  if (__DEV__) {
-    additionalLabelers = []
-  }
-
-  /*
-   * Merge with whatever is already on the static rather than replacing it, so
-   * `switchToBskyAppLabeler`'s entry survives.
-   */
-  const appLabelers = Array.from(
-    new Set<string>([...Client.appLabelers, ...additionalLabelers]),
-  )
-
-  configureGlobalAppLabelers(appLabelers)
+  configureGlobalAppLabelers(Array.from(new Set(MODERATION_AUTHORITIES_DIDS)))
 }
 
 /**

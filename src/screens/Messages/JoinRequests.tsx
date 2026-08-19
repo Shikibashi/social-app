@@ -24,8 +24,6 @@ import {
 import {useSession} from '#/state/session'
 import {List} from '#/view/com/util/List'
 import {atoms as a, useTheme} from '#/alf'
-import {AgeRestrictedScreen} from '#/components/ageAssurance/AgeRestrictedScreen'
-import {useAgeAssuranceCopy} from '#/components/ageAssurance/useAgeAssuranceCopy'
 import {Button, ButtonIcon, ButtonText} from '#/components/Button'
 import * as Dialog from '#/components/Dialog'
 import {type ConvoWithDetails} from '#/components/dms/util'
@@ -49,15 +47,7 @@ type Props = NativeStackScreenProps<
 >
 
 export function MessagesJoinRequestsScreen(props: Props) {
-  const {t: l} = useLingui()
-  const aaCopy = useAgeAssuranceCopy()
-  return (
-    <AgeRestrictedScreen
-      screenTitle={l`Requests to join`}
-      infoText={aaCopy.chatsInfoText}>
-      <MessagesJoinRequestsScreenInner {...props} />
-    </AgeRestrictedScreen>
-  )
+  return <MessagesJoinRequestsScreenInner {...props} />
 }
 
 function MessagesJoinRequestsScreenInner({route}: Props) {

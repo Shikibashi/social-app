@@ -1,5 +1,5 @@
 import {type StyleProp, type ViewStyle} from 'react-native'
-import {type ModerationDecision} from '@bsky/sdk/moderation'
+import {type ModerationDecision} from '#/lib/moderation'
 
 import {getModerationCauseKey, unique} from '#/lib/moderation'
 import * as Pills from '#/components/Pills'

@@ -1,8 +1,10 @@
 import {View} from 'react-native'
 import {Trans} from '@lingui/react/macro'
 
+import {PROD_DEFAULT_FEED} from '#/lib/constants'
 import {usePalette} from '#/lib/hooks/usePalette'
 import {InfoCircleIcon} from '#/lib/icons'
+import {feedUriToHref} from '#/lib/strings/url-helpers'
 import {TextLink} from '../util/Link'
 import {Text} from '../util/text/Text'
 
@@ -30,7 +32,7 @@ export function DiscoverFallbackHeader() {
             We ran out of posts from your follows. Here's the latest from{' '}
             <TextLink
               type="md-medium"
-              href="/profile/bsky.app/feed/whats-hot"
+              href={feedUriToHref(PROD_DEFAULT_FEED('whats-hot'))}
               text="Discover"
               style={pal.link}
             />

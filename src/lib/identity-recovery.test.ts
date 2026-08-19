@@ -1,2 +1,56 @@
-import {RecoveryMachine,lockdown,revokeSessions} from './identity-recovery'
-describe('identity recovery',()=>{it('runs validated recovery lifecycle without secrets',()=>{const m=new RecoveryMachine({version:1,operationId:'r',accountDid:'did:plc:x',initiatedAt:'2030-01-01T00:00:00Z',factorClasses:['session'],authorityExercised:['user'],credentialsRotated:['primary'],sessionsRevoked:['old'],identityVerified:true,result:'pending',warnings:[],receiptHash:'sha256:r'});for(const s of ['recovery_requested','factor_challenge','factor_verified','authority_check','credential_rotation','session_revocation','identity_revalidation','service_revalidation','recovery_verification','complete'] as const)m.transition(s);expect(m.receipt.result).toBe('complete');expect(JSON.stringify(m.receipt)).not.toContain('token')});it('revokes sessions and locks writes',()=>{const s=[{id:'a',createdAt:'x',authorizationType:'oauth',scope:['read'],revoked:false},{id:'b',createdAt:'x',authorizationType:'oauth',scope:['write'],revoked:false}];expect(revokeSessions(s,['a'])[0].revoked).toBe(true);const l=lockdown(s);expect(l.writesBlocked).toBe(true);expect(l.sessions.every(x=>x.revoked)).toBe(true)})})
+import {lockdown, RecoveryMachine, revokeSessions} from './identity-recovery'
+describe('identity recovery', () => {
+  it('runs validated recovery lifecycle without secrets', () => {
+    const m = new RecoveryMachine({
+      version: 1,
+      operationId: 'r',
+      accountDid: 'did:plc:x',
+      initiatedAt: '2030-01-01T00:00:00Z',
+      factorClasses: ['session'],
+      authorityExercised: ['user'],
+      credentialsRotated: ['primary'],
+      sessionsRevoked: ['old'],
+      identityVerified: true,
+      result: 'pending',
+      warnings: [],
+      receiptHash: 'sha256:r',
+    })
+    for (const s of [
+      'recovery_requested',
+      'factor_challenge',
+      'factor_verified',
+      'authority_check',
+      'credential_rotation',
+      'session_revocation',
+      'identity_revalidation',
+      'service_revalidation',
+      'recovery_verification',
+      'complete',
+    ] as const)
+      m.transition(s)
+    expect(m.receipt.result).toBe('complete')
+    expect(JSON.stringify(m.receipt)).not.toContain('token')
+  })
+  it('revokes sessions and locks writes', () => {
+    const s = [
+      {
+        id: 'a',
+        createdAt: 'x',
+        authorizationType: 'oauth',
+        scope: ['read'],
+        revoked: false,
+      },
+      {
+        id: 'b',
+        createdAt: 'x',
+        authorizationType: 'oauth',
+        scope: ['write'],
+        revoked: false,
+      },
+    ]
+    expect(revokeSessions(s, ['a'])[0].revoked).toBe(true)
+    const l = lockdown(s)
+    expect(l.writesBlocked).toBe(true)
+    expect(l.sessions.every(x => x.revoked)).toBe(true)
+  })
+})

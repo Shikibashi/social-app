@@ -1,6 +1,6 @@
 import {useCallback, useMemo, useRef} from 'react'
 import {AtUri} from '@atproto/syntax'
-import {moderatePost} from '@bsky/sdk/moderation'
+import {moderatePost} from '#/lib/moderation'
 import {
   type InfiniteData,
   type QueryClient,
@@ -9,6 +9,7 @@ import {
 } from '@tanstack/react-query'
 
 import {useModerationOpts} from '#/state/preferences/moderation-opts'
+import {stripNonLocalBlockVisibility} from '#/state/queries/public-visibility'
 import {useAppviewClient} from '#/state/session'
 import {type SearchFilters} from '#/screens/Search/searchParams'
 import {app} from '#/lexicons'
@@ -160,7 +161,10 @@ export function useSearchPostsV2Query({
               return {
                 ...page,
                 posts: page.posts.filter(post => {
-                  const mod = moderatePost(post, moderationOpts!)
+                  const mod = moderatePost(
+                    stripNonLocalBlockVisibility(post),
+                    moderationOpts!,
+                  )
                   return !mod.ui('contentList').filter
                 }),
               }

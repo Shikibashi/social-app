@@ -5,6 +5,7 @@ import {useIsFocused} from '@react-navigation/native'
 import {type NativeStackScreenProps} from '@react-navigation/native-stack'
 import {useQueryClient} from '@tanstack/react-query'
 
+import {isBlueskyOwnedFeed} from '#/lib/api/feed/utils'
 import {TRENDING_DID, TRENDING_HANDLE, VIDEO_FEED_URIS} from '#/lib/constants'
 import {useOpenComposer} from '#/lib/hooks/useOpenComposer'
 import {useSetTitle} from '#/lib/hooks/useSetTitle'
@@ -13,6 +14,7 @@ import {cleanError} from '#/lib/strings/errors'
 import {makeRecordUri} from '#/lib/strings/url-helpers'
 import {listenSoftReset} from '#/state/events'
 import {FeedFeedbackProvider, useFeedFeedback} from '#/state/feed-feedback'
+import {useLocalFeedPreferences} from '#/state/preferences/local-feed'
 import {
   type FeedSourceFeedInfo,
   useFeedSourceInfoQuery,
@@ -133,6 +135,7 @@ export function CustomFeedScreenInner({
 }) {
   const {t: l} = useLingui()
   const {hasSession} = useSession()
+  const {preferences: localFeedPreferences} = useLocalFeedPreferences()
   const {openComposer} = useOpenComposer()
   const isScreenFocused = useIsFocused()
   const t = useTheme()
@@ -184,15 +187,58 @@ export function CustomFeedScreenInner({
   const isTrending =
     feedInfo.creatorDid.toLowerCase() === TRENDING_DID ||
     feedInfo.creatorHandle.toLowerCase() === TRENDING_HANDLE
+  const radlibCurationEnabled = Boolean(
+    localFeedPreferences.radlibCuration?.enabled,
+  )
+  const contentFilterEnabled = Boolean(
+    localFeedPreferences.contentFilterPolicy?.enabled,
+  )
 
   return (
     <>
       <CustomFeedHeader info={feedInfo} isTrending={isTrending} />
       <ActiveFeedProvenance
         feedName={feedInfo.displayName}
-        algorithmName="Provider-supplied ranking"
-        objective="The feed source does not declare a public ranking objective"
+        algorithmName={
+          radlibCurationEnabled && contentFilterEnabled
+            ? `Filtered ${feedInfo.displayName} + local curation`
+            : contentFilterEnabled
+              ? `Filtered ${feedInfo.displayName} (local content policy)`
+              : radlibCurationEnabled
+                ? `Local curation over ${feedInfo.displayName}`
+                : 'Feed generator ranking'
+        }
+        algorithmVersion={
+          radlibCurationEnabled && contentFilterEnabled
+            ? 'content-filter/1 + local-curation/1'
+            : contentFilterEnabled
+              ? 'content-filter/1'
+              : radlibCurationEnabled
+                ? '1'
+                : 'not declared'
+        }
+        objective={
+          radlibCurationEnabled && contentFilterEnabled
+            ? 'User-selected hard content exclusions plus a user-selected topic and exclusion overlay; follows, blocks, and ranking remain separate'
+            : contentFilterEnabled
+              ? 'User-selected hard content exclusions; follows, blocks, and ranking remain separate'
+              : radlibCurationEnabled
+                ? 'User-selected topic and exclusion overlay; no ideological quota'
+                : 'Not declared by the feed source'
+        }
         feedOwnerDid={feedInfo.creatorDid}
+        feedUri={feedInfo.uri}
+        privacy={
+          radlibCurationEnabled && contentFilterEnabled
+            ? 'Custom filter terms and curation state stay on this device; the selected provider supplies candidates'
+            : contentFilterEnabled
+              ? 'Custom terms and excluded authors stay on this device; the selected provider supplies candidates'
+              : radlibCurationEnabled
+                ? 'Local curation stays on this device; the selected provider supplies candidates'
+                : isBlueskyOwnedFeed(feedInfo.uri)
+                  ? 'Selected interests may be sent to this AppView'
+                  : 'Local ranking preferences stay on this device'
+        }
       />
       <FeedFeedbackProvider value={feedFeedback}>
         <PostFeed
@@ -206,6 +252,9 @@ export function CustomFeedScreenInner({
           scrollElRef={scrollElRef}
           onScrolledDownChange={setIsScrolledDown}
           renderEmptyState={renderPostsEmpty}
+          localFeedPreferences={localFeedPreferences}
+          radlibCuration={localFeedPreferences.radlibCuration}
+          contentFilterPolicy={localFeedPreferences.contentFilterPolicy}
           isVideoFeed={isVideoFeed}
         />
       </FeedFeedbackProvider>

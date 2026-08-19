@@ -8,11 +8,7 @@ import {type NavigationProp} from '#/lib/routes/types'
 import {shareUrl} from '#/lib/sharing'
 import {toShareUrl} from '#/lib/strings/url-helpers'
 import {logger} from '#/logger'
-import {
-  useListBlockMutation,
-  useListDeleteMutation,
-  useListMuteMutation,
-} from '#/state/queries/list'
+import {useListDeleteMutation, useListMuteMutation} from '#/state/queries/list'
 import {useRemoveFeedMutation} from '#/state/queries/preferences'
 import {useSession} from '#/state/session'
 import {Button, ButtonIcon} from '#/components/Button'
@@ -22,7 +18,6 @@ import {ArrowOutOfBoxModified_Stroke2_Corner2_Rounded as ShareIcon} from '#/comp
 import {ChainLink_Stroke2_Corner0_Rounded as ChainLink} from '#/components/icons/ChainLink'
 import {DotGrid3x1_Stroke2_Corner0_Rounded as DotGridIcon} from '#/components/icons/DotGrid'
 import {PencilLine_Stroke2_Corner0_Rounded as PencilLineIcon} from '#/components/icons/Pencil'
-import {PersonCheck_Stroke2_Corner0_Rounded as PersonCheckIcon} from '#/components/icons/Person'
 import {Pin_Stroke2_Corner0_Rounded as PinIcon} from '#/components/icons/Pin'
 import {SpeakerVolumeFull_Stroke2_Corner0_Rounded as UnmuteIcon} from '#/components/icons/Speaker'
 import {Trash_Stroke2_Corner0_Rounded as TrashIcon} from '#/components/icons/Trash'
@@ -56,11 +51,9 @@ export function MoreOptionsMenu({
   const {mutateAsync: removeSavedFeed} = useRemoveFeedMutation()
   const {mutateAsync: deleteList} = useListDeleteMutation()
   const {mutateAsync: muteList} = useListMuteMutation()
-  const {mutateAsync: blockList} = useListBlockMutation()
 
   const isCurateList = list.purpose === app.bsky.graph.defs.curatelist.value
   const isModList = list.purpose === app.bsky.graph.defs.modlist.value
-  const isBlocking = !!list.viewer?.blocked
   const isMuting = !!list.viewer?.muted
   const isPinned = Boolean(savedFeedConfig?.pinned)
   const isOwner = currentAccount?.did === list.creator.did
@@ -116,20 +109,6 @@ export function MoreOptionsMenu({
       await muteList({uri: list.uri, mute: false})
       Toast.show(_(msg({message: 'List unmuted', context: 'toast'})))
       ax.metric('moderation:unsubscribedFromList', {listType: 'mute'})
-    } catch {
-      Toast.show(
-        _(
-          msg`There was an issue. Please check your internet connection and try again.`,
-        ),
-      )
-    }
-  }
-
-  const onUnsubscribeBlock = async () => {
-    try {
-      await blockList({uri: list.uri, block: false})
-      Toast.show(_(msg({message: 'List unblocked', context: 'toast'})))
-      ax.metric('moderation:unsubscribedFromList', {listType: 'block'})
     } catch {
       Toast.show(
         _(
@@ -234,30 +213,18 @@ export function MoreOptionsMenu({
             </>
           )}
 
-          {isCurateList && (isBlocking || isMuting) && (
+          {isCurateList && isMuting && (
             <>
               <Menu.Divider />
               <Menu.Group>
-                {isBlocking && (
-                  <Menu.Item
-                    label={_(msg`Unblock list`)}
-                    onPress={onUnsubscribeBlock}>
-                    <Menu.ItemText>
-                      <Trans>Unblock list</Trans>
-                    </Menu.ItemText>
-                    <Menu.ItemIcon icon={PersonCheckIcon} />
-                  </Menu.Item>
-                )}
-                {isMuting && (
-                  <Menu.Item
-                    label={_(msg`Unmute list`)}
-                    onPress={onUnsubscribeMute}>
-                    <Menu.ItemText>
-                      <Trans>Unmute list</Trans>
-                    </Menu.ItemText>
-                    <Menu.ItemIcon icon={UnmuteIcon} />
-                  </Menu.Item>
-                )}
+                <Menu.Item
+                  label={_(msg`Unmute list`)}
+                  onPress={onUnsubscribeMute}>
+                  <Menu.ItemText>
+                    <Trans>Unmute list</Trans>
+                  </Menu.ItemText>
+                  <Menu.ItemIcon icon={UnmuteIcon} />
+                </Menu.Item>
               </Menu.Group>
             </>
           )}

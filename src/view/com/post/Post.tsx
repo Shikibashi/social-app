@@ -1,7 +1,7 @@
 import {useCallback, useMemo, useState} from 'react'
 import {type StyleProp, StyleSheet, View, type ViewStyle} from 'react-native'
 import {AtUri} from '@atproto/syntax'
-import {moderatePost, type ModerationDecision} from '@bsky/sdk/moderation'
+import {moderatePost, type ModerationDecision} from '#/lib/moderation'
 import {RichText as RichTextAPI} from '@bsky/sdk/richtext'
 import {useQueryClient} from '@tanstack/react-query'
 
@@ -16,6 +16,7 @@ import {
 } from '#/state/cache/post-shadow'
 import {useModerationOpts} from '#/state/preferences/moderation-opts'
 import {unstableCacheProfileView} from '#/state/queries/profile'
+import {stripNonLocalBlockVisibility} from '#/state/queries/public-visibility'
 import {Link} from '#/view/com/util/Link'
 import {PostMeta} from '#/view/com/util/PostMeta'
 import {PreviewableUserAvatar} from '#/view/com/util/UserAvatar'
@@ -51,12 +52,15 @@ export function Post({
   onBeforePress?: () => void
 }) {
   const moderationOpts = useModerationOpts()
+  const visiblePost = useMemo(() => stripNonLocalBlockVisibility(post), [post])
   const record = useMemo<app.bsky.feed.post.Main | undefined>(
     () =>
-      bsky.matches(app.bsky.feed.post, post.record) ? post.record : undefined,
-    [post],
+      bsky.matches(app.bsky.feed.post, visiblePost.record)
+        ? visiblePost.record
+        : undefined,
+    [visiblePost],
   )
-  const postShadowed = usePostShadow(post)
+  const postShadowed = usePostShadow(visiblePost)
   const richText = useMemo(
     () =>
       record
@@ -68,8 +72,9 @@ export function Post({
     [record],
   )
   const moderation = useMemo(
-    () => (moderationOpts ? moderatePost(post, moderationOpts) : undefined),
-    [moderationOpts, post],
+    () =>
+      moderationOpts ? moderatePost(visiblePost, moderationOpts) : undefined,
+    [moderationOpts, visiblePost],
   )
   if (postShadowed === POST_TOMBSTONE) {
     return null

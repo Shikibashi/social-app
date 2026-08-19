@@ -1,0 +1,24 @@
+{
+  "lexicon": 1,
+  "id": "org.radlib.private.post",
+  "defs": {
+    "main": {
+      "type": "record",
+      "description": "A fork-owned post stored in a permissioned account or community space. It is never a public app.bsky.feed.post record.",
+      "key": "tid",
+      "record": {
+        "type": "object",
+        "required": ["text", "createdAt"],
+        "properties": {
+          "text": { "type": "string", "maxLength": 3000 },
+          "facets": { "type": "array", "items": { "type": "unknown" }, "maxLength": 256 },
+          "createdAt": { "type": "string", "format": "datetime" },
+          "langs": { "type": "array", "items": { "type": "string" }, "maxLength": 3 },
+          "reply": { "type": "unknown" },
+          "embed": { "type": "unknown" },
+          "community": { "type": "string" }
+        }
+      }
+    }
+  }
+}

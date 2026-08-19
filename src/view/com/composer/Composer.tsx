@@ -69,6 +69,7 @@ import {useNonReactiveCallback} from '#/lib/hooks/useNonReactiveCallback'
 import {createVideoTelemetry} from '#/lib/media/video/telemetry'
 import {mimeToExt} from '#/lib/media/video/util'
 import {useCallOnce} from '#/lib/once'
+import {writePrivateTextPost} from '#/lib/permissioned-data'
 import {type NavigationProp} from '#/lib/routes/types'
 import {cleanError} from '#/lib/strings/errors'
 import {colors} from '#/lib/styles'
@@ -90,6 +91,7 @@ import {
 } from '#/state/preferences/languages'
 import {usePreferencesQuery} from '#/state/queries/preferences'
 import {useProfileQuery} from '#/state/queries/profile'
+import {useProtectedAccountQuery} from '#/state/queries/protected-account'
 import {resolveLinkQueryOptions} from '#/state/queries/resolve-link'
 import {
   useAppviewClient,
@@ -125,6 +127,7 @@ import {atoms as a, native, useBreakpoints, useTheme, web} from '#/alf'
 import {Admonition} from '#/components/Admonition'
 import {Button, ButtonIcon, ButtonText} from '#/components/Button'
 import * as EmojiPicker from '#/components/EmojiPicker'
+import * as Toggle from '#/components/forms/Toggle'
 import {CircleCheck_Stroke2_Corner0_Rounded as CircleCheckIcon} from '#/components/icons/CircleCheck'
 import {CircleInfo_Stroke2_Corner0_Rounded as CircleInfoIcon} from '#/components/icons/CircleInfo'
 import {EmojiArc_Stroke2_Corner0_Rounded as EmojiSmileIcon} from '#/components/icons/Emoji'
@@ -301,11 +304,24 @@ export const ComposePost = ({
   const {mutate: cleanupPublishedDraft} = useCleanupPublishedDraftMutation()
   const {closeAllDialogs} = useDialogStateControlContext()
   const {data: preferences} = usePreferencesQuery()
+  const protectedAccountQuery = useProtectedAccountQuery()
   const navigation = useNavigation<NavigationProp>()
 
   const [isPublishing, setIsPublishing] = useState(false)
   const [publishingStage, setPublishingStage] = useState('')
   const [error, setError] = useState('')
+  const [privatePostMode, setPrivatePostMode] = useState(false)
+
+  const privateAccountSpace =
+    protectedAccountQuery.data?.visibility === 'protected'
+      ? protectedAccountQuery.data.space
+      : undefined
+
+  useEffect(() => {
+    if (!privateAccountSpace && privatePostMode) {
+      setPrivatePostMode(false)
+    }
+  }, [privateAccountSpace, privatePostMode])
 
   /**
    * Track when a draft was created so we can measure draft age in metrics.
@@ -1023,7 +1039,15 @@ export const ComposePost = ({
             post.embed.media?.type === 'video' &&
             post.embed.media.video.status === 'error'
           )),
-    )
+    ) &&
+    (!privatePostMode ||
+      (!!privateAccountSpace &&
+        !replyTo &&
+        !initQuote &&
+        thread.posts.length === 1 &&
+        !thread.posts[0].embed.media &&
+        !thread.posts[0].embed.link &&
+        !thread.posts[0].embed.quote))
 
   const getFilteredThread = useCallback((): {
     type: 'none' | 'trailing-only' | 'non-trailing'
@@ -1091,6 +1115,39 @@ export const ComposePost = ({
     let postSuccessData: OnPostSuccessData
     try {
       logger.info(`composer: posting...`)
+      if (privatePostMode) {
+        const privatePost = filteredThread.posts[0]
+        if (!privateAccountSpace) {
+          throw new Error('Protected account private space is unavailable')
+        }
+
+        await writePrivateTextPost(
+          pdsClient,
+          privateAccountSpace,
+          privatePost.richtext,
+          currentLanguages,
+        )
+
+        if (composerState.draftId && composerState.originalLocalRefs) {
+          cleanupPublishedDraft({
+            draftId: composerState.draftId,
+            originalLocalRefs: composerState.originalLocalRefs,
+          })
+        }
+        setLangPrefs.savePostLanguageToHistory()
+        setIsPublishing(false)
+        onClose()
+        setTimeout(() => {
+          Toast.show(
+            <Toast.Outer>
+              <Toast.Icon />
+              <Toast.Text>{l`Your private post was saved`}</Toast.Text>
+            </Toast.Outer>,
+            {type: 'success'},
+          )
+        }, 500)
+        return
+      }
       postUri = (
         await apilib.post(queryClient, {
           thread: filteredThread,
@@ -1315,6 +1372,8 @@ export const ComposePost = ({
     emptyPostsPromptControl,
     getFilteredThread,
     linkQueries,
+    privateAccountSpace,
+    privatePostMode,
   ])
 
   const handleConfirmSkipEmpty = () => {
@@ -1414,6 +1473,33 @@ export const ComposePost = ({
 
   const footer = (
     <>
+      {privateAccountSpace ? (
+        <View style={[a.gap_sm, a.px_md, a.py_sm, t.atoms.bg]}>
+          <Toggle.Item
+            type="checkbox"
+            name="private-post"
+            label="Private text post"
+            value={privatePostMode}
+            onChange={setPrivatePostMode}>
+            <View style={[a.flex_row, a.align_center, a.gap_sm]}>
+              <Toggle.LabelText style={[a.flex_1]}>
+                <Trans>Save as a private text post</Trans>
+              </Toggle.LabelText>
+              <Toggle.Platform />
+            </View>
+          </Toggle.Item>
+          {privatePostMode ? (
+            <Admonition type="info">
+              <Trans>
+                This post is sent to your protected account space, not the
+                public ATProto repository. This first client path supports text
+                and text facets only; remove replies, quotes, and media before
+                publishing.
+              </Trans>
+            </Admonition>
+          ) : null}
+        </View>
+      ) : null}
       <SuggestedLanguage
         text={activePost.richtext.text}
         replyToLanguages={replyToLanguages}
@@ -1432,7 +1518,9 @@ export const ComposePost = ({
         post={activePost}
         dispatch={dispatch}
         showAddButton={
-          !isEmptyPost(activePost) && (!nextPost || !isEmptyPost(nextPost))
+          !privatePostMode &&
+          !isEmptyPost(activePost) &&
+          (!nextPost || !isEmptyPost(nextPost))
         }
         onError={setError}
         onSelectVideo={selectVideo}
@@ -1445,6 +1533,7 @@ export const ComposePost = ({
         onSelectLanguage={onSelectLanguage}
         languageNudgeAt={languageNudgeAt}
         openGallery={openGallery}
+        mediaSelectionDisabled={privatePostMode}
         textInputRef={textInputRef}
       />
     </>
@@ -2161,6 +2250,7 @@ function ComposerFooter({
   onSelectLanguage,
   languageNudgeAt,
   openGallery,
+  mediaSelectionDisabled,
   textInputRef,
 }: {
   post: PostDraft
@@ -2176,6 +2266,7 @@ function ComposerFooter({
   onSelectLanguage?: (language: string) => void
   languageNudgeAt: number
   openGallery?: boolean
+  mediaSelectionDisabled?: boolean
   textInputRef: React.RefObject<TextInputRef | null>
 }) {
   const t = useTheme()
@@ -2285,21 +2376,25 @@ function ComposerFooter({
           ) : (
             <ToolbarWrapper style={[a.flex_row, a.align_center, a.gap_xs]}>
               <SelectMediaButton
-                disabled={isMediaSelectionDisabled}
+                disabled={isMediaSelectionDisabled || mediaSelectionDisabled}
                 allowedAssetTypes={selectedAssetsType}
                 selectedAssetsCount={selectedAssetsCount}
                 onSelectAssets={onSelectAssets}
-                autoOpen={openGallery}
+                autoOpen={mediaSelectionDisabled ? false : openGallery}
               />
               <OpenCameraBtn
                 disabled={
-                  media?.type === 'images' || media?.type === 'gallery'
+                  mediaSelectionDisabled ||
+                  (media?.type === 'images' || media?.type === 'gallery'
                     ? isMaxImages
-                    : !!media
+                    : !!media)
                 }
                 onAdd={onImageAdd}
               />
-              <SelectGifBtn onSelectGif={onSelectGif} disabled={!!media} />
+              <SelectGifBtn
+                onSelectGif={onSelectGif}
+                disabled={!!media || mediaSelectionDisabled}
+              />
               {IS_WEB && gtPhone ? (
                 <EmojiPicker.Root nextFocusRef={textInputRef}>
                   <EmojiPicker.Trigger label={l`Open emoji picker`}>

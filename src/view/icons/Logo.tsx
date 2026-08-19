@@ -10,6 +10,7 @@ import Svg, {
 } from 'react-native-svg'
 import {Image} from 'expo-image'
 
+import {PRODUCT_NAME} from '#/lib/brand'
 import {useLogoVariant} from '#/view/icons/useLogoVariant'
 import {flatten, useTheme} from '#/alf'
 
@@ -45,7 +46,7 @@ export const Logo = forwardRef(function LogoImpl(props: Props, ref) {
               ? require('../../../assets/kawaii.png')
               : require('../../../assets/kawaii_smol.png')
         }
-        accessibilityLabel="Bluesky"
+        accessibilityLabel={PRODUCT_NAME}
         accessibilityHint=""
         accessibilityIgnoresInvertColors
         style={[{height: size, aspectRatio: isJapanLogo ? 2 : 1.4}]}

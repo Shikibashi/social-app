@@ -86,7 +86,7 @@ export function ModerationBlockedAccounts({}: Props) {
   }
 
   return (
-    <Layout.Screen testID="blockedAccountsScreen">
+    <Layout.Screen testID="blockedAccountsScreen" ecwMode="workbench">
       <Layout.Center>
         <Layout.Header.Outer>
           <Layout.Header.BackButton />

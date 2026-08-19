@@ -56,10 +56,6 @@ import {
   type SessionStateContext,
 } from '#/state/session/types'
 import {useOnboardingDispatch} from '#/state/shell/onboarding'
-import {
-  clearAgeAssuranceServerDataForAll,
-  clearAgeAssuranceServerDataForDid,
-} from '#/ageAssurance/data'
 
 const StateContext = createContext<SessionStateContext>({
   accounts: [],
@@ -366,9 +362,6 @@ export function Provider({children}: React.PropsWithChildren<{}>) {
       )
       addSessionDebugLog({type: 'method:end', method: 'logout'})
       if (prevState.currentBundleState.did) {
-        clearAgeAssuranceServerDataForDid({
-          did: prevState.currentBundleState.did,
-        })
         void clearPersistedQueryStorage(prevState.currentBundleState.did)
       }
       // reset onboarding flow on logout
@@ -399,7 +392,6 @@ export function Provider({children}: React.PropsWithChildren<{}>) {
         },
       )
       addSessionDebugLog({type: 'method:end', method: 'logout'})
-      clearAgeAssuranceServerDataForAll()
       for (const account of prevState.accounts) {
         void clearPersistedQueryStorage(account.did)
       }
@@ -557,7 +549,6 @@ export function Provider({children}: React.PropsWithChildren<{}>) {
         method: 'removeAccount',
         account: redactAccount(account),
       })
-      clearAgeAssuranceServerDataForDid({did: account.did})
     },
     [store, cancelPendingTask],
   )
@@ -855,6 +846,6 @@ export function useMaybeChatClient(): Client | null {
 /**
  * The unauthenticated client for public appview reads.
  */
-export function usePublicAppviewClient(): Client {
-  return getPublicAppviewClient()
+export function usePublicAppviewClient(endpoint?: string): Client {
+  return getPublicAppviewClient(endpoint)
 }

@@ -13,6 +13,9 @@ export const BALANCED_MANIFEST = {
     explicitInterest: [-1, 1],
     explicitPreferenceOverride: [-1, 1],
     inferredInterest: [-1, 1],
+    familiarity: [0, 1],
+    variety: [0, 1],
+    conversationActivity: [0, 1],
     feedback: [-1, 1],
     novelty: [0, 1],
     exploration: [0, 1],
@@ -61,6 +64,9 @@ const WEIGHTS = {
   explicitInterest: 0.22,
   explicitPreferenceOverride: 2.5,
   inferredInterest: 0.1,
+  familiarity: 0.08,
+  variety: 0.08,
+  conversationActivity: 0.08,
   feedback: 0.16,
   novelty: 0.1,
   exploration: 0.08,
@@ -97,8 +103,28 @@ export function rankBalanced(
     >
   } = {},
 ): BalancedResult {
+  return rankBalancedCandidates(batch.candidates, explicit, learned, options)
+}
+
+/**
+ * Rank an already-hydrated local candidate set without manufacturing a
+ * network candidate-batch envelope. Network providers use rankBalanced above;
+ * the client uses this entry point after the AppView has supplied normal feed
+ * views and before local ordering is applied.
+ */
+export function rankBalancedCandidates(
+  input: BalancedCandidate[],
+  explicit: ExplicitPreferences,
+  learned: LearnedProfile,
+  options: {
+    now?: number
+    poolLimits?: Partial<
+      Record<(typeof BALANCED_MANIFEST.candidateSources)[number], number>
+    >
+  } = {},
+): BalancedResult {
   const now = options.now ?? Date.now()
-  const candidates = composeCandidatePools(batch.candidates, options.poolLimits)
+  const candidates = composeCandidatePools(input, options.poolLimits)
   const authorCounts = new Map<string, number>()
   const duplicateCounts = new Map<string, number>()
   const traces: BalancedTrace[] = []
@@ -190,7 +216,9 @@ function featureVector(
         ? 1
         : 0
   const inferredInterest = Math.max(
-    ...topicValues.map(topic => learned.inferredTopics[topic] ?? 0),
+    ...(explicit.inferredInterestsEnabled === false
+      ? []
+      : topicValues.map(topic => learned.inferredTopics[topic] ?? 0)),
     0,
   )
   const feedback =
@@ -203,19 +231,29 @@ function featureVector(
     raw.novelty ?? (learned.explorationHistory.includes(candidate.uri) ? 0 : 1)
   const exploration = raw.exploration ?? explicit.explorationLevel
   const graphProximity = raw.graphProximity ?? 0
+  const familiarity =
+    raw.familiarity ?? (candidate.sourceCategory === 'followed-network' ? 1 : 0)
+  const variety =
+    raw.variety ?? (candidate.sourceCategory === 'followed-network' ? 0.25 : 1)
+  const conversationActivity = raw.conversationActivity ?? 0
   const integrity = raw.integrity ?? 0.5
   const risk =
     raw.harassmentAmplificationRisk ?? clamp((raw.accountBurst ?? 0) / 20)
   return {
-    freshness: clamp(freshness),
-    graphProximity: clamp(graphProximity),
+    freshness: clamp(freshness * explicit.freshness),
+    graphProximity: clamp(graphProximity * explicit.discovery),
     engagement: clamp(engagement),
     explicitInterest: clamp(explicitInterest, -1, 1),
     explicitPreferenceOverride: clamp(explicitPreferenceOverride, -1, 1),
     inferredInterest: clamp(inferredInterest, -1, 1),
+    familiarity: clamp(familiarity * explicit.familiarity),
+    variety: clamp(variety * explicit.variety),
+    conversationActivity: clamp(
+      conversationActivity * explicit.conversationActivity,
+    ),
     feedback: clamp(feedback, -1, 1),
     novelty: clamp(novelty),
-    exploration: clamp(exploration),
+    exploration: clamp(exploration * explicit.explorationLevel),
     integrity: clamp(integrity),
     harassmentAmplificationRisk: clamp(risk),
   }

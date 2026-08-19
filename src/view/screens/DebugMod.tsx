@@ -10,7 +10,7 @@ import {
   type ModerationBehavior,
   type ModerationDecision,
   type ModerationOpts,
-} from '@bsky/sdk/moderation'
+} from '#/lib/moderation'
 import {RichText} from '@bsky/sdk/richtext'
 import {msg} from '@lingui/core/macro'
 import {useLingui} from '@lingui/react'
@@ -481,7 +481,7 @@ export const DebugModScreen = ({}: NativeStackScreenProps<
   const sv = useSharedValue(0)
 
   return (
-    <Layout.Screen>
+    <Layout.Screen ecwMode="workbench">
       <PagerHeaderProvider headerHeight={0} scrollY={sv}>
         <moderationOptsOverrideContext.Provider value={modOpts}>
           <ScrollView>

@@ -17,6 +17,8 @@
     <link rel="preconnect" href="https://bsky.social">
     <link rel="preconnect" href="https://go.bsky.app">
     <title>%WEB_TITLE%</title>
+    <meta name="application-name" content="%WEB_TITLE%">
+    <meta name="description" content="A user-controlled social network client.">
 
     <link rel="preload" as="font" type="font/woff2" href="/static/media/InterVariable.c504db5c06caaf7cdfba.woff2" crossorigin>
     <link rel="stylesheet" href="/static/style.css">
@@ -58,16 +60,24 @@
         font-synthesis-weight: none;
       }
       :root {
-        --text: black;
-        --background: white;
-        --backgroundLight: #e2e7ee;
+        --text: #f9f3ff;
+        --background: #050719;
+        --backgroundLight: #12144b;
       }
       @media (prefers-color-scheme: dark) {
         :root {
           color-scheme: dark;
-          --text: white;
-          --background: black;
-          --backgroundLight: #232e3e;
+          --text: #f9f3ff;
+          --background: #050719;
+          --backgroundLight: #12144b;
+        }
+      }
+      @media (prefers-color-scheme: light) {
+        :root {
+          color-scheme: light;
+          --text: #11132d;
+          --background: #d6d9e8;
+          --backgroundLight: #f4f3eb;
         }
       }
       html,
@@ -81,28 +91,28 @@
       html.theme--light,
       html.theme--light body,
       html.theme--light #root {
-        background-color: white;
-        --text: black;
-        --background: white;
-        --backgroundLight: #DCE2EA;
+        background-color: #d6d9e8;
+        --text: #11132d;
+        --background: #d6d9e8;
+        --backgroundLight: #f4f3eb;
       }
       html.theme--dark,
       html.theme--dark body,
       html.theme--dark #root {
         color-scheme: dark;
-        background-color: black;
-        --text: white;
-        --background: black;
-        --backgroundLight: #232E3E;
+        background-color: #050719;
+        --text: #f9f3ff;
+        --background: #050719;
+        --backgroundLight: #12144b;
       }
       html.theme--dim,
       html.theme--dim body,
       html.theme--dim #root {
         color-scheme: dark;
-        background-color: #151D28;
-        --text: white;
-        --background: #151D28;
-        --backgroundLight: #2C3A4E;
+        background-color: #0b0d20;
+        --text: #f1efff;
+        --background: #0b0d20;
+        --backgroundLight: #171a4d;
       }
       #splash {
         display: flex;
@@ -131,10 +141,9 @@
       }
     </style>
     <script>
-      const theme = localStorage.getItem('ALF_THEME')
-      if (theme) {
-        document.documentElement.classList.add(`theme--${theme}`)
-      }
+      const storedTheme = localStorage.getItem('ALF_THEME')
+      const systemTheme = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'
+      document.documentElement.classList.add(`theme--${storedTheme || systemTheme}`)
     </script>
   </head>
 

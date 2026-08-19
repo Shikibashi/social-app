@@ -1,11 +1,244 @@
-export type ResolutionStatus='verified'|'unresolved'|'stale-cache'|'mismatched'|'resolver-unavailable'|'invalid'|'revoked'
-export type ResolutionProvenance={resolver:string;resolvedAt:number;fromCache:boolean;cacheAgeMs:number;documentVersion?:string}
-export type IdentityResolution={did?:string;handle?:string;endpoint?:string;status:ResolutionStatus;provenance:ResolutionProvenance}
-export type ResolverProvider={id:string;resolveHandle:(handle:string)=>Promise<{did:string}>;resolveDid:(did:string)=>Promise<{handle?:string;endpoint?:string;version?:string}>}
-export function validateIdentityEndpoint(endpoint:string|undefined):boolean{if(!endpoint)return true;try{const url=new URL(endpoint);if(url.protocol!=='https:'&&url.protocol!=='http:')return false;if(url.username||url.password||url.port==='0')return false;const host=url.hostname.toLowerCase();if(host==='localhost'||host.endsWith('.localhost')||host==='127.0.0.1'||host==='0.0.0.0'||host==='[::1]'||host==='::1'||host.startsWith('10.')||host.startsWith('192.168.')||host.startsWith('169.254.')||host.startsWith('172.16.')||host.startsWith('172.17.')||host.startsWith('172.18.')||host.startsWith('172.19.')||host.startsWith('172.2')||host.startsWith('172.3'))return false;return true}catch{return false}}
-export class IdentityCache { private entries=new Map<string,{value:IdentityResolution;expires:number;staleUntil:number}>(); constructor(private positiveTtlMs=300000,private negativeTtlMs=30000,private maxStaleMs=3600000){} get(key:string,now=Date.now(),requireFresh=false){const e=this.entries.get(key);if(!e)return;const age=now-e.value.provenance.resolvedAt;if(now<e.expires)return {...e.value,provenance:{...e.value.provenance,fromCache:true,cacheAgeMs:age}};if(!requireFresh&&now<e.staleUntil)return {...e.value,status:'stale-cache' as const,provenance:{...e.value.provenance,fromCache:true,cacheAgeMs:age}}} set(key:string,value:IdentityResolution,now=Date.now()){const ttl=value.status==='verified'?this.positiveTtlMs:this.negativeTtlMs;this.entries.set(key,{value,expires:now+ttl,staleUntil:now+ttl+this.maxStaleMs})} invalidate(key:string){this.entries.delete(key)} clear(){this.entries.clear()}}
-export async function resolveIdentity(input:string,providers:ResolverProvider[],cache=new IdentityCache(),now=Date.now(),requireFresh=false):Promise<IdentityResolution>{const key=input.toLowerCase();const cached=cache.get(key,now,requireFresh);if(cached)return cached; if(!/^did:(plc|web):[A-Za-z0-9._:%-]+$|^[a-z0-9][a-z0-9.-]*\.[a-z]{2,}$/i.test(input)){const r={status:'invalid' as const,provenance:{resolver:'none',resolvedAt:now,fromCache:false,cacheAgeMs:0}};cache.set(key,r,now);return r} for(const provider of providers){try{const did=input.startsWith('did:')?input:(await provider.resolveHandle(input)).did;const doc=await provider.resolveDid(did);if(!validateIdentityEndpoint(doc.endpoint))continue;const status=input.startsWith('did:')||!doc.handle||doc.handle.toLowerCase()===input.toLowerCase()?'verified':'mismatched';const r={did,handle:doc.handle,endpoint:doc.endpoint,status,provenance:{resolver:provider.id,resolvedAt:now,fromCache:false,cacheAgeMs:0,documentVersion:doc.version}};cache.set(key,r,now);return r}catch{continue}}const r={status:'resolver-unavailable' as const,provenance:{resolver:'none',resolvedAt:now,fromCache:false,cacheAgeMs:0}};cache.set(key,r,now);return r}
-export class IdentityRuntimeCoordinator { constructor(public readonly cache:IdentityCache){} onIdentityTransition(){this.cache.clear()} onMigration(){this.cache.clear()} onRecovery(){this.cache.clear()} onLockdown(){this.cache.clear()} }
-export type MigrationState='idle'|'validating_destination'|'preparing'|'transferring_repository'|'transferring_blobs'|'updating_identity'|'activating_destination'|'revoking_old_authority'|'verifying'|'complete'|'blocked'|'recoverable_failure'|'terminal_failure'
-export type MigrationReceipt={migrationId:string;did:string;fromPds:string;toPds:string;state:MigrationState;simulated:boolean;preferencesRestored:boolean;oldAuthorityRevoked:boolean;updatedAt:string}
-export class MigrationMachine { constructor(public receipt:MigrationReceipt){} transition(next:MigrationState){const allowed:Record<MigrationState,MigrationState[]>= {idle:['validating_destination'],validating_destination:['preparing','blocked'],preparing:['transferring_repository','recoverable_failure'],transferring_repository:['transferring_blobs','recoverable_failure'],transferring_blobs:['updating_identity','recoverable_failure'],updating_identity:['activating_destination','terminal_failure'],activating_destination:['revoking_old_authority','recoverable_failure'],revoking_old_authority:['verifying'],verifying:['complete','blocked'],complete:[],blocked:['validating_destination','terminal_failure'],recoverable_failure:['preparing','terminal_failure'],terminal_failure:[]}; if(!allowed[this.receipt.state].includes(next))throw new Error(`Invalid migration transition ${this.receipt.state} -> ${next}`);this.receipt={...this.receipt,state:next,updatedAt:new Date().toISOString()};return this.receipt}}
+export type ResolutionStatus =
+  | 'verified'
+  | 'unresolved'
+  | 'stale-cache'
+  | 'mismatched'
+  | 'resolver-unavailable'
+  | 'invalid'
+  | 'revoked'
+export type ResolutionProvenance = {
+  resolver: string
+  resolvedAt: number
+  fromCache: boolean
+  cacheAgeMs: number
+  documentVersion?: string
+}
+export type IdentityResolution = {
+  did?: string
+  handle?: string
+  endpoint?: string
+  status: ResolutionStatus
+  provenance: ResolutionProvenance
+}
+export type ResolverProvider = {
+  id: string
+  resolveHandle: (handle: string) => Promise<{did: string}>
+  resolveDid: (
+    did: string,
+  ) => Promise<{handle?: string; endpoint?: string; version?: string}>
+}
+export function validateIdentityEndpoint(
+  endpoint: string | undefined,
+): boolean {
+  if (!endpoint) return true
+  try {
+    const url = new URL(endpoint)
+    if (url.protocol !== 'https:' && url.protocol !== 'http:') return false
+    if (url.username || url.password || url.port === '0') return false
+    const host = url.hostname.toLowerCase()
+    if (
+      host === 'localhost' ||
+      host.endsWith('.localhost') ||
+      host === '127.0.0.1' ||
+      host === '0.0.0.0' ||
+      host === '[::1]' ||
+      host === '::1' ||
+      host.startsWith('10.') ||
+      host.startsWith('192.168.') ||
+      host.startsWith('169.254.') ||
+      host.startsWith('172.16.') ||
+      host.startsWith('172.17.') ||
+      host.startsWith('172.18.') ||
+      host.startsWith('172.19.') ||
+      host.startsWith('172.2') ||
+      host.startsWith('172.3')
+    )
+      return false
+    return true
+  } catch {
+    return false
+  }
+}
+export class IdentityCache {
+  private entries = new Map<
+    string,
+    {value: IdentityResolution; expires: number; staleUntil: number}
+  >()
+  constructor(
+    private positiveTtlMs = 300000,
+    private negativeTtlMs = 30000,
+    private maxStaleMs = 3600000,
+  ) {}
+  get(key: string, now = Date.now(), requireFresh = false) {
+    const e = this.entries.get(key)
+    if (!e) return
+    const age = now - e.value.provenance.resolvedAt
+    if (now < e.expires)
+      return {
+        ...e.value,
+        provenance: {...e.value.provenance, fromCache: true, cacheAgeMs: age},
+      }
+    if (!requireFresh && now < e.staleUntil)
+      return {
+        ...e.value,
+        status: 'stale-cache' as const,
+        provenance: {...e.value.provenance, fromCache: true, cacheAgeMs: age},
+      }
+  }
+  set(key: string, value: IdentityResolution, now = Date.now()) {
+    const ttl =
+      value.status === 'verified' ? this.positiveTtlMs : this.negativeTtlMs
+    this.entries.set(key, {
+      value,
+      expires: now + ttl,
+      staleUntil: now + ttl + this.maxStaleMs,
+    })
+  }
+  invalidate(key: string) {
+    this.entries.delete(key)
+  }
+  clear() {
+    this.entries.clear()
+  }
+}
+export async function resolveIdentity(
+  input: string,
+  providers: ResolverProvider[],
+  cache = new IdentityCache(),
+  now = Date.now(),
+  requireFresh = false,
+): Promise<IdentityResolution> {
+  const key = input.toLowerCase()
+  const cached = cache.get(key, now, requireFresh)
+  if (cached) return cached
+  if (
+    !/^did:(plc|web):[A-Za-z0-9._:%-]+$|^[a-z0-9][a-z0-9.-]*\.[a-z]{2,}$/i.test(
+      input,
+    )
+  ) {
+    const r: IdentityResolution = {
+      status: 'invalid',
+      provenance: {
+        resolver: 'none',
+        resolvedAt: now,
+        fromCache: false,
+        cacheAgeMs: 0,
+      },
+    }
+    cache.set(key, r, now)
+    return r
+  }
+  for (const provider of providers) {
+    try {
+      const did = input.startsWith('did:')
+        ? input
+        : (await provider.resolveHandle(input)).did
+      const doc = await provider.resolveDid(did)
+      if (!validateIdentityEndpoint(doc.endpoint)) continue
+      const status: ResolutionStatus =
+        input.startsWith('did:') ||
+        !doc.handle ||
+        doc.handle.toLowerCase() === input.toLowerCase()
+          ? 'verified'
+          : 'mismatched'
+      const r: IdentityResolution = {
+        did,
+        handle: doc.handle,
+        endpoint: doc.endpoint,
+        status,
+        provenance: {
+          resolver: provider.id,
+          resolvedAt: now,
+          fromCache: false,
+          cacheAgeMs: 0,
+          documentVersion: doc.version,
+        },
+      }
+      cache.set(key, r, now)
+      return r
+    } catch {
+      continue
+    }
+  }
+  const r: IdentityResolution = {
+    status: 'resolver-unavailable',
+    provenance: {
+      resolver: 'none',
+      resolvedAt: now,
+      fromCache: false,
+      cacheAgeMs: 0,
+    },
+  }
+  cache.set(key, r, now)
+  return r
+}
+export class IdentityRuntimeCoordinator {
+  constructor(public readonly cache: IdentityCache) {}
+  onIdentityTransition() {
+    this.cache.clear()
+  }
+  onMigration() {
+    this.cache.clear()
+  }
+  onRecovery() {
+    this.cache.clear()
+  }
+  onLockdown() {
+    this.cache.clear()
+  }
+}
+export type MigrationState =
+  | 'idle'
+  | 'validating_destination'
+  | 'preparing'
+  | 'transferring_repository'
+  | 'transferring_blobs'
+  | 'updating_identity'
+  | 'activating_destination'
+  | 'revoking_old_authority'
+  | 'verifying'
+  | 'complete'
+  | 'blocked'
+  | 'recoverable_failure'
+  | 'terminal_failure'
+export type MigrationReceipt = {
+  migrationId: string
+  did: string
+  fromPds: string
+  toPds: string
+  state: MigrationState
+  simulated: boolean
+  preferencesRestored: boolean
+  oldAuthorityRevoked: boolean
+  updatedAt: string
+}
+export class MigrationMachine {
+  constructor(public receipt: MigrationReceipt) {}
+  transition(next: MigrationState) {
+    const allowed: Record<MigrationState, MigrationState[]> = {
+      idle: ['validating_destination'],
+      validating_destination: ['preparing', 'blocked'],
+      preparing: ['transferring_repository', 'recoverable_failure'],
+      transferring_repository: ['transferring_blobs', 'recoverable_failure'],
+      transferring_blobs: ['updating_identity', 'recoverable_failure'],
+      updating_identity: ['activating_destination', 'terminal_failure'],
+      activating_destination: ['revoking_old_authority', 'recoverable_failure'],
+      revoking_old_authority: ['verifying'],
+      verifying: ['complete', 'blocked'],
+      complete: [],
+      blocked: ['validating_destination', 'terminal_failure'],
+      recoverable_failure: ['preparing', 'terminal_failure'],
+      terminal_failure: [],
+    }
+    if (!allowed[this.receipt.state].includes(next))
+      throw new Error(
+        `Invalid migration transition ${this.receipt.state} -> ${next}`,
+      )
+    this.receipt = {
+      ...this.receipt,
+      state: next,
+      updatedAt: new Date().toISOString(),
+    }
+    return this.receipt
+  }
+}
