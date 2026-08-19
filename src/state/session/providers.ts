@@ -1,12 +1,15 @@
 import {type DidString, isDidString} from '@atproto/lex'
 
+import * as persisted from '#/state/persisted'
 import {
   APPVIEW_PROXY_DID,
   APPVIEW_PROXY_FRAGMENT,
+  IS_DEV,
   PUBLIC_APPVIEW_URL,
 } from '#/env'
-import * as persisted from '#/state/persisted'
-import {IS_DEV} from '#/env'
+
+const configuredAppViewDisplayName = process.env
+  .EXPO_PUBLIC_APPVIEW_DISPLAY_NAME as string | undefined
 
 export type AppViewProvider = {
   id: string
@@ -19,10 +22,27 @@ export type AppViewProvider = {
   enabled: boolean
 }
 
+export function getDefaultAppViewDisplayName(
+  endpoint: string,
+  configuredName = configuredAppViewDisplayName,
+): string {
+  if (configuredName?.trim()) return configuredName.trim()
+
+  try {
+    const hostname = new URL(endpoint).hostname.toLowerCase()
+    if (hostname === 'api.bsky.app' || hostname === 'public.api.bsky.app') {
+      return 'Public Bluesky AppView (explicit read provider)'
+    }
+  } catch {
+    // Endpoint validation reports the malformed endpoint separately.
+  }
+
+  return 'Project AppView'
+}
+
 export const DEFAULT_APPVIEW_PROVIDER: AppViewProvider = {
   id: 'project-appview',
-  displayName:
-    process.env.EXPO_PUBLIC_APPVIEW_DISPLAY_NAME || 'Project AppView',
+  displayName: getDefaultAppViewDisplayName(PUBLIC_APPVIEW_URL),
   serviceDid: APPVIEW_PROXY_DID,
   serviceFragment: APPVIEW_PROXY_FRAGMENT,
   endpoint: PUBLIC_APPVIEW_URL,
@@ -62,7 +82,8 @@ export function validateAppViewProvider(
     options.allowInsecureLocal ??
     (IS_DEV && process.env.EXPO_PUBLIC_ALLOW_INSECURE_LOCAL_APPVIEW === '1')
   if (
-    ((!allowInsecureLocal || !localHostname) && endpoint.protocol !== 'https:') ||
+    ((!allowInsecureLocal || !localHostname) &&
+      endpoint.protocol !== 'https:') ||
     endpoint.username ||
     endpoint.password ||
     endpoint.search ||
@@ -117,8 +138,7 @@ export function getSelectedAppViewProvider(did: string): AppViewProvider {
   const providers = getAppViewProviders()
   const selected = persisted.get('appviewSelections')?.[did]
   const provider =
-    providers.find(provider => provider.id === selected) ??
-    providers[0]
+    providers.find(provider => provider.id === selected) ?? providers[0]
   if (!provider) {
     throw new Error(
       'No AppView provider is configured; set EXPO_PUBLIC_PUBLIC_APPVIEW_URL and EXPO_PUBLIC_APPVIEW_SERVICE_DID',

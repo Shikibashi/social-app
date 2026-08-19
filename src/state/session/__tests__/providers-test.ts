@@ -17,6 +17,7 @@ jest.mock('#/state/persisted', () => ({
 
 import {
   DEFAULT_APPVIEW_PROVIDER,
+  getDefaultAppViewDisplayName,
   probeAppViewProvider,
   validateAppViewProvider,
 } from '../providers'
@@ -30,6 +31,18 @@ describe('AppView provider validation and health probing', () => {
 
   afterEach(() => {
     jest.restoreAllMocks()
+  })
+
+  it('does not call the public Bluesky endpoint the project provider', () => {
+    expect(getDefaultAppViewDisplayName('https://api.bsky.app')).toBe(
+      'Public Bluesky AppView (explicit read provider)',
+    )
+    expect(getDefaultAppViewDisplayName('https://public.api.bsky.app/')).toBe(
+      'Public Bluesky AppView (explicit read provider)',
+    )
+    expect(getDefaultAppViewDisplayName('https://appview.social.example')).toBe(
+      'Project AppView',
+    )
   })
 
   it('requires a safe HTTPS origin and preserves the provider identity', () => {
@@ -50,14 +63,17 @@ describe('AppView provider validation and health probing', () => {
       ...DEFAULT_APPVIEW_PROVIDER,
       id: 'local-appview',
       displayName: 'Local read provider',
-      serviceDid: 'did:web:local-read-provider.test' as typeof DEFAULT_APPVIEW_PROVIDER.serviceDid,
+      serviceDid:
+        'did:web:local-read-provider.test' as typeof DEFAULT_APPVIEW_PROVIDER.serviceDid,
       endpoint: 'http://127.0.0.1:19180',
       healthPath: '/xrpc/com.atproto.server.describeServer',
       builtin: false,
     }
 
     expect(() => validateAppViewProvider(local)).toThrow('safe HTTPS origin')
-    expect(validateAppViewProvider(local, {allowInsecureLocal: true})).toMatchObject({
+    expect(
+      validateAppViewProvider(local, {allowInsecureLocal: true}),
+    ).toMatchObject({
       endpoint: 'http://127.0.0.1:19180',
       healthPath: '/xrpc/com.atproto.server.describeServer',
     })
@@ -87,7 +103,9 @@ describe('AppView provider validation and health probing', () => {
 
     await expect(probeAppViewProvider(provider)).resolves.toBeUndefined()
     expect(fetchMock).toHaveBeenCalledWith(
-      new URL(`${DEFAULT_APPVIEW_PROVIDER.endpoint}/xrpc/com.atproto.server.describeServer`),
+      new URL(
+        `${DEFAULT_APPVIEW_PROVIDER.endpoint}/xrpc/com.atproto.server.describeServer`,
+      ),
       expect.objectContaining({method: 'GET', redirect: 'error'}),
     )
   })
