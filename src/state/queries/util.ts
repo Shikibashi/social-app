@@ -50,6 +50,19 @@ export function createQueryKey<T extends Record<string, unknown>>(
 export function isQueryPersisted(
   queryKey: QueryKey,
 ): queryKey is StructuredQueryKey<Record<string, unknown>> {
+  // Permissioned record/blob responses are viewer-authorized data. They must
+  // never enter the persisted query snapshot, even if a future private query
+  // is given the normal structured persisted-key shape.
+  if (
+    Array.isArray(queryKey) &&
+    typeof queryKey[0] === 'string' &&
+    (queryKey[0] === 'radlib-private' ||
+      queryKey[0].startsWith('radlib-private-') ||
+      queryKey[0].startsWith('org.radlib.private.'))
+  ) {
+    return false
+  }
+
   return (
     Array.isArray(queryKey) &&
     queryKey.length === 3 &&

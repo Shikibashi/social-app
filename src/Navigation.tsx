@@ -122,6 +122,7 @@ import {ActivityNotificationSettingsScreen} from '#/screens/Settings/Notificatio
 import {PermissionedSpacesSettingsScreen} from '#/screens/Settings/PermissionedSpacesSettings'
 import {PersonalizationSettingsScreen} from '#/screens/Settings/PersonalizationSettings'
 import {PrivacyAndSecuritySettingsScreen} from '#/screens/Settings/PrivacyAndSecuritySettings'
+import {PrivateFeedScreen} from '#/screens/Settings/PrivateFeedScreen'
 import {ProtectedAccessSettingsScreen} from '#/screens/Settings/ProtectedAccessSettings'
 import {ServicesSettingsScreen} from '#/screens/Settings/ServicesSettings'
 import {SettingsScreen} from '#/screens/Settings/Settings'
@@ -449,6 +450,14 @@ function commonScreens(Stack: typeof Flat, unreadCountLabel?: string) {
         getComponent={() => PermissionedSpacesSettingsScreen}
         options={{
           title: 'Private spaces and communities',
+          requireAuth: true,
+        }}
+      />
+      <Stack.Screen
+        name="PrivateFeed"
+        getComponent={() => PrivateFeedScreen}
+        options={{
+          title: 'Private feed',
           requireAuth: true,
         }}
       />

@@ -168,6 +168,13 @@ export function PermissionedSpacesSettingsScreen({}: Props) {
               </Text>
             </View>
           </SettingsList.Item>
+          <SettingsList.LinkItem
+            to="/private-feed"
+            label="Private feed"
+            accessibilityLabel="Open private feed"
+            accessibilityHint={_(msg`Opens your private PDS feed`)}>
+            <SettingsList.ItemText>Open private feed</SettingsList.ItemText>
+          </SettingsList.LinkItem>
           <SettingsList.Divider />
           <SettingsList.Item>
             <View style={[a.flex_1, a.gap_sm]}>

@@ -70,6 +70,7 @@ export type CommonNavigatorParams = {
   IdentitySovereigntySettings: undefined
   ProtectedAccessSettings: undefined
   PermissionedSpacesSettings: undefined
+  PrivateFeed: undefined
   AutomationLabelSettings: undefined
   PrivacyAndSecuritySettings: undefined
   ActivityPrivacySettings: undefined
