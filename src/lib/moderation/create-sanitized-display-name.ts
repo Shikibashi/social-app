@@ -1,8 +1,7 @@
-import {type ModerationUI} from '@bsky/sdk/moderation'
-
 import {sanitizeDisplayName} from '#/lib/strings/display-names'
 import {sanitizeHandle} from '#/lib/strings/handles'
 import type * as bsky from '#/types/bsky'
+import {type ModerationUI} from '../moderation'
 
 export function createSanitizedDisplayName(
   profile: bsky.profile.AnyProfileView,

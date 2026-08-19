@@ -22,7 +22,7 @@ import Animated, {
   ZoomIn,
   ZoomOut,
 } from 'react-native-reanimated'
-import {moderateProfile} from '@bsky/sdk/moderation'
+import {moderateProfile} from '#/lib/moderation'
 import {RichText as RichTextAPI} from '@bsky/sdk/richtext'
 import {plural} from '@lingui/core/macro'
 import {Trans, useLingui} from '@lingui/react/macro'
@@ -36,6 +36,7 @@ import {type Shadow} from '#/state/cache/types'
 import {type ConvoItem} from '#/state/messages/convo/types'
 import {useModerationOpts} from '#/state/preferences/moderation-opts'
 import {useProfileBlockMutationQueue} from '#/state/queries/profile'
+import {hasDirectViewerBlock} from '#/state/queries/public-visibility'
 import {unstableCacheProfileView} from '#/state/queries/unstable-profile-cache'
 import {useSession} from '#/state/session'
 import {PreviewableUserAvatar} from '#/view/com/util/UserAvatar'
@@ -684,13 +685,14 @@ function BlockedPlaceholder({
   const t = useTheme()
   const control = Prompt.usePromptControl()
   const [_queueBlock, queueUnblock] = useProfileBlockMutationQueue(profile)
+  const isDirectBlock = hasDirectViewerBlock(profile)
 
   return (
     <>
       <Button
         style={[{maxWidth: MESSAGE_BUBBLE_MAX_WIDTH}, a.self_start]}
         label={
-          profile.viewer?.blocking
+          isDirectBlock
             ? l`This message is hidden because you are blocking this user.`
             : l`This message is hidden because this user is blocking you.`
         }
@@ -716,7 +718,7 @@ function BlockedPlaceholder({
               a.italic,
               t.atoms.text_contrast_medium,
             ]}>
-            {profile.viewer?.blocking ? (
+            {isDirectBlock ? (
               <Trans>
                 This message is hidden because you are blocking this user.
               </Trans>
@@ -731,7 +733,7 @@ function BlockedPlaceholder({
       <Prompt.Outer control={control}>
         <Prompt.Content>
           <Prompt.TitleText>
-            {profile.viewer?.blocking ? (
+            {isDirectBlock ? (
               <Trans>
                 You are blocking {sanitizeHandle(profile.handle, '@')}
               </Trans>
@@ -742,7 +744,7 @@ function BlockedPlaceholder({
             )}
           </Prompt.TitleText>
           <Prompt.DescriptionText>
-            {profile.viewer?.blocking ? (
+            {isDirectBlock ? (
               <Trans>
                 Messages from this person are hidden while you are blocking
                 them.
@@ -756,7 +758,7 @@ function BlockedPlaceholder({
           </Prompt.DescriptionText>
           <Prompt.Actions>
             <Prompt.Action onPress={() => {}} cta={l`Okay`} color="primary" />
-            {profile.viewer?.blocking && !profile.viewer.blockingByList && (
+            {isDirectBlock && (
               <Prompt.Action
                 onPress={() => void queueUnblock()}
                 cta={l`Unblock`}

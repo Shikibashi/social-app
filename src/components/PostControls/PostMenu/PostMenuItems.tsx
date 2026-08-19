@@ -14,6 +14,7 @@ import {useNavigation} from '@react-navigation/native'
 
 import {DISCOVER_DEBUG_DIDS} from '#/lib/constants'
 import {useOpenLink} from '#/lib/hooks/useOpenLink'
+import {setExplicitPostPreference} from '#/lib/personalization'
 import {getCurrentRoute} from '#/lib/routes/helpers'
 import {makeProfileLink} from '#/lib/routes/links'
 import {
@@ -44,6 +45,7 @@ import {
   useProfileBlockMutationQueue,
   useProfileMuteMutationQueue,
 } from '#/state/queries/profile'
+import {hasDirectViewerBlock} from '#/state/queries/public-visibility'
 import {
   InvalidInteractionSettingsError,
   MAX_HIDDEN_REPLIES,
@@ -97,7 +99,6 @@ import {type app} from '#/lexicons'
 let PostMenuItems = ({
   post,
   postFeedContext,
-  postReqId,
   record,
   richText,
   threadgateRecord,
@@ -289,28 +290,34 @@ let PostMenuItems = ({
   )
 
   const onPressShowMore = () => {
-    feedFeedback.sendInteraction({
-      event: 'app.bsky.feed.defs#requestMore',
-      item: postUri,
-      feedContext: postFeedContext,
-      reqId: postReqId,
-    })
+    const save = currentAccount
+      ? setExplicitPostPreference(currentAccount.did, postUri, 'prefer')
+      : Promise.resolve()
     ax.metric('post:showMore', {
       uri: postUri,
       authorDid: postAuthor.did,
       logContext,
       feedDescriptor: feedFeedback.feedDescriptor,
     })
-    Toast.show(l({message: 'Feedback sent to feed operator', context: 'toast'}))
+    void save
+      .then(() =>
+        Toast.show(
+          l({message: 'Preference saved on this device', context: 'toast'}),
+        ),
+      )
+      .catch(error => {
+        logger.error('Failed to save explicit More preference', {error})
+        Toast.show(
+          l({message: 'Could not save this preference', context: 'toast'}),
+          {type: 'error'},
+        )
+      })
   }
 
   const onPressShowLess = () => {
-    feedFeedback.sendInteraction({
-      event: 'app.bsky.feed.defs#requestLess',
-      item: postUri,
-      feedContext: postFeedContext,
-      reqId: postReqId,
-    })
+    const save = currentAccount
+      ? setExplicitPostPreference(currentAccount.did, postUri, 'avoid')
+      : Promise.resolve()
     ax.metric('post:showLess', {
       uri: postUri,
       authorDid: postAuthor.did,
@@ -318,15 +325,23 @@ let PostMenuItems = ({
       feedDescriptor: feedFeedback.feedDescriptor,
     })
     if (onShowLess) {
-      onShowLess({
-        item: postUri,
-        feedContext: postFeedContext,
-      })
-    } else {
-      Toast.show(
-        l({message: 'Feedback sent to feed operator', context: 'toast'}),
-      )
+      onShowLess({item: postUri, feedContext: postFeedContext})
     }
+    void save
+      .then(() => {
+        if (!onShowLess) {
+          Toast.show(
+            l({message: 'Preference saved on this device', context: 'toast'}),
+          )
+        }
+      })
+      .catch(error => {
+        logger.error('Failed to save explicit Less preference', {error})
+        Toast.show(
+          l({message: 'Could not save this preference', context: 'toast'}),
+          {type: 'error'},
+        )
+      })
   }
 
   const onToggleQuotePostAttachment = async () => {
@@ -762,7 +777,7 @@ let PostMenuItems = ({
                     />
                   </Menu.Item>
 
-                  {!postAuthor.viewer?.blocking && (
+                  {!hasDirectViewerBlock(postAuthor) && (
                     <Menu.Item
                       testID="postDropdownBlockBtn"
                       label={l`Block account`}

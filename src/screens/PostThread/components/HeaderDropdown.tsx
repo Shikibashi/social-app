@@ -12,11 +12,18 @@ import {useAnalytics} from '#/analytics'
 export function HeaderDropdown({
   sort,
   view,
+  curationView,
   setSort,
   setView,
+  setCurationView,
 }: Pick<
   ThreadPreferences,
-  'sort' | 'setSort' | 'view' | 'setView'
+  | 'sort'
+  | 'setSort'
+  | 'view'
+  | 'setView'
+  | 'curationView'
+  | 'setCurationView'
 >): React.ReactNode {
   const ax = useAnalytics()
   const {_} = useLingui()
@@ -64,6 +71,28 @@ export function HeaderDropdown({
               <Trans>Threaded</Trans>
             </Menu.ItemText>
             <Menu.ItemRadio selected={view === 'tree'} />
+          </Menu.Item>
+        </Menu.Group>
+        <Menu.Divider />
+        <Menu.LabelText>
+          <Trans>Public reply view</Trans>
+        </Menu.LabelText>
+        <Menu.Group>
+          <Menu.Item
+            label={_(msg`Everyone's replies`)}
+            onPress={() => setCurationView('all')}>
+            <Menu.ItemText>
+              <Trans>Everyone's replies</Trans>
+            </Menu.ItemText>
+            <Menu.ItemRadio selected={curationView === 'all'} />
+          </Menu.Item>
+          <Menu.Item
+            label={_(msg`Author's curation`)}
+            onPress={() => setCurationView('author')}>
+            <Menu.ItemText>
+              <Trans>Author's curation</Trans>
+            </Menu.ItemText>
+            <Menu.ItemRadio selected={curationView === 'author'} />
           </Menu.Item>
         </Menu.Group>
         <Menu.Divider />

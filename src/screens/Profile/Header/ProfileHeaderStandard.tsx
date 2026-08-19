@@ -1,16 +1,16 @@
 import {memo, useMemo, useState} from 'react'
 import {View} from 'react-native'
-import {
-  moderateProfile,
-  type ModerationDecision,
-  type ModerationOpts,
-} from '@bsky/sdk/moderation'
 import {type RichText as RichTextAPI} from '@bsky/sdk/richtext'
 import {msg} from '@lingui/core/macro'
 import {useLingui} from '@lingui/react'
 import {Trans} from '@lingui/react/macro'
 
 import {useHaptics} from '#/lib/haptics'
+import {
+  moderateProfile,
+  type ModerationDecision,
+  type ModerationOpts,
+} from '#/lib/moderation'
 import {sanitizeDisplayName} from '#/lib/strings/display-names'
 import {logger} from '#/logger'
 import {type Shadow, useProfileShadow} from '#/state/cache/profile-shadow'
@@ -18,6 +18,8 @@ import {
   useProfileBlockMutationQueue,
   useProfileFollowMutationQueue,
 } from '#/state/queries/profile'
+import {useProtectedAccountQuery} from '#/state/queries/protected-account'
+import {hasDirectViewerBlock} from '#/state/queries/public-visibility'
 import {useRequireAuth, useSession} from '#/state/session'
 import {ProfileMenu} from '#/view/com/profile/ProfileMenu'
 import {atoms as a, platform} from '#/alf'
@@ -76,10 +78,10 @@ let ProfileHeaderStandard = ({
   const [showSuggestedFollows, setShowSuggestedFollows] = useState(false)
   const [hasSeenAllSuggestedFollows, setHasSeenAllSuggestedFollows] =
     useState(false)
-  const isBlockedUser =
-    profile.viewer?.blocking ||
-    profile.viewer?.blockedBy ||
-    profile.viewer?.blockingByList
+  // A remote actor blocking this viewer is interaction metadata, not a
+  // permission to hide the actor's public profile from the viewer.
+  const isBlockedUser = hasDirectViewerBlock(profile)
+  const protectedAccountQuery = useProtectedAccountQuery()
 
   const unblockAccount = async () => {
     try {
@@ -138,7 +140,12 @@ let ProfileHeaderStandard = ({
               profile={profile}
               moderation={moderation}
             />
-            <ProfileHeaderHandle profile={profile} />
+            <ProfileHeaderHandle
+              profile={profile}
+              showProtectedBadge={
+                isMe && protectedAccountQuery.data?.visibility === 'protected'
+              }
+            />
           </View>
           {!isPlaceholderProfile && !isBlockedUser && (
             <View style={a.gap_md}>
@@ -187,7 +194,7 @@ let ProfileHeaderStandard = ({
             void unblockAccount()
           }}
           confirmButtonCta={
-            profile.viewer?.blocking ? _(msg`Unblock`) : _(msg`Block`)
+            hasDirectViewerBlock(profile) ? _(msg`Unblock`) : _(msg`Block`)
           }
           confirmButtonColor="negative"
         />
@@ -235,6 +242,7 @@ export function HeaderStandardButtons({
   const unblockPromptControl = Prompt.usePromptControl()
 
   const isMe = currentAccount?.did === profile.did
+  const isDirectBlock = hasDirectViewerBlock(profile)
 
   const onPressFollow = () => {
     playHaptic()
@@ -356,20 +364,18 @@ export function HeaderStandardButtons({
           <EditProfileDialog profile={profile} control={editProfileControl} />
           {IS_NATIVE && <InviteFriendsDialog control={inviteFriendsControl} />}
         </>
-      ) : profile.viewer?.blocking ? (
-        profile.viewer?.blockingByList ? null : (
-          <Button
-            testID="unblockBtn"
-            size="small"
-            color="secondary"
-            label={_(msg`Unblock`)}
-            disabled={!hasSession}
-            onPress={() => unblockPromptControl.open()}>
-            <ButtonText>
-              <Trans context="action">Unblock</Trans>
-            </ButtonText>
-          </Button>
-        )
+      ) : isDirectBlock ? (
+        <Button
+          testID="unblockBtn"
+          size="small"
+          color="secondary"
+          label={_(msg`Unblock`)}
+          disabled={!hasSession}
+          onPress={() => unblockPromptControl.open()}>
+          <ButtonText>
+            <Trans context="action">Unblock</Trans>
+          </ButtonText>
+        </Button>
       ) : !profile.viewer?.blockedBy ? (
         <>
           {hasSession && (!minimal || profile.viewer?.following) && (

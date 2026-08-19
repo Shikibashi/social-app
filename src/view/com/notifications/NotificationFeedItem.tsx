@@ -14,7 +14,7 @@ import {
   moderateProfile,
   type ModerationDecision,
   type ModerationOpts,
-} from '@bsky/sdk/moderation'
+} from '#/lib/moderation'
 import {plural} from '@lingui/core/macro'
 import {Plural, Trans, useLingui} from '@lingui/react/macro'
 import {useNavigation} from '@react-navigation/native'
@@ -31,6 +31,7 @@ import {logger} from '#/logger'
 import {useProfileShadow} from '#/state/cache/profile-shadow'
 import {type FeedNotification} from '#/state/queries/notifications/feed'
 import {useProfileFollowMutationQueue} from '#/state/queries/profile'
+import {hasViewerInteractionBoundary} from '#/state/queries/public-visibility'
 import {unstableCacheProfileView} from '#/state/queries/unstable-profile-cache'
 import {useChatClient, useSession} from '#/state/session'
 import {FeedSourceCard} from '#/view/com/feeds/FeedSourceCard'
@@ -856,11 +857,7 @@ function FollowBackButton({
   if (!profileShadow.viewer) {
     return null
   }
-  if (
-    profileShadow.viewer.blockedBy ||
-    profileShadow.viewer.blocking ||
-    profileShadow.viewer.blockingByList
-  ) {
+  if (hasViewerInteractionBoundary(profileShadow)) {
     return null
   }
 

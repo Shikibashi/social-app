@@ -1,0 +1,90 @@
+import {
+  IdentityCache,
+  IdentityRuntimeCoordinator,
+  MigrationMachine,
+  resolveIdentity,
+  validateIdentityEndpoint,
+} from './identity-runtime'
+describe('identity runtime', () => {
+  it('verifies handle bidirectionally and records provenance', async () => {
+    const r = await resolveIdentity('alice.example', [
+      {
+        id: 'primary',
+        resolveHandle: () => Promise.resolve({did: 'did:plc:alice'}),
+        resolveDid: () =>
+          Promise.resolve({
+            handle: 'alice.example',
+            endpoint: 'https://pds.example',
+            version: '7',
+          }),
+      },
+    ])
+    expect(r.status).toBe('verified')
+    expect(r.provenance.resolver).toBe('primary')
+  })
+  it('rejects unsafe endpoints and tries no unsafe authority', async () => {
+    expect(validateIdentityEndpoint('http://127.0.0.1')).toBe(false)
+    expect(validateIdentityEndpoint('file:///tmp/x')).toBe(false)
+    const r = await resolveIdentity('alice.example', [
+      {
+        id: 'p',
+        resolveHandle: () => Promise.resolve({did: 'did:plc:x'}),
+        resolveDid: () =>
+          Promise.resolve({
+            handle: 'alice.example',
+            endpoint: 'http://127.0.0.1',
+          }),
+      },
+    ])
+    expect(r.status).toBe('resolver-unavailable')
+  })
+  it('requires fresh cache for sensitive resolution', () => {
+    const c = new IdentityCache(1, 1, 100)
+    c.set(
+      'did:plc:x',
+      {
+        did: 'did:plc:x',
+        status: 'verified',
+        provenance: {
+          resolver: 'p',
+          resolvedAt: 0,
+          fromCache: false,
+          cacheAgeMs: 0,
+        },
+      },
+      0,
+    )
+    expect(c.get('did:plc:x', 2, false)?.status).toBe('stale-cache')
+    expect(c.get('did:plc:x', 2, true)).toBeUndefined()
+    const coordinator = new IdentityRuntimeCoordinator(c)
+    coordinator.onLockdown()
+    expect(c.get('did:plc:x', 2, false)).toBeUndefined()
+  })
+  it('bounds migration transitions', () => {
+    const m = new MigrationMachine({
+      migrationId: 'm',
+      did: 'did:plc:x',
+      fromPds: 'A',
+      toPds: 'B',
+      state: 'idle',
+      simulated: true,
+      preferencesRestored: false,
+      oldAuthorityRevoked: false,
+      updatedAt: new Date().toISOString(),
+    })
+    for (const s of [
+      'validating_destination',
+      'preparing',
+      'transferring_repository',
+      'transferring_blobs',
+      'updating_identity',
+      'activating_destination',
+      'revoking_old_authority',
+      'verifying',
+      'complete',
+    ] as const)
+      m.transition(s)
+    expect(m.receipt.state).toBe('complete')
+    expect(() => m.transition('idle')).toThrow()
+  })
+})

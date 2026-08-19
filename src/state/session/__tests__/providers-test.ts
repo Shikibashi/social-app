@@ -1,0 +1,180 @@
+import {afterEach, beforeEach, describe, expect, it, jest} from '@jest/globals'
+
+const DID = 'did:plc:provider-test'
+const mockPersistedState: Record<string, unknown> = {
+  appviewProviders: undefined,
+  appviewSelections: {},
+  appviewFallbacks: {},
+}
+
+jest.mock('#/state/persisted', () => ({
+  get: (key: string) => mockPersistedState[key],
+  write: (key: string, value: unknown) => {
+    mockPersistedState[key] = value
+    return Promise.resolve()
+  },
+}))
+
+import {
+  DEFAULT_APPVIEW_PROVIDER,
+  getAppViewProviders,
+  getDefaultAppViewDisplayName,
+  getSelectedAppViewProvider,
+  probeAppViewProvider,
+  registerAppViewProvider,
+  selectAppViewProvider,
+  validateAppViewProvider,
+} from '../providers'
+
+describe('AppView provider validation and health probing', () => {
+  beforeEach(() => {
+    mockPersistedState.appviewProviders = undefined
+    mockPersistedState.appviewSelections = {}
+    mockPersistedState.appviewFallbacks = {}
+  })
+
+  afterEach(() => {
+    jest.restoreAllMocks()
+  })
+
+  it('does not call the public Bluesky endpoint the project provider', () => {
+    expect(getDefaultAppViewDisplayName('https://api.bsky.app')).toBe(
+      'Public Bluesky AppView (explicit read provider)',
+    )
+    expect(getDefaultAppViewDisplayName('https://public.api.bsky.app/')).toBe(
+      'Public Bluesky AppView (explicit read provider)',
+    )
+    expect(getDefaultAppViewDisplayName('https://appview.social.example')).toBe(
+      'Project AppView',
+    )
+  })
+
+  it('requires a safe HTTPS origin and preserves the provider identity', () => {
+    expect(validateAppViewProvider(DEFAULT_APPVIEW_PROVIDER)).toMatchObject({
+      id: DEFAULT_APPVIEW_PROVIDER.id,
+      endpoint: DEFAULT_APPVIEW_PROVIDER.endpoint,
+    })
+    expect(() =>
+      validateAppViewProvider({
+        ...DEFAULT_APPVIEW_PROVIDER,
+        endpoint: 'http://localhost:3000',
+      }),
+    ).toThrow('safe HTTPS origin')
+  })
+
+  it('allows a deliberately configured local HTTP provider only through the dev escape hatch', () => {
+    const local = {
+      ...DEFAULT_APPVIEW_PROVIDER,
+      id: 'local-appview',
+      displayName: 'Local read provider',
+      serviceDid:
+        'did:web:local-read-provider.test' as typeof DEFAULT_APPVIEW_PROVIDER.serviceDid,
+      endpoint: 'http://127.0.0.1:19180',
+      healthPath: '/xrpc/com.atproto.server.describeServer',
+      builtin: false,
+    }
+
+    expect(() => validateAppViewProvider(local)).toThrow('safe HTTPS origin')
+    expect(
+      validateAppViewProvider(local, {allowInsecureLocal: true}),
+    ).toMatchObject({
+      endpoint: 'http://127.0.0.1:19180',
+      healthPath: '/xrpc/com.atproto.server.describeServer',
+    })
+  })
+
+  it('probes the selected provider before a switch', async () => {
+    const fetchMock = jest
+      .spyOn(globalThis, 'fetch')
+      .mockResolvedValue(new Response('{}', {status: 200}))
+    await expect(
+      probeAppViewProvider(DEFAULT_APPVIEW_PROVIDER),
+    ).resolves.toBeUndefined()
+    expect(fetchMock).toHaveBeenCalledWith(
+      new URL(`${DEFAULT_APPVIEW_PROVIDER.endpoint}/xrpc/_health`),
+      expect.objectContaining({method: 'GET', redirect: 'error'}),
+    )
+  })
+
+  it('uses the provider-declared health path', async () => {
+    const provider = {
+      ...DEFAULT_APPVIEW_PROVIDER,
+      healthPath: '/xrpc/com.atproto.server.describeServer',
+    }
+    const fetchMock = jest
+      .spyOn(globalThis, 'fetch')
+      .mockResolvedValue(new Response('{}', {status: 200}))
+
+    await expect(probeAppViewProvider(provider)).resolves.toBeUndefined()
+    expect(fetchMock).toHaveBeenCalledWith(
+      new URL(
+        `${DEFAULT_APPVIEW_PROVIDER.endpoint}/xrpc/com.atproto.server.describeServer`,
+      ),
+      expect.objectContaining({method: 'GET', redirect: 'error'}),
+    )
+  })
+
+  it('names an unavailable provider and does not treat failure as a switch', async () => {
+    jest
+      .spyOn(globalThis, 'fetch')
+      .mockResolvedValue(new Response('{}', {status: 503}))
+    await expect(
+      probeAppViewProvider(DEFAULT_APPVIEW_PROVIDER),
+    ).rejects.toThrow(
+      'AppView provider Project AppView is unavailable (HTTP 503)',
+    )
+  })
+
+  it('makes a remembered fallback visible and clears it on replacement', async () => {
+    const alternate = {
+      ...DEFAULT_APPVIEW_PROVIDER,
+      id: 'alternate-appview',
+      displayName: 'Alternate AppView',
+      serviceDid:
+        'did:web:alternate.example' as typeof DEFAULT_APPVIEW_PROVIDER.serviceDid,
+      endpoint: 'https://alternate.example',
+      builtin: false,
+    }
+    mockPersistedState.appviewProviders = [DEFAULT_APPVIEW_PROVIDER, alternate]
+    const {getAppViewFallback, getSelectedAppViewProvider, setAppViewFallback} =
+      await import('../providers')
+
+    await setAppViewFallback(
+      DID,
+      'appview-selection',
+      DEFAULT_APPVIEW_PROVIDER.id,
+    )
+    expect(getSelectedAppViewProvider(DID).id).toBe(DEFAULT_APPVIEW_PROVIDER.id)
+    expect(getAppViewFallback(DID, 'appview-selection')?.id).toBe(
+      DEFAULT_APPVIEW_PROVIDER.id,
+    )
+
+    await selectAppViewProvider(DID, alternate.id)
+    expect(getSelectedAppViewProvider(DID).id).toBe(alternate.id)
+    expect(getAppViewFallback(DID, 'appview-selection')).toBeUndefined()
+  })
+
+  it('registers an explicitly checked alternate and persists the selection', async () => {
+    const alternate = {
+      ...DEFAULT_APPVIEW_PROVIDER,
+      id: 'alternate-appview',
+      displayName: 'Alternate AppView',
+      serviceDid:
+        'did:web:alternate.example' as typeof DEFAULT_APPVIEW_PROVIDER.serviceDid,
+      endpoint: 'https://alternate.example',
+      builtin: false,
+    }
+    jest
+      .spyOn(globalThis, 'fetch')
+      .mockResolvedValue(new Response('{}', {status: 200}))
+
+    await probeAppViewProvider(alternate)
+    await registerAppViewProvider(alternate)
+    expect(getAppViewProviders().map(provider => provider.id)).toEqual([
+      DEFAULT_APPVIEW_PROVIDER.id,
+      alternate.id,
+    ])
+    await selectAppViewProvider(DID, alternate.id)
+    expect(getSelectedAppViewProvider(DID).id).toBe(alternate.id)
+  })
+})

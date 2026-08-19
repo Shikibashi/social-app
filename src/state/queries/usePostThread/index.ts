@@ -1,9 +1,15 @@
 import {useCallback, useMemo, useState} from 'react'
+import {type Client} from '@atproto/lex'
 import {type AtUriString} from '@atproto/syntax'
 import {useQuery, useQueryClient} from '@tanstack/react-query'
 
 import {useModerationOpts} from '#/state/preferences/moderation-opts'
 import {useThreadPreferences} from '#/state/queries/preferences/useThreadPreferences'
+import {
+  filterPublicPostsForViewer,
+  hasDirectViewerBlock,
+} from '#/state/queries/public-visibility'
+import {hydrateBlockedThreadItems} from '#/state/queries/usePostThread/blocked'
 import {
   LINEAR_VIEW_BELOW,
   LINEAR_VIEW_BF,
@@ -28,19 +34,79 @@ import {
 } from '#/state/queries/usePostThread/types'
 import {getThreadgateRecord} from '#/state/queries/usePostThread/utils'
 import * as views from '#/state/queries/usePostThread/views'
-import {useAppviewClient, useSession} from '#/state/session'
+import {
+  useAppviewClient,
+  usePublicAppviewClient,
+  useSession,
+} from '#/state/session'
 import {useMergeThreadgateHiddenReplies} from '#/state/threadgate-hidden-replies'
 import {useBreakpoints} from '#/alf'
 import {IS_WEB} from '#/env'
 import {app} from '#/lexicons'
 
+const EMPTY_THREADGATE_HIDDEN_REPLIES = new Set<string>()
+
 export * from '#/state/queries/usePostThread/context'
 export {useUpdatePostThreadThreadgateQueryCache} from '#/state/queries/usePostThread/queryCache'
 export * from '#/state/queries/usePostThread/types'
 
+async function fetchThreadPostsWithPublicFallback(
+  client: Client,
+  publicClient: Client,
+  uris: AtUriString[],
+): Promise<app.bsky.feed.defs.PostView[]> {
+  let primary: app.bsky.feed.getPosts.$OutputBody
+  try {
+    primary = await client.call(app.bsky.feed.getPosts, {uris})
+  } catch (error) {
+    try {
+      const publicData = await publicClient.call(app.bsky.feed.getPosts, {
+        uris,
+      })
+      return filterPublicPostsForViewer(client, publicData.posts)
+    } catch {
+      throw error
+    }
+  }
+
+  const needsPublicRead =
+    primary.posts.length < uris.length ||
+    primary.posts.some(post => Boolean(post.author.viewer?.blockedBy))
+
+  if (!needsPublicRead) return primary.posts
+
+  try {
+    const publicData = await publicClient.call(app.bsky.feed.getPosts, {
+      uris,
+    })
+    const publicPosts = await filterPublicPostsForViewer(client, publicData.posts)
+    const primaryByUri = new Map(primary.posts.map(post => [post.uri, post]))
+    const publicByUri = new Map(publicPosts.map(post => [post.uri, post]))
+
+    return uris
+      .map(uri => {
+        const primaryPost = primaryByUri.get(uri)
+        const publicPost = publicByUri.get(uri)
+        if (!primaryPost) return publicPost
+        // A local direct block remains authoritative. An incoming direct
+        // relationship may be hydrated from the public read so it does not
+        // become a universal public-read tombstone. Listblock state is
+        // already inert and never reaches this branch as a block reason.
+        if (hasDirectViewerBlock(primaryPost.author)) {
+          return primaryPost
+        }
+        return publicPost ?? primaryPost
+      })
+      .filter((post): post is app.bsky.feed.defs.PostView => !!post)
+  } catch {
+    return primary.posts
+  }
+}
+
 export function usePostThread({anchor}: {anchor?: string}) {
   const qc = useQueryClient()
   const client = useAppviewClient()
+  const publicClient = usePublicAppviewClient()
   const {hasSession} = useSession()
   const {gtPhone} = useBreakpoints()
   const moderationOpts = useModerationOpts()
@@ -51,6 +117,8 @@ export function usePostThread({anchor}: {anchor?: string}) {
     setSort: baseSetSort,
     view,
     setView: baseSetView,
+    curationView,
+    setCurationView: baseSetCurationView,
   } = useThreadPreferences()
   const below = useMemo(() => {
     return view === 'linear'
@@ -80,6 +148,11 @@ export function usePostThread({anchor}: {anchor?: string}) {
         sort: sort,
       })
 
+      const hydratedThread = await hydrateBlockedThreadItems(
+        data.thread || [],
+        uris => fetchThreadPostsWithPublicFallback(client, publicClient, uris),
+      )
+
       /*
        * Initialize `ctx.meta` to track if we know we have additional replies
        * we could fetch once we hit the end.
@@ -102,7 +175,7 @@ export function usePostThread({anchor}: {anchor?: string}) {
        * thread read that narrower contract.
        */
       const result = {
-        thread: data.thread || [],
+        thread: hydratedThread,
         threadgate: data.threadgate,
         hasOtherReplies: !!ctx.meta.hasOtherReplies,
       } as UsePostThreadQueryResult
@@ -169,9 +242,15 @@ export function usePostThread({anchor}: {anchor?: string}) {
     enabled: additionalQueryEnabled,
     queryKey: postThreadOtherQueryKey,
     async queryFn() {
-      return await client.call(app.bsky.unspecced.getPostThreadOtherV2, {
+      const data = await client.call(app.bsky.unspecced.getPostThreadOtherV2, {
         anchor: anchor! as AtUriString,
       })
+      return {
+        ...data,
+        thread: await hydrateBlockedThreadItems(data.thread || [], uris =>
+          fetchThreadPostsWithPublicFallback(client, publicClient, uris),
+        ),
+      }
     },
   })
   const serverOtherThreadItems: ThreadItem[] = useMemo(() => {
@@ -196,9 +275,10 @@ export function usePostThread({anchor}: {anchor?: string}) {
         {
           view,
           skipModerationHandling: true,
-          threadgateHiddenReplies: mergeThreadgateHiddenReplies(
-            threadgate?.record,
-          ),
+          threadgateHiddenReplies:
+            curationView === 'author'
+              ? mergeThreadgateHiddenReplies(threadgate?.record)
+              : EMPTY_THREADGATE_HIDDEN_REPLIES,
           moderationOpts: moderationOpts!,
         },
       )
@@ -210,6 +290,7 @@ export function usePostThread({anchor}: {anchor?: string}) {
     view,
     additionalQueryEnabled,
     additionalItemsQuery,
+    curationView,
     mergeThreadgateHiddenReplies,
     moderationOpts,
     threadgate?.record,
@@ -236,6 +317,13 @@ export function usePostThread({anchor}: {anchor?: string}) {
     },
     [baseSetView, setOtherItemsVisible],
   )
+  const setCurationView: typeof baseSetCurationView = useCallback(
+    nextView => {
+      setOtherItemsVisible(false)
+      baseSetCurationView(nextView)
+    },
+    [baseSetCurationView, setOtherItemsVisible],
+  )
 
   /*
    * This is the main thread response, sorted into separate buckets based on
@@ -244,13 +332,17 @@ export function usePostThread({anchor}: {anchor?: string}) {
   const {threadItems, otherThreadItems} = useMemo(() => {
     return sortAndAnnotateThreadItems(thread, {
       view: view,
-      threadgateHiddenReplies: mergeThreadgateHiddenReplies(threadgate?.record),
+      threadgateHiddenReplies:
+        curationView === 'author'
+          ? mergeThreadgateHiddenReplies(threadgate?.record)
+          : EMPTY_THREADGATE_HIDDEN_REPLIES,
       moderationOpts: moderationOpts!,
     })
   }, [
     thread,
     threadgate?.record,
     mergeThreadgateHiddenReplies,
+    curationView,
     moderationOpts,
     view,
   ])
@@ -301,6 +393,7 @@ export function usePostThread({anchor}: {anchor?: string}) {
          */
         sort,
         view,
+        curationView,
         otherItemsVisible,
       },
       data: {
@@ -318,6 +411,7 @@ export function usePostThread({anchor}: {anchor?: string}) {
          */
         setSort,
         setView,
+        setCurationView,
       },
     }
   }, [
@@ -328,6 +422,8 @@ export function usePostThread({anchor}: {anchor?: string}) {
     view,
     setSort,
     setView,
+    setCurationView,
+    curationView,
     threadgate,
     items,
     postThreadQueryKey,

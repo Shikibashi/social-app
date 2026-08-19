@@ -21,7 +21,7 @@ export const createVideoEndpointUrl = (
  * can refresh it: requests go straight to the video service with the token as a
  * static `authorization` header, which a raw client - unlike a session-backed
  * one - is allowed to preset. Mirrors the scoped client in
- * `#/ageAssurance/useBeginAgeAssurance`.
+ * Other scoped service clients use the same pattern.
  */
 export function createVideoServiceClient(token: string) {
   return createLexClient({

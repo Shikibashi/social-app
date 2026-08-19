@@ -18,7 +18,7 @@
 
 import {useCallback, useEffect, useMemo, useRef} from 'react'
 import {AtUri} from '@atproto/syntax'
-import {moderatePost} from '@bsky/sdk/moderation'
+import {moderatePost} from '#/lib/moderation'
 import {
   type InfiniteData,
   type QueryClient,

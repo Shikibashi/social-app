@@ -13,7 +13,7 @@ type Props = NativeStackScreenProps<CommonNavigatorParams, 'PostQuotes'>
 export const PostQuotesScreen = ({route}: Props) => {
   const {name, rkey} = route.params
   const uri = makeRecordUri(name, 'app.bsky.feed.post', rkey)
-  const {data: post} = usePostQuery(uri)
+  const {data: post} = usePostQuery(uri, {allowPublicFallback: true})
 
   let quoteCount
   if (post) {
@@ -42,7 +42,7 @@ export const PostQuotesScreen = ({route}: Props) => {
         </Layout.Header.Content>
         <Layout.Header.Slot />
       </Layout.Header.Outer>
-      <PostQuotesComponent uri={uri} />
+      <PostQuotesComponent uri={uri} quoteCount={quoteCount} />
     </Layout.Screen>
   )
 }

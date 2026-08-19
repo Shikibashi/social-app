@@ -3,12 +3,12 @@ import {type DidDocument, getPdsEndpoint} from '@atproto/common-web'
 import {type HandleString} from '@atproto/syntax'
 import {useQuery, useQueryClient} from '@tanstack/react-query'
 
-import {DEFAULT_SERVICE} from '#/lib/constants'
+import {DEFAULT_SERVICE, PUBLIC_ACCOUNT_SERVICE} from '#/lib/constants'
 import {useDebouncedValue} from '#/lib/hooks/useDebouncedValue'
+import {createServiceClient} from '#/lib/lexClient'
 import {isNetworkError} from '#/lib/strings/errors'
 import {logger} from '#/logger'
 import {STALE} from '#/state/queries'
-import {getPublicAppviewClient} from '#/state/session/clients'
 import {com} from '#/lexicons'
 
 const RQKEY_ROOT = 'pds-detection'
@@ -70,8 +70,10 @@ function isTransientHttpStatus(status: number): boolean {
  * Resolve a DID document without a session.
  *
  * `com.atproto.identity.resolveIdentity` would give us the DID doc in a single
- * call, but it requires auth on the entryway and is not implemented on the
- * appview, so it is unusable here. Instead we resolve the DID doc directly:
+ * call, but it requires auth on the entryway and is not implemented on every
+ * public service, so it is unusable here. Instead we resolve the handle
+ * through the explicitly configured account entryway, then resolve the DID
+ * document directly:
  * `did:plc` via the PLC directory, `did:web` via its `.well-known` endpoint.
  *
  * Returns `null` for a genuine "not found / invalid" response (a 4xx or an
@@ -150,11 +152,15 @@ export async function resolvePdsForIdentifier(
 ): Promise<{did: string; pdsUrl: string | null} | null> {
   const norm = normalizeIdentifier(identifier)
   /*
-   * Resolution runs without a session, so this uses the public appview client
-   * rather than a session-scoped one. It matches the unauthenticated,
-   * unproxied public agent this previously constructed by hand.
+   * Login-time identity resolution must not depend on the selected AppView.
+   * A local/partial AppView can be healthy while knowing nothing about an
+   * otherwise valid federated handle (for example, an account hosted on a
+   * remote PDS). Keep this lookup on the explicitly configured account
+   * entryway, then use the DID document as the authoritative PDS source.
+   * `createServiceClient` also keeps pre-auth headers scoped to this known
+   * entryway rather than leaking AppView labeler/provider state.
    */
-  const client = getPublicAppviewClient()
+  const client = createServiceClient(PUBLIC_ACCOUNT_SERVICE)
   try {
     let did: string
     if (norm.startsWith('did:')) {

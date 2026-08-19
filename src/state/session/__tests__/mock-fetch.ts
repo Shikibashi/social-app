@@ -108,6 +108,9 @@ export function makeMockFetch(
           active: true,
         })
       }
+      if (nsid === 'com.atproto.server.getServiceAuth') {
+        return json({token: 'service-auth-jwt'})
+      }
       return json({})
     },
   )

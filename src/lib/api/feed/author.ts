@@ -1,5 +1,9 @@
 import {type Client, type XrpcRequestParams} from '@atproto/lex'
 
+import {
+  filterPublicPostsForViewer,
+  hasDirectViewerBlock,
+} from '#/state/queries/public-visibility'
 import {app} from '#/lexicons'
 import * as bsky from '#/types/bsky'
 import {type FeedAPI, type FeedAPIResponse} from './types'
@@ -10,16 +14,20 @@ type GetAuthorFeedParams = XrpcRequestParams<
 
 export class AuthorFeedAPI implements FeedAPI {
   client: Client
+  fallbackClient?: Client
   _params: GetAuthorFeedParams
 
   constructor({
     client,
+    fallbackClient,
     feedParams,
   }: {
     client: Client
+    fallbackClient?: Client
     feedParams: GetAuthorFeedParams
   }) {
     this.client = client
+    this.fallbackClient = fallbackClient
     this._params = feedParams
   }
 
@@ -50,15 +58,89 @@ export class AuthorFeedAPI implements FeedAPI {
      * The agent behaved the same way - its `success` flag was only ever true -
      * so the empty-page branch this replaces was unreachable.
      */
-    const data = await this.client.call(app.bsky.feed.getAuthorFeed, {
+    const params = {
       ...this.params,
       cursor,
       limit,
-    })
+    }
+    let data: app.bsky.feed.getAuthorFeed.$OutputBody
+    try {
+      data = await this.client.call(app.bsky.feed.getAuthorFeed, params)
+    } catch (error) {
+      if (!this.fallbackClient || (await this.viewerOwnsDirectBlock())) {
+        throw error
+      }
+      try {
+        const publicData = await this.fallbackClient.call(
+          app.bsky.feed.getAuthorFeed,
+          params,
+        )
+        return {
+          cursor: publicData.cursor,
+          feed: this._filter(await this.filterPublicFeed(publicData.feed)),
+        }
+      } catch {
+        throw error
+      }
+    }
+    if (!this.fallbackClient) {
+      return {
+        cursor: data.cursor,
+        feed: this._filter(data.feed),
+      }
+    }
+
+    if (await this.viewerOwnsDirectBlock()) {
+      return {
+        cursor: data.cursor,
+        feed: this._filter(data.feed),
+      }
+    }
+
+    try {
+      const publicData = await this.fallbackClient.call(
+        app.bsky.feed.getAuthorFeed,
+        params,
+      )
+      if (publicData.feed.length > 0) {
+        return {
+          cursor: publicData.cursor,
+          feed: this._filter(await this.filterPublicFeed(publicData.feed)),
+        }
+      }
+    } catch {
+      // Keep the authenticated response if the public-read retry is
+      // unavailable. A provider outage must not masquerade as success.
+    }
+
     return {
       cursor: data.cursor,
       feed: this._filter(data.feed),
     }
+  }
+
+  private async viewerOwnsDirectBlock(): Promise<boolean> {
+    try {
+      const profile = await this.client.call(app.bsky.actor.getProfile, {
+        actor: this.params.actor,
+      })
+      return hasDirectViewerBlock(profile)
+    } catch {
+      // Do not use a public retry when the relationship authority cannot be
+      // checked. Failing closed preserves a local direct block.
+      return true
+    }
+  }
+
+  private async filterPublicFeed(
+    feed: app.bsky.feed.defs.FeedViewPost[],
+  ): Promise<app.bsky.feed.defs.FeedViewPost[]> {
+    const posts = await filterPublicPostsForViewer(
+      this.client,
+      feed.map(item => item.post),
+    )
+    const allowedUris = new Set(posts.map(post => post.uri))
+    return feed.filter(item => allowedUris.has(item.post.uri))
   }
 
   _filter(feed: app.bsky.feed.defs.FeedViewPost[]) {

@@ -1,0 +1,32 @@
+{
+  "lexicon": 1,
+  "id": "org.radlib.private.revokeInvite",
+  "defs": {
+    "main": {
+      "type": "procedure",
+      "description": "Revoke a community invite token. The secret is never persisted in plaintext.",
+      "input": {
+        "encoding": "application/json",
+        "schema": {
+          "type": "object",
+          "required": ["space", "token"],
+          "properties": {
+            "space": { "type": "string" },
+            "token": { "type": "string", "maxLength": 256 }
+          }
+        }
+      },
+      "output": {
+        "encoding": "application/json",
+        "schema": {
+          "type": "object",
+          "required": ["space", "revoked"],
+          "properties": {
+            "space": { "type": "string" },
+            "revoked": { "type": "boolean" }
+          }
+        }
+      }
+    }
+  }
+}

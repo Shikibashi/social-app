@@ -1,5 +1,5 @@
 import {createContext, useContext, useMemo, useState} from 'react'
-import {type ModerationDecision} from '@bsky/sdk/moderation'
+import {type ModerationDecision} from '#/lib/moderation'
 import {msg} from '@lingui/core/macro'
 import {useLingui} from '@lingui/react'
 import {useQueryClient} from '@tanstack/react-query'
@@ -7,6 +7,7 @@ import {useQueryClient} from '@tanstack/react-query'
 import {useNonReactiveCallback} from '#/lib/hooks/useNonReactiveCallback'
 import {postUriToRelativePath, toBskyAppUrl} from '#/lib/strings/url-helpers'
 import {purgeTemporaryImageFiles} from '#/state/gallery'
+import {hasViewerInteractionBoundary} from '#/state/queries/public-visibility'
 import {
   precacheResolveLinkQuery,
   RQKEY_GIF_ROOT,
@@ -86,12 +87,7 @@ export function Provider({children}: React.PropsWithChildren<{}>) {
       }
     }
     const author = opts.replyTo?.author || opts.quote?.author
-    const isBlocked = Boolean(
-      author &&
-      (author.viewer?.blocking ||
-        author.viewer?.blockedBy ||
-        author.viewer?.blockingByList),
-    )
+    const isBlocked = author ? hasViewerInteractionBoundary(author) : false
     if (isBlocked) {
       Toast.show(_(msg`Cannot interact with a blocked user`), {
         type: 'warning',

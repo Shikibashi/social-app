@@ -1,5 +1,5 @@
 import {View} from 'react-native'
-import {moderateProfile, type ModerationOpts} from '@bsky/sdk/moderation'
+import {moderateProfile, type ModerationOpts} from '#/lib/moderation'
 import {Trans} from '@lingui/react/macro'
 
 import {sanitizeDisplayName} from '#/lib/strings/display-names'

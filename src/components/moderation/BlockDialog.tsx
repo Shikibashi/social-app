@@ -13,6 +13,7 @@ import {
   useListMutualGroupsQuery,
 } from '#/state/queries/messages/list-mutual-groups'
 import {useRemoveFromGroupChat} from '#/state/queries/messages/remove-from-group'
+import {hasDirectViewerBlock} from '#/state/queries/public-visibility'
 import {useSession} from '#/state/session'
 import {atoms as a, native, useTheme, web} from '#/alf'
 import {AvatarBubbles} from '#/components/AvatarBubbles'
@@ -70,6 +71,7 @@ function BlockDialogInner({
 }) {
   const t = useTheme()
   const {t: l} = useLingui()
+  const isDirectBlock = hasDirectViewerBlock(profile)
 
   const [headerHeight, setHeaderHeight] = useState(0)
   const [footerHeight, setFooterHeight] = useState(0)
@@ -100,7 +102,7 @@ function BlockDialogInner({
   const {data, isLoading, hasNextPage, isFetchingNextPage, fetchNextPage} =
     useListMutualGroupsQuery({
       subject: profile.did,
-      enabled: !profile.viewer?.blocking,
+      enabled: !isDirectBlock,
     })
   const items: Item[] = (data?.pages.flatMap(page => page.convos) ?? []).filter(
     item => !removedConvoIds.has(item.id),
@@ -139,14 +141,14 @@ function BlockDialogInner({
           a.gap_sm,
         ]}>
         <Text style={[a.text_2xl, a.font_bold, t.atoms.text]}>
-          {profile.viewer?.blocking ? (
+          {isDirectBlock ? (
             <Trans>Unblock account?</Trans>
           ) : (
             <Trans>Block account?</Trans>
           )}
         </Text>
         <Text style={[a.text_md, t.atoms.text_contrast_medium]}>
-          {profile.viewer?.blocking ? (
+          {isDirectBlock ? (
             <Trans>
               The account will be able to interact with you after unblocking.
             </Trans>
@@ -179,12 +181,12 @@ function BlockDialogInner({
     <View style={[a.w_full, a.gap_sm, a.justify_end]}>
       <Button
         disabled={isLoading}
-        color={profile.viewer?.blocking ? undefined : 'negative'}
+        color={isDirectBlock ? undefined : 'negative'}
         size="large"
-        label={profile.viewer?.blocking ? l`Unblock` : l`Block`}
+        label={isDirectBlock ? l`Unblock` : l`Block`}
         onPress={() => control.close(() => void onBlock())}>
         <ButtonText>
-          {profile.viewer?.blocking ? (
+          {isDirectBlock ? (
             <Trans>Unblock</Trans>
           ) : (
             <Trans>Block</Trans>
@@ -207,7 +209,7 @@ function BlockDialogInner({
   if (isLoading || !hasMutualGroupChats) {
     return (
       <Dialog.ScrollableInner
-        label={profile.viewer?.blocking ? l`Unblock` : l`Block`}
+        label={isDirectBlock ? l`Unblock` : l`Block`}
         style={[web([{maxWidth: 420}])]}>
         {listHeader}
         {footer}

@@ -1,0 +1,46 @@
+{
+  "lexicon": 1,
+  "id": "org.radlib.private.getFeed",
+  "defs": {
+    "record": {
+      "type": "object",
+      "required": ["space", "repo", "collection", "rkey", "cid", "record", "createdAt", "updatedAt"],
+      "properties": {
+        "space": { "type": "string" },
+        "repo": { "type": "string", "format": "did" },
+        "collection": { "type": "string", "format": "nsid" },
+        "rkey": { "type": "string", "format": "record-key" },
+        "cid": { "type": "string", "format": "cid" },
+        "record": { "type": "unknown" },
+        "createdAt": { "type": "string", "format": "datetime" },
+        "updatedAt": { "type": "string", "format": "datetime" }
+      }
+    },
+    "main": {
+      "type": "query",
+      "description": "Return a viewer-authorized private post feed from the hosting PDS. This is not a public AppView or Relay feed.",
+      "parameters": {
+        "type": "params",
+        "required": ["space"],
+        "properties": {
+          "space": { "type": "string" },
+          "limit": { "type": "integer", "minimum": 1, "maximum": 100, "default": 50 },
+          "cursor": { "type": "string", "maxLength": 128 }
+        }
+      },
+      "output": {
+        "encoding": "application/json",
+        "schema": {
+          "type": "object",
+          "required": ["providerDid", "space", "feed"],
+          "properties": {
+            "providerDid": { "type": "string", "format": "did" },
+            "space": { "type": "string" },
+            "feed": { "type": "array", "maxLength": 100, "items": { "type": "ref", "ref": "#record" } },
+            "cursor": { "type": "string" }
+          }
+        }
+      }
+    }
+  }
+}

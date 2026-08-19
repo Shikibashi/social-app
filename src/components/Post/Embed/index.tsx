@@ -2,7 +2,7 @@ import {useCallback, useMemo} from 'react'
 import {View} from 'react-native'
 import {type $Typed} from '@atproto/lex'
 import {AtUri} from '@atproto/syntax'
-import {moderatePost} from '@bsky/sdk/moderation'
+import {moderatePost} from '#/lib/moderation'
 import {RichText as RichTextAPI} from '@bsky/sdk/richtext'
 import {Trans} from '@lingui/react/macro'
 import {useQueryClient} from '@tanstack/react-query'
@@ -10,7 +10,13 @@ import {useQueryClient} from '@tanstack/react-query'
 import {makeProfileLink} from '#/lib/routes/links'
 import {getChatInviteCodeFromUrl} from '#/lib/strings/url-helpers'
 import {useModerationOpts} from '#/state/preferences/moderation-opts'
+import {usePostQuery} from '#/state/queries/post'
 import {unstableCacheProfileView} from '#/state/queries/profile'
+import {
+  hasDirectViewerBlock,
+  stripNonLocalBlockVisibility,
+} from '#/state/queries/public-visibility'
+import {hasViewerBlockBoundary} from '#/state/queries/usePostThread/blocked'
 import {useSession} from '#/state/session'
 import {Link} from '#/view/com/util/Link'
 import {PostMeta} from '#/view/com/util/PostMeta'
@@ -40,6 +46,7 @@ import {ModeratedListEmbed} from './ListEmbed'
 import {PostPlaceholder as PostPlaceholderText} from './PostPlaceholder'
 import {type CommonProps, type EmbedProps, PostEmbedViewContext} from './types'
 import {VideoEmbed} from './VideoEmbed'
+import {shouldSuppressEmbed} from './visibility'
 
 export {PostEmbedViewContext} from './types'
 
@@ -87,6 +94,10 @@ function MediaEmbed({
 }: CommonProps & {
   embed: TEmbed
 }) {
+  if (shouldSuppressEmbed(embed)) {
+    return null
+  }
+
   switch (embed.type) {
     case 'images':
     case 'gallery': {
@@ -209,11 +220,7 @@ function RecordEmbed({
       )
     }
     case 'post_blocked': {
-      return (
-        <PostPlaceholderText>
-          <Trans>Blocked</Trans>
-        </PostPlaceholderText>
-      )
+      return <BlockedQuoteEmbed embed={embed} {...rest} />
     }
     case 'post_detached': {
       return <PostDetachedEmbed embed={embed} />
@@ -222,6 +229,57 @@ function RecordEmbed({
       return null
     }
   }
+}
+
+function BlockedQuoteEmbed({
+  embed,
+  ...rest
+}: CommonProps & {
+  embed: EmbedType<'post_blocked'>
+}) {
+  const viewerOwnsDirectBlock = hasDirectViewerBlock(embed.view.author)
+  const query = usePostQuery(embed.view.uri, {
+    // This component has an explicit provider blocked-view signal. Allow the
+    // public retry for incoming/list-derived boundaries, but keep a direct
+    // block authored by the current viewer hard.
+    allowPublicFallback: !viewerOwnsDirectBlock,
+  })
+
+  if (!query.data) return null
+
+  const visiblePost = stripNonLocalBlockVisibility(query.data)
+
+  // Preserve only hard boundaries involving the current viewer. A provider
+  // tombstone caused by a block between two other actors is not authority to
+  // hide the quote from this viewer.
+  if (hasViewerBlockBoundary(visiblePost)) {
+    return null
+  }
+
+  const view: EmbedType<'post'>['view'] = {
+    $type: 'app.bsky.embed.record#viewRecord',
+    uri: visiblePost.uri,
+    cid: visiblePost.cid,
+    author: visiblePost.author,
+    value: visiblePost.record,
+    embeds: visiblePost.embed ? [visiblePost.embed] : undefined,
+    indexedAt: visiblePost.indexedAt,
+    labels: visiblePost.labels,
+    replyCount: visiblePost.replyCount,
+    repostCount: visiblePost.repostCount,
+    likeCount: visiblePost.likeCount,
+    quoteCount: visiblePost.quoteCount,
+  }
+
+  return (
+    <QuoteEmbed
+      {...rest}
+      embed={{type: 'post', view}}
+      viewContext={rest.viewContext}
+      isWithinQuote={rest.isWithinQuote}
+      allowNestedQuotes={rest.allowNestedQuotes}
+    />
+  )
 }
 
 export function PostDetachedEmbed({
@@ -265,10 +323,12 @@ export function QuoteEmbed({
   const moderationOpts = useModerationOpts()
   const quote = useMemo<$Typed<app.bsky.feed.defs.PostView>>(
     () => ({
-      ...embed.view,
-      $type: 'app.bsky.feed.defs#postView',
-      record: embed.view.value,
-      embed: embed.view.embeds?.[0],
+      ...stripNonLocalBlockVisibility({
+        ...embed.view,
+        $type: 'app.bsky.feed.defs#postView',
+        record: embed.view.value,
+        embed: embed.view.embeds?.[0],
+      }),
     }),
     [embed],
   )

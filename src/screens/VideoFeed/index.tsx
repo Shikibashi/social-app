@@ -26,7 +26,7 @@ import {Image, type ImageStyle} from 'expo-image'
 import {LinearGradient} from 'expo-linear-gradient'
 import {createVideoPlayer, type VideoPlayer, VideoView} from 'expo-video'
 import {AtUri} from '@atproto/syntax'
-import {type ModerationDecision} from '@bsky/sdk/moderation'
+import {type ModerationDecision} from '#/lib/moderation'
 import {RichText as RichTextAPI} from '@bsky/sdk/richtext'
 import {Trans, useLingui} from '@lingui/react/macro'
 import {

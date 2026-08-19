@@ -1,7 +1,6 @@
 import {useQuery} from '@tanstack/react-query'
 
 import {useChatClient, useSession} from '#/state/session'
-import {useAgeAssurance} from '#/ageAssurance'
 import {chat} from '#/lexicons'
 import {STALE} from '..'
 
@@ -20,8 +19,7 @@ export const UNREAD_REQUEST_CAP = 100
 export function useUnreadCountsQuery() {
   const client = useChatClient()
   const {hasSession} = useSession()
-  const aa = useAgeAssurance()
-  const includeGroupChats = !aa.flags.groupChatDisabled
+  const includeGroupChats = true
 
   return useQuery({
     queryKey: RQKEY(includeGroupChats),

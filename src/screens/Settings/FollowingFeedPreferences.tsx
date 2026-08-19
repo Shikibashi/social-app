@@ -2,10 +2,12 @@ import {msg} from '@lingui/core/macro'
 import {useLingui} from '@lingui/react'
 import {Trans} from '@lingui/react/macro'
 
+import {defaultContentFilterPolicy} from '#/lib/feed-sovereignty/content-filter'
 import {
   type CommonNavigatorParams,
   type NativeStackScreenProps,
 } from '#/lib/routes/types'
+import {useLocalFeedPreferences} from '#/state/preferences/local-feed'
 import {
   usePreferencesQuery,
   useSetFeedViewPreferencesMutation,
@@ -26,6 +28,13 @@ type Props = NativeStackScreenProps<
 >
 export function FollowingFeedPreferencesScreen({}: Props) {
   const {_} = useLingui()
+  const {
+    enabled: localFeedEnabled,
+    setEnabled: setLocalFeedEnabled,
+    setRankingPreset,
+    preferences: localFeedPreferences,
+    update: updateLocalFeedPreferences,
+  } = useLocalFeedPreferences()
 
   const {data: preferences} = usePreferencesQuery()
   const {mutate: setFeedViewPref, variables} =
@@ -47,9 +56,14 @@ export function FollowingFeedPreferencesScreen({}: Props) {
     variables?.lab_mergeFeedEnabled ??
     preferences?.feedViewPrefs?.lab_mergeFeedEnabled,
   )
+  const contentFilterEnabled = Boolean(
+    localFeedPreferences.contentFilterPolicy?.enabled,
+  )
+  const balancedEnabled =
+    localFeedEnabled && localFeedPreferences.rankingPreset === 'balanced'
 
   return (
-    <Layout.Screen testID="followingFeedPreferencesScreen">
+    <Layout.Screen testID="followingFeedPreferencesScreen" ecwMode="workbench">
       <Layout.Header.Outer>
         <Layout.Header.BackButton />
         <Layout.Header.Content>
@@ -66,6 +80,63 @@ export function FollowingFeedPreferencesScreen({}: Props) {
               <Trans>These settings only apply to the Following feed.</Trans>
             </Admonition>
           </SettingsList.Item>
+          <Toggle.Item
+            type="checkbox"
+            name="local-reranking"
+            label={_(msg`Use local feed reranking`)}
+            value={localFeedEnabled}
+            onChange={setLocalFeedEnabled}>
+            <SettingsList.Item>
+              <SettingsList.ItemText>
+                <Trans>Use local feed reranking</Trans>
+              </SettingsList.ItemText>
+              <Toggle.Platform />
+            </SettingsList.Item>
+          </Toggle.Item>
+          <Toggle.Item
+            type="checkbox"
+            name="filtered-following"
+            label={_(msg`Use Filtered Following`)}
+            value={contentFilterEnabled}
+            onChange={enabled =>
+              updateLocalFeedPreferences({
+                contentFilterPolicy: {
+                  ...(localFeedPreferences.contentFilterPolicy ??
+                    defaultContentFilterPolicy),
+                  enabled,
+                },
+              })
+            }>
+            <SettingsList.Item>
+              <SettingsList.ItemText>
+                <Trans>
+                  Use Filtered Following. This applies your local hard content
+                  policy to followed and unfollowed candidates without changing
+                  relationships.
+                </Trans>
+              </SettingsList.ItemText>
+              <Toggle.Platform />
+            </SettingsList.Item>
+          </Toggle.Item>
+          <Toggle.Item
+            type="checkbox"
+            name="balanced-following"
+            label={_(msg`Use Balanced local ranking`)}
+            value={balancedEnabled}
+            onChange={enabled =>
+              setRankingPreset(enabled ? 'balanced' : 'following')
+            }>
+            <SettingsList.Item>
+              <SettingsList.ItemText>
+                <Trans>
+                  Use Balanced local ranking. It is a selectable algorithm,
+                  not a mandatory platform ranking, and can be switched back
+                  to the ordinary local Following reranker or chronology.
+                </Trans>
+              </SettingsList.ItemText>
+              <Toggle.Platform />
+            </SettingsList.Item>
+          </Toggle.Item>
           <Toggle.Item
             type="checkbox"
             name="show-replies"

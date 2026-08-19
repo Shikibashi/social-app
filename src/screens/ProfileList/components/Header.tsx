@@ -8,7 +8,7 @@ import {Trans} from '@lingui/react/macro'
 import {useHaptics} from '#/lib/haptics'
 import {makeListLink} from '#/lib/routes/links'
 import {logger} from '#/logger'
-import {useListBlockMutation, useListMuteMutation} from '#/state/queries/list'
+import {useListMuteMutation} from '#/state/queries/list'
 import {
   useAddSavedFeedsMutation,
   type UsePreferencesQueryResponse,
@@ -41,14 +41,11 @@ export function Header({
   const {currentAccount} = useSession()
   const isCurateList = list.purpose === app.bsky.graph.defs.curatelist.value
   const isModList = list.purpose === app.bsky.graph.defs.modlist.value
-  const isBlocking = !!list.viewer?.blocked
   const isMuting = !!list.viewer?.muted
   const playHaptic = useHaptics()
 
   const {mutateAsync: muteList, isPending: isMutePending} =
     useListMuteMutation()
-  const {mutateAsync: blockList, isPending: isBlockPending} =
-    useListBlockMutation()
   const {mutateAsync: addSavedFeeds, isPending: isAddSavedFeedPending} =
     useAddSavedFeedsMutation()
   const {mutateAsync: updateSavedFeeds, isPending: isUpdatingSavedFeeds} =
@@ -110,20 +107,6 @@ export function Header({
     }
   }
 
-  const onUnsubscribeBlock = async () => {
-    try {
-      await blockList({uri: list.uri, block: false})
-      Toast.show(_(msg({message: 'List unblocked', context: 'toast'})))
-      ax.metric('moderation:unsubscribedFromList', {listType: 'block'})
-    } catch {
-      Toast.show(
-        _(
-          msg`There was an issue. Please check your internet connection and try again.`,
-        ),
-      )
-    }
-  }
-
   const descriptionRT = useMemo(
     () =>
       list.description
@@ -160,21 +143,7 @@ export function Header({
             </ButtonText>
           </Button>
         ) : isModList ? (
-          isBlocking ? (
-            <Button
-              testID="unblockBtn"
-              color="secondary"
-              label={_(msg`Unblock`)}
-              onPress={onUnsubscribeBlock}
-              size="small"
-              style={[a.rounded_full]}
-              disabled={isBlockPending}>
-              {isBlockPending && <ButtonIcon icon={Loader} />}
-              <ButtonText>
-                <Trans>Unblock</Trans>
-              </ButtonText>
-            </Button>
-          ) : isMuting ? (
+          isMuting ? (
             <Button
               testID="unmuteBtn"
               color="secondary"

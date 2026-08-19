@@ -1,0 +1,289 @@
+/*
+ * Edriffles Computer Web surface layer.
+ *
+ * ALF owns cross-platform component styles and receives the ECW palette from
+ * src/alf/themes.ts. This file supplies the web-only page/workbench grammar:
+ * grid canvas, typographic roles, explicit links, square controls, and a
+ * resilient two-tone focus treatment.
+ */
+:root {
+  --ecw-canvas: #050719;
+  --ecw-workspace: #070a2e;
+  --ecw-surface: #12144b;
+  --ecw-surface-recessed: #0b0d38;
+  --ecw-surface-raised: #1c1e67;
+  --ecw-surface-input: #02030d;
+  --ecw-text: #f9f3ff;
+  --ecw-text-secondary: #dfe6ff;
+  --ecw-text-muted: #aeb6e9;
+  --ecw-border-structural: #6675c8;
+  --ecw-border-strong: #7787e8;
+  --ecw-rule-decorative: #343960;
+  --ecw-link: #6ff4ff;
+  --ecw-link-visited: #c594ff;
+  --ecw-accent: #b189ff;
+  --ecw-selection: #7787e8;
+  --ecw-selection-text: #050719;
+  --ecw-marker: #ff76d7;
+  --ecw-focus-outer: #ffd45c;
+  --ecw-focus-inner: #050719;
+  --ecw-control-face: #bdbdbd;
+  --ecw-control-highlight: #f6f6f6;
+  --ecw-control-shadow: #666666;
+  --ecw-font-display:
+    Georgia, 'Noto Serif', 'DejaVu Serif', 'Times New Roman',
+    'Liberation Serif', serif;
+  --ecw-font-ui:
+    Verdana, 'DejaVu Sans', Tahoma, 'Noto Sans', Arial, 'Liberation Sans',
+    sans-serif;
+  --ecw-font-system:
+    'Courier New', 'Liberation Mono', 'DejaVu Sans Mono', 'Noto Sans Mono',
+    monospace;
+  --ecw-font-size-body: 0.9375rem;
+  --ecw-font-size-ui: 0.875rem;
+  --ecw-font-size-meta: 0.8125rem;
+  --ecw-font-size-micro: 0.75rem;
+  --ecw-line-height-body: 1.5;
+  --ecw-line-height-ui: 1.4;
+  --ecw-hit-min: 1.875rem;
+  --ecw-grid-line: rgba(102, 117, 200, 0.08);
+  --ecw-hard-shadow: rgba(0, 0, 0, 0.78);
+}
+
+html.theme--light {
+  --ecw-canvas: #d6d9e8;
+  --ecw-workspace: #c7ccdf;
+  --ecw-surface: #f4f3eb;
+  --ecw-surface-recessed: #e1e3ee;
+  --ecw-surface-raised: #ffffff;
+  --ecw-surface-input: #d4d6df;
+  --ecw-text: #11132d;
+  --ecw-text-secondary: #24274a;
+  --ecw-text-muted: #4d5372;
+  --ecw-border-structural: #626a9c;
+  --ecw-border-strong: #383f78;
+  --ecw-rule-decorative: #9da2bd;
+  --ecw-link: #004fa3;
+  --ecw-link-visited: #65349a;
+  --ecw-accent: #5530a3;
+  --ecw-selection: #2c2a86;
+  --ecw-selection-text: #ffffff;
+  --ecw-marker: #a82378;
+  --ecw-focus-outer: #522598;
+  --ecw-focus-inner: #ffffff;
+  --ecw-control-face: #d4d0c8;
+  --ecw-control-highlight: #ffffff;
+  --ecw-control-shadow: #777777;
+  --ecw-grid-line: rgba(98, 106, 156, 0.14);
+  --ecw-hard-shadow: rgba(17, 19, 45, 0.48);
+}
+
+html.theme--dim {
+  --ecw-canvas: #0b0d20;
+  --ecw-workspace: #0e123a;
+  --ecw-surface: #171a4d;
+  --ecw-surface-recessed: #131640;
+  --ecw-surface-raised: #20245f;
+  --ecw-surface-input: #070912;
+  --ecw-text: #f1efff;
+  --ecw-text-secondary: #d2d8f4;
+  --ecw-text-muted: #9da7d0;
+  --ecw-border-structural: #5968ad;
+  --ecw-border-strong: #6c79c9;
+  --ecw-rule-decorative: #34395f;
+  --ecw-link: #65dbe5;
+  --ecw-link-visited: #bd91ed;
+  --ecw-accent: #a884e7;
+  --ecw-selection: #6c79c9;
+  --ecw-selection-text: #0b0d20;
+  --ecw-marker: #f28dcc;
+  --ecw-focus-outer: #f2ca68;
+  --ecw-focus-inner: #0b0d20;
+  --ecw-grid-line: rgba(89, 104, 173, 0.08);
+  --ecw-hard-shadow: rgba(0, 0, 0, 0.64);
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+html {
+  background-color: var(--ecw-canvas);
+  color-scheme: dark;
+}
+
+html.theme--light {
+  color-scheme: light;
+}
+
+body {
+  background-color: var(--ecw-canvas) !important;
+  background-image:
+    linear-gradient(var(--ecw-grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--ecw-grid-line) 1px, transparent 1px);
+  background-size: 32px 32px;
+  color: var(--ecw-text);
+  font-family: var(--ecw-font-ui);
+  font-size: var(--ecw-font-size-body);
+  line-height: var(--ecw-line-height-body);
+}
+
+#root {
+  background: transparent;
+}
+
+[data-ecw-shell='true'] {
+  background-color: var(--ecw-canvas) !important;
+  background-image:
+    linear-gradient(var(--ecw-grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--ecw-grid-line) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+[data-ecw-region='header'] {
+  background-color: var(--ecw-surface) !important;
+  border-bottom: 1px solid var(--ecw-border-strong) !important;
+  box-shadow: 2px 2px 0 var(--ecw-hard-shadow);
+}
+
+[data-ecw-region='content'] {
+  background-color: var(--ecw-workspace);
+}
+
+#root button,
+#root input,
+#root select,
+#root textarea {
+  font-family: var(--ecw-font-ui) !important;
+  font-size: var(--ecw-font-size-ui);
+  line-height: var(--ecw-line-height-ui);
+}
+
+#root button,
+#root input,
+#root select,
+#root textarea,
+#root [role='button'] {
+  border-radius: 1px !important;
+}
+
+#root button,
+#root input,
+#root select,
+#root textarea {
+  border-color: var(--ecw-border-structural);
+}
+
+#root a,
+#root a[role='link'] {
+  color: var(--ecw-link);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.12em;
+}
+
+#root a:visited,
+#root a[role='link']:visited {
+  color: var(--ecw-link-visited);
+}
+
+#root a:hover,
+#root a[role='link']:hover {
+  color: var(--ecw-marker);
+}
+
+#root button:focus-visible,
+#root input:focus-visible,
+#root select:focus-visible,
+#root textarea:focus-visible,
+#root a:focus-visible,
+#root [role='button']:focus-visible {
+  outline: 2px solid var(--ecw-focus-inner) !important;
+  box-shadow: 0 0 0 4px var(--ecw-focus-outer) !important;
+}
+
+/* The shared screen boundary supplies these attributes without changing routes. */
+[data-ecw-mode='page'] {
+  background-color: var(--ecw-workspace) !important;
+}
+
+[data-ecw-mode='workbench'] {
+  background-color: var(--ecw-canvas) !important;
+  border-inline: 1px solid var(--ecw-border-structural) !important;
+}
+
+[data-ecw-mode='workbench'] h1,
+[data-ecw-mode='workbench'] h2,
+[data-ecw-mode='workbench'] h3 {
+  font-family: var(--ecw-font-system);
+  letter-spacing: 0.035em;
+}
+
+[data-ecw-mode='workbench'] [role='button'],
+[data-ecw-mode='workbench'] button,
+[data-ecw-mode='workbench'] input,
+[data-ecw-mode='workbench'] select,
+[data-ecw-mode='workbench'] textarea {
+  min-height: var(--ecw-hit-min);
+}
+
+@media (prefers-contrast: more) {
+  :root {
+    --ecw-text-muted: #d8ddff;
+    --ecw-border-structural: #aab5ff;
+    --ecw-border-strong: #d1d7ff;
+    --ecw-rule-decorative: #6d78bd;
+  }
+
+  html.theme--light {
+    --ecw-text-muted: #3f496b;
+    --ecw-border-structural: #3b467b;
+    --ecw-border-strong: #1d285e;
+    --ecw-rule-decorative: #747da3;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+
+@media (max-width: 760px) {
+  body {
+    background-size: 24px 24px;
+  }
+}
+
+@media (forced-colors: active) {
+  body {
+    background-image: none;
+  }
+
+  #root button,
+  #root input,
+  #root select,
+  #root textarea,
+  #root [role='button'] {
+    border: 1px solid ButtonText !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
+
+  #root button:focus-visible,
+  #root input:focus-visible,
+  #root select:focus-visible,
+  #root textarea:focus-visible,
+  #root a:focus-visible,
+  #root [role='button']:focus-visible {
+    outline: 2px solid Highlight !important;
+    box-shadow: none !important;
+  }
+}

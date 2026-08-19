@@ -1,0 +1,35 @@
+{
+  "lexicon": 1,
+  "id": "org.radlib.moderation.recordListMuteAttestation",
+  "defs": {
+    "main": {
+      "type": "procedure",
+      "description": "Records a provider-signed private-list-mute claim at the account PDS. Fork-specific; not an AT Protocol standard.",
+      "input": {
+        "encoding": "application/json",
+        "schema": {
+          "type": "object",
+          "required": ["attestation"],
+          "properties": {
+            "attestation": {
+              "type": "ref",
+              "ref": "org.radlib.moderation.defs#attestation"
+            }
+          }
+        }
+      },
+      "output": {
+        "encoding": "application/json",
+        "schema": {
+          "type": "object",
+          "required": ["accepted", "listUriHash", "providerDid"],
+          "properties": {
+            "accepted": {"type": "boolean"},
+            "listUriHash": {"type": "string", "maxLength": 64},
+            "providerDid": {"type": "string", "format": "did"}
+          }
+        }
+      }
+    }
+  }
+}

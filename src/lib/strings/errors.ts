@@ -76,6 +76,11 @@ export function cleanError(e: unknown): string {
   if (str.includes('Unable to resolve handle')) {
     return t`Unable to resolve handle`
   }
+  const fetchHandlerPrefix = 'Unexpected fetchHandler() error: '
+  const fetchHandlerIndex = str.indexOf(fetchHandlerPrefix)
+  if (fetchHandlerIndex >= 0) {
+    return str.slice(fetchHandlerIndex + fetchHandlerPrefix.length)
+  }
   return toDisplayString(e, str)
 }
 

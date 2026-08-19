@@ -63,7 +63,7 @@ export function AppearanceSettingsScreen({}: Props) {
 
   return (
     <LayoutAnimationConfig skipExiting skipEntering>
-      <Layout.Screen testID="preferencesThreadsScreen">
+      <Layout.Screen testID="preferencesThreadsScreen" ecwMode="workbench">
         <Layout.Header.Outer>
           <Layout.Header.BackButton />
           <Layout.Header.Content>

@@ -104,6 +104,18 @@ describe('cleanError', () => {
     expect(cleanError(e)).toBe('Upstream server responded with a 401 error')
   })
 
+  it('does not expose the lex fetch-wrapper around a named service failure', () => {
+    expect(
+      cleanError(
+        new Error(
+          'XrpcFetchError: Unexpected fetchHandler() error: AppView provider Project AppView (did:plc:example) is unavailable',
+        ),
+      ),
+    ).toBe(
+      'AppView provider Project AppView (did:plc:example) is unavailable',
+    )
+  })
+
   it('strips a leading "Error: " from a plain error', () => {
     expect(cleanError(new Error('Something broke'))).toBe('Something broke')
   })

@@ -1,0 +1,29 @@
+{
+  "lexicon": 1,
+  "id": "org.radlib.private.revokeFollow",
+  "defs": {
+    "main": {
+      "type": "procedure",
+      "description": "Remove an approved follower from the authenticated protected account.",
+      "input": {
+        "encoding": "application/json",
+        "schema": {
+          "type": "object",
+          "required": ["requester"],
+          "properties": { "requester": { "type": "string", "format": "did" } }
+        }
+      },
+      "output": {
+        "encoding": "application/json",
+        "schema": {
+          "type": "object",
+          "required": ["requester", "state"],
+          "properties": {
+            "requester": { "type": "string", "format": "did" },
+            "state": { "type": "string", "knownValues": ["none", "requested", "approved", "denied", "revoked", "blocked"] }
+          }
+        }
+      }
+    }
+  }
+}

@@ -34,6 +34,10 @@ module.exports = function (_config) {
   const UPDATES_ENABLED = IS_TESTFLIGHT || IS_PRODUCTION
 
   const USE_SENTRY = Boolean(process.env.SENTRY_AUTH_TOKEN)
+  const PRODUCT_NAME = process.env.EXPO_PUBLIC_BRAND_NAME?.trim() || 'Social'
+  const PUBLIC_WEB_ORIGIN =
+    process.env.EXPO_PUBLIC_PUBLIC_WEB_ORIGIN?.trim() ||
+    'https://social.edriffles.us'
 
   const IOS_ICON_FILE =
     PLATFORM === 'web' // web build doesn't like .icon files
@@ -45,7 +49,7 @@ module.exports = function (_config) {
   return {
     expo: {
       version: VERSION,
-      name: 'Bluesky',
+      name: PRODUCT_NAME,
       slug: 'bluesky',
       scheme: 'bluesky',
       owner: 'blueskysocial',
@@ -75,7 +79,7 @@ module.exports = function (_config) {
             'Used to save images to your library.',
           NSPhotoLibraryUsageDescription:
             'Used for profile pictures, posts, and other kinds of content',
-          CFBundleSpokenName: 'Blue Sky',
+          CFBundleSpokenName: PRODUCT_NAME,
           CFBundleLocalizations: [
             'en',
             'an',
@@ -217,6 +221,9 @@ module.exports = function (_config) {
       },
       web: {
         favicon: './assets/favicon.png',
+        name: PRODUCT_NAME,
+        shortName: PRODUCT_NAME,
+        description: 'A user-controlled social network client.',
       },
       updates: {
         url: 'https://updates.bsky.app/manifest',
@@ -424,6 +431,7 @@ module.exports = function (_config) {
         ],
       ],
       extra: {
+        publicWebOrigin: PUBLIC_WEB_ORIGIN,
         eas: {
           build: {
             experimental: {

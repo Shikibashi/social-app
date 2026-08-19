@@ -22,10 +22,31 @@ import {type RichText as RichTextType} from '@bsky/sdk/richtext'
 import {useLingui} from '@lingui/react/macro'
 import {useQueryClient} from '@tanstack/react-query'
 
+import {type BalancedCandidate, rankBalancedCandidates} from '#/lib/balanced'
 import {DISCOVER_FEED_URI, KNOWN_SHUTDOWN_FEEDS} from '#/lib/constants'
+import {getFeedCandidateText} from '#/lib/feed-sovereignty/candidate-text'
+import {
+  type ContentFilterPolicy,
+  matchContentFilter,
+} from '#/lib/feed-sovereignty/content-filter'
+import {
+  explorationFloorForLevel,
+  type FeedPreferences,
+  rankLocallyWithTrace,
+} from '#/lib/feed-sovereignty/profile'
+import {
+  type RadlibCurationConfig,
+  repartitionCurationSlices,
+  retainReplyForExplicitPreference,
+  scoreRadlibCuration,
+} from '#/lib/feed-sovereignty/radlib-curation'
 import {useBottomBarOffset} from '#/lib/hooks/useBottomBarOffset'
 import {useInitialNumToRender} from '#/lib/hooks/useInitialNumToRender'
 import {useNonReactiveCallback} from '#/lib/hooks/useNonReactiveCallback'
+import {
+  defaultExplicitPreferences,
+  defaultLearnedProfile,
+} from '#/lib/personalization'
 import {isNetworkError} from '#/lib/strings/errors'
 import {logger} from '#/logger'
 import {usePostAuthorShadowFilter} from '#/state/cache/profile-shadow'
@@ -46,16 +67,11 @@ import {
 import {truncateAndInvalidate} from '#/state/queries/util'
 import {useSession} from '#/state/session'
 import {useProgressGuide} from '#/state/shell/progress-guide'
-import {useSelectedFeed} from '#/state/shell/selected-feed'
 import {List, type ListRef} from '#/view/com/util/List'
 import {PostFeedLoadingPlaceholder} from '#/view/com/util/LoadingPlaceholder'
 import {LoadMoreRetryBtn} from '#/view/com/util/LoadMoreRetryBtn'
 import {type VideoFeedSourceContext} from '#/screens/VideoFeed/types'
 import {atoms as a, useBreakpoints, useLayoutBreakpoints, useTheme} from '#/alf'
-import {
-  AgeAssuranceDismissibleFeedBanner,
-  useInternalState as useAgeAssuranceBannerState,
-} from '#/components/ageAssurance/AgeAssuranceDismissibleFeedBanner'
 import {ProgressGuide, SuggestedFollows} from '#/components/FeedInterstitials'
 import {
   PostFeedVideoGridRow,
@@ -164,10 +180,6 @@ type FeedRow =
       key: string
     }
   | {
-      type: 'ageAssuranceBanner'
-      key: string
-    }
-  | {
       type: 'composerPrompt'
       key: string
     }
@@ -228,7 +240,13 @@ let PostFeed = ({
   extraData,
   savedFeedConfig,
   initialNumToRender: initialNumToRenderOverride,
+  localRerank,
+  balancedMode,
+  localFeedPreferences,
+  radlibCuration,
+  contentFilterPolicy,
   isVideoFeed = false,
+  onFeedContext,
   ref,
 }: {
   feed: FeedDescriptor
@@ -254,6 +272,12 @@ let PostFeed = ({
   initialNumToRender?: number
   isVideoFeed?: boolean
   lastFetchDate?: () => number
+  localRerank?: boolean
+  balancedMode?: boolean
+  localFeedPreferences?: FeedPreferences
+  radlibCuration?: RadlibCurationConfig
+  contentFilterPolicy?: ContentFilterPolicy
+  onFeedContext?: (feedContext: string | undefined) => void
   ref?: React.Ref<PostFeedRef>
 }): React.ReactNode => {
   const ax = useAnalytics()
@@ -315,6 +339,18 @@ let PostFeed = ({
     () => !isFetching && !data?.pages?.some(page => page.slices.length),
     [isFetching, data],
   )
+  const activeFeedContext = useMemo(
+    () =>
+      data?.pages
+        .flatMap(page => page.slices)
+        .map(slice => slice.feedContext)
+        .find((context): context is string => Boolean(context)),
+    [data],
+  )
+
+  useEffect(() => {
+    onFeedContext?.(activeFeedContext)
+  }, [activeFeedContext, onFeedContext])
 
   useEffect(() => {
     if (lastFetchedAt) {
@@ -411,20 +447,278 @@ let PostFeed = ({
 
   const {trendingVideoDisabled} = useTrendingSettings()
 
-  const ageAssuranceBannerState = useAgeAssuranceBannerState()
-  const selectedFeed = useSelectedFeed()
-  /**
-   * Cached value of whether the current feed was selected at startup. We don't
-   * want this to update when user swipes.
-   */
-  // oxlint-disable-next-line react/hook-use-state
-  const [isCurrentFeedAtStartupSelected] = useState(selectedFeed === feed)
-
   const blockedOrMutedAuthors = usePostAuthorShadowFilter(
     // author feeds have their own handling
     feed.startsWith('author|') ? undefined : data?.pages,
   )
 
+  const localRanking = useMemo(() => {
+    const explanations = new Map<string, string[]>()
+    const curationEnabled = Boolean(radlibCuration?.enabled)
+    const contentFilterEnabled = Boolean(contentFilterPolicy?.enabled)
+    if (
+      (!localRerank &&
+        !balancedMode &&
+        !curationEnabled &&
+        !contentFilterEnabled) ||
+      !localFeedPreferences ||
+      !data
+    ) {
+      return {pages: data?.pages, explanations}
+    }
+
+    const now = Date.now()
+    const curatedPages = data.pages.map(page => ({
+      page,
+      capacity: page.slices.length,
+      slices: page.slices.flatMap(slice => {
+        if (!curationEnabled || !radlibCuration?.removeReplies) return [slice]
+        const feedItem = slice.items.find(
+          item => item.uri === slice.feedPostUri,
+        )
+        if (!feedItem) return [slice]
+        return retainReplyForExplicitPreference(
+          {
+            uri: slice.feedPostUri,
+            authorDid: feedItem.post.author.did,
+            isReply: Boolean(feedItem.record.reply),
+          },
+          localFeedPreferences.explicitPostPreferences,
+          localFeedPreferences.explicitAuthors,
+        )
+          ? [slice]
+          : []
+      }),
+    }))
+    const candidateForSlice = (
+      slice: (typeof data.pages)[number]['slices'][number],
+    ) => {
+      const feedItem = slice.items.find(item => item.uri === slice.feedPostUri)
+      const item = feedItem ?? slice.items[0]
+      const authorDid = item?.post.author.did ?? slice.feedPostUri
+      const text = getFeedCandidateText(
+        item?.record.text ?? '',
+        item?.post.embed,
+      )
+      const contentFilterTrace = contentFilterEnabled
+        ? matchContentFilter(
+            {
+              authorDid,
+              text,
+            },
+            contentFilterPolicy,
+          )
+        : undefined
+      if (contentFilterTrace && !contentFilterTrace.included) return []
+      const curationTrace = curationEnabled
+        ? scoreRadlibCuration(
+            {
+              uri: slice.feedPostUri,
+              authorDid,
+              text,
+              indexedAt: item?.post.indexedAt,
+              likeCount: item?.post.likeCount,
+              repostCount: item?.post.repostCount,
+              replyCount: item?.post.replyCount,
+              quoteCount: item?.post.quoteCount,
+              isReply: Boolean(feedItem?.record.reply),
+            },
+            radlibCuration!,
+            now,
+          )
+        : undefined
+      if (curationTrace && !curationTrace.included) return []
+      const indexedAt = item ? Date.parse(item.post.indexedAt) : Number.NaN
+      const ageHours = Number.isFinite(indexedAt)
+        ? (now - indexedAt) / 3_600_000
+        : 24
+      return [
+        {
+          slice,
+          candidate: {
+            uri: slice.feedPostUri,
+            authorDid,
+            text,
+            topic: curationTrace?.topic,
+            freshness: Math.exp(-Math.max(0, ageHours) / 24),
+            networkRelevance: 0.5,
+            conversationActivity: item?.post.replyCount ? 1 : 0,
+            familiarity: item?.post.author.viewer?.following ? 1 : 0,
+            variety: item?.post.author.viewer?.following ? 0.25 : 1,
+            integrityWeight: 1,
+            explorationEligible: !item?.post.author.viewer?.following,
+            seen: false,
+            curationScore: curationTrace?.score,
+            curationReasons: curationTrace?.reasons,
+          },
+        },
+      ]
+    }
+
+    if (balancedMode) {
+      const explicit = {
+        ...defaultExplicitPreferences,
+        selectedFeedPreset: 'balanced',
+        discovery: localFeedPreferences.discovery,
+        familiarity: localFeedPreferences.familiarity,
+        freshness: localFeedPreferences.freshness,
+        variety: localFeedPreferences.variety ?? 0.5,
+        conversationActivity: localFeedPreferences.conversationActivity,
+        explorationLevel: localFeedPreferences.explorationLevel,
+        inferredInterestsEnabled: localFeedPreferences.inferredInterestsEnabled,
+        explicitInterests: localFeedPreferences.explicitInterests,
+        explicitAuthors: localFeedPreferences.explicitAuthors,
+        explicitPostPreferences: localFeedPreferences.explicitPostPreferences,
+        topics: localFeedPreferences.topics,
+        classifierModules: localFeedPreferences.classifierModules,
+        contentFilterPolicy: localFeedPreferences.contentFilterPolicy,
+        radlibCuration: localFeedPreferences.radlibCuration,
+      }
+      const learned = {
+        ...defaultLearnedProfile,
+        inferredTopics: localFeedPreferences.inferredTopics,
+      }
+      const pages = curatedPages.map(({page, slices}) => {
+        const entries = slices.flatMap(candidateForSlice)
+        const balancedCandidates: BalancedCandidate[] = entries.map(
+          ({slice, candidate}) => {
+            const item = slice.items.find(
+              item => item.uri === slice.feedPostUri,
+            )
+            return {
+              ...candidate,
+              cid: item?.post.cid ?? candidate.uri,
+              candidateTimestamp:
+                item?.post.indexedAt ?? new Date(now).toISOString(),
+              hydration: {
+                state: 'visible' as const,
+                checkedAt: new Date(now).toISOString(),
+              },
+              sourceCategory: item?.post.author.viewer?.following
+                ? 'followed-network'
+                : 'graph-near-discovery',
+              features: {
+                freshness: candidate.freshness,
+                graphProximity: candidate.networkRelevance,
+                engagementCount:
+                  (item?.post.likeCount ?? 0) +
+                  (item?.post.repostCount ?? 0) +
+                  (item?.post.replyCount ?? 0),
+                exploration: localFeedPreferences.explorationLevel,
+                integrity: candidate.integrityWeight,
+                familiarity: candidate.familiarity,
+                variety: candidate.variety,
+                conversationActivity: candidate.conversationActivity,
+              },
+            }
+          },
+        )
+        const ranked = rankBalancedCandidates(
+          balancedCandidates,
+          explicit,
+          learned,
+          {now},
+        )
+        for (const trace of ranked.traces) {
+          if (ranked.ordered.some(candidate => candidate.uri === trace.uri)) {
+            explanations.set(trace.uri, [
+              `Balanced local algorithm: ${trace.reason}`,
+            ])
+          }
+        }
+        const byUri = new Map(
+          entries.map(entry => [entry.candidate.uri, entry.slice]),
+        )
+        return {
+          ...page,
+          slices: ranked.ordered
+            .map(candidate => byUri.get(candidate.uri)!)
+            .filter(Boolean),
+        }
+      })
+      return {pages, explanations}
+    }
+
+    if (curationEnabled) {
+      const entries = curatedPages.flatMap(({slices}) =>
+        slices.flatMap(candidateForSlice),
+      )
+      const ranked = rankLocallyWithTrace(
+        entries.map(entry => entry.candidate),
+        localFeedPreferences,
+        {
+          maxAuthorPerWindow: radlibCuration!.maxPostsPerAuthor,
+          explorationFloor: explorationFloorForLevel(
+            localFeedPreferences.explorationLevel,
+          ),
+        },
+      )
+      for (const trace of ranked.traces) {
+        if (trace.selected) explanations.set(trace.uri, trace.reasons)
+      }
+      const byUri = new Map(
+        entries.map(entry => [entry.candidate.uri, entry.slice]),
+      )
+      const orderedSlices = ranked.ordered.flatMap(candidate => {
+        const slice = byUri.get(candidate.uri)
+        return slice ? [slice] : []
+      })
+      const repartitioned = repartitionCurationSlices(
+        orderedSlices,
+        curatedPages.map(({capacity}) => capacity),
+      )
+      const pages = curatedPages.map(({page}, index) => ({
+        ...page,
+        slices: repartitioned[index],
+      }))
+      return {pages, explanations}
+    }
+
+    if (!localRerank) {
+      const pages = curatedPages.map(({page, slices}) => ({
+        ...page,
+        // A content-only policy filters the provider's candidates but does not
+        // silently take ownership of ordering.
+        slices: slices.flatMap(candidateForSlice).map(entry => entry.slice),
+      }))
+      return {pages, explanations}
+    }
+
+    const pages = curatedPages.map(({page, slices}) => {
+      const entries = slices.flatMap(candidateForSlice)
+      const ranked = rankLocallyWithTrace(
+        entries.map(entry => entry.candidate),
+        localFeedPreferences,
+        {
+          maxAuthorPerWindow: 2,
+          explorationFloor: explorationFloorForLevel(
+            localFeedPreferences.explorationLevel,
+          ),
+        },
+      )
+      for (const trace of ranked.traces) {
+        if (trace.selected) explanations.set(trace.uri, trace.reasons)
+      }
+      const byUri = new Map(
+        entries.map(entry => [entry.candidate.uri, entry.slice]),
+      )
+      return {
+        ...page,
+        slices: ranked.ordered
+          .map(candidate => byUri.get(candidate.uri)!)
+          .filter(Boolean),
+      }
+    })
+    return {pages, explanations}
+  }, [
+    contentFilterPolicy,
+    data,
+    localFeedPreferences,
+    localRerank,
+    balancedMode,
+    radlibCuration,
+  ])
+  const renderPages = localRanking.pages
   const feedItems: FeedRow[] = useMemo(() => {
     // wraps a slice item, and replaces it with a showLessFollowup item
     // if the user has pressed show less on it
@@ -479,7 +773,7 @@ let PostFeed = ({
             feedContext: string | undefined
             reqId: string | undefined
           }[] = []
-          for (const page of data.pages) {
+          for (const page of renderPages ?? []) {
             for (const slice of page.slices) {
               const item = slice.items.find(
                 item => item.uri === slice.feedPostUri,
@@ -531,7 +825,7 @@ let PostFeed = ({
             })
           }
         } else {
-          for (const page of data?.pages) {
+          for (const page of renderPages ?? []) {
             for (const slice of page.slices) {
               sliceIndex++
 
@@ -543,21 +837,6 @@ let PostFeed = ({
                         type: 'interstitialProgressGuide',
                         key: 'interstitial-' + sliceIndex + '-' + lastFetchedAt,
                       })
-                    } else {
-                      /*
-                       * Only insert if Discover was the last selected feed at
-                       * startup, the progress guide isn't shown, and the
-                       * banner is eligible to be shown.
-                       */
-                      if (
-                        isCurrentFeedAtStartupSelected &&
-                        ageAssuranceBannerState.visible
-                      ) {
-                        arr.push({
-                          type: 'ageAssuranceBanner',
-                          key: 'ageAssuranceBanner-' + sliceIndex,
-                        })
-                      }
                     }
                     arr.push({
                       type: 'liveEventFeedsAndTrendingBanner',
@@ -608,17 +887,6 @@ let PostFeed = ({
                     arr.push({
                       type: 'interstitialFollows',
                       key: 'interstitial-' + sliceIndex + '-' + lastFetchedAt,
-                    })
-                  }
-                } else {
-                  /*
-                   * Only insert if this feed was the last selected feed at
-                   * startup and the banner is eligible to be shown.
-                   */
-                  if (sliceIndex === 0 && isCurrentFeedAtStartupSelected) {
-                    arr.push({
-                      type: 'ageAssuranceBanner',
-                      key: 'ageAssuranceBanner-' + sliceIndex,
                     })
                   }
                 }
@@ -737,8 +1005,6 @@ let PostFeed = ({
     isVideoFeed,
     areVideoFeedsEnabled,
     hasPressedShowLessUris,
-    ageAssuranceBannerState,
-    isCurrentFeedAtStartupSelected,
     blockedOrMutedAuthors,
     trendingIndices,
   ])
@@ -851,8 +1117,6 @@ let PostFeed = ({
         return <SuggestedFollows feed={feed} />
       } else if (row.type === 'interstitialProgressGuide') {
         return <ProgressGuide />
-      } else if (row.type === 'ageAssuranceBanner') {
-        return <AgeAssuranceDismissibleFeedBanner />
       } else if (row.type === 'interstitialTrending') {
         return <TrendingInterstitial />
       } else if (row.type === 'interstitialFeedTrendingTopics') {
@@ -875,9 +1139,11 @@ let PostFeed = ({
         const slice = row.slice
         const indexInSlice = row.indexInSlice
         const item = slice.items[indexInSlice]
+        const localExplanation = localRanking.explanations.get(item.uri)
         return (
           <PostFeedItem
             post={item.post}
+            localExplanation={localExplanation}
             record={item.record}
             reason={indexInSlice === 0 ? slice.reason : undefined}
             feedContext={slice.feedContext}

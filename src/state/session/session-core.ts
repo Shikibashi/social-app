@@ -5,10 +5,9 @@ import {
   type SessionData,
 } from '@atproto/lex-password-session'
 
-import {PUBLIC_BSKY_SERVICE} from '#/lib/constants'
+import {PUBLIC_ACCOUNT_SERVICE} from '#/lib/constants'
 import {canParseUrl} from '#/lib/strings/url-helpers'
 import {logger} from '#/logger'
-import {prefetchAgeAssuranceServerData} from '#/ageAssurance/data'
 import {features} from '#/analytics'
 import {
   buildAppviewClient,
@@ -24,11 +23,13 @@ import {
   configureModerationForGuest,
 } from './moderation'
 import {networkAwareFetch} from './network'
+import {type AppViewProvider, getSelectedAppViewProvider} from './providers'
 import {
   isSessionExpired,
   sessionAccountToSessionData,
   sessionDataToSessionAccount,
 } from './session-data'
+import {resolvePdsEndpointForDid} from './pds-resolution'
 import {type AtpSessionEvent, type SessionAccount} from './types'
 
 export {networkAwareFetch} from './network'
@@ -49,7 +50,7 @@ function deriveServiceUrl(session: PasswordSession | null): URL {
   return new URL(
     session && !session.destroyed
       ? session.session.service
-      : PUBLIC_BSKY_SERVICE,
+      : PUBLIC_ACCOUNT_SERVICE,
   )
 }
 
@@ -59,6 +60,8 @@ export type SessionBundle = {
   appviewClient: Client
   pdsClient: Client
   chatClient: Client
+  /** The persisted account PDS route, retained when AppView changes. */
+  pdsUrl?: string
   readonly service: URL
 }
 
@@ -95,6 +98,7 @@ export function registerBundleKillSwitch(
 export function buildBundle(
   session: PasswordSession,
   storedPdsUrl?: string,
+  provider: AppViewProvider = getSelectedAppViewProvider(session.did ?? ''),
 ): SessionBundle {
   /*
    * The stored url is persisted data and may be malformed (legacy writes,
@@ -108,15 +112,53 @@ export function buildBundle(
       : session
   return {
     session,
-    appviewClient: buildAppviewClient(agent),
+    appviewClient: buildAppviewClient(agent, provider),
     pdsClient: buildPdsClient(agent),
     chatClient: buildChatClient(agent),
+    pdsUrl: storedPdsUrl,
     get service() {
       return deriveServiceUrl(session)
     },
   }
 }
 
+/**
+ * Give PasswordSession the same PDS route that the bundle will use. Older
+ * persisted entryway sessions may have no DID document, which otherwise makes
+ * an expired-session refresh go back to bsky.social before the bundle's PDS
+ * routing shim is constructed.
+ */
+function sessionDataWithPdsEndpoint(
+  sessionData: SessionData,
+  pdsUrl: string | undefined,
+): SessionData {
+  if (!pdsUrl || sessionData.didDoc) return sessionData
+  try {
+    new URL(pdsUrl)
+  } catch {
+    return sessionData
+  }
+  return {
+    ...sessionData,
+    didDoc: {
+      id: sessionData.did,
+      service: [
+        {
+          id: '#atproto_pds',
+          type: 'AtprotoPersonalDataServer',
+          serviceEndpoint: pdsUrl,
+        },
+      ],
+    },
+  }
+}
+
+export function switchAppViewProvider(
+  bundle: SessionBundle,
+  provider: AppViewProvider,
+): SessionBundle {
+  return buildBundle(bundle.session, bundle.pdsUrl, provider)
+}
 /**
  * PasswordSession delivers `sessionData` before updating its live getter. The
  * provider uses that payload for rotated tokens and expiry rescue.
@@ -228,7 +270,7 @@ export function createPublicSessionBundle(): PublicSessionBundle {
     appviewClient: getPublicAppviewClient(),
     pdsClient: getUnauthenticatedThrowingClient(),
     chatClient: getUnauthenticatedThrowingClient(),
-    service: new URL(PUBLIC_BSKY_SERVICE),
+    service: new URL(PUBLIC_ACCOUNT_SERVICE),
   }
 }
 
@@ -291,7 +333,23 @@ export async function createSessionBundleAndResume(
   })
 
   let session: PasswordSession
-  const sessionData = sessionAccountToSessionData(storedAccount)
+  /*
+   * Hosted entryways authenticate accounts whose repository lives on a
+   * different PDS. Older stored sessions can lack both pdsUrl and didDoc; in
+   * that state service-auth issuance is accidentally sent to the entryway,
+   * which commonly answers 400 for a project AppView audience. Resolve the
+   * public DID document before constructing the session so refresh and all
+   * subsequent PDS calls use the repository host.
+   */
+  const pdsUrl =
+    storedAccount.pdsUrl ??
+    (!storedAccount.isSelfHosted
+      ? await resolvePdsEndpointForDid(storedAccount.did)
+      : undefined)
+  const sessionData = sessionDataWithPdsEndpoint(
+    sessionAccountToSessionData(storedAccount),
+    pdsUrl,
+  )
   if (isSessionExpired(storedAccount)) {
     /*
      * The arm latch swallows resume's initial onUpdated event.
@@ -310,31 +368,27 @@ export async function createSessionBundleAndResume(
     session = new PasswordSession(sessionData, hooks)
   }
 
-  bundle = buildBundle(session, storedAccount.pdsUrl)
+  bundle = buildBundle(session, pdsUrl)
   registerBundleKillSwitch(bundle, hooks.kill)
   // The returned account is captured again after asynchronous preparation.
   const earlyAccount =
     sessionDataToSessionAccount(
       session.session,
       session.session.service,
-      storedAccount.pdsUrl,
+      pdsUrl,
     ) ?? storedAccount
 
   configureModerationForAccount(bundle, earlyAccount)
-  const aa = prefetchAgeAssuranceServerData({
-    appviewClient: bundle.appviewClient,
-    accountClient: bundle.pdsClient,
-  })
 
   // Preparation may auto-refresh the session while hooks are still disarmed.
   const account = await finishPreparation(
     bundle,
-    Promise.all([gates, aa]),
+    gates,
     () =>
       sessionDataToSessionAccount(
         session.session,
         session.session.service,
-        storedAccount.pdsUrl,
+        pdsUrl,
       ) ?? storedAccount,
   )
   hooks.arm()
@@ -383,16 +437,10 @@ export async function createSessionBundleAndLogin(
 
   const gates = features.refresh({strategy: 'prefer-fresh-gates'})
   configureModerationForAccount(bundle, earlyAccount)
-  const aa = prefetchAgeAssuranceServerData({
-    appviewClient: bundle.appviewClient,
-    accountClient: bundle.pdsClient,
-  })
 
   // Preparation may auto-refresh the session while hooks are still disarmed.
-  const account = await finishPreparation(
-    bundle,
-    Promise.all([gates, aa]),
-    () => sessionDataToSessionAccountOrThrow(session),
+  const account = await finishPreparation(bundle, gates, () =>
+    sessionDataToSessionAccountOrThrow(session),
   )
   hooks.arm()
   return {account, bundle}

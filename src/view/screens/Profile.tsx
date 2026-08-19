@@ -2,13 +2,12 @@ import {useCallback, useEffect, useMemo, useRef, useState} from 'react'
 import {StyleSheet} from 'react-native'
 import {SafeAreaView} from 'react-native-safe-area-context'
 import {ScrollForwarderView} from 'react-native-scroll-forwarder'
-import {moderateProfile, type ModerationOpts} from '@bsky/sdk/moderation'
+import {moderateProfile, type ModerationOpts} from '#/lib/moderation'
 import {RichText as RichTextAPI} from '@bsky/sdk/richtext'
 import {msg} from '@lingui/core/macro'
 import {useLingui} from '@lingui/react'
 import {Trans} from '@lingui/react/macro'
 import {useFocusEffect, useNavigation} from '@react-navigation/native'
-import {useQueryClient} from '@tanstack/react-query'
 
 import {useOpenComposer} from '#/lib/hooks/useOpenComposer'
 import {useRequireEmailVerification} from '#/lib/hooks/useRequireEmailVerification'
@@ -26,8 +25,8 @@ import {useProfileShadow} from '#/state/cache/profile-shadow'
 import {listenSoftReset} from '#/state/events'
 import {useModerationOpts} from '#/state/preferences/moderation-opts'
 import {useLabelerInfoQuery} from '#/state/queries/labeler'
-import {resetProfilePostsQueries} from '#/state/queries/post-feed'
 import {useProfileQuery} from '#/state/queries/profile'
+import {stripNonLocalActorBlockVisibility} from '#/state/queries/public-visibility'
 import {useResolveDidQuery} from '#/state/queries/resolve-uri'
 import {useAppviewClient, useSession} from '#/state/session'
 import {ProfileFeedgens} from '#/view/com/feeds/ProfileFeedgens'
@@ -69,7 +68,6 @@ export function ProfileScreen(props: Props) {
 function ProfileScreenInner({route}: Props) {
   const {_} = useLingui()
   const {currentAccount} = useSession()
-  const queryClient = useQueryClient()
   const name =
     route.params.name === 'me' ? currentAccount?.did : route.params.name
   const moderationOpts = useModerationOpts()
@@ -106,13 +104,6 @@ function ProfileScreenInner({route}: Props) {
       }
     }
   }, [name, resolveError])
-
-  // When we open the profile, we want to reset the posts query if we are blocked.
-  useEffect(() => {
-    if (resolvedDid && profile?.viewer?.blockedBy) {
-      resetProfilePostsQueries(queryClient, resolvedDid)
-    }
-  }, [queryClient, profile?.viewer?.blockedBy, resolvedDid])
 
   // Most pushes will happen here, since we will have only placeholder data
   // A disabled dependent query remains pending, so only consider the profile
@@ -209,7 +200,11 @@ function ProfileScreenLoaded({
   const [descriptionRT, isResolvingDescriptionRT] = useRichText(description)
   const showPlaceholder = isPlaceholderProfile || isResolvingDescriptionRT
   const moderation = useMemo(
-    () => moderateProfile(profile, moderationOpts),
+    () =>
+      moderateProfile(
+        stripNonLocalActorBlockVisibility(profile),
+        moderationOpts,
+      ),
     [profile, moderationOpts],
   )
 

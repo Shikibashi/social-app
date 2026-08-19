@@ -18,10 +18,15 @@ import {useGlobalDialogsControlContext} from '#/components/dialogs/Context'
 import {AnalyticsContext, useAnalyticsBase, utils} from '#/analytics'
 import {IS_WEB} from '#/env'
 import {com} from '#/lexicons'
-import {emitSessionDropped} from '../events'
+import {emitAppViewProviderChanged, emitSessionDropped} from '../events'
 import {getPublicAppviewClient} from './clients'
 import {createSessionBundleAndCreateAccount} from './create-account'
 import {pickExpiryRescueCandidate} from './expiry-rescue'
+import {
+  getAppViewProviders,
+  probeAppViewProvider,
+  selectAppViewProvider,
+} from './providers'
 import {type Action, getInitialState, reducer, type State} from './reducer'
 import {
   type AtpSessionEvent,
@@ -32,6 +37,7 @@ import {
   type PublicSessionBundle,
   type SessionBundle,
   sessionDataToSessionAccount,
+  switchAppViewProvider as switchBundleAppViewProvider,
 } from './session-core'
 export {isSignupQueued} from './session-data'
 import {
@@ -50,10 +56,6 @@ import {
   type SessionStateContext,
 } from '#/state/session/types'
 import {useOnboardingDispatch} from '#/state/shell/onboarding'
-import {
-  clearAgeAssuranceServerDataForAll,
-  clearAgeAssuranceServerDataForDid,
-} from '#/ageAssurance/data'
 
 const StateContext = createContext<SessionStateContext>({
   accounts: [],
@@ -75,6 +77,7 @@ const ApiContext = createContext<SessionApiContext>({
   logoutEveryAccount: () => {},
   resumeSession: async () => {},
   removeAccount: () => {},
+  switchAppViewProvider: async () => {},
   partialRefreshSession: async () => {},
   refreshSession: () => Promise.resolve(undefined),
 })
@@ -359,9 +362,6 @@ export function Provider({children}: React.PropsWithChildren<{}>) {
       )
       addSessionDebugLog({type: 'method:end', method: 'logout'})
       if (prevState.currentBundleState.did) {
-        clearAgeAssuranceServerDataForDid({
-          did: prevState.currentBundleState.did,
-        })
         void clearPersistedQueryStorage(prevState.currentBundleState.did)
       }
       // reset onboarding flow on logout
@@ -392,7 +392,6 @@ export function Provider({children}: React.PropsWithChildren<{}>) {
         },
       )
       addSessionDebugLog({type: 'method:end', method: 'logout'})
-      clearAgeAssuranceServerDataForAll()
       for (const account of prevState.accounts) {
         void clearPersistedQueryStorage(account.did)
       }
@@ -550,7 +549,6 @@ export function Provider({children}: React.PropsWithChildren<{}>) {
         method: 'removeAccount',
         account: redactAccount(account),
       })
-      clearAgeAssuranceServerDataForDid({did: account.did})
     },
     [store, cancelPendingTask],
   )
@@ -656,6 +654,30 @@ export function Provider({children}: React.PropsWithChildren<{}>) {
     }),
     [state],
   )
+  const switchAppView = useCallback(
+    async (providerId: string, persist = true) => {
+      const account = state.accounts.find(
+        item => item.did === state.currentBundleState.did,
+      )
+      const currentBundle = state.currentBundleState.bundle as SessionBundle
+      if (!account || !currentBundle.session) return
+      const provider = getAppViewProviders().find(
+        item => item.id === providerId,
+      )
+      if (!provider) throw new Error('Unknown AppView provider')
+      await probeAppViewProvider(provider)
+      if (persist) await selectAppViewProvider(account.did, providerId)
+      await clearPersistedQueryStorage(account.did)
+      const newBundle = switchBundleAppViewProvider(currentBundle, provider)
+      store.dispatch({
+        type: 'replaced-current-bundle',
+        newBundle,
+        newAccount: account,
+      })
+      emitAppViewProviderChanged(account.did, provider.id)
+    },
+    [state, store],
+  )
 
   const api = useMemo(
     () => ({
@@ -667,6 +689,7 @@ export function Provider({children}: React.PropsWithChildren<{}>) {
       removeAccount,
       partialRefreshSession,
       refreshSession,
+      switchAppViewProvider: switchAppView,
     }),
     [
       createAccount,
@@ -677,6 +700,7 @@ export function Provider({children}: React.PropsWithChildren<{}>) {
       removeAccount,
       partialRefreshSession,
       refreshSession,
+      switchAppView,
     ],
   )
 
@@ -822,6 +846,6 @@ export function useMaybeChatClient(): Client | null {
 /**
  * The unauthenticated client for public appview reads.
  */
-export function usePublicAppviewClient(): Client {
-  return getPublicAppviewClient()
+export function usePublicAppviewClient(endpoint?: string): Client {
+  return getPublicAppviewClient(endpoint)
 }

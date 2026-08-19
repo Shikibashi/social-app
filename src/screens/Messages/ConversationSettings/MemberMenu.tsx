@@ -11,6 +11,7 @@ import {useGetConvoAvailabilityQuery} from '#/state/queries/messages/get-convo-a
 import {useGetConvoForMembers} from '#/state/queries/messages/get-convo-for-members'
 import {useRemoveFromGroupChat} from '#/state/queries/messages/remove-from-group'
 import {useProfileBlockMutationQueue} from '#/state/queries/profile'
+import {hasDirectViewerBlock} from '#/state/queries/public-visibility'
 import {atoms as a, useTheme} from '#/alf'
 import {canBeMessaged, type ConvoWithDetails} from '#/components/dms/util'
 import {ArrowBoxLeft_Stroke2_Corner0_Rounded as ArrowBoxLeftIcon} from '#/components/icons/ArrowBoxLeft'
@@ -77,6 +78,7 @@ export function MemberMenu({
     },
   })
   const [queueBlock, queueUnblock] = useProfileBlockMutationQueue(profile)
+  const isDirectBlock = hasDirectViewerBlock(profile)
 
   const messageMember = () => {
     if (!convoAvailability?.canChat) {
@@ -103,7 +105,7 @@ export function MemberMenu({
   })
 
   const handleBlockMember = async () => {
-    if (profile.viewer?.blocking) {
+    if (isDirectBlock) {
       try {
         await queueUnblock()
         Toast.show(l({message: 'Account unblocked', context: 'toast'}))
@@ -211,20 +213,20 @@ export function MemberMenu({
               <Menu.Item
                 destructive
                 label={
-                  profile.viewer?.blocking
+                  isDirectBlock
                     ? l`Unblock ${displayName}`
                     : l`Block ${displayName}`
                 }
                 onPress={
-                  profile.viewer?.blocking
+                  isDirectBlock
                     ? handleBlockMember
                     : blockMemberPrompt.open
                 }>
                 <Menu.ItemIcon
-                  icon={profile.viewer?.blocking ? PersonCheck : PersonXIcon}
+                  icon={isDirectBlock ? PersonCheck : PersonXIcon}
                 />
                 <Menu.ItemText>
-                  {profile.viewer?.blocking ? l`Unblock` : l`Block`}
+                  {isDirectBlock ? l`Unblock` : l`Block`}
                 </Menu.ItemText>
               </Menu.Item>
             ) : null}

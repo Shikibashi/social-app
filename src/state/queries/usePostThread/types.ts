@@ -1,4 +1,4 @@
-import {type ModerationDecision} from '@bsky/sdk/moderation'
+import {type ModerationDecision} from '#/lib/moderation'
 
 import {type app} from '#/lexicons'
 

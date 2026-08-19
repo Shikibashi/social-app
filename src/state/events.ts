@@ -53,3 +53,26 @@ export function listenFocusSearch(fn: () => void): UnlistenFn {
   emitter.on('focus-search', fn)
   return () => emitter.off('focus-search', fn)
 }
+
+export function emitPersonalizationChanged(accountDid: string) {
+  emitter.emit('personalization-changed', accountDid)
+}
+export function listenPersonalizationChanged(
+  fn: (accountDid: string) => void,
+): UnlistenFn {
+  emitter.on('personalization-changed', fn)
+  return () => emitter.off('personalization-changed', fn)
+}
+
+export function emitAppViewProviderChanged(
+  accountDid: string,
+  providerId: string,
+) {
+  emitter.emit('appview-provider-changed', accountDid, providerId)
+}
+export function listenAppViewProviderChanged(
+  fn: (accountDid: string, providerId: string) => void,
+): UnlistenFn {
+  emitter.on('appview-provider-changed', fn)
+  return () => emitter.off('appview-provider-changed', fn)
+}

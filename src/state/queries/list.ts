@@ -1,20 +1,28 @@
+import uuid from 'react-native-uuid'
 import {type $Typed, type Client} from '@atproto/lex'
-import {AtUri, type AtUriString, toDatetimeString} from '@atproto/syntax'
 import {
-  blockActorList,
-  muteActorList,
-  unblockActorList,
-  unmuteActorList,
-} from '@bsky/sdk'
+  type AtIdentifierString,
+  AtUri,
+  type AtUriString,
+  toDatetimeString,
+} from '@atproto/syntax'
+import {muteActorList, unmuteActorList} from '@bsky/sdk'
 import {useMutation, useQuery, useQueryClient} from '@tanstack/react-query'
 import chunk from 'lodash.chunk'
 
 import {uploadBlob} from '#/lib/api'
 import {until} from '#/lib/async/until'
+import {
+  hashListUri,
+  type LegacyListblockRecord,
+  type ListblockMigrationReceipt,
+  migrateLegacyListblocks,
+} from '#/lib/moderation/listblock-migration'
+import {isRecordNotFoundError} from '#/lib/xrpc-error'
 import {type ImageMeta} from '#/state/gallery'
 import {STALE} from '#/state/queries'
 import {useAppviewClient, usePdsClient, useSession} from '#/state/session'
-import {app, com} from '#/lexicons'
+import {app, com, org} from '#/lexicons'
 import {FEED_INFO_RQKEY_ROOT} from './feed'
 import {invalidate as invalidateMyLists} from './my-lists'
 import {RQKEY as PROFILE_LISTS_RQKEY} from './profile-lists'
@@ -270,30 +278,162 @@ export function useListMuteMutation() {
   })
 }
 
-export function useListBlockMutation() {
-  const queryClient = useQueryClient()
+/**
+ * Converts legacy locally-authored listblocks to private list mutes. This is
+ * intentionally separate from list subscription: a legacy public record is a
+ * migration input, not a supported way to create a new bulk hard boundary.
+ */
+export function useLegacyListblockMigrationMutation() {
+  const {currentAccount} = useSession()
   const appviewClient = useAppviewClient()
   const pdsClient = usePdsClient()
-  return useMutation<void, Error, {uri: string; block: boolean}>({
-    mutationFn: async ({uri, block}) => {
-      if (block) {
-        await pdsClient.call(blockActorList, {list: uri as AtUriString})
-      } else {
-        await pdsClient.call(unblockActorList, {list: uri as AtUriString})
+  const queryClient = useQueryClient()
+
+  return useMutation<ListblockMigrationReceipt, Error, {listUri?: string}>({
+    mutationFn: async ({listUri} = {}) => {
+      if (!currentAccount) {
+        throw new Error('Not signed in')
       }
 
-      await whenAppViewReady(appviewClient, uri, v => {
-        return block
-          ? typeof v?.list.viewer?.blocked === 'string'
-          : !v?.list.viewer?.blocked
-      })
+      const records = await listAllLegacyListblocks(
+        pdsClient,
+        currentAccount.did,
+      )
+      const selectedRecords = listUri
+        ? records.filter(record => record.subjectListUri === listUri)
+        : records
+      const directBlocksBefore = await countRecords(
+        pdsClient,
+        app.bsky.graph.block,
+        currentAccount.did,
+      )
+
+      return await migrateLegacyListblocks(
+        selectedRecords,
+        {
+          async ensurePrivateListMute(subjectListUri) {
+            const current = await getListViewerState(
+              appviewClient,
+              subjectListUri,
+            )
+            if (!current.muted) {
+              await appviewClient.call(muteActorList, {
+                list: subjectListUri as AtUriString,
+              })
+              await whenAppViewReady(appviewClient, subjectListUri, response =>
+                Boolean(response.list.viewer?.muted),
+              )
+            }
+          },
+          async verifyPrivateListMute(subjectListUri) {
+            return (await getListViewerState(appviewClient, subjectListUri))
+              .muted
+          },
+          async attestPrivateListMute(subjectListUri, listUriHash) {
+            const nonce = String(uuid.v4())
+            const {attestation} = await appviewClient.call(
+              org.radlib.moderation.getListMuteAttestation,
+              {
+                list: subjectListUri as AtUriString,
+                listUriHash,
+                nonce,
+              },
+            )
+            if (attestation.listUriHash !== hashListUri(subjectListUri)) {
+              throw new Error('provider attestation list hash did not match')
+            }
+            await pdsClient.call(
+              org.radlib.moderation.recordListMuteAttestation,
+              {attestation},
+            )
+          },
+          async deleteListblock(record) {
+            const {rkeySafe: rkey} = new AtUri(record.uri)
+            await pdsClient.call(com.atproto.repo.deleteRecord, {
+              repo: currentAccount.did,
+              collection: app.bsky.graph.listblock.$nsid,
+              rkey,
+              swapRecord: record.cid,
+            })
+          },
+          async verifyListblockDeleted(uri) {
+            const {rkeySafe: rkey} = new AtUri(uri)
+            try {
+              await pdsClient.call(com.atproto.repo.getRecord, {
+                repo: currentAccount.did,
+                collection: app.bsky.graph.listblock.$nsid,
+                rkey,
+              })
+              return false
+            } catch (error) {
+              if (isRecordNotFoundError(error)) return true
+              throw error
+            }
+          },
+        },
+        {directBlocksBefore},
+      )
     },
-    onSuccess(data, variables) {
-      queryClient.invalidateQueries({
-        queryKey: RQKEY(variables.uri),
-      })
+    onSuccess() {
+      void queryClient.invalidateQueries({queryKey: [RQKEY_ROOT]})
+      void invalidateMyLists(queryClient)
     },
   })
+}
+
+async function listAllLegacyListblocks(
+  client: Client,
+  repo: string,
+): Promise<LegacyListblockRecord[]> {
+  const records: LegacyListblockRecord[] = []
+  let cursor: string | undefined
+  do {
+    const page = await client.list(app.bsky.graph.listblock, {
+      repo: repo as AtIdentifierString,
+      cursor,
+      limit: 100,
+    })
+    for (const record of page.records) {
+      if (!record.valid) continue
+      records.push({
+        uri: record.uri,
+        cid: record.cid,
+        subjectListUri: record.value.subject,
+        createdAt: record.value.createdAt,
+      })
+    }
+    cursor = page.cursor
+  } while (cursor)
+  return records
+}
+
+async function countRecords(
+  client: Client,
+  collection: typeof app.bsky.graph.block,
+  repo: string,
+): Promise<number> {
+  let count = 0
+  let cursor: string | undefined
+  do {
+    const page = await client.list(collection, {
+      repo: repo as AtIdentifierString,
+      cursor,
+      limit: 100,
+    })
+    count += page.records.length
+    cursor = page.cursor
+  } while (cursor)
+  return count
+}
+
+async function getListViewerState(client: Client, uri: string) {
+  const response = await client.call(app.bsky.graph.getList, {
+    list: uri as AtUriString,
+    limit: 1,
+  })
+  return {
+    muted: Boolean(response.list.viewer?.muted),
+  }
 }
 
 async function whenAppViewReady(

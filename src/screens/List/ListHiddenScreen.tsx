@@ -10,13 +10,13 @@ import {sanitizeHandle} from '#/lib/strings/handles'
 import {logger} from '#/logger'
 import {
   RQKEY_ROOT as listQueryRoot,
-  useListBlockMutation,
   useListMuteMutation,
 } from '#/state/queries/list'
 import {
   type UsePreferencesQueryResponse,
   useRemoveFeedMutation,
 } from '#/state/queries/preferences'
+import {viewerHidesActor} from '#/state/queries/public-visibility'
 import {useSession} from '#/state/session'
 import {CenteredView} from '#/view/com/util/Views'
 import {atoms as a, useBreakpoints, useTheme} from '#/alf'
@@ -44,9 +44,9 @@ export function ListHiddenScreen({
   const queryClient = useQueryClient()
 
   const isModList = list.purpose === app.bsky.graph.defs.modlist.value
+  const creatorHasInteractionBoundary = viewerHidesActor(list.creator)
 
   const [isProcessing, setIsProcessing] = useState(false)
-  const listBlockMutation = useListBlockMutation()
   const listMuteMutation = useListMuteMutation()
   const {mutateAsync: removeSavedFeed} = useRemoveFeedMutation()
 
@@ -62,20 +62,6 @@ export function ListHiddenScreen({
       } catch (e) {
         setIsProcessing(false)
         logger.error('Failed to unmute list', {message: e})
-        Toast.show(
-          _(
-            msg`There was an issue. Please check your internet connection and try again.`,
-          ),
-        )
-        return
-      }
-    }
-    if (list.viewer?.blocked) {
-      try {
-        await listBlockMutation.mutateAsync({uri: list.uri, block: false})
-      } catch (e) {
-        setIsProcessing(false)
-        logger.error('Failed to unblock list', {message: e})
         Toast.show(
           _(
             msg`There was an issue. Please check your internet connection and try again.`,
@@ -127,7 +113,7 @@ export function ListHiddenScreen({
         />
         <View style={[a.gap_sm, a.align_center]}>
           <Text style={[a.font_semi_bold, a.text_3xl]}>
-            {list.creator.viewer?.blocking || list.creator.viewer?.blockedBy ? (
+            {creatorHasInteractionBoundary ? (
               <Trans>Creator has been blocked</Trans>
             ) : (
               <Trans>List has been hidden</Trans>
@@ -141,7 +127,7 @@ export function ListHiddenScreen({
               t.atoms.text_contrast_high,
               {lineHeight: 1.4},
             ]}>
-            {list.creator.viewer?.blocking || list.creator.viewer?.blockedBy ? (
+            {creatorHasInteractionBoundary ? (
               <Trans>
                 Either the creator of this list has blocked you or you have
                 blocked the creator.
@@ -194,7 +180,7 @@ export function ListHiddenScreen({
                 <Trans>Show anyway</Trans>
               </ButtonText>
             </Button>
-          ) : list.viewer?.muted || list.viewer?.blocked ? (
+          ) : list.viewer?.muted ? (
             <Button
               variant="solid"
               color="secondary"

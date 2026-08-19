@@ -1,9 +1,10 @@
+import {msg} from '@lingui/core/macro'
+import {useLingui} from '@lingui/react'
+
 import {
   type InterpretedLabelValueDefinition,
   type LabelPreference,
-} from '@bsky/sdk/moderation'
-import {msg} from '@lingui/core/macro'
-import {useLingui} from '@lingui/react'
+} from '../moderation'
 
 export function useLabelBehaviorDescription(
   labelValueDef: InterpretedLabelValueDefinition,

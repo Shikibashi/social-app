@@ -14,7 +14,6 @@ import {ErrorBoundary} from '#/view/com/util/ErrorBoundary'
 import {Deactivated} from '#/screens/Deactivated'
 import {Takendown} from '#/screens/Takendown'
 import {atoms as a, select, useBreakpoints, useTheme} from '#/alf'
-import {AgeAssuranceRedirectDialog} from '#/components/ageAssurance/AgeAssuranceRedirectDialog'
 import {EmailDialog} from '#/components/dialogs/EmailDialog'
 import {LinkWarningDialog} from '#/components/dialogs/LinkWarning'
 import {MutedWordsDialog} from '#/components/dialogs/MutedWords'
@@ -29,9 +28,6 @@ import {
 } from '#/components/PolicyUpdateOverlay'
 import {Outlet as PortalOutlet} from '#/components/Portal'
 import {WelcomeModal} from '#/components/WelcomeModal'
-import {useAgeAssurance} from '#/ageAssurance'
-import {NoAccessScreen} from '#/ageAssurance/components/NoAccessScreen'
-import {RedirectOverlay} from '#/ageAssurance/components/RedirectOverlay'
 import {PassiveAnalytics} from '#/analytics/PassiveAnalytics'
 import {FlatNavigator, RoutesContainer} from '#/Navigation'
 import {Composer} from './Composer'
@@ -67,7 +63,6 @@ function ShellInner() {
       <MutedWordsDialog />
       <SigninDialog />
       <EmailDialog />
-      <AgeAssuranceRedirectDialog />
       <LinkWarningDialog />
       <Lightbox />
       <NuxDialogs />
@@ -157,26 +152,20 @@ function DrawerLayout({children}: {children: React.ReactNode}) {
 
 export function Shell() {
   const t = useTheme()
-  const aa = useAgeAssurance()
   const {currentAccount} = useSession()
+  const ecwShellWebProps = {
+    dataSet: {ecwShell: 'true'},
+  } as {dataSet: Record<string, string>}
   return (
-    <View style={[a.util_screen_outer, t.atoms.bg]}>
+    <View {...ecwShellWebProps} style={[a.util_screen_outer, t.atoms.bg]}>
       {currentAccount?.status === 'takendown' ? (
         <Takendown />
       ) : currentAccount?.status === 'deactivated' ? (
         <Deactivated />
       ) : (
-        <>
-          {aa.state.access === aa.Access.None ? (
-            <NoAccessScreen />
-          ) : (
-            <RoutesContainer>
-              <ShellInner />
-            </RoutesContainer>
-          )}
-
-          <RedirectOverlay />
-        </>
+        <RoutesContainer>
+          <ShellInner />
+        </RoutesContainer>
       )}
 
       <PassiveAnalytics />

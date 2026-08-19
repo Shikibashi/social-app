@@ -5,6 +5,7 @@ import {
 } from '@atproto/lex'
 
 import {PUBLIC_APPVIEW} from '#/lib/constants'
+import {validateFeedBatch} from '#/lib/feed-provider-security'
 import {createLexClient} from '#/lib/lexClient'
 import {
   getAppLanguageAsContentLanguage,
@@ -89,15 +90,16 @@ export class CustomFeedAPI implements FeedAPI {
       }
     }
 
-    // NOTE
-    // some custom feeds fail to enforce the pagination limit
-    // so we manually truncate here
-    // -prf
-    const feed =
-      data.feed.length > limit ? data.feed.slice(0, limit) : data.feed
+    // custom providers are untrusted: enforce response and candidate bounds
+    // before the feed enters local rendering or pagination state.
+    const validated = validateFeedBatch<(typeof data.feed)[number]>(data, limit)
     return {
-      cursor: feed.length ? data.cursor : undefined,
-      feed,
+      cursor: validated.feed.length ? validated.cursor : undefined,
+      feedContext: validated.feedContext,
+      feed: validated.feed.map(item => ({
+        ...item,
+        feedContext: validated.feedContext,
+      })),
     }
   }
 }
@@ -106,13 +108,11 @@ let loggedOutAppviewClient: Client | undefined
 
 /**
  * The unauthenticated {@link Client} for logged-out feed reads, pointed at the
- * direct appview ({@link PUBLIC_APPVIEW}, `api.bsky.app`).
+ * configured public AppView ({@link PUBLIC_APPVIEW}).
  *
- * Deliberately NOT the public appview client (`public.api.bsky.app`): that host
- * fronts a cache which does not vary on `Accept-Language`, so it would answer a
- * language-filtered read from another language's cached body. The direct
- * appview respects the header (verified 2026-08-04), at the cost of not being
- * cached. See {@link loggedOutFetch}.
+ * This client uses the configured AppView origin directly so the
+ * `Accept-Language` header is applied to the selected deployment. It is not a
+ * hidden fallback to a different public service.
  *
  * A single module-level instance, because there is no session to scope it to.
  * Like the public chat client, it uses plain `fetch` rather than
@@ -134,10 +134,9 @@ function getLoggedOutAppviewClient(): Client {
  *    header.
  * -prf
  *
- * Problem 2 is why this uses its own client rather than the app's public
- * appview one: it talks to the direct appview, which honors the header, instead
- * of the cached `public.api.bsky.app`, which does not vary on it. That trades
- * CDN caching for language correctness on logged-out feed traffic.
+ * This remains a separate client so the language header is applied to every
+ * request, but it uses the same configured AppView origin as the rest of the
+ * product. There is no provider substitution here.
  *
  * Problem 1 is host-independent, so it is still handled here: an empty
  * language-filtered feed is retried once with the language constraint removed.
@@ -174,10 +173,14 @@ async function getFeedOrNull(
   contentLangs: string,
 ): Promise<app.bsky.feed.getFeed.$OutputBody | null> {
   try {
-    return await getLoggedOutAppviewClient().call(
+    const response = await getLoggedOutAppviewClient().call(
       app.bsky.feed.getFeed,
       params,
       {headers: {'Accept-Language': contentLangs}},
+    )
+    return validateFeedBatch<(typeof response.feed)[number]>(
+      response,
+      params.limit,
     )
   } catch (e) {
     if (e instanceof XrpcResponseError) {

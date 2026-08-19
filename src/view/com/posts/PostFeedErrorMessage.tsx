@@ -246,8 +246,7 @@ function detectKnownError(
    * `getErrorName` check rather than `matchXrpcError`.
    */
   if (
-    getErrorName(error) === 'BlockedActor' ||
-    getErrorName(error) === 'BlockedByActor'
+    getErrorName(error) === 'BlockedActor'
   ) {
     return KnownError.Block
   }

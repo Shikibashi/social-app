@@ -2,7 +2,13 @@ import {type Insets, Platform} from 'react-native'
 import {type Service} from '@atproto/lex'
 import {api} from '@bsky/sdk'
 
-import {BLUESKY_PROXY_DID, CHAT_PROXY_DID, IS_DEV} from '#/env'
+import {
+  APPVIEW_PROXY_DID,
+  APPVIEW_PROXY_SERVICE,
+  CHAT_PROXY_DID,
+  IS_DEV,
+  PUBLIC_APPVIEW_URL,
+} from '#/env'
 import {type app} from '#/lexicons'
 
 export const LOCAL_DEV_SERVICE =
@@ -10,8 +16,19 @@ export const LOCAL_DEV_SERVICE =
 export const STAGING_SERVICE = 'https://staging.bsky.dev'
 export const BSKY_SERVICE = 'https://bsky.social'
 export const BSKY_SERVICE_DID = 'did:web:bsky.social'
-export const PUBLIC_BSKY_SERVICE = 'https://public.api.bsky.app'
-export const DEFAULT_SERVICE = BSKY_SERVICE
+/**
+ * Optional account entryway used before login and for handle availability.
+ * This is not an AppView read authority; public reads use PUBLIC_APPVIEW_URL.
+ */
+export const PUBLIC_ACCOUNT_SERVICE =
+  process.env.EXPO_PUBLIC_ACCOUNT_SERVICE || BSKY_SERVICE
+/** @deprecated Use PUBLIC_APPVIEW_URL. */
+export const APPVIEW_ENDPOINT = PUBLIC_APPVIEW_URL
+/**
+ * Login and account-entryway screens use the explicitly configured account
+ * service. Public reads remain scoped to PUBLIC_APPVIEW_URL.
+ */
+export const DEFAULT_SERVICE = PUBLIC_ACCOUNT_SERVICE
 const HELP_DESK_LANG = 'en-us'
 export const HELP_DESK_URL = `https://blueskyweb.zendesk.com/hc/${HELP_DESK_LANG}`
 export const CHAT_SERVICE = 'https://api.bsky.chat'
@@ -84,11 +101,25 @@ export function IS_PROD_SERVICE(url?: string) {
   return url && url !== STAGING_SERVICE && !url.startsWith(LOCAL_DEV_SERVICE)
 }
 
+/**
+ * The default Discover feed is deployment configuration, not a Bluesky
+ * product constant. An unset owner deliberately points at an unconfigured
+ * DID so a deployment fails explicitly instead of silently importing a
+ * different operator's algorithm.
+ */
+export const PROJECT_DEFAULT_FEED_OWNER_DID =
+  process.env.EXPO_PUBLIC_DEFAULT_FEED_OWNER_DID ||
+  'did:example:unconfigured-feed'
+export const PROJECT_DEFAULT_FEED_RKEY =
+  process.env.EXPO_PUBLIC_DEFAULT_FEED_RKEY || 'social-discover'
+
 export const PROD_DEFAULT_FEED = (rkey: string) =>
-  `at://did:plc:z72i7hdynmk6r22z27h6tvur/app.bsky.feed.generator/${rkey}`
+  `at://${PROJECT_DEFAULT_FEED_OWNER_DID}/app.bsky.feed.generator/${
+    rkey === 'whats-hot' ? PROJECT_DEFAULT_FEED_RKEY : rkey
+  }`
 
 export const STAGING_DEFAULT_FEED = (rkey: string) =>
-  `at://did:plc:yofh3kx63drvfljkibw5zuxo/app.bsky.feed.generator/${rkey}`
+  `at://${PROJECT_DEFAULT_FEED_OWNER_DID}/app.bsky.feed.generator/${rkey}`
 
 export const PROD_FEEDS = [
   `feedgen|${PROD_DEFAULT_FEED('whats-hot')}`,
@@ -139,19 +170,21 @@ export const LANG_DROPDOWN_HITSLOP = {top: 10, bottom: 10, left: 4, right: 4}
 export const BACK_HITSLOP = HITSLOP_30
 export const MAX_POST_LINES = 25
 
-export const BSKY_APP_ACCOUNT_DID = 'did:plc:z72i7hdynmk6r22z27h6tvur'
+export const BSKY_APP_ACCOUNT_DID = PROJECT_DEFAULT_FEED_OWNER_DID
 
-export const BSKY_FEED_OWNER_DIDS = [
-  BSKY_APP_ACCOUNT_DID,
-  'did:plc:vpkhqolt662uhesyj6nxm7ys',
-  'did:plc:q6gjnaw2blty4crticxkmujt',
-]
+export const BSKY_FEED_OWNER_DIDS: string[] = []
 
-export const TRENDING_DID = 'did:plc:qrz3lhbyuxbeilrc6nekdqme'
-export const TRENDING_HANDLE = 'trending.bsky.app'
+export const TRENDING_DID =
+  process.env.EXPO_PUBLIC_TRENDING_DID || 'did:example:unconfigured-trending'
+export const TRENDING_HANDLE =
+  process.env.EXPO_PUBLIC_TRENDING_HANDLE || 'trending.example.invalid'
 
-export const DISCOVER_FEED_URI =
-  'at://did:plc:z72i7hdynmk6r22z27h6tvur/app.bsky.feed.generator/whats-hot'
+/**
+ * The pinned Discover feed belongs to this deployment. Keeping this derived
+ * from the configured project feed prevents new accounts and replacement
+ * flows from silently reintroducing Bluesky's operator-owned feed.
+ */
+export const DISCOVER_FEED_URI = PROD_DEFAULT_FEED('whats-hot')
 export const VIDEO_FEED_URI =
   'at://did:plc:z72i7hdynmk6r22z27h6tvur/app.bsky.feed.generator/thevids'
 export const STAGING_VIDEO_FEED_URI =
@@ -230,21 +263,19 @@ export const urls = {
   },
 }
 
-export const PUBLIC_APPVIEW = 'https://api.bsky.app'
-export const PUBLIC_APPVIEW_DID = 'did:web:api.bsky.app'
-export const PUBLIC_STAGING_APPVIEW_DID = 'did:web:api.staging.bsky.dev'
-
-export const DEV_ENV_APPVIEW = `http://localhost:2584` // always the same
-export const DEV_ENV_APPVIEW_DID = `did:plc:dw4kbjf5mn7nhenabiqpkyh3` // always the same
+export const PUBLIC_APPVIEW = PUBLIC_APPVIEW_URL
+export const PUBLIC_APPVIEW_DID = APPVIEW_PROXY_DID
+export const PUBLIC_STAGING_APPVIEW_DID = APPVIEW_PROXY_DID
 
 // temp hack for e2e - esb
 export const BLUESKY_PROXY_HEADER = {
-  value: `${BLUESKY_PROXY_DID}#bsky_appview`,
+  /** @deprecated Use APPVIEW_PROXY_SERVICE. */
+  value: APPVIEW_PROXY_SERVICE,
   get() {
-    return this.value as Service
+    return this.value
   },
   set(value: string) {
-    this.value = value
+    this.value = value as Service
   },
 }
 
@@ -279,7 +310,7 @@ export const MOD_PROXY_SERVICE: Service = `${api.moderation.did}#atproto_labeler
  * the notification service (replaces the old
  * `BLUESKY_NOTIF_SERVICE_HEADERS`).
  */
-export const NOTIF_SERVICE: Service = `${BLUESKY_PROXY_DID}#bsky_notif`
+export const NOTIF_SERVICE: Service = `${APPVIEW_PROXY_DID}#bsky_notif`
 
 export const webLinks = {
   tos: `https://bsky.social/about/support/tos`,

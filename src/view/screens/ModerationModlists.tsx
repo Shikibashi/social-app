@@ -52,7 +52,7 @@ export function ModerationModlistsScreen({}: Props) {
   )
 
   return (
-    <Layout.Screen testID="moderationModlistsScreen">
+    <Layout.Screen testID="moderationModlistsScreen" ecwMode="workbench">
       <Layout.Header.Outer>
         <Layout.Header.BackButton />
         <Layout.Header.Content align="left">

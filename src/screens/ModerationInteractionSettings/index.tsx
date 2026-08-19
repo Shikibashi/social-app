@@ -28,7 +28,9 @@ export function Screen() {
   const gutters = useGutters(['base'])
   const {data: preferences} = usePreferencesQuery()
   return (
-    <Layout.Screen testID="ModerationInteractionSettingsScreen">
+    <Layout.Screen
+      testID="ModerationInteractionSettingsScreen"
+      ecwMode="workbench">
       <Layout.Header.Outer>
         <Layout.Header.BackButton />
         <Layout.Header.Content>

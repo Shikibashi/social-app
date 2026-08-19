@@ -113,12 +113,18 @@ import {ContentAndMediaSettingsScreen} from '#/screens/Settings/ContentAndMediaS
 import {ExternalMediaPreferencesScreen} from '#/screens/Settings/ExternalMediaPreferences'
 import {FindContactsSettingsScreen} from '#/screens/Settings/FindContactsSettings'
 import {FollowingFeedPreferencesScreen} from '#/screens/Settings/FollowingFeedPreferences'
+import {IdentitySovereigntySettingsScreen} from '#/screens/Settings/IdentitySovereigntySettings'
 import {InterestsSettingsScreen} from '#/screens/Settings/InterestsSettings'
 import {LanguageSettingsScreen} from '#/screens/Settings/LanguageSettings'
 import {LegacyNotificationSettingsScreen} from '#/screens/Settings/LegacyNotificationSettings'
 import {NotificationSettingsScreen} from '#/screens/Settings/NotificationSettings'
 import {ActivityNotificationSettingsScreen} from '#/screens/Settings/NotificationSettings/ActivityNotificationSettings'
+import {PermissionedSpacesSettingsScreen} from '#/screens/Settings/PermissionedSpacesSettings'
+import {PersonalizationSettingsScreen} from '#/screens/Settings/PersonalizationSettings'
 import {PrivacyAndSecuritySettingsScreen} from '#/screens/Settings/PrivacyAndSecuritySettings'
+import {PrivateFeedScreen} from '#/screens/Settings/PrivateFeedScreen'
+import {ProtectedAccessSettingsScreen} from '#/screens/Settings/ProtectedAccessSettings'
+import {ServicesSettingsScreen} from '#/screens/Settings/ServicesSettings'
 import {SettingsScreen} from '#/screens/Settings/Settings'
 import {ThreadPreferencesScreen} from '#/screens/Settings/ThreadPreferences'
 import {
@@ -404,6 +410,54 @@ function commonScreens(Stack: typeof Flat, unreadCountLabel?: string) {
         getComponent={() => AccountSettingsScreen}
         options={{
           title: title(msg`Account`),
+          requireAuth: true,
+        }}
+      />
+      <Stack.Screen
+        name="ServicesSettings"
+        getComponent={() => ServicesSettingsScreen}
+        options={{
+          title: title(msg`Services`),
+          requireAuth: true,
+        }}
+      />
+      <Stack.Screen
+        name="PersonalizationSettings"
+        getComponent={() => PersonalizationSettingsScreen}
+        options={{
+          title: title(msg`Feed customization & data`),
+          requireAuth: true,
+        }}
+      />
+      <Stack.Screen
+        name="IdentitySovereigntySettings"
+        getComponent={() => IdentitySovereigntySettingsScreen}
+        options={{
+          title: title(msg`Identity sovereignty`),
+          requireAuth: true,
+        }}
+      />
+      <Stack.Screen
+        name="ProtectedAccessSettings"
+        getComponent={() => ProtectedAccessSettingsScreen}
+        options={{
+          title: 'Protected access',
+          requireAuth: true,
+        }}
+      />
+      <Stack.Screen
+        name="PermissionedSpacesSettings"
+        getComponent={() => PermissionedSpacesSettingsScreen}
+        options={{
+          title: 'Private spaces and communities',
+          requireAuth: true,
+        }}
+      />
+      <Stack.Screen
+        name="PrivateFeed"
+        getComponent={() => PrivateFeedScreen}
+        options={{
+          title: 'Private feed',
           requireAuth: true,
         }}
       />

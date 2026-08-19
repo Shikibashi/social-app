@@ -1,0 +1,29 @@
+{
+  "lexicon": 1,
+  "id": "org.radlib.private.requestFollow",
+  "defs": {
+    "main": {
+      "type": "procedure",
+      "description": "Request access to a protected account's private space. This does not create a public app.bsky.graph.follow record.",
+      "input": {
+        "encoding": "application/json",
+        "schema": {
+          "type": "object",
+          "required": ["target"],
+          "properties": { "target": { "type": "string", "format": "did" } }
+        }
+      },
+      "output": {
+        "encoding": "application/json",
+        "schema": {
+          "type": "object",
+          "required": ["target", "state"],
+          "properties": {
+            "target": { "type": "string", "format": "did" },
+            "state": { "type": "string", "knownValues": ["none", "requested", "approved", "denied", "revoked", "blocked"] }
+          }
+        }
+      }
+    }
+  }
+}

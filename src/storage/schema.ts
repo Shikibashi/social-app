@@ -32,14 +32,6 @@ export type Device = {
   geolocation?: {
     countryCode: string | undefined
     regionCode: string | undefined
-    ageRestrictedGeos: {
-      countryCode: string
-      regionCode: string | undefined
-    }[]
-    ageBlockedGeos: {
-      countryCode: string
-      regionCode: string | undefined
-    }[]
   }
 
   /**

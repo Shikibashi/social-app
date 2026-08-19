@@ -1,61 +1,87 @@
 import {type Agent, type Client} from '@atproto/lex'
 import {type PasswordSession} from '@atproto/lex-password-session'
 
-import {
-  BLUESKY_PROXY_HEADER,
-  CHAT_PROXY_SERVICE,
-  PUBLIC_BSKY_SERVICE,
-} from '#/lib/constants'
+import {APPVIEW_ENDPOINT, CHAT_PROXY_SERVICE} from '#/lib/constants'
 import {createLexClient} from '#/lib/lexClient'
+import {serviceBoundaryError} from '#/lib/service-boundary'
 import {getCachedIsBetaUser} from '#/state/preferences/beta-user-cache'
 import {networkAwareFetch} from './network'
+import {type AppViewProvider, DEFAULT_APPVIEW_PROVIDER} from './providers'
 
 const IS_BETA_USER_HEADER = 'X-Bsky-Is-Beta-User'
 
 /**
- * Add account-scoped headers to appview requests.
- *
- * Values are read from memory per request so preference changes are reflected
- * immediately without rebuilding the session bundle.
- */
-function withAppviewRequestHeaders(agent: Agent): Agent {
-  return {
-    get did() {
-      return agent.did
-    },
-    fetchHandler(path, init) {
-      const headers = new Headers(init?.headers)
-      const isBetaUser = agent.did ? getCachedIsBetaUser(agent.did) : undefined
-      if (isBetaUser !== undefined) {
-        headers.set(IS_BETA_USER_HEADER, String(isBetaUser))
-      }
-      return agent.fetchHandler(path, {...init, headers})
-    },
-  }
-}
-
-/**
  * Build the signed-in appview {@link Client}.
  *
- * {@link BLUESKY_PROXY_HEADER} is passed as the client's `service`, so lex sets
- * `atproto-proxy: <that value>` on every request and raw calls are proxied to
- * the appview. Record helpers force `service: null`, so they still target the
- * account host.
+ * AppView service identity and endpoint are supplied by the explicit provider
+ * model. Record helpers force `service: null`, so they still target the account
+ * host. Authenticated reads use endpoint-scoped service-auth tokens.
  *
  * The class-wide `Client.appLabelers` static is deliberately NOT suppressed
  * here: this client is the only producer of `atproto-accept-labelers` on an
  * appview request now that no agent sits underneath it. The account's own
  * subscriptions arrive separately, through `applyLabelersToClient` on the
- * instance, and that function filters out the Bluesky moderation DID so the
- * globally redacted authority is not also listed unredacted.
+ * instance, and that function filters out any DIDs already configured as
+ * globally redacted authorities so they are not also listed unredacted.
  *
- * No `fetch` option: a client built over a session uses that session's own
- * fetch, which is `networkAwareFetch` wrapped in the disposal kill switch.
+ * Each authenticated AppView request receives a short-lived, endpoint-scoped
+ * service-auth JWT minted by the account PDS. The PDS access token is used only
+ * for that PDS-side minting call and is never sent to the AppView endpoint.
  */
-export function buildAppviewClient(agent: Agent): Client {
-  return createLexClient(withAppviewRequestHeaders(agent), {
-    service: BLUESKY_PROXY_HEADER.get(),
-  })
+export function buildAppviewClient(
+  agent: Agent,
+  provider: AppViewProvider = DEFAULT_APPVIEW_PROVIDER,
+): Client {
+  const appviewAgent: Agent = {
+    did: agent.did,
+    async fetchHandler(path, init) {
+      const nsid = path.startsWith('/xrpc/')
+        ? path.slice('/xrpc/'.length).split('?')[0]
+        : ''
+      if (!nsid) throw new Error('AppView requests must be XRPC paths')
+      const authUrl = `/xrpc/com.atproto.server.getServiceAuth?aud=${encodeURIComponent(provider.serviceDid)}&lxm=${encodeURIComponent(nsid)}`
+      const authResponse = await agent.fetchHandler(authUrl as `/${string}`, {
+        method: 'GET',
+      })
+      if (!authResponse.ok)
+        throw new Error(
+          `Account PDS could not authorize ${provider.displayName} (${provider.serviceDid}); HTTP ${authResponse.status}`,
+        )
+      const authBody = (await authResponse.json()) as {token?: string}
+      if (!authBody.token)
+        throw new Error('Service-auth issuance returned no token')
+      const headers = new Headers(init?.headers)
+      headers.set('authorization', `Bearer ${authBody.token}`)
+      headers.set(
+        'atproto-proxy',
+        `${provider.serviceDid}#${provider.serviceFragment}`,
+      )
+      const isBetaUser = appviewAgent.did
+        ? getCachedIsBetaUser(appviewAgent.did)
+        : undefined
+      if (isBetaUser !== undefined) {
+        headers.set(IS_BETA_USER_HEADER, String(isBetaUser))
+      }
+      const response = await fetch(new URL(path, provider.endpoint), {
+        ...init,
+        headers,
+        redirect: 'error',
+        signal: AbortSignal.timeout(15_000),
+      })
+      if (response.status === 401) {
+        throw serviceBoundaryError(
+          {
+            kind: 'AppView provider',
+            displayName: provider.displayName,
+            serviceDid: provider.serviceDid,
+          },
+          new Error('HTTP 401 from the selected AppView'),
+        )
+      }
+      return response
+    },
+  }
+  return createLexClient(appviewAgent)
 }
 
 /**
@@ -155,16 +181,17 @@ export function getUnauthenticatedThrowingClient(): Client {
   }))
 }
 
-let publicLexClient: Client | undefined
+const publicLexClients = new Map<string, Client>()
 
 /**
  * The unauthenticated {@link Client} for public reads, pointed at the public
  * appview.
  *
- * A single module-level instance: there is no session to scope it to, so it
- * lives for the lifetime of the process, and its identity is therefore stable
- * enough for a React Query key. Requests go through {@link networkAwareFetch} so
- * public reads feed the app's reachability signal like authenticated ones do.
+ * Public clients are cached by endpoint: there is no session to scope them to,
+ * so each selected provider's client lives for the lifetime of the process and
+ * is stable enough for a React Query key. Requests go through
+ * {@link networkAwareFetch} so public reads feed the app's reachability signal
+ * like authenticated ones do.
  *
  * Like the session appview client, it carries the class-wide
  * `Client.appLabelers`, so a logged-out read gets the same `;redact` moderation
@@ -173,9 +200,17 @@ let publicLexClient: Client | undefined
  * this client's first request, and `createPublicSessionBundle` runs it while
  * building the bundle.
  */
-export function getPublicAppviewClient(): Client {
-  return (publicLexClient ??= createLexClient({
-    service: PUBLIC_BSKY_SERVICE,
-    fetch: networkAwareFetch,
-  }))
+export function getPublicAppviewClient(
+  endpoint: string = String(APPVIEW_ENDPOINT),
+): Client {
+  const normalizedEndpoint = endpoint.replace(/\/$/, '')
+  let client = publicLexClients.get(normalizedEndpoint)
+  if (!client) {
+    client = createLexClient({
+      service: normalizedEndpoint,
+      fetch: networkAwareFetch,
+    })
+    publicLexClients.set(normalizedEndpoint, client)
+  }
+  return client
 }

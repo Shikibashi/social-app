@@ -1,4 +1,4 @@
-import {type ModerationOpts} from '@bsky/sdk/moderation'
+import {type ModerationOpts} from '#/lib/moderation'
 
 import {
   type ApiThreadItem,

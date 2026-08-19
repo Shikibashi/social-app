@@ -4,13 +4,15 @@ import {useMutation, useQuery, useQueryClient} from '@tanstack/react-query'
 import {z} from 'zod'
 
 import {MAX_LABELERS} from '#/lib/constants'
+import {serviceBoundaryError} from '#/lib/service-boundary'
 import {GCTIME, STALE} from '#/state/queries'
 import {
   preferencesQueryKey,
   usePreferencesQuery,
 } from '#/state/queries/preferences'
 import {createQueryKey} from '#/state/queries/util'
-import {useAppviewClient, usePdsClient} from '#/state/session'
+import {useAppviewClient, usePdsClient, useSession} from '#/state/session'
+import {getSelectedAppViewProvider} from '#/state/session/providers'
 import {app} from '#/lexicons'
 
 const labelerInfoQueryKeyRoot = 'labeler-info'
@@ -36,46 +38,85 @@ export function useLabelerInfoQuery({
   enabled?: boolean
 }) {
   const client = useAppviewClient()
+  const {currentAccount} = useSession()
+  const provider = getSelectedAppViewProvider(currentAccount?.did ?? '')
   return useQuery({
     enabled: !!did && enabled !== false,
     queryKey: labelerInfoQueryKey(did as string),
     queryFn: async () => {
-      const res = await client.call(app.bsky.labeler.getServices, {
-        dids: [did! as DidString],
-        detailed: true,
-      })
-      return res.views[0] as app.bsky.labeler.defs.LabelerViewDetailed
+      try {
+        const res = await client.call(app.bsky.labeler.getServices, {
+          dids: [did! as DidString],
+          detailed: true,
+        })
+        return res.views[0] as app.bsky.labeler.defs.LabelerViewDetailed
+      } catch (error) {
+        throw serviceBoundaryError(
+          {
+            kind: 'labeler directory',
+            displayName: provider.displayName,
+            serviceDid: provider.serviceDid,
+          },
+          error,
+        )
+      }
     },
   })
 }
 
 export function useLabelersInfoQuery({dids}: {dids: string[]}) {
   const client = useAppviewClient()
+  const {currentAccount} = useSession()
+  const provider = getSelectedAppViewProvider(currentAccount?.did ?? '')
   return useQuery({
     enabled: !!dids.length,
     queryKey: labelersInfoQueryKey(dids),
     queryFn: async () => {
-      const res = await client.call(app.bsky.labeler.getServices, {
-        dids: dids as DidString[],
-      })
-      return res.views as app.bsky.labeler.defs.LabelerView[]
+      try {
+        const res = await client.call(app.bsky.labeler.getServices, {
+          dids: dids as DidString[],
+        })
+        return res.views as app.bsky.labeler.defs.LabelerView[]
+      } catch (error) {
+        throw serviceBoundaryError(
+          {
+            kind: 'labeler directory',
+            displayName: provider.displayName,
+            serviceDid: provider.serviceDid,
+          },
+          error,
+        )
+      }
     },
   })
 }
 
 export function useLabelersDetailedInfoQuery({dids}: {dids: string[]}) {
   const client = useAppviewClient()
+  const {currentAccount} = useSession()
+  const provider = getSelectedAppViewProvider(currentAccount?.did ?? '')
   return useQuery({
     enabled: !!dids.length,
     queryKey: createLabelersDetailedInfoQueryKey(dids),
     gcTime: GCTIME.INFINITY,
     staleTime: STALE.MINUTES.ONE,
     queryFn: async () => {
-      const res = await client.call(app.bsky.labeler.getServices, {
-        dids: dids as DidString[],
-        detailed: true,
-      })
-      return res.views as app.bsky.labeler.defs.LabelerViewDetailed[]
+      try {
+        const res = await client.call(app.bsky.labeler.getServices, {
+          dids: dids as DidString[],
+          detailed: true,
+        })
+        return res.views as app.bsky.labeler.defs.LabelerViewDetailed[]
+      } catch (error) {
+        throw serviceBoundaryError(
+          {
+            kind: 'labeler directory',
+            displayName: provider.displayName,
+            serviceDid: provider.serviceDid,
+          },
+          error,
+        )
+      }
     },
   })
 }

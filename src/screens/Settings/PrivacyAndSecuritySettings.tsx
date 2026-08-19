@@ -21,6 +21,7 @@ import {useAnalytics} from '#/analytics'
 import {type app} from '#/lexicons'
 import {AlgoVisibilityOptOut} from './components/AlgoVisibilityOptOut'
 import {Email2FAToggle} from './components/Email2FAToggle'
+import {ProtectedAccountToggle} from './components/ProtectedAccountToggle'
 import {PwiOptOut} from './components/PwiOptOut'
 import {ItemTextWithSubtitle} from './NotificationSettings/components/ItemTextWithSubtitle'
 
@@ -114,10 +115,35 @@ export function PrivacyAndSecuritySettingsScreen({}: Props) {
               <AlgoVisibilityOptOut />
             </SettingsList.Item>
           )}
-          <SettingsList.Item style={[a.align_start]}>
+          <SettingsList.Group>
+            <SettingsList.ItemIcon icon={ShieldIcon} />
+            <SettingsList.ItemText>
+              <Trans>Account visibility</Trans>
+            </SettingsList.ItemText>
+            <ProtectedAccountToggle />
+          </SettingsList.Group>
+          <SettingsList.LinkItem
+            to="/settings/protected-access"
+            label="Protected access">
+            <SettingsList.ItemIcon icon={ShieldIcon} />
+            <SettingsList.ItemText>Protected access</SettingsList.ItemText>
+          </SettingsList.LinkItem>
+          <SettingsList.LinkItem
+            to="/settings/private-spaces"
+            label="Private spaces and communities">
+            <SettingsList.ItemIcon icon={ShieldIcon} />
+            <SettingsList.ItemText>
+              Private spaces and communities
+            </SettingsList.ItemText>
+          </SettingsList.LinkItem>
+          <SettingsList.Divider />
+          <SettingsList.Group>
             <SettingsList.ItemIcon icon={EyeSlashIcon} />
+            <SettingsList.ItemText>
+              <Trans>Logged-out visibility</Trans>
+            </SettingsList.ItemText>
             <PwiOptOut />
-          </SettingsList.Item>
+          </SettingsList.Group>
           <SettingsList.Item>
             <Admonition.Outer type="tip" style={[a.flex_1]}>
               <Admonition.Row>

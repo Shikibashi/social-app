@@ -17,6 +17,7 @@ import {EventEmitter} from 'eventemitter3'
 
 import BroadcastChannel from '#/lib/broadcast'
 import {resetBadgeCount} from '#/lib/notifications/notifications'
+import {logger} from '#/logger'
 import {useModerationOpts} from '#/state/preferences/moderation-opts'
 import {truncateAndInvalidate} from '#/state/queries/util'
 import {useAppviewClient, useSession} from '#/state/session'
@@ -198,6 +199,17 @@ export function Provider({children}: React.PropsWithChildren<{}>) {
             truncateAndInvalidate(queryClient, RQKEY_NOTIFS('mentions'))
           }
           broadcast.postMessage({event: unreadCountStr})
+        } catch (error) {
+          // Notification polling is a background side effect. A selected
+          // AppView may not index this account's DID (for example, a remote
+          // account against a fresh local fixture); that must become an
+          // attributable query error, not an unhandled promise/refresh
+          // overlay. The foreground notification query still reports the
+          // same boundary through NotificationFeed.
+          cacheRef.current.usableInFeed = false
+          logger.warn('Failed to check unread notifications', {
+            message: error instanceof Error ? error.message : String(error),
+          })
         } finally {
           isFetchingRef.current = false
         }

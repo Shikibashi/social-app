@@ -6,7 +6,7 @@ import {
   moderatePost,
   type ModerationDecision,
   type ModerationPrefs,
-} from '@bsky/sdk/moderation'
+} from '#/lib/moderation'
 import {
   type InfiniteData,
   type QueryClient,
@@ -30,7 +30,11 @@ import {DISCOVER_FEED_URI} from '#/lib/constants'
 import {logger} from '#/logger'
 import {STALE} from '#/state/queries'
 import {DEFAULT_LOGGED_OUT_PREFERENCES} from '#/state/queries/preferences/const'
-import {useAppviewClient, useSession} from '#/state/session'
+import {
+  useAppviewClient,
+  usePublicAppviewClient,
+  useSession,
+} from '#/state/session'
 import * as userActionHistory from '#/state/userActionHistory'
 import {KnownError} from '#/view/com/posts/PostFeedErrorMessage'
 import {app} from '#/lexicons'
@@ -38,6 +42,7 @@ import * as bsky from '#/types/bsky'
 import {useFeedTuners} from '../preferences/feed-tuners'
 import {useModerationOpts} from '../preferences/moderation-opts'
 import {usePreferencesQuery} from './preferences'
+import {stripNonLocalBlockVisibility} from './public-visibility'
 import {
   didOrHandleUriMatches,
   embedViewRecordToPostView,
@@ -149,6 +154,7 @@ export function usePostFeedQuery(
   const enableFollowingToDiscoverFallback = followingPinnedIndex === 0
   const {hasSession} = useSession()
   const client = useAppviewClient()
+  const publicClient = usePublicAppviewClient()
   const lastRun = useRef<{
     data: InfiniteData<FeedPageUnselected>
     args: typeof selectArgs
@@ -194,6 +200,7 @@ export function usePostFeedQuery(
               feedParams: params || {},
               feedTuners,
               client,
+              publicClient,
               // Not in the query key because they don't change:
               userInterests,
               // Not in the query key. Reacting to it switching isn't important:
@@ -287,14 +294,18 @@ export function usePostFeedQuery(
               slices: tuner
                 .tune(page.feed)
                 .map(slice => {
-                  const moderations = slice.items.map(item =>
+                  const items = slice.items.map(item => ({
+                    ...item,
+                    post: stripNonLocalBlockVisibility(item.post),
+                  }))
+                  const moderations = items.map(item =>
                     moderatePost(item.post, moderationOpts!),
                   )
 
                   // apply moderation filter
                   for (let i = 0; i < slice.items.length; i++) {
                     const ignoreFilter =
-                      slice.items[i].post.author.did === ignoreFilterFor
+                      items[i].post.author.did === ignoreFilterFor
                     if (ignoreFilter) {
                       // remove mutes to avoid confused UIs
                       moderations[i].causes = moderations[i].causes.filter(
@@ -311,7 +322,7 @@ export function usePostFeedQuery(
 
                   if (isDiscover) {
                     userActionHistory.seen(
-                      slice.items.map(item => ({
+                      items.map(item => ({
                         feedContext: slice.feedContext,
                         reqId: slice.reqId,
                         likeCount: item.post.likeCount ?? 0,
@@ -334,7 +345,7 @@ export function usePostFeedQuery(
                     reqId: slice.reqId,
                     reason: slice.reason,
                     feedPostUri: slice.feedPostUri,
-                    items: slice.items.map((item, i) => {
+                    items: items.map((item, i) => {
                       const feedPostSliceItem: FeedPostSliceItem = {
                         _reactKey: `${slice._reactKey}-${i}-${item.post.uri}`,
                         uri: item.post.uri,
@@ -444,6 +455,7 @@ function createApi({
   feedTuners,
   userInterests,
   client,
+  publicClient,
   enableFollowingToDiscoverFallback,
 }: {
   feedDesc: FeedDescriptor
@@ -451,6 +463,7 @@ function createApi({
   feedTuners: FeedTunerFn[]
   userInterests?: string
   client: Client
+  publicClient?: Client
   enableFollowingToDiscoverFallback: boolean
 }) {
   if (feedDesc === 'following') {
@@ -476,6 +489,7 @@ function createApi({
      */
     return new AuthorFeedAPI({
       client,
+      fallbackClient: publicClient,
       feedParams: {actor: actor as AtIdentifierString, filter},
     })
   } else if (feedDesc.startsWith('likes')) {
@@ -613,7 +627,7 @@ function assertSomePostsPassModeration(
   let somePostsPassModeration = false
 
   for (const item of feed) {
-    const moderation = moderatePost(item.post, {
+    const moderation = moderatePost(stripNonLocalBlockVisibility(item.post), {
       userDid: undefined,
       prefs: moderationPrefs,
     })

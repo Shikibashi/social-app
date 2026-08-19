@@ -1,6 +1,6 @@
 import {useMemo} from 'react'
 import {View} from 'react-native'
-import {moderateProfile, type ModerationOpts} from '@bsky/sdk/moderation'
+import {moderateProfile, type ModerationOpts} from '#/lib/moderation'
 import {useLingui} from '@lingui/react/macro'
 
 import {createSanitizedDisplayName} from '#/lib/moderation/create-sanitized-display-name'
@@ -90,12 +90,8 @@ function ProfileHeaderReady({
   const blockInfo = useMemo(() => {
     const modui = moderation.ui('profileView')
     const blocks = modui.alerts.filter(alert => alert.type === 'blocking')
-    const listBlocks = blocks.filter(alert => alert.source.type === 'list')
     const userBlock = blocks.find(alert => alert.source.type === 'user')
-    return {
-      listBlocks,
-      userBlock,
-    }
+    return {userBlock}
   }, [moderation])
 
   const isDeletedAccount = profile?.handle === 'missing.invalid'

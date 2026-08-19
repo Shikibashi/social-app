@@ -21,7 +21,7 @@ import {
   updateSavedFeeds,
   upsertMutedWords,
 } from '@bsky/sdk'
-import {type LabelPreference} from '@bsky/sdk/moderation'
+import {type LabelPreference} from '#/lib/moderation'
 import {useMutation, useQuery, useQueryClient} from '@tanstack/react-query'
 
 import {PROD_DEFAULT_FEED} from '#/lib/constants'
@@ -40,8 +40,6 @@ import {
 import {createQueryKey} from '#/state/queries/util'
 import {useAppviewClient, usePdsClient} from '#/state/session'
 import {applyLabelersToClient, saveLabelers} from '#/state/session/moderation'
-import {useAgeAssurance} from '#/ageAssurance'
-import {makeAgeRestrictedModerationPrefs} from '#/ageAssurance/util'
 import {useAnalytics} from '#/analytics'
 import {app} from '#/lexicons'
 
@@ -58,7 +56,6 @@ export const preferencesQueryKey = createQueryKey(
 export function usePreferencesQuery() {
   const client = usePdsClient()
   const appviewClient = useAppviewClient()
-  const aa = useAgeAssurance()
 
   const query = useQuery({
     staleTime: STALE.SECONDS.FIFTEEN,
@@ -116,27 +113,6 @@ export function usePreferencesQuery() {
         return preferences
       }
     },
-    select: useCallback(
-      (data: UsePreferencesQueryResponse) => {
-        /**
-         * Prefs are all downstream of age assurance now. For logged-out
-         * users, we override moderation prefs based on AA state.
-         */
-        if (
-          aa.state.access !== aa.Access.Full ||
-          aa.flags.adultContentDisabled
-        ) {
-          data = {
-            ...data,
-            moderationPrefs: makeAgeRestrictedModerationPrefs(
-              data.moderationPrefs,
-            ),
-          }
-        }
-        return data
-      },
-      [aa],
-    ),
   })
 
   if (query.data?.birthDate) {

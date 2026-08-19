@@ -32,6 +32,7 @@ import {type ImageMeta} from '#/state/gallery'
 import {STALE} from '#/state/queries'
 import {resetProfilePostsQueries} from '#/state/queries/post-feed'
 import {RQKEY as PROFILE_FOLLOWS_RQKEY} from '#/state/queries/profile-follows'
+import {hasDirectViewerBlock} from '#/state/queries/public-visibility'
 import {
   unstableCacheProfileView,
   useUnstableProfileViewCache,
@@ -576,8 +577,10 @@ export function useProfileBlockMutationQueue(
   const ax = useAnalytics()
   const queryClient = useQueryClient()
   const did = profile.did
-  const initialBlockingUri = profile.viewer?.blocking
-  const blockMutation = useProfileBlockMutation()
+  const initialBlockingUri = hasDirectViewerBlock(profile)
+    ? profile.viewer?.blocking
+    : undefined
+  const blockMutation = useDirectBlockMutation()
   const unblockMutation = useProfileUnblockMutation()
 
   const queueToggle = useToggleMutationQueue({
@@ -632,7 +635,15 @@ export function useProfileBlockMutationQueue(
   return [queueBlock, queueUnblock] as const
 }
 
-function useProfileBlockMutation() {
+/**
+ * Creates one ordinary app.bsky.graph.block record for the selected DID.
+ *
+ * This is intentionally exported for explicit review workflows. It must not
+ * be replaced with listblock creation: list membership is delegated attention
+ * input, while a durable hard boundary requires an individually authored
+ * block record.
+ */
+export function useDirectBlockMutation() {
   const {currentAccount} = useSession()
   const pdsClient = usePdsClient()
   const queryClient = useQueryClient()

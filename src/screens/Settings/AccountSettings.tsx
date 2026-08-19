@@ -6,7 +6,6 @@ import {useProfileQuery} from '#/state/queries/profile'
 import {useSession} from '#/state/session'
 import * as SettingsList from '#/screens/Settings/components/SettingsList'
 import {atoms as a, useTheme} from '#/alf'
-import {AgeAssuranceAccountCard} from '#/components/ageAssurance/AgeAssuranceAccountCard'
 import {isBotAccount} from '#/components/BotBadge'
 import {useDialogControl} from '#/components/Dialog'
 import {BirthDateSettingsDialog} from '#/components/dialogs/BirthDateSettings'
@@ -149,7 +148,6 @@ export function AccountSettingsScreen({}: Props) {
               onPress={() => birthdayControl.open()}
             />
           </SettingsList.Item>
-          <AgeAssuranceAccountCard style={[a.px_xl, a.pt_xs, a.pb_md]} />
           <SettingsList.LinkItem
             to="/settings/automation-label"
             label={l`Automation label`}>

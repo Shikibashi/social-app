@@ -34,6 +34,7 @@ import {Button, ButtonIcon, ButtonText} from '#/components/Button'
 import * as Dialog from '#/components/Dialog'
 import * as SegmentedControl from '#/components/forms/SegmentedControl'
 import * as TextField from '#/components/forms/TextField'
+import * as Toggle from '#/components/forms/Toggle'
 import {
   ArrowLeft_Stroke2_Corner0_Rounded as ArrowLeftIcon,
   ArrowRight_Stroke2_Corner0_Rounded as ArrowRightIcon,
@@ -152,6 +153,7 @@ function ProvidedHandlePage({
 }) {
   const {_} = useLingui()
   const [subdomain, setSubdomain] = useState('')
+  const [didHistoryAcknowledged, setDidHistoryAcknowledged] = useState(false)
   const {refreshSession} = useSessionApi()
   const control = Dialog.useDialogContext()
   const {currentAccount} = useSession()
@@ -178,6 +180,9 @@ function ProvidedHandlePage({
   })
 
   const host = serviceInfo.availableUserDomains[0]
+  const requiresDidHistoryAcknowledgement = Boolean(
+    currentAccount?.did.startsWith('did:plc:'),
+  )
 
   const validation = useMemo(
     () => validateServiceHandle(subdomain, host),
@@ -251,14 +256,31 @@ function ProvidedHandlePage({
               </Text>
             </Trans>
           </Text>
+          {requiresDidHistoryAcknowledgement && (
+            <DidPlcHandleWarning
+              acknowledged={didHistoryAcknowledged}
+              onChange={setDidHistoryAcknowledged}
+            />
+          )}
           <Button
             label={_(msg`Save new handle`)}
             variant="solid"
             size="large"
-            color={validation.overall ? 'primary' : 'secondary'}
-            disabled={!validation.overall}
+            color={
+              validation.overall &&
+              (!requiresDidHistoryAcknowledgement || didHistoryAcknowledged)
+                ? 'primary'
+                : 'secondary'
+            }
+            disabled={
+              !validation.overall ||
+              (requiresDidHistoryAcknowledgement && !didHistoryAcknowledged)
+            }
             onPress={() => {
-              if (validation.overall) {
+              if (
+                validation.overall &&
+                (!requiresDidHistoryAcknowledgement || didHistoryAcknowledged)
+              ) {
                 changeHandle({handle: createFullHandle(subdomain, host)})
               }
             }}>
@@ -311,10 +333,14 @@ function OwnHandlePage({goToServiceHandle}: {goToServiceHandle: () => void}) {
   const {currentAccount} = useSession()
   const [dnsPanel, setDNSPanel] = useState(true)
   const [domain, setDomain] = useState('')
+  const [didHistoryAcknowledged, setDidHistoryAcknowledged] = useState(false)
   const {refreshSession} = useSessionApi()
   const control = Dialog.useDialogContext()
   const fetchDid = useFetchDid()
   const queryClient = useQueryClient()
+  const requiresDidHistoryAcknowledgement = Boolean(
+    currentAccount?.did.startsWith('did:plc:'),
+  )
 
   const {
     mutate: changeHandle,
@@ -525,6 +551,12 @@ function OwnHandlePage({goToServiceHandle}: {goToServiceHandle: () => void}) {
           <SuccessMessage text={_(msg`Domain verified!`)} />
         </Animated.View>
       )}
+      {requiresDidHistoryAcknowledgement && (
+        <DidPlcHandleWarning
+          acknowledged={didHistoryAcknowledged}
+          onChange={setDidHistoryAcknowledged}
+        />
+      )}
       <Animated.View layout={native(LinearTransition)}>
         {currentAccount?.handle?.endsWith('.bsky.social') && (
           <Admonition type="info" style={[a.mb_md]}>
@@ -549,9 +581,17 @@ function OwnHandlePage({goToServiceHandle}: {goToServiceHandle: () => void}) {
           variant="solid"
           size="large"
           color="primary"
-          disabled={domain.trim().length === 0}
+          disabled={
+            domain.trim().length === 0 ||
+            (isVerified &&
+              requiresDidHistoryAcknowledgement &&
+              !didHistoryAcknowledged)
+          }
           onPress={() => {
-            if (isVerified) {
+            if (
+              isVerified &&
+              (!requiresDidHistoryAcknowledgement || didHistoryAcknowledged)
+            ) {
               changeHandle({handle: domain})
             } else {
               verify()
@@ -586,6 +626,38 @@ function OwnHandlePage({goToServiceHandle}: {goToServiceHandle: () => void}) {
           </ButtonText>
         </Button>
       </Animated.View>
+    </View>
+  )
+}
+
+function DidPlcHandleWarning({
+  acknowledged,
+  onChange,
+}: {
+  acknowledged: boolean
+  onChange: (value: boolean) => void
+}) {
+  return (
+    <View style={[a.gap_sm]}>
+      <Admonition type="warning">
+        <Trans>
+          This account uses a did:plc identity. Changing its handle does not
+          create a new identity or make past handles unlinkable: the DID and
+          its public history remain the same. This is a naming change, not an
+          anonymity guarantee.
+        </Trans>
+      </Admonition>
+      <Toggle.Item
+        type="checkbox"
+        name="did-plc-handle-history-ack"
+        label="I understand that this does not unlink my identity"
+        value={acknowledged}
+        onChange={onChange}>
+        <Toggle.LabelText>
+          <Trans>I understand this does not unlink my identity</Trans>
+        </Toggle.LabelText>
+        <Toggle.Platform />
+      </Toggle.Item>
     </View>
   )
 }

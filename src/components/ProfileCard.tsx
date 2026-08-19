@@ -6,7 +6,7 @@ import {
   View,
   type ViewStyle,
 } from 'react-native'
-import {moderateProfile, type ModerationOpts} from '@bsky/sdk/moderation'
+import {moderateProfile, type ModerationOpts} from '#/lib/moderation'
 import {RichText as RichTextApi} from '@bsky/sdk/richtext'
 import {useLingui} from '@lingui/react/macro'
 
@@ -18,6 +18,10 @@ import {sanitizeDisplayName} from '#/lib/strings/display-names'
 import {sanitizeHandle} from '#/lib/strings/handles'
 import {useProfileShadow} from '#/state/cache/profile-shadow'
 import {useProfileFollowMutationQueue} from '#/state/queries/profile'
+import {
+  hasDirectViewerBlock,
+  hasViewerInteractionBoundary,
+} from '#/state/queries/public-visibility'
 import {useSession} from '#/state/session'
 import {PreviewableUserAvatar, UserAvatar} from '#/view/com/util/UserAvatar'
 import {
@@ -405,9 +409,7 @@ export function Description({
   if (!rt) return null
   if (
     profile.viewer &&
-    (profile.viewer.blockedBy ||
-      profile.viewer.blocking ||
-      profile.viewer.blockingByList)
+    hasDirectViewerBlock(profile)
   )
     return null
   return (
@@ -548,11 +550,7 @@ export function FollowButtonInner({
       })
 
   if (!profile.viewer) return null
-  if (
-    profile.viewer.blockedBy ||
-    profile.viewer.blocking ||
-    profile.viewer.blockingByList
-  )
+  if (hasViewerInteractionBoundary(profile))
     return null
 
   return (

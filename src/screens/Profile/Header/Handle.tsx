@@ -5,6 +5,7 @@ import {Trans} from '@lingui/react/macro'
 
 import {isInvalidHandle, sanitizeHandle} from '#/lib/strings/handles'
 import {type Shadow} from '#/state/cache/types'
+import {viewerHidesActor} from '#/state/queries/public-visibility'
 import {atoms as a, useTheme, web} from '#/alf'
 import {NewskieDialog} from '#/components/NewskieDialog'
 import {Text} from '#/components/Typography'
@@ -14,14 +15,16 @@ import {type app} from '#/lexicons'
 export function ProfileHeaderHandle({
   profile,
   disableTaps,
+  showProtectedBadge = false,
 }: {
   profile: Shadow<app.bsky.actor.defs.ProfileViewDetailed>
   disableTaps?: boolean
+  showProtectedBadge?: boolean
 }) {
   const t = useTheme()
   const {_} = useLingui()
   const invalidHandle = isInvalidHandle(profile.handle)
-  const blockHide = profile.viewer?.blocking || profile.viewer?.blockedBy
+  const blockHide = viewerHidesActor(profile)
   return (
     <View
       style={[a.flex_row, a.gap_sm, a.align_center, {maxWidth: '100%'}]}
@@ -31,6 +34,13 @@ export function ProfileHeaderHandle({
         <View style={[t.atoms.bg_contrast_50, a.rounded_xs, a.px_sm, a.py_xs]}>
           <Text style={[t.atoms.text, a.text_sm]}>
             <Trans>Follows you</Trans>
+          </Text>
+        </View>
+      ) : undefined}
+      {showProtectedBadge ? (
+        <View style={[t.atoms.bg_contrast_50, a.rounded_xs, a.px_sm, a.py_xs]}>
+          <Text style={[t.atoms.text, a.text_sm]}>
+            <Trans>Protected account</Trans>
           </Text>
         </View>
       ) : undefined}

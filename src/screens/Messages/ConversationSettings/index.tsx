@@ -1,6 +1,6 @@
 import {useEffect, useState} from 'react'
 import {Pressable, View} from 'react-native'
-import {type ModerationOpts} from '@bsky/sdk/moderation'
+import {type ModerationOpts} from '#/lib/moderation'
 import {Trans, useLingui} from '@lingui/react/macro'
 import {useNavigation} from '@react-navigation/native'
 

@@ -4,7 +4,7 @@ import {useQuery} from '@tanstack/react-query'
 import {
   BSKY_SERVICE,
   BSKY_SERVICE_DID,
-  PUBLIC_BSKY_SERVICE,
+  PUBLIC_ACCOUNT_SERVICE,
 } from '#/lib/constants'
 import {useDebouncedValue} from '#/lib/hooks/useDebouncedValue'
 import {createServiceClient} from '#/lib/lexClient'
@@ -124,7 +124,7 @@ export async function checkHandleAvailability(
      * This is an unauthenticated public-appview read, not a call against the
      * user's chosen host.
      */
-    const client = createServiceClient(PUBLIC_BSKY_SERVICE)
+    const client = createServiceClient(PUBLIC_ACCOUNT_SERVICE)
     try {
       const data = await client.call(com.atproto.identity.resolveHandle, {
         handle: handle as HandleString,

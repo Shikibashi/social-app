@@ -1,0 +1,29 @@
+{
+  "lexicon": 1,
+  "id": "org.radlib.private.cancelFollow",
+  "defs": {
+    "main": {
+      "type": "procedure",
+      "description": "Cancel the authenticated requester's pending protected-account follow request.",
+      "input": {
+        "encoding": "application/json",
+        "schema": {
+          "type": "object",
+          "required": ["target"],
+          "properties": { "target": { "type": "string", "format": "did" } }
+        }
+      },
+      "output": {
+        "encoding": "application/json",
+        "schema": {
+          "type": "object",
+          "required": ["target", "state"],
+          "properties": {
+            "target": { "type": "string", "format": "did" },
+            "state": { "type": "string", "knownValues": ["none", "requested", "approved", "denied", "revoked", "blocked"] }
+          }
+        }
+      }
+    }
+  }
+}

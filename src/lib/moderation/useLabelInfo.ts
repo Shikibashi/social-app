@@ -1,8 +1,3 @@
-import {
-  type InterpretedLabelValueDefinition,
-  interpretLabelValueDefinition,
-  LABELS,
-} from '@bsky/sdk/moderation'
 import {useLingui} from '@lingui/react'
 import * as bcp47Match from 'bcp-47-match'
 
@@ -12,6 +7,11 @@ import {
 } from '#/lib/moderation/useGlobalLabelStrings'
 import {useLabelDefinitions} from '#/state/preferences'
 import {type app, type com} from '#/lexicons'
+import {
+  type InterpretedLabelValueDefinition,
+  interpretLabelValueDefinition,
+  LABELS,
+} from '../moderation'
 
 export interface LabelInfo {
   label: com.atproto.label.defs.Label

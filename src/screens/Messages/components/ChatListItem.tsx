@@ -4,7 +4,7 @@ import {
   moderateProfile,
   type ModerationDecision,
   type ModerationOpts,
-} from '@bsky/sdk/moderation'
+} from '#/lib/moderation'
 import {plural} from '@lingui/core/macro'
 import {useLingui} from '@lingui/react/macro'
 import {useQueryClient} from '@tanstack/react-query'
@@ -289,15 +289,11 @@ function BaseChatItem({
     (convo.kind !== 'group' || convo.details.lockStatus === 'unlocked')
 
   const blockInfo = useMemo(() => {
-    if (!primaryProfileModeration) return {listBlocks: [], userBlock: undefined}
+    if (!primaryProfileModeration) return {userBlock: undefined}
     const modui = primaryProfileModeration.ui('profileView')
     const blocks = modui.alerts.filter(alert => alert.type === 'blocking')
-    const listBlocks = blocks.filter(alert => alert.source.type === 'list')
     const userBlock = blocks.find(alert => alert.source.type === 'user')
-    return {
-      listBlocks,
-      userBlock,
-    }
+    return {userBlock}
   }, [primaryProfileModeration])
 
   const isDimStyle =

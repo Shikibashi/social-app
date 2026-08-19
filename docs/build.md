@@ -112,7 +112,10 @@ This is NOT required for app development but if you also want to develop the Blu
   - Launch a Postgres database on port 5432
   - `cd packages/dev-env && pnpm start`
   
-Run the account with the AppView proxy DID passed in as an environment variable: `EXPO_PUBLIC_BLUESKY_PROXY_DID=did:plc:dw4kbjf5mn7nhenabiqpkyh3 pnpm start`
+Run the account with the first-party AppView identity and endpoint passed in as
+environment variables (the DID must match the AppView service printed by the
+local fixture):
+`EXPO_PUBLIC_APPVIEW_SERVICE_DID=did:plc:dw4kbjf5mn7nhenabiqpkyh3 EXPO_PUBLIC_APPVIEW_SERVICE_FRAGMENT=bsky_appview EXPO_PUBLIC_PUBLIC_APPVIEW_URL=http://localhost:2584 EXPO_PUBLIC_ALLOW_INSECURE_LOCAL_APPVIEW=1 pnpm start`
 
 Then, when logging in or creating an account, point it to the localhost port of the devserver.
 

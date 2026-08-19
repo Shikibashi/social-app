@@ -30,9 +30,6 @@ export const FEEDBACK_FEEDS = [...PROD_FEEDS, ...STAGING_FEEDS]
 export const THIRD_PARTY_ALLOWED_INTERACTIONS = new Set<
   app.bsky.feed.defs.Interaction['event']
 >([
-  // These are explicit actions and are therefore fine to send.
-  'app.bsky.feed.defs#requestLess',
-  'app.bsky.feed.defs#requestMore',
   // These can be inferred from the firehose and are therefore fine to send.
   'app.bsky.feed.defs#interactionLike',
   'app.bsky.feed.defs#interactionQuote',

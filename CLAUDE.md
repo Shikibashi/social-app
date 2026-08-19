@@ -117,9 +117,8 @@ constants, and other shared logic.
 
 Avoid writing new top-level subdirectories within `/src`. We've done this for a
 few things in the past that, but we have stronger patterns now. Examples:
-`/logger` should probably have been written into `/lib`. And `ageAssurance` is
-better classified within `/features`. We will probably migrate these things
-eventually.
+`/logger` should probably have been written into `/lib`. Keep new feature code
+classified within `/features` rather than adding another top-level subsystem.
 
 ### File and Directory Naming Conventions
 

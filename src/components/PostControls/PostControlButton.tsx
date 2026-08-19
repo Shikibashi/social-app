@@ -1,5 +1,11 @@
 import {createContext, useContext, useMemo} from 'react'
-import {type GestureResponderEvent, type Insets, type View} from 'react-native'
+import {
+  type GestureResponderEvent,
+  type Insets,
+  type StyleProp,
+  type View,
+  type ViewStyle,
+} from 'react-native'
 
 import {useHaptics} from '#/lib/haptics'
 import {atoms as a, useTheme} from '#/alf'
@@ -25,6 +31,9 @@ export function PostControlButton({
   big,
   active,
   activeColor,
+  activeStyle,
+  selected,
+  style: styleProp,
   ...props
 }: Omit<ButtonProps, 'hitSlop'> & {
   ref?: React.Ref<View>
@@ -32,6 +41,8 @@ export function PostControlButton({
   big?: boolean
   color?: string
   activeColor?: string
+  activeStyle?: StyleProp<ViewStyle>
+  selected?: boolean
   hitSlop?: Insets
 }) {
   const t = useTheme()
@@ -75,17 +86,23 @@ export function PostControlButton({
     }
   }, [onLongPress, playHaptic])
 
+  const accessibilityState =
+    selected === undefined
+      ? props.accessibilityState
+      : {...props.accessibilityState, selected}
+
   return (
     <Button
       ref={ref}
       onPress={handlePress}
       onLongPress={handleLongPress}
-      style={style}
+      {...props}
+      style={[style, styleProp, active && activeStyle]}
       hoverStyle={t.atoms.bg_contrast_25}
       shape="round"
       variant="ghost"
       color="secondary"
-      {...props}
+      accessibilityState={accessibilityState}
       hitSlop={{
         ...DEFAULT_HITSLOP,
         ...(props.hitSlop || {}),

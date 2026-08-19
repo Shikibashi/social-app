@@ -16,6 +16,10 @@ import {
   useProfileMuteMutationQueue,
   useProfileMuteRepostsMutationQueue,
 } from '#/state/queries/profile'
+import {
+  hasDirectViewerBlock,
+  hasViewerInteractionBoundary,
+} from '#/state/queries/public-visibility'
 import {useSession} from '#/state/session'
 import {EventStopper} from '#/view/com/util/EventStopper'
 import {atoms as a, useTheme} from '#/alf'
@@ -82,7 +86,8 @@ let ProfileMenu = ({
   const navigation = useNavigation<NavigationProp>()
   const isSelf = currentAccount?.did === profile.did
   const isFollowing = profile.viewer?.following
-  const isBlocked = profile.viewer?.blocking || profile.viewer?.blockedBy
+  const isBlocked = hasViewerInteractionBoundary(profile)
+  const isDirectBlock = hasDirectViewerBlock(profile)
   const isFollowingBlockedAccount = isFollowing && isBlocked
   const isLabelerAndNotBlocked = !!profile.associated?.labeler && !isBlocked
   const [devModeEnabled] = useDevMode()
@@ -204,7 +209,7 @@ let ProfileMenu = ({
   }, [ax, profile.viewer, queueUnmuteReposts, l, queueMuteReposts])
 
   const blockAccount = useCallback(async () => {
-    if (profile.viewer?.blocking) {
+    if (isDirectBlock) {
       try {
         await queueUnblock()
         Toast.show(l({message: 'Account unblocked', context: 'toast'}))
@@ -231,7 +236,7 @@ let ProfileMenu = ({
         }
       }
     }
-  }, [ax, profile.viewer?.blocking, l, queueUnblock, queueBlock])
+  }, [ax, isDirectBlock, l, queueUnblock, queueBlock])
 
   const onPressFollowAccount = useCallback(async () => {
     try {
@@ -476,7 +481,7 @@ let ProfileMenu = ({
                   ))}
                 {!isSelf && (
                   <>
-                    {!profile.viewer?.blocking &&
+                    {!isDirectBlock &&
                       !profile.viewer?.mutedByList && (
                         <>
                           {!profile.viewer?.muted && (
@@ -527,31 +532,23 @@ let ProfileMenu = ({
                           </Menu.Item>
                         </>
                       )}
-                    {!profile.viewer?.blockingByList && (
-                      <Menu.Item
-                        testID="profileHeaderDropdownBlockBtn"
-                        label={
-                          profile.viewer?.blocking
-                            ? l`Unblock account`
-                            : l`Block account`
-                        }
-                        onPress={() => blockPromptControl.open()}>
-                        <Menu.ItemText>
-                          {profile.viewer?.blocking ? (
-                            <Trans>Unblock account</Trans>
-                          ) : (
-                            <Trans>Block account</Trans>
-                          )}
-                        </Menu.ItemText>
-                        <Menu.ItemIcon
-                          icon={
-                            profile.viewer?.blocking
-                              ? PersonCheckIcon
-                              : PersonXIcon
-                          }
-                        />
-                      </Menu.Item>
-                    )}
+                    <Menu.Item
+                      testID="profileHeaderDropdownBlockBtn"
+                      label={
+                        isDirectBlock ? l`Unblock account` : l`Block account`
+                      }
+                      onPress={() => blockPromptControl.open()}>
+                      <Menu.ItemText>
+                        {isDirectBlock ? (
+                          <Trans>Unblock account</Trans>
+                        ) : (
+                          <Trans>Block account</Trans>
+                        )}
+                      </Menu.ItemText>
+                      <Menu.ItemIcon
+                        icon={isDirectBlock ? PersonCheckIcon : PersonXIcon}
+                      />
+                    </Menu.Item>
                     <Menu.Item
                       testID="profileHeaderDropdownReportBtn"
                       label={l`Report account`}

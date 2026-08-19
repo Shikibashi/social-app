@@ -1,4 +1,4 @@
-import {useEffect, useRef, useState} from 'react'
+import {useEffect, useMemo, useRef, useState} from 'react'
 import {AppState, type AppStateStatus} from 'react-native'
 import {createAsyncStoragePersister} from '@tanstack/query-async-storage-persister'
 import {
@@ -12,8 +12,15 @@ import {
   PersistQueryClientProvider,
 } from '@tanstack/react-query-persist-client'
 
-import {createPersistedQueryStorage} from '#/lib/persisted-query-storage'
-import {listenNetworkConfirmed, listenNetworkLost} from '#/state/events'
+import {
+  clearPersistedQueryStorage,
+  createPersistedQueryStorage,
+} from '#/lib/persisted-query-storage'
+import {
+  listenAppViewProviderChanged,
+  listenNetworkConfirmed,
+  listenNetworkLost,
+} from '#/state/events'
 import {isQueryPersisted} from '#/state/queries/util'
 import * as env from '#/env'
 import {IS_NATIVE, IS_WEB} from '#/env'
@@ -30,7 +37,7 @@ async function checkIsOnline(): Promise<boolean> {
     setTimeout(() => {
       controller.abort()
     }, 15e3)
-    const res = await fetch('https://public.api.bsky.app/xrpc/_health', {
+    const res = await fetch(`${env.PUBLIC_APPVIEW_URL}/xrpc/_health`, {
       cache: 'no-store',
       signal: controller.signal,
     })
@@ -176,8 +183,9 @@ function QueryProviderInner({
   }
   // We create the query client here so that it's scoped to a specific DID.
   // Do not move the query client creation outside of this component.
-  const [queryClient, _setQueryClient] = useState(() => createQueryClient())
-  const [persistOptions, _setPersistOptions] = useState(() => {
+  const [providerEpoch, setProviderEpoch] = useState(0)
+  const queryClient = useMemo(() => createQueryClient(), [providerEpoch])
+  const persistOptions = useMemo(() => {
     const storage = createPersistedQueryStorage(currentDid ?? 'logged-out')
     const asyncPersister = createAsyncStoragePersister({
       storage,
@@ -188,7 +196,19 @@ function QueryProviderInner({
       dehydrateOptions,
       buster: env.APP_VERSION,
     } satisfies Omit<PersistQueryClientOptions, 'queryClient'>
-  })
+  }, [currentDid, providerEpoch])
+  useEffect(() => {
+    return listenAppViewProviderChanged(changedDid => {
+      if (changedDid === currentDid) {
+        // A provider switch is a service boundary. Remove in-memory data as
+        // well as the persisted cache so the previous provider cannot appear
+        // to be the current provider after the switch.
+        queryClient.clear()
+        void clearPersistedQueryStorage(currentDid ?? 'logged-out')
+        setProviderEpoch(epoch => epoch + 1)
+      }
+    })
+  }, [currentDid, queryClient])
   useEffect(() => {
     if (IS_WEB) {
       // WARNING, BROKEN
@@ -199,6 +219,7 @@ function QueryProviderInner({
   }, [queryClient])
   return (
     <PersistQueryClientProvider
+      key={providerEpoch}
       client={queryClient}
       persistOptions={persistOptions}>
       {children}

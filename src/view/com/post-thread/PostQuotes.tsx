@@ -1,5 +1,5 @@
 import {useCallback, useState} from 'react'
-import {moderatePost, type ModerationDecision} from '@bsky/sdk/moderation'
+import {moderatePost, type ModerationDecision} from '#/lib/moderation'
 import {msg} from '@lingui/core/macro'
 import {useLingui} from '@lingui/react'
 
@@ -9,6 +9,7 @@ import {cleanError} from '#/lib/strings/errors'
 import {logger} from '#/logger'
 import {useModerationOpts} from '#/state/preferences/moderation-opts'
 import {usePostQuotesQuery} from '#/state/queries/post-quotes'
+import {stripNonLocalBlockVisibility} from '#/state/queries/public-visibility'
 import {useResolveUriQuery} from '#/state/queries/resolve-uri'
 import {Post} from '#/view/com/post/Post'
 import {ListFooter, ListMaybePlaceholder} from '#/components/Lists'
@@ -38,7 +39,13 @@ function keyExtractor(item: {
   return item.post.uri
 }
 
-export function PostQuotes({uri}: {uri: string}) {
+export function PostQuotes({
+  uri,
+  quoteCount = 0,
+}: {
+  uri: string
+  quoteCount?: number
+}) {
   const {_} = useLingui()
   const initialNumToRender = useInitialNumToRender()
   const [isPTRing, setIsPTRing] = useState(false)
@@ -57,7 +64,7 @@ export function PostQuotes({uri}: {uri: string}) {
     fetchNextPage,
     error,
     refetch,
-  } = usePostQuotesQuery(resolvedUri?.uri)
+  } = usePostQuotesQuery(resolvedUri?.uri, quoteCount)
 
   const moderationOpts = useModerationOpts()
 
@@ -67,14 +74,15 @@ export function PostQuotes({uri}: {uri: string}) {
     data?.pages
       .flatMap(page =>
         page.posts.map(post => {
+          const visiblePost = stripNonLocalBlockVisibility(post)
           if (
-            !bsky.isType(app.bsky.feed.post, post.record) ||
+            !bsky.isType(app.bsky.feed.post, visiblePost.record) ||
             !moderationOpts
           ) {
             return null
           }
-          const moderation = moderatePost(post, moderationOpts)
-          return {post, record: post.record, moderation}
+          const moderation = moderatePost(visiblePost, moderationOpts)
+          return {post: visiblePost, record: visiblePost.record, moderation}
         }),
       )
       .filter(item => item !== null) ?? []
@@ -98,16 +106,25 @@ export function PostQuotes({uri}: {uri: string}) {
     }
   }, [isFetchingNextPage, hasNextPage, isError, fetchNextPage])
 
+  const providerReportedMissingQuotes =
+    quoteCount > 0 && !isLoadingUri && !isLoadingQuotes && !isError
+  const emptyTitle = providerReportedMissingQuotes
+    ? _(msg`Quotes unavailable from this provider`)
+    : _(msg`No quotes yet`)
+  const emptyMessage = providerReportedMissingQuotes
+    ? _(
+        msg`This service reports quotes for this post, but did not return their public records. Refresh or try another provider.`,
+      )
+    : _(msg`Nobody has quoted this yet. Maybe you should be the first!`)
+
   if (quotes.length < 1) {
     return (
       <ListMaybePlaceholder
         isLoading={isLoadingUri || isLoadingQuotes}
         isError={isError}
         emptyType="results"
-        emptyTitle={_(msg`No quotes yet`)}
-        emptyMessage={_(
-          msg`Nobody has quoted this yet. Maybe you should be the first!`,
-        )}
+        emptyTitle={emptyTitle}
+        emptyMessage={emptyMessage}
         errorMessage={cleanError(resolveError || error)}
         sideBorders={false}
       />

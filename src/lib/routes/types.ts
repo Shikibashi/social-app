@@ -65,6 +65,12 @@ export type CommonNavigatorParams = {
   AppearanceSettings: undefined
   BetaFeaturesSettings: undefined
   AccountSettings: undefined
+  ServicesSettings: undefined
+  PersonalizationSettings: undefined
+  IdentitySovereigntySettings: undefined
+  ProtectedAccessSettings: undefined
+  PermissionedSpacesSettings: undefined
+  PrivateFeed: undefined
   AutomationLabelSettings: undefined
   PrivacyAndSecuritySettings: undefined
   ActivityPrivacySettings: undefined

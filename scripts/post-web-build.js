@@ -13,6 +13,21 @@ const {entrypoints} = require(
   path.join(projectRoot, 'web-build/asset-manifest.json'),
 )
 
+// Expo emits entrypoint URLs without a leading slash. That works after
+// client-side navigation, but a direct request to a nested route such as
+// /settings/personalization resolves `static/js/...` relative to that route
+// and receives the SPA shell instead of JavaScript from a static host.
+const indexFile = path.join(projectRoot, 'web-build', 'index.html')
+const indexHtml = fs.readFileSync(indexFile, 'utf8')
+const rootRelativeIndexHtml = indexHtml.replace(
+  /((?:src|href)=")(?!(?:\/|[a-z][a-z0-9+.-]*:|#))([^"]+)(")/gi,
+  (_, prefix, value, suffix) => `${prefix}/${value}${suffix}`,
+)
+if (rootRelativeIndexHtml !== indexHtml) {
+  fs.writeFileSync(indexFile, rootRelativeIndexHtml)
+  console.log(`Normalized static asset URLs in ${indexFile}`)
+}
+
 console.log(`Found ${entrypoints.length} entrypoints`)
 console.log(`Writing ${templateFile}`)
 

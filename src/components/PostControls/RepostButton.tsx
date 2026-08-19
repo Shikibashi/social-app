@@ -26,6 +26,7 @@ interface Props {
   onQuote: () => void
   big?: boolean
   embeddingDisabled: boolean
+  hideCount?: boolean
 }
 
 let RepostButton = ({
@@ -35,6 +36,7 @@ let RepostButton = ({
   onQuote,
   big,
   embeddingDisabled,
+  hideCount = false,
 }: Props): React.ReactNode => {
   const t = useTheme()
   const {_} = useLingui()
@@ -63,34 +65,40 @@ let RepostButton = ({
         onPress={onPress}
         onLongPress={onLongPress}
         label={
-          isReposted
-            ? _(
-                msg({
-                  message: `Undo repost (${plural(repostCount || 0, {
-                    one: '# repost',
-                    other: '# reposts',
-                  })})`,
-                  comment:
-                    'Accessibility label for the repost button when the post has been reposted, verb followed by number of reposts and noun',
-                }),
-              )
-            : _(
-                msg({
-                  message: `Repost (${plural(repostCount || 0, {
-                    one: '# repost',
-                    other: '# reposts',
-                  })})`,
-                  comment:
-                    'Accessibility label for the repost button when the post has not been reposted, verb form followed by number of reposts and noun form',
-                }),
-              )
+          hideCount
+            ? isReposted
+              ? _(msg`Undo repost`)
+              : _(msg({message: `Repost`, context: 'action'}))
+            : isReposted
+              ? _(
+                  msg({
+                    message: `Undo repost (${plural(repostCount || 0, {
+                      one: '# repost',
+                      other: '# reposts',
+                    })})`,
+                    comment:
+                      'Accessibility label for the repost button when the post has been reposted, verb followed by number of reposts and noun',
+                  }),
+                )
+              : _(
+                  msg({
+                    message: `Repost (${plural(repostCount || 0, {
+                      one: '# repost',
+                      other: '# reposts',
+                    })})`,
+                    comment:
+                      'Accessibility label for the repost button when the post has not been reposted, verb form followed by number of reposts and noun form',
+                  }),
+                )
         }>
         <PostControlButtonIcon icon={RepostIcon} />
-        {typeof repostCount !== 'undefined' && repostCount > 0 && (
-          <PostControlButtonText testID="repostCount">
-            {formatPostStatCount(repostCount)}
-          </PostControlButtonText>
-        )}
+        {!hideCount &&
+          typeof repostCount !== 'undefined' &&
+          repostCount > 0 && (
+            <PostControlButtonText testID="repostCount">
+              {formatPostStatCount(repostCount)}
+            </PostControlButtonText>
+          )}
       </PostControlButton>
       <Dialog.Outer
         control={dialogControl}
