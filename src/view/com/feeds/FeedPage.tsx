@@ -166,7 +166,7 @@ export function FeedPage({
           algorithmName={
             feed === 'following'
               ? balancedEnabled
-                ? 'Balanced local algorithm'
+                ? 'Balanced local algorithm (Following only)'
                 : radlibCurationEnabled && contentFilterEnabled
                   ? 'Filtered Following + local curation'
                   : radlibCurationEnabled || contentFilterEnabled
@@ -228,6 +228,14 @@ export function FeedPage({
                         ? 'Selected interests may be sent to this AppView'
                         : 'Local ranking preferences stay on this device'
           }
+          onChangeRanking={() =>
+            navigation.navigate(
+              feed === 'following'
+                ? 'PreferencesFollowingFeed'
+                : 'PersonalizationSettings',
+            )
+          }
+          onChangeProvider={() => navigation.navigate('ServicesSettings')}
         />
         <FeedFeedbackProvider value={feedFeedback}>
           <PostFeed

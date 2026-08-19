@@ -18,6 +18,8 @@ export type FeedProviderContext = {
   algorithm?: string
   version?: string
   policyVersion?: string
+  /** A provider may supply a bounded public explanation for its ranking. */
+  reason?: string
 }
 
 /**
@@ -36,7 +38,13 @@ export function parseFeedProviderContext(
 
     const context = parsed as Record<string, unknown>
     const result: FeedProviderContext = {}
-    for (const key of ['provider', 'algorithm', 'version', 'policyVersion']) {
+    for (const key of [
+      'provider',
+      'algorithm',
+      'version',
+      'policyVersion',
+      'reason',
+    ]) {
       const field = context[key]
       if (typeof field === 'string' && field.length > 0) {
         result[key as keyof FeedProviderContext] = field.slice(0, 200)
@@ -47,6 +55,21 @@ export function parseFeedProviderContext(
   } catch {
     return
   }
+}
+
+/**
+ * Return only a provider-declared public reason. A missing reason is itself
+ * meaningful: the client must say that the provider did not explain the
+ * ranking instead of substituting local signals or confidential heuristics.
+ */
+export function providerRankingExplanation(
+  feedContext?: string,
+): string | undefined {
+  const context = parseFeedProviderContext(feedContext)
+  if (context?.reason) return `provider supplied: ${context.reason}`
+  return feedContext
+    ? 'provider did not supply a ranking explanation'
+    : undefined
 }
 
 export type WhyPostCategory =

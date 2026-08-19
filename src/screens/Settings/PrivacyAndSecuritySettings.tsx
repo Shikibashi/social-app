@@ -18,8 +18,8 @@ import * as Layout from '#/components/Layout'
 import {InlineLinkText} from '#/components/Link'
 import {type app} from '#/lexicons'
 import {Email2FAToggle} from './components/Email2FAToggle'
-import {PwiOptOut} from './components/PwiOptOut'
 import {ProtectedAccountToggle} from './components/ProtectedAccountToggle'
+import {PwiOptOut} from './components/PwiOptOut'
 import {ItemTextWithSubtitle} from './NotificationSettings/components/ItemTextWithSubtitle'
 
 type Props = NativeStackScreenProps<
@@ -109,6 +109,20 @@ export function PrivacyAndSecuritySettingsScreen({}: Props) {
             </SettingsList.ItemText>
             <ProtectedAccountToggle />
           </SettingsList.Group>
+          <SettingsList.LinkItem
+            to="/settings/protected-access"
+            label="Protected access">
+            <SettingsList.ItemIcon icon={ShieldIcon} />
+            <SettingsList.ItemText>Protected access</SettingsList.ItemText>
+          </SettingsList.LinkItem>
+          <SettingsList.LinkItem
+            to="/settings/private-spaces"
+            label="Private spaces and communities">
+            <SettingsList.ItemIcon icon={ShieldIcon} />
+            <SettingsList.ItemText>
+              Private spaces and communities
+            </SettingsList.ItemText>
+          </SettingsList.LinkItem>
           <SettingsList.Divider />
           <SettingsList.Group>
             <SettingsList.ItemIcon icon={EyeSlashIcon} />

@@ -15,7 +15,15 @@ import {
 import * as Layout from '#/components/Layout'
 import {Text} from '#/components/Typography'
 
-export function FeedProvenanceCard({provenance}: {provenance: FeedProvenance}) {
+export function FeedProvenanceCard({
+  provenance,
+  onChangeRanking,
+  onChangeProvider,
+}: {
+  provenance: FeedProvenance
+  onChangeRanking?: () => void
+  onChangeProvider?: () => void
+}) {
   const [showDetails, setShowDetails] = useState(false)
   const algorithmVersionLabel =
     provenance.algorithmVersion === 'not declared'
@@ -73,6 +81,30 @@ export function FeedProvenanceCard({provenance}: {provenance: FeedProvenance}) {
           <Text accessibilityLiveRegion="polite">
             Health: {healthLabel(provenance.health)}
           </Text>
+          {(onChangeRanking || onChangeProvider) && (
+            <View style={{flexDirection: 'row', gap: 12, paddingTop: 6}}>
+              {onChangeRanking ? (
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Change local ranking"
+                  accessibilityHint="Open settings for local ranking choices"
+                  onPress={onChangeRanking}
+                  style={({pressed}) => pressed && {opacity: 0.65}}>
+                  <Text style={{fontWeight: '600'}}>Change ranking</Text>
+                </Pressable>
+              ) : null}
+              {onChangeProvider ? (
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Change read provider"
+                  accessibilityHint="Open settings for explicit read provider choices"
+                  onPress={onChangeProvider}
+                  style={({pressed}) => pressed && {opacity: 0.65}}>
+                  <Text style={{fontWeight: '600'}}>Change provider</Text>
+                </Pressable>
+              ) : null}
+            </View>
+          )}
         </View>
       ) : null}
     </Layout.Content>
@@ -88,6 +120,8 @@ export function ActiveFeedProvenance({
   feedUri,
   privacy,
   feedContext,
+  onChangeRanking,
+  onChangeProvider,
 }: {
   feedName: string
   algorithmName: string
@@ -97,6 +131,8 @@ export function ActiveFeedProvenance({
   feedUri: string
   privacy: string
   feedContext?: string
+  onChangeRanking?: () => void
+  onChangeProvider?: () => void
 }) {
   const {currentAccount} = useSession()
   const providerContext = parseFeedProviderContext(feedContext)
@@ -131,6 +167,8 @@ export function ActiveFeedProvenance({
         objective,
         privacy,
       }}
+      onChangeRanking={onChangeRanking}
+      onChangeProvider={onChangeProvider}
     />
   )
 }

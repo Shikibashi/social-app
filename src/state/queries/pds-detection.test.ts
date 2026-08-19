@@ -1,7 +1,6 @@
 import {afterEach, describe, expect, it, jest} from '@jest/globals'
 
 import {createServiceClient} from '#/lib/lexClient'
-
 import {resolvePdsForIdentifier} from './pds-detection'
 
 jest.mock('#/lib/constants', () => ({
@@ -23,23 +22,26 @@ describe('resolvePdsForIdentifier', () => {
   })
 
   it('resolves handles through the account entryway, then follows the DID PDS', async () => {
-    const resolveHandle = jest.fn().mockResolvedValue({did})
+    const resolveHandle = jest
+      .fn<() => Promise<{did: string}>>()
+      .mockResolvedValue({did})
     jest.mocked(createServiceClient).mockReturnValue({
       call: resolveHandle,
     } as never)
     jest.spyOn(global, 'fetch').mockResolvedValue({
       ok: true,
       status: 200,
-      json: async () => ({
-        id: did,
-        service: [
-          {
-            id: '#atproto_pds',
-            type: 'AtprotoPersonalDataServer',
-            serviceEndpoint: pds,
-          },
-        ],
-      }),
+      json: () =>
+        Promise.resolve({
+          id: did,
+          service: [
+            {
+              id: '#atproto_pds',
+              type: 'AtprotoPersonalDataServer',
+              serviceEndpoint: pds,
+            },
+          ],
+        }),
     } as Response)
 
     await expect(resolvePdsForIdentifier('EDRIFFLES.US')).resolves.toEqual({

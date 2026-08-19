@@ -1,7 +1,11 @@
 import {useCallback, useEffect, useMemo, useState} from 'react'
 import {useAnimatedRef} from 'react-native-reanimated'
 import {useLingui} from '@lingui/react/macro'
-import {useIsFocused} from '@react-navigation/native'
+import {
+  type NavigationProp,
+  useIsFocused,
+  useNavigation,
+} from '@react-navigation/native'
 import {type NativeStackScreenProps} from '@react-navigation/native-stack'
 import {useQueryClient} from '@tanstack/react-query'
 
@@ -9,7 +13,10 @@ import {isBlueskyOwnedFeed} from '#/lib/api/feed/utils'
 import {TRENDING_DID, TRENDING_HANDLE, VIDEO_FEED_URIS} from '#/lib/constants'
 import {useOpenComposer} from '#/lib/hooks/useOpenComposer'
 import {useSetTitle} from '#/lib/hooks/useSetTitle'
-import {type CommonNavigatorParams} from '#/lib/routes/types'
+import {
+  type AllNavigatorParams,
+  type CommonNavigatorParams,
+} from '#/lib/routes/types'
 import {cleanError} from '#/lib/strings/errors'
 import {makeRecordUri} from '#/lib/strings/url-helpers'
 import {listenSoftReset} from '#/state/events'
@@ -134,6 +141,7 @@ export function CustomFeedScreenInner({
   feedParams: FeedParams | undefined
 }) {
   const {t: l} = useLingui()
+  const navigation = useNavigation<NavigationProp<AllNavigatorParams>>()
   const {hasSession} = useSession()
   const {preferences: localFeedPreferences} = useLocalFeedPreferences()
   const {openComposer} = useOpenComposer()
@@ -239,6 +247,8 @@ export function CustomFeedScreenInner({
                   ? 'Selected interests may be sent to this AppView'
                   : 'Local ranking preferences stay on this device'
         }
+        onChangeRanking={() => navigation.navigate('PersonalizationSettings')}
+        onChangeProvider={() => navigation.navigate('ServicesSettings')}
       />
       <FeedFeedbackProvider value={feedFeedback}>
         <PostFeed

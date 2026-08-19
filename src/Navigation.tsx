@@ -119,8 +119,10 @@ import {LanguageSettingsScreen} from '#/screens/Settings/LanguageSettings'
 import {LegacyNotificationSettingsScreen} from '#/screens/Settings/LegacyNotificationSettings'
 import {NotificationSettingsScreen} from '#/screens/Settings/NotificationSettings'
 import {ActivityNotificationSettingsScreen} from '#/screens/Settings/NotificationSettings/ActivityNotificationSettings'
+import {PermissionedSpacesSettingsScreen} from '#/screens/Settings/PermissionedSpacesSettings'
 import {PersonalizationSettingsScreen} from '#/screens/Settings/PersonalizationSettings'
 import {PrivacyAndSecuritySettingsScreen} from '#/screens/Settings/PrivacyAndSecuritySettings'
+import {ProtectedAccessSettingsScreen} from '#/screens/Settings/ProtectedAccessSettings'
 import {ServicesSettingsScreen} from '#/screens/Settings/ServicesSettings'
 import {SettingsScreen} from '#/screens/Settings/Settings'
 import {ThreadPreferencesScreen} from '#/screens/Settings/ThreadPreferences'
@@ -431,6 +433,22 @@ function commonScreens(Stack: typeof Flat, unreadCountLabel?: string) {
         getComponent={() => IdentitySovereigntySettingsScreen}
         options={{
           title: title(msg`Identity sovereignty`),
+          requireAuth: true,
+        }}
+      />
+      <Stack.Screen
+        name="ProtectedAccessSettings"
+        getComponent={() => ProtectedAccessSettingsScreen}
+        options={{
+          title: 'Protected access',
+          requireAuth: true,
+        }}
+      />
+      <Stack.Screen
+        name="PermissionedSpacesSettings"
+        getComponent={() => PermissionedSpacesSettingsScreen}
+        options={{
+          title: 'Private spaces and communities',
           requireAuth: true,
         }}
       />

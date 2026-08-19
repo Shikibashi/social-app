@@ -1,7 +1,6 @@
 import {memo, useCallback, useMemo, useState} from 'react'
 import {StyleSheet, Text, View} from 'react-native'
 import {AtUri} from '@atproto/syntax'
-import {type ModerationDecision} from '#/lib/moderation'
 import {RichText as RichTextAPI} from '@bsky/sdk/richtext'
 import {useQueryClient} from '@tanstack/react-query'
 
@@ -9,6 +8,7 @@ import {type ReasonFeedSource} from '#/lib/api/feed/types'
 import {MAX_POST_LINES} from '#/lib/constants'
 import {useOpenComposer} from '#/lib/hooks/useOpenComposer'
 import {usePalette} from '#/lib/hooks/usePalette'
+import {type ModerationDecision} from '#/lib/moderation'
 import {makeProfileLink} from '#/lib/routes/links'
 import {countLines} from '#/lib/strings/helpers'
 import {
@@ -177,7 +177,6 @@ let FeedItemInner = ({
   }, [post.uri, post.author])
   const {sendInteraction, feedSourceInfo, feedDescriptor} =
     useFeedFeedbackContext()
-
   const onPressReply = () => {
     sendInteraction({
       item: post.uri,

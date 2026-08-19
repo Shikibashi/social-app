@@ -1,10 +1,11 @@
 import {StyleSheet, View} from 'react-native'
-import {type ModerationDecision} from '#/lib/moderation'
 import {msg} from '@lingui/core/macro'
 import {useLingui} from '@lingui/react'
 import {Trans} from '@lingui/react/macro'
 
 import {isReasonFeedSource, type ReasonFeedSource} from '#/lib/api/feed/types'
+import {publicProviderReason} from '#/lib/feed-provider-security'
+import {type ModerationDecision} from '#/lib/moderation'
 import {createSanitizedDisplayName} from '#/lib/moderation/create-sanitized-display-name'
 import {makeProfileLink} from '#/lib/routes/links'
 import {useSession} from '#/state/session'
@@ -35,6 +36,19 @@ export function PostFeedReason({
   const {_} = useLingui()
 
   const {currentAccount} = useSession()
+
+  const providerReason = publicProviderReason(reason)
+  if (providerReason) {
+    return (
+      <View style={styles.includeReason}>
+        <Text
+          style={[t.atoms.text_contrast_medium, a.font_medium, a.leading_snug]}
+          numberOfLines={2}>
+          From feed provider · {providerReason}
+        </Text>
+      </View>
+    )
+  }
 
   if (isReasonFeedSource(reason)) {
     return (

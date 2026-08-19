@@ -15,9 +15,11 @@ import {type app} from '#/lexicons'
 export function ProfileHeaderHandle({
   profile,
   disableTaps,
+  showProtectedBadge = false,
 }: {
   profile: Shadow<app.bsky.actor.defs.ProfileViewDetailed>
   disableTaps?: boolean
+  showProtectedBadge?: boolean
 }) {
   const t = useTheme()
   const {_} = useLingui()
@@ -32,6 +34,13 @@ export function ProfileHeaderHandle({
         <View style={[t.atoms.bg_contrast_50, a.rounded_xs, a.px_sm, a.py_xs]}>
           <Text style={[t.atoms.text, a.text_sm]}>
             <Trans>Follows you</Trans>
+          </Text>
+        </View>
+      ) : undefined}
+      {showProtectedBadge ? (
+        <View style={[t.atoms.bg_contrast_50, a.rounded_xs, a.px_sm, a.py_xs]}>
+          <Text style={[t.atoms.text, a.text_sm]}>
+            <Trans>Protected account</Trans>
           </Text>
         </View>
       ) : undefined}

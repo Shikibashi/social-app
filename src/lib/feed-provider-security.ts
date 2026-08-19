@@ -167,6 +167,14 @@ export function validateFeedBatch<
       throw new Error(`Provider candidate ${index} is malformed`)
     const uri = validateAtUri(post.uri)
     validateCid(post.cid)
+    const candidate = item
+    const reason = candidate.reason
+    if (isPlainObject(reason) && reason.reasonMetadata !== undefined) {
+      validateReasonMetadata(reason.reasonMetadata)
+    }
+    if (candidate.reasonMetadata !== undefined) {
+      validateReasonMetadata(candidate.reasonMetadata)
+    }
     if (seen.has(uri)) throw new Error('Provider returned duplicate candidates')
     seen.add(uri)
     return item as T
@@ -207,6 +215,44 @@ export function validateReasonMetadata(
     output[key] = value
   }
   return output
+}
+
+/**
+ * Return only a bounded, provider-declared explanation that is safe to show
+ * next to a post. Scores, weights, model names, and other opaque fields are
+ * deliberately ignored. An unknown typed reason still gets an honest
+ * attribution when the provider did not publish a readable explanation.
+ */
+export function publicProviderReason(reason: unknown): string | undefined {
+  if (!isPlainObject(reason) || typeof reason.$type !== 'string') return
+  if (
+    reason.$type === 'reasonFeedSource' ||
+    reason.$type === 'app.bsky.feed.defs#reasonRepost' ||
+    reason.$type === 'app.bsky.feed.defs#reasonPin'
+  )
+    return
+
+  const metadata = reason.reasonMetadata
+  if (metadata !== undefined) {
+    let validated: Record<string, string> | undefined
+    try {
+      validated = validateReasonMetadata(metadata)
+    } catch {
+      return 'provider supplied no public ranking explanation'
+    }
+    for (const key of ['label', 'reason', 'explanation']) {
+      const value = validated?.[key]
+      if (value) return `provider supplied: ${value.slice(0, 200)}`
+    }
+  }
+
+  for (const key of ['label', 'reason', 'explanation']) {
+    const value = reason[key]
+    if (typeof value === 'string' && value.length > 0)
+      return `provider supplied: ${value.slice(0, 200)}`
+  }
+
+  return 'provider supplied no public ranking explanation'
 }
 
 export function classifyProviderFailure(error: unknown): ProviderFailure {

@@ -17,8 +17,12 @@ jest.mock('#/state/persisted', () => ({
 
 import {
   DEFAULT_APPVIEW_PROVIDER,
+  getAppViewProviders,
   getDefaultAppViewDisplayName,
+  getSelectedAppViewProvider,
   probeAppViewProvider,
+  registerAppViewProvider,
+  selectAppViewProvider,
   validateAppViewProvider,
 } from '../providers'
 
@@ -132,12 +136,8 @@ describe('AppView provider validation and health probing', () => {
       builtin: false,
     }
     mockPersistedState.appviewProviders = [DEFAULT_APPVIEW_PROVIDER, alternate]
-    const {
-      getAppViewFallback,
-      getSelectedAppViewProvider,
-      selectAppViewProvider,
-      setAppViewFallback,
-    } = await import('../providers')
+    const {getAppViewFallback, getSelectedAppViewProvider, setAppViewFallback} =
+      await import('../providers')
 
     await setAppViewFallback(
       DID,
@@ -152,5 +152,29 @@ describe('AppView provider validation and health probing', () => {
     await selectAppViewProvider(DID, alternate.id)
     expect(getSelectedAppViewProvider(DID).id).toBe(alternate.id)
     expect(getAppViewFallback(DID, 'appview-selection')).toBeUndefined()
+  })
+
+  it('registers an explicitly checked alternate and persists the selection', async () => {
+    const alternate = {
+      ...DEFAULT_APPVIEW_PROVIDER,
+      id: 'alternate-appview',
+      displayName: 'Alternate AppView',
+      serviceDid:
+        'did:web:alternate.example' as typeof DEFAULT_APPVIEW_PROVIDER.serviceDid,
+      endpoint: 'https://alternate.example',
+      builtin: false,
+    }
+    jest
+      .spyOn(globalThis, 'fetch')
+      .mockResolvedValue(new Response('{}', {status: 200}))
+
+    await probeAppViewProvider(alternate)
+    await registerAppViewProvider(alternate)
+    expect(getAppViewProviders().map(provider => provider.id)).toEqual([
+      DEFAULT_APPVIEW_PROVIDER.id,
+      alternate.id,
+    ])
+    await selectAppViewProvider(DID, alternate.id)
+    expect(getSelectedAppViewProvider(DID).id).toBe(alternate.id)
   })
 })

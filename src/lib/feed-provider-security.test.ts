@@ -2,6 +2,7 @@ import {
   classifyProviderFailure,
   FEED_PROVIDER_LIMITS,
   ProviderCircuitBreaker,
+  publicProviderReason,
   validateAtUri,
   validateCid,
   validateCursor,
@@ -68,10 +69,12 @@ describe('untrusted feed provider security', () => {
         },
         1,
       ),
-    ).toMatchObject({feedContext: JSON.stringify({provider: 'did:plc:provider'})})
-    expect(() => validateFeedBatch({feed: [post], feedContext: 'x'.repeat(4097)}, 1)).toThrow(
-      'feed context',
-    )
+    ).toMatchObject({
+      feedContext: JSON.stringify({provider: 'did:plc:provider'}),
+    })
+    expect(() =>
+      validateFeedBatch({feed: [post], feedContext: 'x'.repeat(4097)}, 1),
+    ).toThrow('feed context')
     expect(() => validateFeedBatch({feed: [post, post]}, 2)).toThrow(
       'duplicate',
     )
@@ -79,6 +82,52 @@ describe('untrusted feed provider security', () => {
       validateReasonMetadata({source: 'feed', score: '0.5'}),
     ).not.toThrow()
     expect(() => validateReasonMetadata({script: () => 1})).toThrow()
+    expect(
+      validateFeedBatch(
+        {
+          feed: [
+            {
+              ...post,
+              reason: {
+                $type: 'org.radlib.feed#reason',
+                reasonMetadata: {label: 'freshness branch', score: '0.9'},
+              },
+            },
+          ],
+        },
+        1,
+      ).feed,
+    ).toHaveLength(1)
+    expect(() =>
+      validateFeedBatch(
+        {
+          feed: [
+            {
+              ...post,
+              reason: {
+                $type: 'org.radlib.feed#reason',
+                reasonMetadata: {label: 42},
+              },
+            },
+          ],
+        },
+        1,
+      ),
+    ).toThrow('reason')
+    expect(
+      publicProviderReason({
+        $type: 'org.radlib.feed#reason',
+        reasonMetadata: {label: 'freshness branch', score: '0.9'},
+      }),
+    ).toBe('provider supplied: freshness branch')
+    expect(
+      publicProviderReason({$type: 'org.radlib.feed#reason', score: '0.9'}),
+    ).toBe('provider supplied no public ranking explanation')
+    expect(
+      publicProviderReason({
+        $type: 'app.bsky.feed.defs#reasonRepost',
+      }),
+    ).toBeUndefined()
   })
 
   it('classifies failures and opens a bounded circuit', () => {

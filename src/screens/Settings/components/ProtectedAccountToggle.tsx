@@ -2,7 +2,10 @@ import {useCallback} from 'react'
 import {View} from 'react-native'
 import {Trans} from '@lingui/react/macro'
 
-import {useProtectedAccountMutation, useProtectedAccountQuery} from '#/state/queries/protected-account'
+import {
+  useProtectedAccountMutation,
+  useProtectedAccountQuery,
+} from '#/state/queries/protected-account'
 import {atoms as a, useTheme} from '#/alf'
 import * as Toggle from '#/components/forms/Toggle'
 import {Text} from '#/components/Typography'
@@ -54,6 +57,14 @@ export function ProtectedAccountToggle() {
           permissioned composer is enabled.
         </Trans>
       </Text>
+      {query.data ? (
+        <Text style={[a.leading_snug, t.atoms.text_contrast_medium]}>
+          <Trans>
+            Permissioned account space: available on this PDS. Public posts and
+            your public profile remain separate.
+          </Trans>
+        </Text>
+      ) : null}
     </View>
   )
 }

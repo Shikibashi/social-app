@@ -1,16 +1,16 @@
 import {memo, useMemo, useState} from 'react'
 import {View} from 'react-native'
-import {
-  moderateProfile,
-  type ModerationDecision,
-  type ModerationOpts,
-} from '#/lib/moderation'
 import {type RichText as RichTextAPI} from '@bsky/sdk/richtext'
 import {msg} from '@lingui/core/macro'
 import {useLingui} from '@lingui/react'
 import {Trans} from '@lingui/react/macro'
 
 import {useHaptics} from '#/lib/haptics'
+import {
+  moderateProfile,
+  type ModerationDecision,
+  type ModerationOpts,
+} from '#/lib/moderation'
 import {sanitizeDisplayName} from '#/lib/strings/display-names'
 import {logger} from '#/logger'
 import {type Shadow, useProfileShadow} from '#/state/cache/profile-shadow'
@@ -18,9 +18,8 @@ import {
   useProfileBlockMutationQueue,
   useProfileFollowMutationQueue,
 } from '#/state/queries/profile'
-import {
-  hasDirectViewerBlock,
-} from '#/state/queries/public-visibility'
+import {useProtectedAccountQuery} from '#/state/queries/protected-account'
+import {hasDirectViewerBlock} from '#/state/queries/public-visibility'
 import {useRequireAuth, useSession} from '#/state/session'
 import {ProfileMenu} from '#/view/com/profile/ProfileMenu'
 import {atoms as a, platform} from '#/alf'
@@ -82,6 +81,7 @@ let ProfileHeaderStandard = ({
   // A remote actor blocking this viewer is interaction metadata, not a
   // permission to hide the actor's public profile from the viewer.
   const isBlockedUser = hasDirectViewerBlock(profile)
+  const protectedAccountQuery = useProtectedAccountQuery()
 
   const unblockAccount = async () => {
     try {
@@ -140,7 +140,12 @@ let ProfileHeaderStandard = ({
               profile={profile}
               moderation={moderation}
             />
-            <ProfileHeaderHandle profile={profile} />
+            <ProfileHeaderHandle
+              profile={profile}
+              showProtectedBadge={
+                isMe && protectedAccountQuery.data?.visibility === 'protected'
+              }
+            />
           </View>
           {!isPlaceholderProfile && !isBlockedUser && (
             <View style={a.gap_md}>
