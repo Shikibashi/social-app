@@ -3,15 +3,17 @@ import {type Client} from '@atproto/lex'
 import {toDatetimeString} from '@atproto/syntax'
 import {type RichText} from '@bsky/sdk/richtext'
 
+import {spacesClient} from '#/lib/atproto/spaces'
+import {SPACES_ALPHA_ENABLED} from '#/env'
 import {org} from '#/lexicons'
 
 export const PRIVATE_POST_COLLECTION = 'org.radlib.private.post' as const
 
 /**
  * Build the text-only private-post value used by the fork-owned permissioned
- * API. This is intentionally not an app.bsky.feed.post record: the caller
- * must send it through org.radlib.private.putRecord so it never enters the
- * public repository/sequencer path.
+ * API. This is intentionally not an app.bsky.feed.post record. In alpha mode
+ * it is written through com.atproto.space.putRecord; legacy mode retains the
+ * old adapter for existing test/development PDS deployments.
  */
 export function buildPrivatePostValue(
   richtext: RichText,
@@ -33,10 +35,12 @@ export async function writePrivateTextPost(
   richtext: RichText,
   langs: string[],
 ) {
-  return client.call(org.radlib.private.putRecord, {
+  const input = {
     space,
     collection: PRIVATE_POST_COLLECTION,
     rkey: TID.nextStr(),
     record: buildPrivatePostValue(richtext, langs),
-  })
+  }
+  if (SPACES_ALPHA_ENABLED) return spacesClient(client).putRecord(input)
+  return client.call(org.radlib.private.putRecord, input)
 }

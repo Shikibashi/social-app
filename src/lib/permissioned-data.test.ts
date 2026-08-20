@@ -6,6 +6,8 @@ import {
   writePrivateTextPost,
 } from './permissioned-data'
 
+jest.mock('#/env', () => ({SPACES_ALPHA_ENABLED: false}))
+
 describe('permissioned data client boundary', () => {
   it('builds a private post without using the public post collection', () => {
     const value = buildPrivatePostValue(new RichText({text: 'private text'}), [

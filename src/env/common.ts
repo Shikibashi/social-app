@@ -37,6 +37,16 @@ export const IS_E2E = ENV === 'e2e'
 export const IS_INTERNAL = IS_DEV || IS_TESTFLIGHT
 
 /**
+ * Spaces is an alpha protocol and remains opt-in until the mobile crypto and
+ * multi-PDS sync paths have passed focused native validation.
+ */
+export const SPACES_ALPHA_ENABLED =
+  process.env.EXPO_PUBLIC_SPACES_ALPHA_ENABLED === '1'
+
+export const LEGACY_RADLIB_PRIVATE_ENABLED =
+  process.env.EXPO_PUBLIC_LEGACY_RADLIB_PRIVATE_ENABLED !== '0'
+
+/**
  * The commit hash that the current bundle was made from. The user can
  * see the commit hash in the app's settings along with the other version info.
  * Useful for debugging/reporting.

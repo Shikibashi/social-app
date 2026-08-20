@@ -6,6 +6,7 @@ import {useLingui} from '@lingui/react'
 import {type NativeStackScreenProps} from '@react-navigation/native-stack'
 import {useMutation, useQuery, useQueryClient} from '@tanstack/react-query'
 
+import {spacesClient} from '#/lib/atproto/spaces'
 import {type CommonNavigatorParams} from '#/lib/routes/types'
 import {useProtectedAccountQuery} from '#/state/queries/protected-account'
 import {usePdsClient} from '#/state/session'
@@ -14,6 +15,7 @@ import {atoms as a, useTheme} from '#/alf'
 import {Button, ButtonText} from '#/components/Button'
 import * as Layout from '#/components/Layout'
 import {Text} from '#/components/Typography'
+import {SPACES_ALPHA_ENABLED} from '#/env'
 import {org} from '#/lexicons'
 
 type Props = NativeStackScreenProps<
@@ -62,13 +64,19 @@ export function PermissionedSpacesSettingsScreen({}: Props) {
     queryKey: ['radlib-private-records', client.did, space, collection],
     enabled: !!client.did && !!space,
     queryFn: () =>
-      client.call(org.radlib.private.listRecords, {
-        space,
-        collection: collection.trim()
-          ? (collection.trim() as NsidString)
-          : undefined,
-        limit: 50,
-      }),
+      SPACES_ALPHA_ENABLED
+        ? spacesClient(client).listRecords({
+            space,
+            collection: collection.trim() || undefined,
+            limit: 50,
+          })
+        : client.call(org.radlib.private.listRecords, {
+            space,
+            collection: collection.trim()
+              ? (collection.trim() as NsidString)
+              : undefined,
+            limit: 50,
+          }),
   })
 
   const communityMutation = useMutation({
@@ -104,13 +112,22 @@ export function PermissionedSpacesSettingsScreen({}: Props) {
 
   async function getRecord() {
     try {
-      const result = await client.call(org.radlib.private.getRecord, {
-        space: space.trim(),
-        repo: lookupRepo.trim() as DidString,
-        collection: lookupCollection.trim() as NsidString,
-        rkey: lookupRkey.trim(),
-      })
-      setLookupResult(JSON.stringify(result.record))
+      const result = SPACES_ALPHA_ENABLED
+        ? await spacesClient(client).getRecord({
+            space: space.trim(),
+            repo: lookupRepo.trim(),
+            collection: lookupCollection.trim(),
+            rkey: lookupRkey.trim(),
+          })
+        : await client.call(org.radlib.private.getRecord, {
+            space: space.trim(),
+            repo: lookupRepo.trim() as DidString,
+            collection: lookupCollection.trim() as NsidString,
+            rkey: lookupRkey.trim(),
+          })
+      setLookupResult(
+        JSON.stringify('record' in result ? result.record : result.value),
+      )
     } catch (error) {
       setLookupResult('Record unavailable or not authorized')
       Alert.alert(
@@ -122,10 +139,15 @@ export function PermissionedSpacesSettingsScreen({}: Props) {
 
   async function getBlob() {
     try {
-      const result = await client.call(org.radlib.private.getBlob, {
-        space: space.trim(),
-        id: blobId.trim(),
-      })
+      const result = SPACES_ALPHA_ENABLED
+        ? await spacesClient(client).getBlob({
+            space: space.trim(),
+            cid: blobId.trim(),
+          })
+        : await client.call(org.radlib.private.getBlob, {
+            space: space.trim(),
+            id: blobId.trim(),
+          })
       setBlobResult(
         `Authorized private media response received (${result.byteLength} bytes)`,
       )
