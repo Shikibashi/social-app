@@ -6,7 +6,10 @@ import {
   writePrivateTextPost,
 } from './permissioned-data'
 
-jest.mock('#/env', () => ({SPACES_ALPHA_ENABLED: false}))
+jest.mock('#/env', () => ({
+  LEGACY_RADLIB_PRIVATE_ENABLED: true,
+  SPACES_ALPHA_ENABLED: false,
+}))
 
 describe('permissioned data client boundary', () => {
   it('builds a private post without using the public post collection', () => {

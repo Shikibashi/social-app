@@ -4,7 +4,7 @@ import {toDatetimeString} from '@atproto/syntax'
 import {type RichText} from '@bsky/sdk/richtext'
 
 import {spacesClient} from '#/lib/atproto/spaces'
-import {SPACES_ALPHA_ENABLED} from '#/env'
+import {LEGACY_RADLIB_PRIVATE_ENABLED, SPACES_ALPHA_ENABLED} from '#/env'
 import {org} from '#/lexicons'
 
 export const PRIVATE_POST_COLLECTION = 'org.radlib.private.post' as const
@@ -42,5 +42,10 @@ export async function writePrivateTextPost(
     record: buildPrivatePostValue(richtext, langs),
   }
   if (SPACES_ALPHA_ENABLED) return spacesClient(client).putRecord(input)
+  if (!LEGACY_RADLIB_PRIVATE_ENABLED) {
+    throw new Error(
+      'Permissioned-data transport is disabled: enable Spaces alpha or the legacy Radlib adapter',
+    )
+  }
   return client.call(org.radlib.private.putRecord, input)
 }

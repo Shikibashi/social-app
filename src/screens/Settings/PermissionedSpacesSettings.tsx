@@ -15,7 +15,7 @@ import {atoms as a, useTheme} from '#/alf'
 import {Button, ButtonText} from '#/components/Button'
 import * as Layout from '#/components/Layout'
 import {Text} from '#/components/Typography'
-import {SPACES_ALPHA_ENABLED} from '#/env'
+import {LEGACY_RADLIB_PRIVATE_ENABLED, SPACES_ALPHA_ENABLED} from '#/env'
 import {org} from '#/lexicons'
 
 type Props = NativeStackScreenProps<
@@ -56,6 +56,14 @@ export function PermissionedSpacesSettingsScreen({}: Props) {
   const [inviteToken, setInviteToken] = useState('')
   const [status, setStatus] = useState<string>()
 
+  function requirePrivateTransport() {
+    if (!SPACES_ALPHA_ENABLED && !LEGACY_RADLIB_PRIVATE_ENABLED) {
+      throw new Error(
+        'Permissioned-data transport is disabled: enable Spaces alpha or the legacy Radlib adapter',
+      )
+    }
+  }
+
   useEffect(() => {
     if (accountQuery.data?.space && !space) setSpace(accountQuery.data.space)
   }, [accountQuery.data?.space, space])
@@ -63,8 +71,9 @@ export function PermissionedSpacesSettingsScreen({}: Props) {
   const recordsQuery = useQuery({
     queryKey: ['radlib-private-records', client.did, space, collection],
     enabled: !!client.did && !!space,
-    queryFn: () =>
-      SPACES_ALPHA_ENABLED
+    queryFn: () => {
+      requirePrivateTransport()
+      return SPACES_ALPHA_ENABLED
         ? spacesClient(client).listRecords({
             space,
             collection: collection.trim() || undefined,
@@ -76,7 +85,8 @@ export function PermissionedSpacesSettingsScreen({}: Props) {
               ? (collection.trim() as NsidString)
               : undefined,
             limit: 50,
-          }),
+          })
+    },
   })
 
   const communityMutation = useMutation({
@@ -112,6 +122,7 @@ export function PermissionedSpacesSettingsScreen({}: Props) {
 
   async function getRecord() {
     try {
+      requirePrivateTransport()
       const result = SPACES_ALPHA_ENABLED
         ? await spacesClient(client).getRecord({
             space: space.trim(),
@@ -139,6 +150,7 @@ export function PermissionedSpacesSettingsScreen({}: Props) {
 
   async function getBlob() {
     try {
+      requirePrivateTransport()
       const result = SPACES_ALPHA_ENABLED
         ? await spacesClient(client).getBlob({
             space: space.trim(),
