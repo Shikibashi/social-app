@@ -69,7 +69,13 @@ function createDpopClient(
     fetchHandler: async (path, init) => {
       const url = new URL(path, endpoint)
       const headers = new Headers(init.headers)
-      headers.set('authorization', `Bearer ${authorizationToken}`)
+      // Delegation tokens are bearer credentials for the one-time exchange.
+      // Space credentials are DPoP-bound and must use the DPoP authorization
+      // scheme so the PDS routes them through spaceCredentialAuth.
+      headers.set(
+        'authorization',
+        `${dpopCredential ? 'DPoP' : 'Bearer'} ${authorizationToken}`,
+      )
       headers.set(
         'dpop',
         await createDpopProof(key, {

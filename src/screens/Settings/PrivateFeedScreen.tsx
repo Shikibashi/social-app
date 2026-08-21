@@ -47,6 +47,13 @@ export function PrivateFeedScreen({}: Props) {
               </Text>
             </View>
           </SettingsList.Item>
+          <SettingsList.LinkItem
+            to="/private-post"
+            label="Write private post"
+            accessibilityLabel="Write private post"
+            accessibilityHint="Opens the private post composer">
+            <SettingsList.ItemText>Write private post</SettingsList.ItemText>
+          </SettingsList.LinkItem>
           {feedQuery.isError ? (
             <SettingsList.Item>
               <Text style={t.atoms.text_contrast_medium}>
@@ -67,19 +74,19 @@ export function PrivateFeedScreen({}: Props) {
                 </View>
               </SettingsList.Item>
             ))
-          ) : feedQuery.isPending ? (
+          ) : feedQuery.isPending && space ? (
             <SettingsList.Item>
               <Text style={t.atoms.text_contrast_medium}>
                 Loading private feed…
               </Text>
             </SettingsList.Item>
-          ) : (
+          ) : space ? (
             <SettingsList.Item>
               <Text style={t.atoms.text_contrast_medium}>
                 No private posts yet.
               </Text>
             </SettingsList.Item>
-          )}
+          ) : null}
         </ScrollView>
       </Layout.Content>
     </Layout.Screen>

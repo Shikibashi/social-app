@@ -24,6 +24,12 @@ type Props = NativeStackScreenProps<
 >
 
 type CommunityVisibility = 'public' | 'restricted' | 'invite-only' | 'private'
+type CommunityListing = {
+  uri: string
+  name?: string
+  description?: string
+  visibility?: CommunityVisibility | 'protected'
+}
 
 const inputStyle = {
   minHeight: 44,
@@ -89,6 +95,30 @@ export function PermissionedSpacesSettingsScreen({}: Props) {
     },
   })
 
+  const communitiesQuery = useQuery({
+    queryKey: ['radlib-private-communities', client.did],
+    enabled: !!client.did && SPACES_ALPHA_ENABLED,
+    queryFn: async () => {
+      const page = await spacesClient(client).listSpaces({
+        type: 'org.radlib.community',
+        did: client.did,
+        limit: 50,
+      })
+      const spaces = await Promise.all(
+        page.spaces.map(async ({uri}) => {
+          try {
+            return (await client.call(org.radlib.private.getSpace, {
+              space: uri,
+            })) as CommunityListing
+          } catch {
+            return {uri}
+          }
+        }),
+      )
+      return {...page, spaces}
+    },
+  })
+
   const communityMutation = useMutation({
     mutationFn: () =>
       client.call(org.radlib.private.createCommunity, {
@@ -99,6 +129,9 @@ export function PermissionedSpacesSettingsScreen({}: Props) {
     onSuccess: result => {
       setCommunitySpace(result.uri)
       setStatus(`Community created: ${result.uri}`)
+      void queryClient.invalidateQueries({
+        queryKey: ['radlib-private-communities', client.did],
+      })
     },
   })
 
@@ -116,6 +149,9 @@ export function PermissionedSpacesSettingsScreen({}: Props) {
       setStatus(`Community membership: ${result.state}`)
       void queryClient.invalidateQueries({
         queryKey: ['radlib-private-records'],
+      })
+      void queryClient.invalidateQueries({
+        queryKey: ['radlib-private-communities', client.did],
       })
     },
   })
@@ -208,6 +244,13 @@ export function PermissionedSpacesSettingsScreen({}: Props) {
             accessibilityLabel="Open private feed"
             accessibilityHint={_(msg`Opens your private PDS feed`)}>
             <SettingsList.ItemText>Open private feed</SettingsList.ItemText>
+          </SettingsList.LinkItem>
+          <SettingsList.LinkItem
+            to="/private-post"
+            label="Write private post"
+            accessibilityLabel="Write private post"
+            accessibilityHint={_(msg`Opens the private post composer`)}>
+            <SettingsList.ItemText>Write private post</SettingsList.ItemText>
           </SettingsList.LinkItem>
           <SettingsList.Divider />
           <SettingsList.Item>
@@ -320,6 +363,87 @@ export function PermissionedSpacesSettingsScreen({}: Props) {
               </Button>
               {blobResult ? (
                 <Text style={t.atoms.text_contrast_medium}>{blobResult}</Text>
+              ) : null}
+            </View>
+          </SettingsList.Item>
+          <SettingsList.Divider />
+          <SettingsList.Item>
+            <View style={[a.flex_1, a.gap_sm]}>
+              <SettingsList.ItemText style={[a.px_0]}>
+                Your communities
+              </SettingsList.ItemText>
+              <Text style={t.atoms.text_contrast_medium}>
+                Communities are listed from the Spaces alpha PDS endpoint. Use a
+                listed community below to fill its URI in the membership
+                controls.
+              </Text>
+              {!SPACES_ALPHA_ENABLED ? (
+                <Text style={t.atoms.text_contrast_medium}>
+                  Community listing requires Spaces alpha transport.
+                </Text>
+              ) : communitiesQuery.isPending ? (
+                <Text style={t.atoms.text_contrast_medium}>
+                  Loading communities…
+                </Text>
+              ) : communitiesQuery.isError ? (
+                <Text style={t.atoms.text_contrast_medium}>
+                  Communities unavailable or not authorized on this PDS.
+                </Text>
+              ) : communitiesQuery.data?.spaces.length ? (
+                communitiesQuery.data.spaces.map(community => (
+                  <View key={community.uri} style={[a.gap_xs]}>
+                    <SettingsList.ItemText style={[a.px_0]}>
+                      {community.name || 'Community space'}
+                    </SettingsList.ItemText>
+                    {community.description ? (
+                      <Text style={t.atoms.text_contrast_medium}>
+                        {community.description}
+                      </Text>
+                    ) : null}
+                    {community.visibility ? (
+                      <Text style={t.atoms.text_contrast_medium}>
+                        Visibility: {community.visibility}
+                      </Text>
+                    ) : null}
+                    <Text style={t.atoms.text_contrast_medium}>
+                      {community.uri}
+                    </Text>
+                    <SettingsList.LinkItem
+                      to={`/community?space=${encodeURIComponent(community.uri)}`}
+                      label="Open community board"
+                      accessibilityLabel="Open community board"
+                      accessibilityHint="Opens the Bulletin-style community board">
+                      <SettingsList.ItemText>
+                        Open community board
+                      </SettingsList.ItemText>
+                    </SettingsList.LinkItem>
+                    <Button
+                      label={_(msg`Use this community for membership controls`)}
+                      size="small"
+                      color="secondary"
+                      variant="outline"
+                      onPress={() => {
+                        setCommunitySpace(community.uri)
+                        setStatus(`Selected community: ${community.uri}`)
+                      }}>
+                      <ButtonText>Use for membership</ButtonText>
+                    </Button>
+                  </View>
+                ))
+              ) : (
+                <Text style={t.atoms.text_contrast_medium}>
+                  No communities are currently visible to this account.
+                </Text>
+              )}
+              {SPACES_ALPHA_ENABLED ? (
+                <Button
+                  label={_(msg`Refresh communities`)}
+                  size="small"
+                  color="secondary"
+                  variant="outline"
+                  onPress={() => void communitiesQuery.refetch()}>
+                  <ButtonText>Refresh</ButtonText>
+                </Button>
               ) : null}
             </View>
           </SettingsList.Item>

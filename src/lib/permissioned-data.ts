@@ -3,7 +3,7 @@ import {type Client} from '@atproto/lex'
 import {toDatetimeString} from '@atproto/syntax'
 import {type RichText} from '@bsky/sdk/richtext'
 
-import {spacesClient} from '#/lib/atproto/spaces'
+import {type SpacesClient, spacesClient} from '#/lib/atproto/spaces'
 import {LEGACY_RADLIB_PRIVATE_ENABLED, SPACES_ALPHA_ENABLED} from '#/env'
 import {org} from '#/lexicons'
 
@@ -35,17 +35,49 @@ export async function writePrivateTextPost(
   richtext: RichText,
   langs: string[],
 ) {
-  const input = {
-    space,
-    collection: PRIVATE_POST_COLLECTION,
-    rkey: TID.nextStr(),
-    record: buildPrivatePostValue(richtext, langs),
-  }
-  if (SPACES_ALPHA_ENABLED) return spacesClient(client).putRecord(input)
+  const input = buildPrivatePostInput(space, richtext, langs)
+  if (SPACES_ALPHA_ENABLED)
+    return writePrivateSpaceTextPost(spacesClient(client), input)
   if (!LEGACY_RADLIB_PRIVATE_ENABLED) {
     throw new Error(
       'Permissioned-data transport is disabled: enable Spaces alpha or the legacy Radlib adapter',
     )
   }
   return client.call(org.radlib.private.putRecord, input)
+}
+
+/** Write a note with a DPoP-bound client for a community owned by another DID. */
+export async function writePrivateTextPostToSpace(
+  client: SpacesClient,
+  space: string,
+  richtext: RichText,
+  langs: string[],
+) {
+  if (!SPACES_ALPHA_ENABLED) {
+    throw new Error('Community boards require Spaces alpha transport')
+  }
+  return writePrivateSpaceTextPost(
+    client,
+    buildPrivatePostInput(space, richtext, langs),
+  )
+}
+
+function buildPrivatePostInput(
+  space: string,
+  richtext: RichText,
+  langs: string[],
+) {
+  return {
+    space,
+    collection: PRIVATE_POST_COLLECTION,
+    rkey: TID.nextStr(),
+    record: buildPrivatePostValue(richtext, langs),
+  }
+}
+
+function writePrivateSpaceTextPost(
+  client: Pick<SpacesClient, 'putRecord'>,
+  input: ReturnType<typeof buildPrivatePostInput>,
+) {
+  return client.putRecord(input)
 }

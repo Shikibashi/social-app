@@ -73,6 +73,7 @@ import {TermsOfServiceScreen} from '#/view/screens/TermsOfService'
 import {BottomBar} from '#/view/shell/bottom-bar/BottomBar'
 import {createNativeStackNavigatorWithAuth} from '#/view/shell/createNativeStackNavigatorWithAuth'
 import {BookmarksScreen} from '#/screens/Bookmarks'
+import {CommunityBoardScreen} from '#/screens/CommunityBoardScreen'
 import {CustomFeedScreen} from '#/screens/CustomFeed'
 import {CustomFeedLikedByScreen} from '#/screens/CustomFeed/CustomFeedLikedBy'
 import {SharedPreferencesTesterScreen} from '#/screens/E2E/SharedPreferencesTesterScreen'
@@ -123,6 +124,7 @@ import {PermissionedSpacesSettingsScreen} from '#/screens/Settings/PermissionedS
 import {PersonalizationSettingsScreen} from '#/screens/Settings/PersonalizationSettings'
 import {PrivacyAndSecuritySettingsScreen} from '#/screens/Settings/PrivacyAndSecuritySettings'
 import {PrivateFeedScreen} from '#/screens/Settings/PrivateFeedScreen'
+import {PrivatePostScreen} from '#/screens/Settings/PrivatePostScreen'
 import {ProtectedAccessSettingsScreen} from '#/screens/Settings/ProtectedAccessSettings'
 import {ServicesSettingsScreen} from '#/screens/Settings/ServicesSettings'
 import {SettingsScreen} from '#/screens/Settings/Settings'
@@ -454,10 +456,26 @@ function commonScreens(Stack: typeof Flat, unreadCountLabel?: string) {
         }}
       />
       <Stack.Screen
+        name="CommunityBoard"
+        getComponent={() => CommunityBoardScreen}
+        options={{
+          title: 'Community board',
+          requireAuth: true,
+        }}
+      />
+      <Stack.Screen
         name="PrivateFeed"
         getComponent={() => PrivateFeedScreen}
         options={{
           title: 'Private feed',
+          requireAuth: true,
+        }}
+      />
+      <Stack.Screen
+        name="PrivatePost"
+        getComponent={() => PrivatePostScreen}
+        options={{
+          title: 'Private post',
           requireAuth: true,
         }}
       />

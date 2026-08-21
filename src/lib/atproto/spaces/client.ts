@@ -19,6 +19,26 @@ export type SpaceRecordPage = {
   cursor?: string
 }
 
+export type SpaceBlobPage = {
+  cids: string[]
+  cursor?: string
+}
+
+export type SpaceRepoOp = {
+  rev: string
+  collection: NsidString
+  rkey: RecordKeyString
+  cid: string | null
+  prev: string | null
+  value?: LexMap
+}
+
+export type SpaceRepoOpsPage = {
+  ops: SpaceRepoOp[]
+  commit?: LexMap
+  cursor?: string
+}
+
 /**
  * Thin product-facing wrapper around the alpha com.atproto.space methods.
  * Protected-account/community policy remains in org.radlib.private; this
@@ -37,6 +57,7 @@ export class SpacesClient {
     collection: string
     rkey: string
     record: LexMap
+    validate?: boolean
   }) {
     const repo = requireDid(this.did)
     return this.client.call(toSpaceRpc.putRecord, {
@@ -51,6 +72,7 @@ export class SpacesClient {
     collection: string
     rkey?: string
     record: LexMap
+    validate?: boolean
   }) {
     const repo = requireDid(this.did)
     return this.client.call(toSpaceRpc.createRecord, {
@@ -89,6 +111,7 @@ export class SpacesClient {
     limit?: number
     cursor?: string
     reverse?: boolean
+    excludeValues?: boolean
   }): Promise<SpaceRecordPage> {
     return this.client.call(toSpaceRpc.listRecords, {
       space: input.space,
@@ -97,6 +120,9 @@ export class SpacesClient {
       ...(input.limit ? {limit: input.limit} : {}),
       ...(input.cursor ? {cursor: input.cursor} : {}),
       ...(input.reverse !== undefined ? {reverse: input.reverse} : {}),
+      ...(input.excludeValues !== undefined
+        ? {excludeValues: input.excludeValues}
+        : {}),
     })
   }
 
@@ -107,8 +133,90 @@ export class SpacesClient {
     })
   }
 
-  listRepos(space: string) {
-    return this.client.call(toSpaceRpc.listRepos, {space})
+  listBlobs(input: {
+    space: string
+    repo?: string
+    since?: string
+    limit?: number
+    cursor?: string
+  }): Promise<SpaceBlobPage> {
+    return this.client.call(toSpaceRpc.listBlobs, {
+      space: input.space,
+      repo: (input.repo ?? requireDid(this.did)) as DidString,
+      ...(input.since ? {since: input.since} : {}),
+      ...(input.limit ? {limit: input.limit} : {}),
+      ...(input.cursor ? {cursor: input.cursor} : {}),
+    })
+  }
+
+  listRepos(input: {space: string; limit?: number; cursor?: string}) {
+    return this.client.call(toSpaceRpc.listRepos, {
+      space: input.space,
+      ...(input.limit ? {limit: input.limit} : {}),
+      ...(input.cursor ? {cursor: input.cursor} : {}),
+    })
+  }
+
+  getRepo(input: {space: string; repo?: string; excludeValues?: boolean}) {
+    return this.client.call(toSpaceRpc.getRepo, {
+      space: input.space,
+      repo: (input.repo ?? requireDid(this.did)) as DidString,
+      ...(input.excludeValues !== undefined
+        ? {excludeValues: input.excludeValues}
+        : {}),
+    })
+  }
+
+  getLatestCommit(input: {space: string; repo?: string}) {
+    return this.client.call(toSpaceRpc.getLatestCommit, {
+      space: input.space,
+      repo: (input.repo ?? requireDid(this.did)) as DidString,
+    })
+  }
+
+  listRepoOps(input: {
+    space: string
+    repo?: string
+    since?: string
+    limit?: number
+    cursor?: string
+    excludeValues?: boolean
+  }): Promise<SpaceRepoOpsPage> {
+    return this.client
+      .call(toSpaceRpc.listRepoOps, {
+        space: input.space,
+        repo: (input.repo ?? requireDid(this.did)) as DidString,
+        ...(input.since ? {since: input.since} : {}),
+        ...(input.limit ? {limit: input.limit} : {}),
+        ...(input.cursor ? {cursor: input.cursor} : {}),
+        ...(input.excludeValues !== undefined
+          ? {excludeValues: input.excludeValues}
+          : {}),
+      })
+      .then(page => ({
+        ...page,
+        // The alpha operation entry contains required nullable fields, which
+        // the pinned client lex runtime cannot express without its newer
+        // generated nullable helper. Keep the wire descriptor permissive and
+        // expose the documented shape at this wrapper boundary.
+        ops: page.ops as unknown as SpaceRepoOp[],
+      }))
+  }
+
+  listSpaces(
+    input: {
+      type?: NsidString
+      did?: DidString
+      limit?: number
+      cursor?: string
+    } = {},
+  ) {
+    return this.client.call(toSpaceRpc.listSpaces, {
+      ...(input.type ? {type: input.type} : {}),
+      ...(input.did ? {did: input.did} : {}),
+      ...(input.limit ? {limit: input.limit} : {}),
+      ...(input.cursor ? {cursor: input.cursor} : {}),
+    })
   }
 }
 

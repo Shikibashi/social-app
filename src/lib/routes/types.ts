@@ -70,7 +70,9 @@ export type CommonNavigatorParams = {
   IdentitySovereigntySettings: undefined
   ProtectedAccessSettings: undefined
   PermissionedSpacesSettings: undefined
+  CommunityBoard: {space?: string}
   PrivateFeed: undefined
+  PrivatePost: undefined
   AutomationLabelSettings: undefined
   PrivacyAndSecuritySettings: undefined
   ActivityPrivacySettings: undefined

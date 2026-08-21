@@ -68,6 +68,10 @@ import {
   Message_Stroke2_Corner0_Rounded as MessageIcon,
   Message_Stroke2_Corner0_Rounded_Filled as MessageFilledIcon,
 } from '#/components/icons/Message'
+import {
+  Pin_Filled_Corner0_Rounded as PinFilledIcon,
+  Pin_Stroke2_Corner0_Rounded as PinIcon,
+} from '#/components/icons/Pin'
 import {PlusLarge_Stroke2_Corner0_Rounded as PlusIcon} from '#/components/icons/Plus'
 import {
   SettingsGear2_Filled_Corner0_Rounded as SettingsFilledIcon,
@@ -671,6 +675,16 @@ export function DesktopLeftNav({routeName}: {routeName: string}) {
             }}
           />
           <NavItem
+            label="Communities"
+            href="/community"
+            navItem="community"
+            minimal={leftNavMinimal}
+            icons={{
+              inactive: PinIcon,
+              active: PinFilledIcon,
+            }}
+          />
+          <NavItem
             label={l`Explore`}
             href="/search"
             navItem="search"
@@ -756,7 +770,6 @@ export function DesktopLeftNav({routeName}: {routeName: string}) {
               active: SettingsFilledIcon,
             }}
           />
-
           <ComposeBtn minimal={leftNavMinimal} />
         </>
       )}

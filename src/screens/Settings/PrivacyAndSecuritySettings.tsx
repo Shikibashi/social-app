@@ -124,9 +124,11 @@ export function PrivacyAndSecuritySettingsScreen({}: Props) {
           </SettingsList.Group>
           <SettingsList.LinkItem
             to="/settings/protected-access"
-            label="Protected access">
+            label={_(msg`Protected access`)}>
             <SettingsList.ItemIcon icon={ShieldIcon} />
-            <SettingsList.ItemText>Protected access</SettingsList.ItemText>
+            <SettingsList.ItemText>
+              <Trans>Protected access</Trans>
+            </SettingsList.ItemText>
           </SettingsList.LinkItem>
           <SettingsList.LinkItem
             to="/settings/private-spaces"

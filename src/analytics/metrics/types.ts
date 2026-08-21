@@ -91,6 +91,7 @@ export type Events = {
   'nav:click': {
     item:
       | 'home'
+      | 'community'
       | 'search'
       | 'chat'
       | 'notifications'

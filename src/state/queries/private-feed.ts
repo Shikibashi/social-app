@@ -1,6 +1,6 @@
 import {useQuery} from '@tanstack/react-query'
 
-import {spacesClient} from '#/lib/atproto/spaces'
+import {createSpaceCredentialClient, spacesClient} from '#/lib/atproto/spaces'
 import {STALE} from '#/state/queries'
 import {usePdsClient} from '#/state/session'
 import {LEGACY_RADLIB_PRIVATE_ENABLED, SPACES_ALPHA_ENABLED} from '#/env'
@@ -18,21 +18,27 @@ export function usePrivateFeedQuery(space: string) {
     queryKey: [PRIVATE_FEED_QUERY_ROOT, client.did, space],
     enabled: !!client.did && !!space,
     staleTime: STALE.MINUTES.ONE,
-    queryFn: () => {
+    queryFn: async () => {
       if (SPACES_ALPHA_ENABLED) {
-        return spacesClient(client)
+        const authorityDid = space.match(/^at:\/\/(did:[^/]+)\//)?.[1]
+        const reader =
+          authorityDid && authorityDid !== client.did
+            ? await createSpaceCredentialClient(client, space)
+            : spacesClient(client)
+        return reader
           .listRecords({
             space,
+            repo: authorityDid,
             collection: 'org.radlib.private.post',
             limit: 50,
             reverse: true,
           })
           .then(page => ({
-            providerDid: space.match(/^at:\/\/(did:[^/]+)\//)?.[1] ?? '',
+            providerDid: authorityDid ?? '',
             space,
             feed: page.records.map(record => ({
               space,
-              repo: client.did,
+              repo: authorityDid ?? client.did,
               collection: record.collection,
               rkey: record.rkey,
               cid: record.cid,
