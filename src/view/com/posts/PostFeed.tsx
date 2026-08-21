@@ -246,6 +246,7 @@ let PostFeed = ({
   radlibCuration,
   contentFilterPolicy,
   isVideoFeed = false,
+  showComposerPrompt = false,
   onFeedContext,
   ref,
 }: {
@@ -277,6 +278,8 @@ let PostFeed = ({
   localFeedPreferences?: FeedPreferences
   radlibCuration?: RadlibCurationConfig
   contentFilterPolicy?: ContentFilterPolicy
+  /** Show the inline post composer prompt when this feed is rendered in Home. */
+  showComposerPrompt?: boolean
   onFeedContext?: (feedContext: string | undefined) => void
   ref?: React.Ref<PostFeedRef>
 }): React.ReactNode => {
@@ -845,7 +848,8 @@ let PostFeed = ({
                     // Show composer prompt for Discover and Following feeds
                     if (
                       hasSession &&
-                      (feedUriOrActorDid === DISCOVER_FEED_URI ||
+                      (showComposerPrompt ||
+                        feedUriOrActorDid === DISCOVER_FEED_URI ||
                         feed === 'following')
                     ) {
                       arr.push({
@@ -889,6 +893,11 @@ let PostFeed = ({
                       key: 'interstitial-' + sliceIndex + '-' + lastFetchedAt,
                     })
                   }
+                } else if (showComposerPrompt && sliceIndex === 0) {
+                  arr.push({
+                    type: 'composerPrompt',
+                    key: 'composerPrompt-' + sliceIndex,
+                  })
                 }
               }
 
@@ -1003,6 +1012,7 @@ let PostFeed = ({
     trendingVideoDisabled,
     gtMobile,
     isVideoFeed,
+    showComposerPrompt,
     areVideoFeedsEnabled,
     hasPressedShowLessUris,
     blockedOrMutedAuthors,
