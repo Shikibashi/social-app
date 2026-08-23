@@ -146,9 +146,42 @@ export function routeSessionToPds(
     get did() {
       return session.did
     },
-    fetchHandler(path, init) {
-      return session.fetchHandler(new URL(path, pdsUrl).href, init)
+    async fetchHandler(path, init) {
+      const absolutePath = new URL(path, pdsUrl).href
+      const response = await session.fetchHandler(absolutePath, init)
+
+      /*
+       * A repository migration can leave a still-live entryway session with
+       * an access token the new PDS no longer accepts. PasswordSession retries
+       * ExpiredToken, but PDS migrations commonly surface InvalidToken instead.
+       * Refresh once through the login service and replay only body-less reads;
+       * writes must never be replayed implicitly because their request body may
+       * not be safely reusable.
+       */
+      if (
+        response.status !== 400 ||
+        init?.body !== undefined ||
+        !(await isInvalidTokenResponse(response))
+      ) {
+        return response
+      }
+
+      const previousAccessJwt = session.session.accessJwt
+      const refreshed = await session.refresh().catch(() => undefined)
+      if (!refreshed || refreshed.accessJwt === previousAccessJwt) {
+        return response
+      }
+      return session.fetchHandler(absolutePath, init)
     },
+  }
+}
+
+async function isInvalidTokenResponse(response: Response): Promise<boolean> {
+  try {
+    const body = (await response.clone().json()) as {error?: unknown}
+    return body.error === 'InvalidToken'
+  } catch {
+    return false
   }
 }
 

@@ -451,6 +451,40 @@ describe('routeSessionToPds', () => {
     ).toBe('Bearer access-jwt')
   })
 
+  it('refreshes an entryway session once when the migrated PDS rejects its token', async () => {
+    const fetchMock = makeMockFetch({
+      'com.atproto.server.getSession': (url, init) => {
+        const authorization = new Headers(init.headers).get('authorization')
+        if (authorization === 'Bearer access-jwt') {
+          return json(
+            {error: 'InvalidToken', message: 'Token could not be verified'},
+            400,
+          )
+        }
+        return json({did: DID, handle: HANDLE, active: true})
+      },
+    })
+    const session = makeSession(fetchMock)
+    const client = buildPdsClient(routeSessionToPds(session, PDS_HOST))
+
+    await client.call(com.atproto.server.getSession, {})
+
+    expect(urlsOf(fetchMock)).toEqual([
+      `${PDS_HOST}/xrpc/com.atproto.server.getSession`,
+      `${SERVICE}/xrpc/com.atproto.server.refreshSession`,
+      `${PDS_HOST}/xrpc/com.atproto.server.getSession`,
+    ])
+    const getSessionAuths = fetchMock.mock.calls
+      .filter(([input]) =>
+        String(input).includes('com.atproto.server.getSession'),
+      )
+      .map(([, init]) => new Headers(init?.headers).get('authorization'))
+    expect(getSessionAuths).toEqual([
+      'Bearer access-jwt',
+      'Bearer access-jwt-2',
+    ])
+  })
+
   it('passes through the session did', () => {
     const session = makeSession(fetchMock)
     expect(routeSessionToPds(session, PDS_HOST).did).toBe(DID)
