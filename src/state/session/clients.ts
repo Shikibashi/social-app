@@ -176,7 +176,12 @@ export function routeSessionToPds(
 }
 
 async function isPdsAuthRecoveryResponse(response: Response): Promise<boolean> {
-  if (response.status !== 400 && response.status !== 401) return false
+  // A PDS may return AuthMissing, InvalidToken, or another auth-specific
+  // reason on a 401 depending on which verifier rejected the migrated token.
+  // The caller already limits this to body-less reads, so one refresh is safe
+  // and avoids coupling recovery to a provider-specific error label.
+  if (response.status === 401) return true
+  if (response.status !== 400) return false
   try {
     const body = (await response.clone().json()) as {error?: unknown}
     return body.error === 'InvalidToken' || body.error === 'AuthMissing'
