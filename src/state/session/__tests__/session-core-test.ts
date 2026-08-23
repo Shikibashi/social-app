@@ -947,6 +947,44 @@ describe('factory account snapshot after preparation', () => {
       )
     })
   })
+
+  it('resume: refreshes a stale stored entryway PDS route from the DID document', async () => {
+    mockConfigureModerationForAccount.mockReturnValueOnce(undefined)
+    const fetchMock = makeMockFetch()
+    const didDocFetch = jest.fn(
+      async (input: URL | string, init?: RequestInit) => {
+        const url = input instanceof URL ? input.href : input
+        if (url === `https://plc.directory/${DID}`) {
+          return json(makeDidDoc(PDS_URL, DID))
+        }
+        return asFetch(fetchMock)(input, init)
+      },
+    )
+
+    await withFreshFactory(didDocFetch as typeof fetch, async core => {
+      const {account, bundle} = await core.createSessionBundleAndResume(
+        makeAccount({
+          accessJwt: 'valid-access-jwt',
+          pdsUrl: 'https://bsky.social/',
+          isSelfHosted: false,
+        }),
+        jest.fn(),
+      )
+
+      await bundle.session.fetchHandler(
+        '/xrpc/com.atproto.server.getSession',
+        {},
+      )
+
+      expect(account.pdsUrl).toBe(`${PDS_URL}/`)
+      expect(urlsOf(fetchMock)).toContain(
+        `${PDS_URL}/xrpc/com.atproto.server.getSession`,
+      )
+      expect(urlsOf(fetchMock)).not.toContain(
+        'https://bsky.social/xrpc/com.atproto.server.getSession',
+      )
+    })
+  })
 })
 
 /*

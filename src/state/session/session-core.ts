@@ -23,13 +23,13 @@ import {
   configureModerationForGuest,
 } from './moderation'
 import {networkAwareFetch} from './network'
+import {resolvePdsEndpointForDid} from './pds-resolution'
 import {type AppViewProvider, getSelectedAppViewProvider} from './providers'
 import {
   isSessionExpired,
   sessionAccountToSessionData,
   sessionDataToSessionAccount,
 } from './session-data'
-import {resolvePdsEndpointForDid} from './pds-resolution'
 import {type AtpSessionEvent, type SessionAccount} from './types'
 
 export {networkAwareFetch} from './network'
@@ -341,11 +341,33 @@ export async function createSessionBundleAndResume(
    * public DID document before constructing the session so refresh and all
    * subsequent PDS calls use the repository host.
    */
-  const pdsUrl =
-    storedAccount.pdsUrl ??
-    (!storedAccount.isSelfHosted
+  /*
+   * Hosted entryway sessions can carry a stale pdsUrl from an older client
+   * (most notably the entryway itself, before the DID document was persisted).
+   * Resolve the current repository endpoint first so a migrated account does
+   * not keep sending account-host requests to bsky.social. Keep the stored
+   * value only as an offline fallback, and preserve the explicit self-hosted
+   * service route when the account was created directly on its PDS.
+   */
+  const storedPdsLooksLikeEntryway =
+    !storedAccount.isSelfHosted &&
+    !!storedAccount.pdsUrl &&
+    (() => {
+      try {
+        return (
+          new URL(storedAccount.pdsUrl).origin ===
+          new URL(storedAccount.service).origin
+        )
+      } catch {
+        return true
+      }
+    })()
+  const resolvedPdsUrl =
+    !storedAccount.isSelfHosted &&
+    (!storedAccount.pdsUrl || storedPdsLooksLikeEntryway)
       ? await resolvePdsEndpointForDid(storedAccount.did)
-      : undefined)
+      : undefined
+  const pdsUrl = resolvedPdsUrl ?? storedAccount.pdsUrl
   const sessionData = sessionDataWithPdsEndpoint(
     sessionAccountToSessionData(storedAccount),
     pdsUrl,
