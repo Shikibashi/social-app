@@ -127,13 +127,22 @@ export function CommunityBoardScreen({route}: Props) {
   >({})
 
   const communitySpacesQuery = useQuery({
-    queryKey: ['radlib-community-spaces', client.did],
+    queryKey: ['radlib-community-spaces', client.did, requestedSpace],
     enabled: !!client.did && SPACES_ALPHA_ENABLED,
     queryFn: async () => {
-      const localPage = await client.call(org.radlib.private.listCommunities, {
-        limit: 50,
-      })
-      const spaces = [...(localPage.spaces as Community[])]
+      let localPage: {spaces: Community[]; cursor?: string} = {spaces: []}
+      let localListError: unknown
+
+      try {
+        localPage = (await client.call(org.radlib.private.listCommunities, {
+          limit: 50,
+        })) as typeof localPage
+      } catch (error) {
+        if (!requestedSpace) throw error
+        localListError = error
+      }
+
+      const spaces = [...localPage.spaces]
 
       // A member's own PDS does not host the authority's Radlib control DB.
       // Resolve a deep-linked remote board through a narrowly-scoped service
@@ -151,9 +160,10 @@ export function CommunityBoardScreen({route}: Props) {
               space: requestedSpace,
             })) as Community,
           )
-        } catch {
-          // The query's normal error boundary will explain an unavailable
-          // board once the requested route is actually selected.
+        } catch (error) {
+          // Preserve the local discovery error if the authority cannot resolve
+          // the deep link either; an unresolved board should not look empty.
+          throw localListError ?? error
         }
       }
       return {...localPage, spaces}
