@@ -27,8 +27,6 @@ type Props = NativeStackScreenProps<
   'PermissionedSpacesSettings'
 >
 
-type CommunityVisibility = 'public' | 'restricted' | 'invite-only' | 'private'
-
 const inputStyle = {
   minHeight: 44,
   borderWidth: 1,
@@ -52,10 +50,6 @@ export function PermissionedSpacesSettingsScreen({}: Props) {
   const [lookupResult, setLookupResult] = useState<string>()
   const [blobId, setBlobId] = useState('')
   const [blobResult, setBlobResult] = useState<string>()
-  const [communityName, setCommunityName] = useState('')
-  const [communityDescription, setCommunityDescription] = useState('')
-  const [communityVisibility, setCommunityVisibility] =
-    useState<CommunityVisibility>('public')
   const [communitySpace, setCommunitySpace] = useState('')
   const [inviteToken, setInviteToken] = useState('')
   const [status, setStatus] = useState<string>()
@@ -107,22 +101,6 @@ export function PermissionedSpacesSettingsScreen({}: Props) {
     enabled: !!client.did && SPACES_ALPHA_ENABLED,
     queryFn: async () => {
       return client.call(org.radlib.private.listCommunities, {limit: 50})
-    },
-  })
-
-  const communityMutation = useMutation({
-    mutationFn: () =>
-      client.call(org.radlib.private.createCommunity, {
-        name: communityName.trim(),
-        description: communityDescription.trim() || undefined,
-        visibility: communityVisibility,
-      }),
-    onSuccess: result => {
-      setCommunitySpace(result.uri)
-      setStatus(`Community created: ${result.uri}`)
-      void queryClient.invalidateQueries({
-        queryKey: ['radlib-private-communities', client.did],
-      })
     },
   })
 
@@ -464,63 +442,6 @@ export function PermissionedSpacesSettingsScreen({}: Props) {
               ) : null}
             </View>
           </SettingsList.Item>
-          <SettingsList.Divider />
-          <SettingsList.Item>
-            <View style={[a.flex_1, a.gap_sm]}>
-              <SettingsList.ItemText style={[a.px_0]}>
-                Create a community
-              </SettingsList.ItemText>
-              <TextInput
-                accessibilityLabel={_(msg`Community name`)}
-                accessibilityHint={_(msg`Enter a name for the new community`)}
-                value={communityName}
-                onChangeText={setCommunityName}
-                placeholder="Community name"
-                style={[inputStyle, t.atoms.bg_contrast_25, t.atoms.text]}
-              />
-              <TextInput
-                accessibilityLabel={_(msg`Community description`)}
-                accessibilityHint={_(
-                  msg`Optional description for the new community`,
-                )}
-                value={communityDescription}
-                onChangeText={setCommunityDescription}
-                placeholder="Description (optional)"
-                style={[inputStyle, t.atoms.bg_contrast_25, t.atoms.text]}
-              />
-              <View style={[a.flex_row, a.gap_xs, a.flex_wrap]}>
-                {(
-                  ['public', 'restricted', 'invite-only', 'private'] as const
-                ).map(visibility => (
-                  <Button
-                    key={visibility}
-                    label={_(msg`Set community visibility to ${visibility}`)}
-                    size="small"
-                    color={
-                      communityVisibility === visibility
-                        ? 'primary'
-                        : 'secondary'
-                    }
-                    variant={
-                      communityVisibility === visibility ? 'solid' : 'outline'
-                    }
-                    onPress={() => setCommunityVisibility(visibility)}>
-                    <ButtonText>{visibility}</ButtonText>
-                  </Button>
-                ))}
-              </View>
-              <Button
-                label={_(msg`Create community`)}
-                size="small"
-                color="primary"
-                variant="solid"
-                disabled={!communityName.trim() || communityMutation.isPending}
-                onPress={() => void communityMutation.mutateAsync()}>
-                <ButtonText>Create community</ButtonText>
-              </Button>
-            </View>
-          </SettingsList.Item>
-          <SettingsList.Divider />
           <SettingsList.Item>
             <View style={[a.flex_1, a.gap_sm]}>
               <SettingsList.ItemText style={[a.px_0]}>

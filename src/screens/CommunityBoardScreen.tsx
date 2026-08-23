@@ -2,6 +2,7 @@ import {useState} from 'react'
 import {Alert, ScrollView, TextInput, View} from 'react-native'
 import {type NsidString} from '@atproto/syntax'
 import {RichText} from '@bsky/sdk/richtext'
+import {useNavigation} from '@react-navigation/native'
 import {type NativeStackScreenProps} from '@react-navigation/native-stack'
 import {useMutation, useQuery, useQueryClient} from '@tanstack/react-query'
 
@@ -11,7 +12,10 @@ import {
 } from '#/lib/atproto/spaces'
 import {readAllSpaceRecords} from '#/lib/atproto/spaces/fanout'
 import {writePrivateTextPostToSpace} from '#/lib/permissioned-data'
-import {type CommonNavigatorParams} from '#/lib/routes/types'
+import {
+  type CommonNavigatorParams,
+  type NavigationProp,
+} from '#/lib/routes/types'
 import {usePdsClient} from '#/state/session'
 import {atoms as a} from '#/alf'
 import {Button, ButtonText} from '#/components/Button'
@@ -113,12 +117,18 @@ const ECW_INSET = {
 
 export function CommunityBoardScreen({route}: Props) {
   const client = usePdsClient()
+  const navigation = useNavigation<NavigationProp>()
   const queryClient = useQueryClient()
   const requestedSpace = route.params?.space
   const [text, setText] = useState('')
   const [inviteToken, setInviteToken] = useState('')
   const [status, setStatus] = useState<string>()
   const [composerOpen, setComposerOpen] = useState(false)
+  const [createBoardOpen, setCreateBoardOpen] = useState(false)
+  const [communityName, setCommunityName] = useState('')
+  const [communityDescription, setCommunityDescription] = useState('')
+  const [communityVisibility, setCommunityVisibility] =
+    useState<CommunityVisibility>('private')
   const [membershipStates, setMembershipStates] = useState<
     Record<string, string>
   >({})
@@ -195,6 +205,32 @@ export function CommunityBoardScreen({route}: Props) {
           space,
           collection: POST_COLLECTION,
         },
+      )
+    },
+  })
+
+  const communityMutation = useMutation({
+    mutationFn: () =>
+      client.call(org.radlib.private.createCommunity, {
+        name: communityName.trim(),
+        description: communityDescription.trim() || undefined,
+        visibility: communityVisibility,
+      }),
+    onSuccess: result => {
+      setCommunityName('')
+      setCommunityDescription('')
+      setCommunityVisibility('private')
+      setCreateBoardOpen(false)
+      setStatus('Board created. Opening your new bulletin…')
+      void queryClient.invalidateQueries({
+        queryKey: ['radlib-community-spaces', client.did],
+      })
+      navigation.replace('CommunityBoard', {space: result.uri})
+    },
+    onError: error => {
+      Alert.alert(
+        'Could not create board',
+        error instanceof Error ? error.message : String(error),
       )
     },
   })
@@ -399,23 +435,14 @@ export function CommunityBoardScreen({route}: Props) {
                       then pin a note.
                     </Text>
                   </View>
-                  <Link
-                    to="/settings/private-spaces"
+                  <Button
                     label="Create a new community board"
                     size="small"
                     variant="outline"
                     color="secondary"
-                    shape="rectangular"
-                    style={[
-                      ECW_BEVEL,
-                      {
-                        backgroundColor: ECW.control,
-                        paddingHorizontal: 12,
-                        paddingVertical: 8,
-                      },
-                    ]}>
+                    onPress={() => setCreateBoardOpen(open => !open)}>
                     <ButtonText>+ NEW BOARD</ButtonText>
-                  </Link>
+                  </Button>
                 </View>
 
                 <View
@@ -536,6 +563,115 @@ export function CommunityBoardScreen({route}: Props) {
                     </View>
                   )}
                 </View>
+
+                {createBoardOpen ? (
+                  <View
+                    style={[
+                      ECW_INSET,
+                      a.p_md,
+                      a.gap_sm,
+                      {backgroundColor: BULLETIN.paper},
+                    ]}>
+                    <View
+                      style={[a.flex_row, a.align_center, a.justify_between]}>
+                      <View style={[a.gap_2xs, a.flex_1]}>
+                        <Text
+                          style={{
+                            fontFamily: 'Courier New',
+                            fontSize: 12,
+                            fontWeight: '700',
+                            letterSpacing: 1,
+                            color: ECW.purple,
+                          }}>
+                          NEW BULLETIN BOARD
+                        </Text>
+                        <Text style={{fontSize: 13, color: ECW.secondary}}>
+                          Create a Space-backed board without leaving
+                          Communities.
+                        </Text>
+                      </View>
+                      <Button
+                        label="Close new board form"
+                        size="small"
+                        color="secondary"
+                        variant="outline"
+                        onPress={() => setCreateBoardOpen(false)}>
+                        <ButtonText>Close</ButtonText>
+                      </Button>
+                    </View>
+                    <TextInput
+                      accessibilityLabel="New board name"
+                      accessibilityHint="Enter a name for the new community board"
+                      value={communityName}
+                      onChangeText={setCommunityName}
+                      placeholder="Board name"
+                      style={[inputStyle, {minHeight: 48, color: BULLETIN.ink}]}
+                    />
+                    <TextInput
+                      accessibilityLabel="New board description"
+                      accessibilityHint="Enter an optional description for the new community board"
+                      value={communityDescription}
+                      onChangeText={setCommunityDescription}
+                      placeholder="What is this board for? (optional)"
+                      multiline
+                      style={[inputStyle, {minHeight: 80, color: BULLETIN.ink}]}
+                    />
+                    <View style={[a.gap_2xs]}>
+                      <Text
+                        style={{
+                          fontFamily: 'Courier New',
+                          fontSize: 11,
+                          fontWeight: '700',
+                          color: ECW.purple,
+                        }}>
+                        VISIBILITY
+                      </Text>
+                      <View style={[a.flex_row, a.flex_wrap, a.gap_xs]}>
+                        {(
+                          [
+                            ['private', 'PRIVATE'],
+                            ['invite-only', 'INVITE ONLY'],
+                            ['restricted', 'RESTRICTED'],
+                            ['public', 'PUBLIC'],
+                          ] as const
+                        ).map(([visibility, label]) => (
+                          <Button
+                            key={visibility}
+                            label={`Set new board visibility to ${visibility}`}
+                            size="small"
+                            color={
+                              communityVisibility === visibility
+                                ? 'primary'
+                                : 'secondary'
+                            }
+                            variant={
+                              communityVisibility === visibility
+                                ? 'solid'
+                                : 'outline'
+                            }
+                            onPress={() => setCommunityVisibility(visibility)}>
+                            <ButtonText>{label}</ButtonText>
+                          </Button>
+                        ))}
+                      </View>
+                    </View>
+                    <Button
+                      label="Create board"
+                      size="small"
+                      color="primary"
+                      variant="solid"
+                      disabled={
+                        !communityName.trim() || communityMutation.isPending
+                      }
+                      onPress={() => void communityMutation.mutateAsync()}>
+                      <ButtonText>
+                        {communityMutation.isPending
+                          ? 'Creating…'
+                          : 'Create board'}
+                      </ButtonText>
+                    </Button>
+                  </View>
+                ) : null}
               </View>
 
               {!space ? (
