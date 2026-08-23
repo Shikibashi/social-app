@@ -11,7 +11,7 @@ import {
   createSpaceCredentialSession,
 } from '#/lib/atproto/spaces'
 import {readAllSpaceRecords} from '#/lib/atproto/spaces/fanout'
-import {writePrivateTextPostToSpace} from '#/lib/permissioned-data'
+import {writePrivateTextPost} from '#/lib/permissioned-data'
 import {
   type CommonNavigatorParams,
   type NavigationProp,
@@ -67,10 +67,8 @@ const NOTE_ROTATIONS = ['-1deg', '1deg', '-0.5deg', '0.75deg']
 
 const BULLETIN = {
   paper: '#f4efdf',
-  card: '#fffdf6',
   ink: '#222018',
   muted: '#716b5d',
-  line: '#d1c7ae',
   wood: '#6f4528',
   cork: '#c99b61',
   pin: '#c4493d',
@@ -85,15 +83,9 @@ const ECW = {
   ink: '#11132d',
   secondary: '#24274a',
   muted: '#5e6480',
-  border: '#626a9c',
-  strong: '#383f78',
-  rule: '#9da2bd',
   purple: '#5530a3',
   pink: '#a82378',
-  yellow: '#a66c00',
   green: '#08775f',
-  cyan: '#006f88',
-  control: '#d4d0c8',
   highlight: '#ffffff',
   shadow: '#777777',
   hardShadow: 'rgba(17, 19, 45, 0.48)',
@@ -130,7 +122,6 @@ export function CommunityBoardScreen({route}: Props) {
   const [communityDescription, setCommunityDescription] = useState('')
   const [communityVisibility, setCommunityVisibility] =
     useState<CommunityVisibility>('private')
-  const [boardRefreshPending, setBoardRefreshPending] = useState(false)
   const [membershipStates, setMembershipStates] = useState<
     Record<string, string>
   >({})
@@ -170,19 +161,18 @@ export function CommunityBoardScreen({route}: Props) {
   })
 
   async function refreshBoardIndex() {
-    setBoardRefreshPending(true)
     try {
       await refreshSession()
       const result = await communitySpacesQuery.refetch()
-      if (result.isError) throw result.error
+      if (result.isError) {
+        throw result.error ?? new Error('Board index refresh failed')
+      }
       setStatus('Board index refreshed.')
     } catch (error) {
       Alert.alert(
         'Could not refresh board index',
         error instanceof Error ? error.message : String(error),
       )
-    } finally {
-      setBoardRefreshPending(false)
     }
   }
 
@@ -292,9 +282,8 @@ export function CommunityBoardScreen({route}: Props) {
   const noteMutation = useMutation({
     mutationFn: async () => {
       if (!space.trim()) throw new Error('Community space is unavailable')
-      const session = await createSpaceCredentialSession(client, space)
-      return writePrivateTextPostToSpace(
-        session.client,
+      return writePrivateTextPost(
+        client,
         space,
         new RichText({text: text.trim()}),
         ['en'],
@@ -505,10 +494,10 @@ export function CommunityBoardScreen({route}: Props) {
                         size="small"
                         color="secondary"
                         variant="outline"
-                        disabled={boardRefreshPending}
+                        disabled={communitySpacesQuery.isFetching}
                         onPress={() => void refreshBoardIndex()}>
                         <ButtonText>
-                          {boardRefreshPending
+                          {communitySpacesQuery.isFetching
                             ? 'Refreshing…'
                             : 'Refresh index'}
                         </ButtonText>

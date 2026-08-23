@@ -52,24 +52,6 @@ export async function writePrivateTextPost(
   return client.call(org.radlib.private.putRecord, input)
 }
 
-/** Write a note with a DPoP-bound client for a community owned by another DID. */
-export async function writePrivateTextPostToSpace(
-  client: SpacesClient,
-  space: string,
-  richtext: RichText,
-  langs: string[],
-  embed?: LexMap,
-  reply?: LexMap,
-) {
-  if (!SPACES_ALPHA_ENABLED) {
-    throw new Error('Community boards require Spaces alpha transport')
-  }
-  return writePrivateSpaceTextPost(
-    client,
-    buildPrivatePostInput(space, richtext, langs, embed, reply),
-  )
-}
-
 function buildPrivatePostInput(
   space: string,
   richtext: RichText,
