@@ -153,15 +153,14 @@ export function routeSessionToPds(
       /*
        * A repository migration can leave a still-live entryway session with
        * an access token the new PDS no longer accepts. PasswordSession retries
-       * ExpiredToken, but PDS migrations commonly surface InvalidToken instead.
-       * Refresh once through the login service and replay only body-less reads;
-       * writes must never be replayed implicitly because their request body may
-       * not be safely reusable.
+       * ExpiredToken, but PDS migrations commonly surface InvalidToken or
+       * AuthMissing instead. Refresh once through the login service and replay
+       * only body-less reads; writes must never be replayed implicitly because
+       * their request body may not be safely reusable.
        */
       if (
-        response.status !== 400 ||
         init?.body !== undefined ||
-        !(await isInvalidTokenResponse(response))
+        !(await isPdsAuthRecoveryResponse(response))
       ) {
         return response
       }
@@ -176,10 +175,11 @@ export function routeSessionToPds(
   }
 }
 
-async function isInvalidTokenResponse(response: Response): Promise<boolean> {
+async function isPdsAuthRecoveryResponse(response: Response): Promise<boolean> {
+  if (response.status !== 400 && response.status !== 401) return false
   try {
     const body = (await response.clone().json()) as {error?: unknown}
-    return body.error === 'InvalidToken'
+    return body.error === 'InvalidToken' || body.error === 'AuthMissing'
   } catch {
     return false
   }

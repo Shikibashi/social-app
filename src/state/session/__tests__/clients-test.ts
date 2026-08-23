@@ -485,6 +485,31 @@ describe('routeSessionToPds', () => {
     ])
   })
 
+  it('refreshes an entryway session when the migrated PDS reports AuthMissing', async () => {
+    const fetchMock = makeMockFetch({
+      'com.atproto.server.getSession': (url, init) => {
+        const authorization = new Headers(init.headers).get('authorization')
+        if (authorization === 'Bearer access-jwt') {
+          return json(
+            {error: 'AuthMissing', message: 'Authentication required'},
+            401,
+          )
+        }
+        return json({did: DID, handle: HANDLE, active: true})
+      },
+    })
+    const session = makeSession(fetchMock)
+    const client = buildPdsClient(routeSessionToPds(session, PDS_HOST))
+
+    await client.call(com.atproto.server.getSession, {})
+
+    expect(urlsOf(fetchMock)).toEqual([
+      `${PDS_HOST}/xrpc/com.atproto.server.getSession`,
+      `${SERVICE}/xrpc/com.atproto.server.refreshSession`,
+      `${PDS_HOST}/xrpc/com.atproto.server.getSession`,
+    ])
+  })
+
   it('passes through the session did', () => {
     const session = makeSession(fetchMock)
     expect(routeSessionToPds(session, PDS_HOST).did).toBe(DID)
