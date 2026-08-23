@@ -44,7 +44,7 @@ export const SPACES_ALPHA_ENABLED =
   process.env.EXPO_PUBLIC_SPACES_ALPHA_ENABLED === '1'
 
 export const LEGACY_RADLIB_PRIVATE_ENABLED =
-  process.env.EXPO_PUBLIC_LEGACY_RADLIB_PRIVATE_ENABLED !== '0'
+  process.env.EXPO_PUBLIC_LEGACY_RADLIB_PRIVATE_ENABLED === '1'
 
 /**
  * The commit hash that the current bundle was made from. The user can
@@ -83,14 +83,17 @@ export const LOG_DEBUG: string = process.env.EXPO_PUBLIC_LOG_DEBUG || ''
  * must fail as an unavailable service rather than silently switching the
  * product's read authority.
  */
-export const APPVIEW_PROXY_DID: DidString =
-  (process.env.EXPO_PUBLIC_APPVIEW_SERVICE_DID ||
-    (IS_DEV ? 'did:plc:dw4kbjf5mn7nhenabiqpkyh3' : 'did:example:unconfigured-appview')) as DidString
+export const APPVIEW_PROXY_DID: DidString = (process.env
+  .EXPO_PUBLIC_APPVIEW_SERVICE_DID ||
+  (IS_DEV
+    ? 'did:plc:dw4kbjf5mn7nhenabiqpkyh3'
+    : 'did:example:unconfigured-appview')) as DidString
 
 export const APPVIEW_PROXY_FRAGMENT =
   process.env.EXPO_PUBLIC_APPVIEW_SERVICE_FRAGMENT || 'bsky_appview'
 
-export const APPVIEW_PROXY_SERVICE = `${APPVIEW_PROXY_DID}#${APPVIEW_PROXY_FRAGMENT}` as `${DidString}#${string}`
+export const APPVIEW_PROXY_SERVICE =
+  `${APPVIEW_PROXY_DID}#${APPVIEW_PROXY_FRAGMENT}` as `${DidString}#${string}`
 
 export const PUBLIC_APPVIEW_URL =
   process.env.EXPO_PUBLIC_PUBLIC_APPVIEW_URL ||
@@ -98,8 +101,11 @@ export const PUBLIC_APPVIEW_URL =
   'https://appview.invalid'
 
 /** Default labelers are an operator/user configuration, never a hidden app authority. */
+const DEFAULT_LABELER_DIDS_ENV = process.env
+  .EXPO_PUBLIC_DEFAULT_LABELER_DIDS as string | undefined
+
 export const DEFAULT_LABELER_DIDS: DidString[] = (
-  process.env.EXPO_PUBLIC_DEFAULT_LABELER_DIDS || ''
+  DEFAULT_LABELER_DIDS_ENV || ''
 )
   .split(',')
   .map((value: string) => value.trim())

@@ -35,7 +35,7 @@ describe('Spaces client boundary', () => {
   })
 
   it('accepts the permissioned URI returned by the Spaces alpha PDS', async () => {
-    const result = await toSpaceRpc.putRecord.output.schema[
+    const result = await toSpaceRpc.putRecord.$output.schema[
       '~standard'
     ].validate({
       uri: 'at://did:plc:owner/space/org.radlib.account/private/did:plc:writer/org.radlib.private.post/abc',

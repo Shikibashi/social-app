@@ -53,4 +53,39 @@ describe('permissioned data client boundary', () => {
     expect(input.collection).toBe(PRIVATE_POST_COLLECTION)
     expect(input.record.$type).toBe(PRIVATE_POST_COLLECTION)
   })
+
+  it('preserves private reply provenance and Space-safe embeds', () => {
+    const value = buildPrivatePostValue(
+      new RichText({text: 'private reply'}),
+      ['en'],
+      new Date('2026-08-23T12:00:00.000Z'),
+      {
+        $type: 'app.bsky.embed.recordWithMedia',
+        record: {
+          $type: 'app.bsky.embed.record',
+          record: {
+            uri: 'at://did:plc:owner/space/org.radlib.account/private/3jzfcwz3q7s2a',
+            cid: 'bafyreirecord',
+          },
+        },
+        media: {
+          $type: 'app.bsky.embed.images',
+          images: [],
+        },
+      },
+      {
+        root: {
+          uri: 'at://did:plc:owner/space/org.radlib.account/private/3jzfcwz3q7s2a',
+          cid: 'bafyreirecord',
+        },
+        parent: {
+          uri: 'at://did:plc:owner/space/org.radlib.account/private/3jzfcwz3q7s2a',
+          cid: 'bafyreirecord',
+        },
+      },
+    )
+
+    expect(value.reply).toMatchObject({root: {cid: 'bafyreirecord'}})
+    expect(value.embed).toMatchObject({$type: 'app.bsky.embed.recordWithMedia'})
+  })
 })

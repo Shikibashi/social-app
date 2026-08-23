@@ -62,18 +62,28 @@ export function PrivateFeedScreen({}: Props) {
               </Text>
             </SettingsList.Item>
           ) : feedQuery.data?.feed.length ? (
-            feedQuery.data.feed.map(item => (
-              <SettingsList.Item key={`${item.repo}/${item.rkey}`}>
-                <View style={[a.flex_1, a.gap_xs]}>
+            <>
+              {!feedQuery.data.complete ? (
+                <SettingsList.Item>
                   <Text style={t.atoms.text_contrast_medium}>
-                    {formatPrivatePost(item.record)}
+                    This is a partial Space read. Some authorized writer repos
+                    were unavailable; the posts below are not complete.
                   </Text>
-                  <Text style={t.atoms.text_contrast_medium}>
-                    {new Date(item.createdAt).toLocaleString()}
-                  </Text>
-                </View>
-              </SettingsList.Item>
-            ))
+                </SettingsList.Item>
+              ) : null}
+              {feedQuery.data.feed.map(item => (
+                <SettingsList.Item key={`${item.repo}/${item.rkey}`}>
+                  <View style={[a.flex_1, a.gap_xs]}>
+                    <Text style={t.atoms.text_contrast_medium}>
+                      {formatPrivatePost(item.record)}
+                    </Text>
+                    <Text style={t.atoms.text_contrast_medium}>
+                      {new Date(item.createdAt).toLocaleString()}
+                    </Text>
+                  </View>
+                </SettingsList.Item>
+              ))}
+            </>
           ) : feedQuery.isPending && space ? (
             <SettingsList.Item>
               <Text style={t.atoms.text_contrast_medium}>

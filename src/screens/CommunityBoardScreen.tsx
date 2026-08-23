@@ -5,7 +5,11 @@ import {RichText} from '@bsky/sdk/richtext'
 import {type NativeStackScreenProps} from '@react-navigation/native-stack'
 import {useMutation, useQuery, useQueryClient} from '@tanstack/react-query'
 
-import {createSpaceCredentialClient, spacesClient} from '#/lib/atproto/spaces'
+import {
+  createRadlibAuthorityClient,
+  createSpaceCredentialSession,
+} from '#/lib/atproto/spaces'
+import {readAllSpaceRecords} from '#/lib/atproto/spaces/fanout'
 import {writePrivateTextPostToSpace} from '#/lib/permissioned-data'
 import {type CommonNavigatorParams} from '#/lib/routes/types'
 import {usePdsClient} from '#/state/session'
@@ -30,13 +34,6 @@ type Community = {
   description?: string
   visibility?: CommunityVisibility | 'protected'
   createdAt?: string
-}
-
-type CommunityNote = {
-  repo: string
-  rkey: string
-  cid: string
-  value?: Record<string, unknown>
 }
 
 const POST_COLLECTION = 'org.radlib.private.post' as NsidString
@@ -130,23 +127,33 @@ export function CommunityBoardScreen({route}: Props) {
     queryKey: ['radlib-community-spaces', client.did],
     enabled: !!client.did && SPACES_ALPHA_ENABLED,
     queryFn: async () => {
-      const page = await spacesClient(client).listSpaces({
-        type: 'org.radlib.community',
-        did: client.did,
+      const localPage = await client.call(org.radlib.private.listCommunities, {
         limit: 50,
       })
-      const spaces = await Promise.all(
-        page.spaces.map(async ({uri}) => {
-          try {
-            return (await client.call(org.radlib.private.getSpace, {
-              space: uri,
-            })) as Community
-          } catch {
-            return {uri}
-          }
-        }),
-      )
-      return {...page, spaces}
+      const spaces = [...(localPage.spaces as Community[])]
+
+      // A member's own PDS does not host the authority's Radlib control DB.
+      // Resolve a deep-linked remote board through a narrowly-scoped service
+      // auth call so the board can be discovered without mirroring policy data
+      // into every member PDS.
+      if (requestedSpace && !spaces.some(item => item.uri === requestedSpace)) {
+        try {
+          const authorityClient = await createRadlibAuthorityClient(
+            client,
+            requestedSpace,
+            org.radlib.private.getSpace.$lxm,
+          )
+          spaces.push(
+            (await authorityClient.call(org.radlib.private.getSpace, {
+              space: requestedSpace,
+            })) as Community,
+          )
+        } catch {
+          // The query's normal error boundary will explain an unavailable
+          // board once the requested route is actually selected.
+        }
+      }
+      return {...localPage, spaces}
     },
   })
 
@@ -157,66 +164,61 @@ export function CommunityBoardScreen({route}: Props) {
   const communityQuery = useQuery({
     queryKey: ['radlib-community', client.did, space],
     enabled: !!client.did && !!space && SPACES_ALPHA_ENABLED,
-    queryFn: () =>
-      client.call(org.radlib.private.getSpace, {space}) as Promise<Community>,
+    queryFn: async () => {
+      const authorityDid = parseSpaceAuthority(space)
+      const controlClient =
+        authorityDid === client.did
+          ? client
+          : await createRadlibAuthorityClient(
+              client,
+              space,
+              org.radlib.private.getSpace.$lxm,
+            )
+      return controlClient.call(org.radlib.private.getSpace, {
+        space,
+      }) as Promise<Community>
+    },
   })
 
   const notesQuery = useQuery({
     queryKey: ['radlib-community-board', client.did, space],
     enabled: !!client.did && !!space && SPACES_ALPHA_ENABLED,
     queryFn: async () => {
-      const authorityDid = parseSpaceAuthority(space)
-      const reader =
-        authorityDid !== client.did
-          ? await createSpaceCredentialClient(client, space)
-          : spacesClient(client)
-      const readForRepo = (repo: string) =>
-        reader.listRecords({
+      const session = await createSpaceCredentialSession(client, space)
+      return readAllSpaceRecords(
+        {
+          listRepos: session.client.listRepos.bind(session.client),
+          listRecords: session.client.listRecords.bind(session.client),
+          readerForRepo: session.forRepo,
+        },
+        {
           space,
-          repo,
           collection: POST_COLLECTION,
-          limit: 50,
-          reverse: true,
-        })
-      let notes: CommunityNote[]
-      try {
-        const repos = await reader.listRepos({space, limit: 100})
-        const pages = await Promise.all(
-          repos.repos.map(repo => readForRepo(repo.did)),
-        )
-        notes = pages.flatMap((page, index) =>
-          page.records.map(record => ({
-            repo: repos.repos[index].did,
-            rkey: record.rkey,
-            cid: record.cid,
-            value: record.value as Record<string, unknown> | undefined,
-          })),
-        )
-      } catch {
-        // Some alpha PDSes authorize record reads for the viewer but not the
-        // repo index. Keep the board useful by showing the viewer's notes.
-        const page = await readForRepo(client.did ?? '')
-        notes = page.records.map(record => ({
-          repo: client.did ?? '',
-          rkey: record.rkey,
-          cid: record.cid,
-          value: record.value as Record<string, unknown> | undefined,
-        }))
-      }
-      return notes.sort((left, right) =>
-        recordDate(right.value).localeCompare(recordDate(left.value)),
+        },
       )
     },
   })
 
   const membershipMutation = useMutation({
-    mutationFn: (leave: boolean) =>
-      leave
-        ? client.call(org.radlib.private.leaveCommunity, {space})
-        : client.call(org.radlib.private.joinCommunity, {
+    mutationFn: async (leave: boolean) => {
+      const authorityDid = parseSpaceAuthority(space)
+      const controlClient =
+        authorityDid === client.did
+          ? client
+          : await createRadlibAuthorityClient(
+              client,
+              space,
+              leave
+                ? org.radlib.private.leaveCommunity.$lxm
+                : org.radlib.private.joinCommunity.$lxm,
+            )
+      return leave
+        ? controlClient.call(org.radlib.private.leaveCommunity, {space})
+        : controlClient.call(org.radlib.private.joinCommunity, {
             space,
             inviteToken: inviteToken.trim() || undefined,
-          }),
+          })
+    },
     onSuccess: result => {
       setMembershipStates(states => ({...states, [space]: result.state}))
       setStatus(`Membership: ${result.state}`)
@@ -235,13 +237,9 @@ export function CommunityBoardScreen({route}: Props) {
   const noteMutation = useMutation({
     mutationFn: async () => {
       if (!space.trim()) throw new Error('Community space is unavailable')
-      const authorityDid = parseSpaceAuthority(space)
-      const writer =
-        authorityDid !== client.did
-          ? await createSpaceCredentialClient(client, space)
-          : spacesClient(client)
+      const session = await createSpaceCredentialSession(client, space)
       return writePrivateTextPostToSpace(
-        writer,
+        session.client,
         space,
         new RichText({text: text.trim()}),
         ['en'],
@@ -638,7 +636,7 @@ export function CommunityBoardScreen({route}: Props) {
                           fontWeight: '700',
                           color: ECW.pink,
                         }}>
-                        {notesQuery.data?.length ?? 0} NOTES
+                        {notesQuery.data?.records.length ?? 0} NOTES
                       </Text>
                       <Text
                         style={{
@@ -792,6 +790,22 @@ export function CommunityBoardScreen({route}: Props) {
                         {shortSpace(space)}
                       </Text>
                     </View>
+                    {notesQuery.data && !notesQuery.data.complete ? (
+                      <View
+                        style={[a.p_sm, {backgroundColor: '#fff2a9'}]}
+                        accessibilityRole="alert">
+                        <Text
+                          style={{
+                            fontFamily: 'Courier New',
+                            fontSize: 11,
+                            fontWeight: '700',
+                            color: BULLETIN.ink,
+                          }}>
+                          PARTIAL BOARD READ — some authorized writer repos
+                          could not be read. The notes below are not complete.
+                        </Text>
+                      </View>
+                    ) : null}
                     <View style={[a.p_lg, {minHeight: 280}]}>
                       {notesQuery.isPending ? (
                         <Text style={[a.p_xl, {color: '#fffdf6'}]}>
@@ -805,9 +819,9 @@ export function CommunityBoardScreen({route}: Props) {
                             this board.
                           </Text>
                         </View>
-                      ) : notesQuery.data?.length ? (
+                      ) : notesQuery.data?.records.length ? (
                         <View style={[a.flex_row, a.flex_wrap, a.gap_md]}>
-                          {notesQuery.data.map((note, index) => (
+                          {notesQuery.data.records.map((note, index) => (
                             <View
                               key={`${note.repo}/${note.rkey}`}
                               style={[

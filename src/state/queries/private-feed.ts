@@ -1,6 +1,7 @@
 import {useQuery} from '@tanstack/react-query'
 
-import {createSpaceCredentialClient, spacesClient} from '#/lib/atproto/spaces'
+import {createSpaceCredentialSession} from '#/lib/atproto/spaces'
+import {readAllSpaceRecords} from '#/lib/atproto/spaces/fanout'
 import {STALE} from '#/state/queries'
 import {usePdsClient} from '#/state/session'
 import {LEGACY_RADLIB_PRIVATE_ENABLED, SPACES_ALPHA_ENABLED} from '#/env'
@@ -20,41 +21,46 @@ export function usePrivateFeedQuery(space: string) {
     staleTime: STALE.MINUTES.ONE,
     queryFn: async () => {
       if (SPACES_ALPHA_ENABLED) {
-        const authorityDid = space.match(/^at:\/\/(did:[^/]+)\//)?.[1]
-        const reader =
-          authorityDid && authorityDid !== client.did
-            ? await createSpaceCredentialClient(client, space)
-            : spacesClient(client)
-        return reader
-          .listRecords({
+        const authorityDid = space.match(/^at:\/\/(did:[^/]+)\//)?.[1] ?? ''
+        const session = await createSpaceCredentialSession(client, space)
+        const result = await readAllSpaceRecords(
+          {
+            listRepos: session.client.listRepos.bind(session.client),
+            listRecords: session.client.listRecords.bind(session.client),
+            readerForRepo: session.forRepo,
+          },
+          {
             space,
-            repo: authorityDid,
             collection: 'org.radlib.private.post',
-            limit: 50,
-            reverse: true,
-          })
-          .then(page => ({
-            providerDid: authorityDid ?? '',
+          },
+        )
+        return {
+          providerDid: authorityDid ?? '',
+          space,
+          complete: result.complete,
+          errors: result.errors,
+          feed: result.records.map(record => ({
             space,
-            feed: page.records.map(record => ({
-              space,
-              repo: authorityDid ?? client.did,
-              collection: record.collection,
-              rkey: record.rkey,
-              cid: record.cid,
-              record: record.value,
-              createdAt: recordDate(record.value),
-              updatedAt: recordDate(record.value),
-            })),
-            ...(page.cursor ? {cursor: page.cursor} : {}),
-          }))
+            repo: record.repo,
+            collection: record.collection,
+            rkey: record.rkey,
+            cid: record.cid,
+            record: record.value,
+            createdAt: recordDate(record.value),
+            updatedAt: recordDate(record.value),
+          })),
+        }
       }
       if (!LEGACY_RADLIB_PRIVATE_ENABLED) {
         throw new Error(
-          'Permissioned-data transport is disabled: enable Spaces alpha or the legacy Radlib adapter',
+          'Spaces alpha transport is disabled; the legacy Radlib adapter is migration-only',
         )
       }
-      return client.call(org.radlib.private.getFeed, {space, limit: 50})
+      const legacy = await client.call(org.radlib.private.getFeed, {
+        space,
+        limit: 50,
+      })
+      return {...legacy, complete: true, errors: []}
     },
   })
 }

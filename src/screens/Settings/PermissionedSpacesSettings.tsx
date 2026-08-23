@@ -6,7 +6,11 @@ import {useLingui} from '@lingui/react'
 import {type NativeStackScreenProps} from '@react-navigation/native-stack'
 import {useMutation, useQuery, useQueryClient} from '@tanstack/react-query'
 
-import {spacesClient} from '#/lib/atproto/spaces'
+import {
+  createRadlibAuthorityClient,
+  createSpaceCredentialSession,
+} from '#/lib/atproto/spaces'
+import {readAllSpaceRecords} from '#/lib/atproto/spaces/fanout'
 import {type CommonNavigatorParams} from '#/lib/routes/types'
 import {useProtectedAccountQuery} from '#/state/queries/protected-account'
 import {usePdsClient} from '#/state/session'
@@ -24,12 +28,6 @@ type Props = NativeStackScreenProps<
 >
 
 type CommunityVisibility = 'public' | 'restricted' | 'invite-only' | 'private'
-type CommunityListing = {
-  uri: string
-  name?: string
-  description?: string
-  visibility?: CommunityVisibility | 'protected'
-}
 
 const inputStyle = {
   minHeight: 44,
@@ -77,21 +75,30 @@ export function PermissionedSpacesSettingsScreen({}: Props) {
   const recordsQuery = useQuery({
     queryKey: ['radlib-private-records', client.did, space, collection],
     enabled: !!client.did && !!space,
-    queryFn: () => {
+    queryFn: async () => {
       requirePrivateTransport()
-      return SPACES_ALPHA_ENABLED
-        ? spacesClient(client).listRecords({
+      if (SPACES_ALPHA_ENABLED) {
+        const session = await createSpaceCredentialSession(client, space)
+        return readAllSpaceRecords(
+          {
+            listRepos: session.client.listRepos.bind(session.client),
+            listRecords: session.client.listRecords.bind(session.client),
+            readerForRepo: session.forRepo,
+          },
+          {
             space,
-            collection: collection.trim() || undefined,
-            limit: 50,
-          })
-        : client.call(org.radlib.private.listRecords, {
-            space,
-            collection: collection.trim()
-              ? (collection.trim() as NsidString)
-              : undefined,
-            limit: 50,
-          })
+            collection: collection.trim() || 'org.radlib.private.post',
+          },
+        )
+      }
+      const legacy = await client.call(org.radlib.private.listRecords, {
+        space,
+        collection: collection.trim()
+          ? (collection.trim() as NsidString)
+          : undefined,
+        limit: 50,
+      })
+      return {records: legacy.records, errors: [], complete: true}
     },
   })
 
@@ -99,23 +106,7 @@ export function PermissionedSpacesSettingsScreen({}: Props) {
     queryKey: ['radlib-private-communities', client.did],
     enabled: !!client.did && SPACES_ALPHA_ENABLED,
     queryFn: async () => {
-      const page = await spacesClient(client).listSpaces({
-        type: 'org.radlib.community',
-        did: client.did,
-        limit: 50,
-      })
-      const spaces = await Promise.all(
-        page.spaces.map(async ({uri}) => {
-          try {
-            return (await client.call(org.radlib.private.getSpace, {
-              space: uri,
-            })) as CommunityListing
-          } catch {
-            return {uri}
-          }
-        }),
-      )
-      return {...page, spaces}
+      return client.call(org.radlib.private.listCommunities, {limit: 50})
     },
   })
 
@@ -136,15 +127,28 @@ export function PermissionedSpacesSettingsScreen({}: Props) {
   })
 
   const membershipMutation = useMutation({
-    mutationFn: (leave: boolean) =>
-      leave
-        ? client.call(org.radlib.private.leaveCommunity, {
-            space: communitySpace.trim(),
+    mutationFn: async (leave: boolean) => {
+      const selectedSpace = communitySpace.trim()
+      const authorityDid = parseSpaceAuthority(selectedSpace)
+      const controlClient =
+        authorityDid === client.did
+          ? client
+          : await createRadlibAuthorityClient(
+              client,
+              selectedSpace,
+              leave
+                ? org.radlib.private.leaveCommunity.$lxm
+                : org.radlib.private.joinCommunity.$lxm,
+            )
+      return leave
+        ? controlClient.call(org.radlib.private.leaveCommunity, {
+            space: selectedSpace,
           })
-        : client.call(org.radlib.private.joinCommunity, {
-            space: communitySpace.trim(),
+        : controlClient.call(org.radlib.private.joinCommunity, {
+            space: selectedSpace,
             inviteToken: inviteToken.trim() || undefined,
-          }),
+          })
+    },
     onSuccess: result => {
       setStatus(`Community membership: ${result.state}`)
       void queryClient.invalidateQueries({
@@ -159,19 +163,24 @@ export function PermissionedSpacesSettingsScreen({}: Props) {
   async function getRecord() {
     try {
       requirePrivateTransport()
-      const result = SPACES_ALPHA_ENABLED
-        ? await spacesClient(client).getRecord({
-            space: space.trim(),
-            repo: lookupRepo.trim(),
-            collection: lookupCollection.trim(),
-            rkey: lookupRkey.trim(),
-          })
-        : await client.call(org.radlib.private.getRecord, {
-            space: space.trim(),
-            repo: lookupRepo.trim() as DidString,
-            collection: lookupCollection.trim() as NsidString,
-            rkey: lookupRkey.trim(),
-          })
+      let result
+      if (SPACES_ALPHA_ENABLED) {
+        const session = await createSpaceCredentialSession(client, space.trim())
+        const reader = await session.forRepo(lookupRepo.trim() as DidString)
+        result = await reader.getRecord({
+          space: space.trim(),
+          repo: lookupRepo.trim(),
+          collection: lookupCollection.trim(),
+          rkey: lookupRkey.trim(),
+        })
+      } else {
+        result = await client.call(org.radlib.private.getRecord, {
+          space: space.trim(),
+          repo: lookupRepo.trim() as DidString,
+          collection: lookupCollection.trim() as NsidString,
+          rkey: lookupRkey.trim(),
+        })
+      }
       setLookupResult(
         JSON.stringify('record' in result ? result.record : result.value),
       )
@@ -187,15 +196,23 @@ export function PermissionedSpacesSettingsScreen({}: Props) {
   async function getBlob() {
     try {
       requirePrivateTransport()
-      const result = SPACES_ALPHA_ENABLED
-        ? await spacesClient(client).getBlob({
-            space: space.trim(),
-            cid: blobId.trim(),
-          })
-        : await client.call(org.radlib.private.getBlob, {
-            space: space.trim(),
-            id: blobId.trim(),
-          })
+      let result
+      if (SPACES_ALPHA_ENABLED) {
+        const session = await createSpaceCredentialSession(client, space.trim())
+        const reader = await session.forRepo(
+          (lookupRepo.trim() || client.did) as DidString,
+        )
+        result = await reader.getBlob({
+          space: space.trim(),
+          repo: lookupRepo.trim() || client.did,
+          cid: blobId.trim(),
+        })
+      } else {
+        result = await client.call(org.radlib.private.getBlob, {
+          space: space.trim(),
+          id: blobId.trim(),
+        })
+      }
       setBlobResult(
         `Authorized private media response received (${result.byteLength} bytes)`,
       )
@@ -564,4 +581,10 @@ export function PermissionedSpacesSettingsScreen({}: Props) {
       </Layout.Content>
     </Layout.Screen>
   )
+}
+
+function parseSpaceAuthority(space: string): string {
+  const match = /^at:\/\/(did:[^/]+)\/space\//.exec(space)
+  if (!match) throw new Error(`Invalid community space URI: ${space}`)
+  return match[1]
 }

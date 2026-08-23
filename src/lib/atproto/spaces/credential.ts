@@ -3,6 +3,7 @@ import {type DidString} from '@atproto/syntax'
 
 import {createLexClient} from '#/lib/lexClient'
 import {resolvePdsEndpointForDid} from '#/state/session/pds-resolution'
+import {com} from '#/lexicons'
 import {SpacesClient} from './client'
 import {toSpaceRpc} from './rpc'
 
@@ -16,13 +17,20 @@ type DpopKey = {
  * The default endpoint resolver rejects unsafe private-network endpoints; the
  * optional resolver exists for explicitly controlled multi-PDS test harnesses.
  */
-export async function createSpaceCredentialClient(
+export type SpaceCredentialSession = {
+  /** The authority endpoint, used for listRepos and writes by the viewer. */
+  client: SpacesClient
+  /** Build the same credential-bound client at a writer's PDS endpoint. */
+  forRepo(repo: DidString): Promise<SpacesClient>
+}
+
+export async function createSpaceCredentialSession(
   userClient: Client,
   space: string,
   resolveEndpoint: (
     did: string,
   ) => Promise<string | undefined> = resolvePdsEndpointForDid,
-): Promise<SpacesClient> {
+): Promise<SpaceCredentialSession> {
   const authorityDid = parseSpaceAuthority(space)
   const authorityEndpoint = await resolveEndpoint(authorityDid)
   if (!authorityEndpoint) {
@@ -40,6 +48,7 @@ export async function createSpaceCredentialClient(
     key,
     delegation.token,
     undefined,
+    userClient.did,
   )
   const credential = await credentialClient.call(
     toSpaceRpc.getSpaceCredential,
@@ -48,14 +57,105 @@ export async function createSpaceCredentialClient(
     },
   )
 
-  return new SpacesClient(
-    createDpopClient(
-      authorityEndpoint,
-      key,
-      credential.credential,
-      credential.credential,
-    ),
+  const makeClient = (endpoint: string) =>
+    new SpacesClient(
+      createDpopClient(
+        endpoint,
+        key,
+        credential.credential,
+        credential.credential,
+        userClient.did,
+      ),
+    )
+
+  return {
+    client: makeClient(authorityEndpoint),
+    async forRepo(repo) {
+      const endpoint = await resolveEndpoint(repo)
+      if (!endpoint) {
+        throw new Error(`Could not resolve the writer PDS for ${repo}`)
+      }
+      return makeClient(endpoint)
+    },
+  }
+}
+
+/**
+ * Backwards-compatible authority client for callers that do not fan out over
+ * multiple writer PDSes.
+ */
+export async function createSpaceCredentialClient(
+  userClient: Client,
+  space: string,
+  resolveEndpoint?: (did: string) => Promise<string | undefined>,
+): Promise<SpacesClient> {
+  const session = await createSpaceCredentialSession(
+    userClient,
+    space,
+    resolveEndpoint,
   )
+  return session.client
+}
+
+/**
+ * Mint a short-lived user service-auth token for a Radlib control-plane
+ * operation hosted by a Space authority. The authority DID is the application
+ * policy audience; this token is accepted only by the matching Radlib route,
+ * never by ordinary PDS repo/blob methods.
+ */
+export async function createRadlibAuthorityClient(
+  userClient: Client,
+  space: string,
+  lxm: string,
+  resolveEndpoint: (
+    did: string,
+  ) => Promise<string | undefined> = resolvePdsEndpointForDid,
+): Promise<Client> {
+  const authorityDid = parseSpaceAuthority(space)
+  return createRadlibAuthorityClientForDid(
+    userClient,
+    authorityDid,
+    lxm,
+    resolveEndpoint,
+  )
+}
+
+export async function createRadlibAuthorityClientForDid(
+  userClient: Client,
+  authorityDid: DidString,
+  lxm: string,
+  resolveEndpoint: (
+    did: string,
+  ) => Promise<string | undefined> = resolvePdsEndpointForDid,
+): Promise<Client> {
+  const endpoint = await resolveEndpoint(authorityDid)
+  if (!endpoint) {
+    throw new Error(
+      `Could not resolve the Space authority PDS for ${authorityDid}`,
+    )
+  }
+  const {token} = await userClient.call(com.atproto.server.getServiceAuth, {
+    aud: authorityDid,
+    lxm: lxm as `${string}.${string}.${string}`,
+  })
+  return createServiceAuthClient(endpoint, token, userClient.did)
+}
+
+function createServiceAuthClient(
+  endpoint: string,
+  token: string,
+  did: DidString | undefined,
+): Client {
+  const agent: Agent = {
+    did,
+    fetchHandler: async (path, init) => {
+      const url = new URL(path, endpoint)
+      const headers = new Headers(init.headers)
+      headers.set('authorization', `Bearer ${token}`)
+      return fetch(url, {...init, headers, redirect: 'error'})
+    },
+  }
+  return createLexClient(agent, {appLabelers: null})
 }
 
 function createDpopClient(
@@ -63,9 +163,13 @@ function createDpopClient(
   key: DpopKey,
   authorizationToken: string,
   dpopCredential: string | undefined,
+  did: DidString | undefined,
 ): Client {
   const agent: Agent = {
-    did: undefined,
+    // The DPoP credential authorizes the viewer, while the repo written by a
+    // Space client is still the viewer's own PDS repo. Preserve that DID at
+    // the client boundary so SpacesClient.putRecord can select the writer.
+    did,
     fetchHandler: async (path, init) => {
       const url = new URL(path, endpoint)
       const headers = new Headers(init.headers)

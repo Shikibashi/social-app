@@ -44,7 +44,7 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context'
 import {scheduleOnUI} from 'react-native-worklets'
 import * as FileSystem from 'expo-file-system'
 import {type ImagePickerAsset} from 'expo-image-picker'
-import {type Client, type UriString} from '@atproto/lex'
+import {type Client, type LexMap, type UriString} from '@atproto/lex'
 import {AtUri, type AtUriString} from '@atproto/syntax'
 import {type RichText} from '@bsky/sdk/richtext'
 import {plural} from '@lingui/core/macro'
@@ -100,7 +100,11 @@ import {
   useSession,
 } from '#/state/session'
 import {useComposerControls} from '#/state/shell/composer'
-import {type ComposerOpts, type OnPostSuccessData} from '#/state/shell/composer'
+import {
+  type ComposerOpts,
+  type ComposerOptsPostRef,
+  type OnPostSuccessData,
+} from '#/state/shell/composer'
 import {CharProgress} from '#/view/com/composer/char-progress/CharProgress'
 import {ComposerReplyTo} from '#/view/com/composer/ComposerReplyTo'
 import {DraftsButton} from '#/view/com/composer/drafts/DraftsButton'
@@ -1040,14 +1044,7 @@ export const ComposePost = ({
             post.embed.media.video.status === 'error'
           )),
     ) &&
-    (!privatePostMode ||
-      (!!privateAccountSpace &&
-        !replyTo &&
-        !initQuote &&
-        thread.posts.length === 1 &&
-        !thread.posts[0].embed.media &&
-        !thread.posts[0].embed.link &&
-        !thread.posts[0].embed.quote))
+    (!privatePostMode || !!privateAccountSpace)
 
   const getFilteredThread = useCallback((): {
     type: 'none' | 'trailing-only' | 'non-trailing'
@@ -1116,17 +1113,59 @@ export const ComposePost = ({
     try {
       logger.info(`composer: posting...`)
       if (privatePostMode) {
-        const privatePost = filteredThread.posts[0]
         if (!privateAccountSpace) {
           throw new Error('Protected account private space is unavailable')
         }
 
-        await writePrivateTextPost(
-          pdsClient,
-          privateAccountSpace,
-          privatePost.richtext,
-          currentLanguages,
-        )
+        let rootRef: LexMap | undefined
+        let parentRef: LexMap | undefined
+        if (replyTo) {
+          const ref = privateStrongRef(replyTo)
+          rootRef = ref
+          parentRef = ref
+        }
+
+        for (const privatePost of filteredThread.posts) {
+          const privateEmbed = await resolvePrivateEmbed(
+            privatePost.embed,
+            client,
+            chatClient,
+            pdsClient,
+            queryClient,
+            setPublishingStage,
+          )
+          const hasEmbed =
+            !!privatePost.embed.media ||
+            !!privatePost.embed.link ||
+            !!privatePost.embed.quote
+          if (hasEmbed && !privateEmbed) {
+            throw new Error('Private embed could not be resolved')
+          }
+
+          const reply =
+            rootRef && parentRef
+              ? ({root: rootRef, parent: parentRef} as LexMap)
+              : undefined
+          const written = await writePrivateTextPost(
+            pdsClient,
+            privateAccountSpace,
+            privatePost.richtext,
+            currentLanguages,
+            privateEmbed,
+            reply,
+          )
+          if (!('uri' in written)) {
+            throw new Error(
+              'Private thread replies require the Spaces alpha transport',
+            )
+          }
+          const writtenRef = {
+            uri: written.uri,
+            cid: written.cid,
+          } as LexMap
+          rootRef ??= writtenRef
+          parentRef = writtenRef
+        }
 
         if (composerState.draftId && composerState.originalLocalRefs) {
           cleanupPublishedDraft({
@@ -1478,7 +1517,7 @@ export const ComposePost = ({
           <Toggle.Item
             type="checkbox"
             name="private-post"
-            label="Private text post"
+            label="Private post"
             value={privatePostMode}
             onChange={setPrivatePostMode}>
             <View style={[a.flex_row, a.align_center, a.gap_sm]}>
@@ -1491,10 +1530,9 @@ export const ComposePost = ({
           {privatePostMode ? (
             <Admonition type="info">
               <Trans>
-                This post is sent to your protected account space, not the
-                public ATProto repository. This first client path supports text
-                and text facets only; remove replies, quotes, and media before
-                publishing.
+                This post is sent to your protected account Space, not the
+                public ATProto repository. Text, replies, facets, media, links,
+                and quotes are stored through the Spaces alpha path.
               </Trans>
             </Admonition>
           ) : null}
@@ -1518,9 +1556,7 @@ export const ComposePost = ({
         post={activePost}
         dispatch={dispatch}
         showAddButton={
-          !privatePostMode &&
-          !isEmptyPost(activePost) &&
-          (!nextPost || !isEmptyPost(nextPost))
+          !isEmptyPost(activePost) && (!nextPost || !isEmptyPost(nextPost))
         }
         onError={setError}
         onSelectVideo={selectVideo}
@@ -1533,7 +1569,7 @@ export const ComposePost = ({
         onSelectLanguage={onSelectLanguage}
         languageNudgeAt={languageNudgeAt}
         openGallery={openGallery}
-        mediaSelectionDisabled={privatePostMode}
+        mediaSelectionDisabled={false}
         textInputRef={textInputRef}
       />
     </>
@@ -2859,4 +2895,48 @@ function VideoUploadToolbar({state}: {state: VideoState}) {
       <Text style={[a.font_semi_bold, a.ml_sm]}>{text}</Text>
     </ToolbarWrapper>
   )
+}
+
+function privateStrongRef(post: ComposerOptsPostRef): LexMap {
+  return {uri: post.uri, cid: post.cid}
+}
+
+async function resolvePrivateEmbed(
+  embed: Parameters<typeof apilib.resolveMedia>[4],
+  client: Client,
+  chatClient: Client,
+  pdsClient: Client,
+  queryClient: ReturnType<typeof useQueryClient>,
+  onStateChange: (state: string) => void,
+): Promise<LexMap | undefined> {
+  const media =
+    embed.media || embed.link
+      ? await apilib.resolveMedia(
+          client,
+          chatClient,
+          pdsClient,
+          queryClient,
+          embed,
+          onStateChange,
+        )
+      : undefined
+  const quoteRecord = embed.quote
+    ? await apilib.resolveRecordForEmbed(
+        client,
+        chatClient,
+        queryClient,
+        embed.quote.uri,
+      )
+    : undefined
+  const quote = quoteRecord
+    ? ({$type: 'app.bsky.embed.record', record: quoteRecord} as LexMap)
+    : undefined
+  if (quote && media) {
+    return {
+      $type: 'app.bsky.embed.recordWithMedia',
+      record: quote,
+      media,
+    }
+  }
+  return quote || media
 }

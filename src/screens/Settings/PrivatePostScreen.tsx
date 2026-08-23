@@ -83,9 +83,10 @@ export function PrivatePostScreen({}: Props) {
                 Write to your private PDS space
               </SettingsList.ItemText>
               <Text style={t.atoms.text_contrast_medium}>
-                This is a text-only private post. It is written to your
-                protected account space through the Spaces alpha transport and
-                is not published as a public app.bsky.feed.post.
+                This quick composer writes to your protected account Space
+                through the Spaces alpha transport. For replies, media, links,
+                quotes, or threads, use the main composer and enable Private
+                post before publishing.
               </Text>
               <Text style={t.atoms.text_contrast_medium}>
                 {isProtected

@@ -314,7 +314,7 @@ async function resolveEmbed(
   return undefined
 }
 
-async function resolveMedia(
+export async function resolveMedia(
   appviewClient: Client,
   chatClient: Client,
   pdsClient: Client,
@@ -500,4 +500,14 @@ async function resolveRecord(
     throw Error(t`Expected uri to resolve to a record`)
   }
   return resolvedLink.record
+}
+
+/** Resolve a public record embed before storing it inside a Space post. */
+export async function resolveRecordForEmbed(
+  appviewClient: Client,
+  chatClient: Client,
+  queryClient: QueryClient,
+  uri: string,
+): Promise<com.atproto.repo.strongRef.Main> {
+  return resolveRecord({appviewClient, chatClient}, queryClient, uri)
 }

@@ -1,5 +1,5 @@
 import {TID} from '@atproto/common-web'
-import {type Client} from '@atproto/lex'
+import {type Client, type LexMap} from '@atproto/lex'
 import {toDatetimeString} from '@atproto/syntax'
 import {type RichText} from '@bsky/sdk/richtext'
 
@@ -10,15 +10,17 @@ import {org} from '#/lexicons'
 export const PRIVATE_POST_COLLECTION = 'org.radlib.private.post' as const
 
 /**
- * Build the text-only private-post value used by the fork-owned permissioned
- * API. This is intentionally not an app.bsky.feed.post record. In alpha mode
- * it is written through com.atproto.space.putRecord; legacy mode retains the
- * old adapter for existing test/development PDS deployments.
+ * Build the private-post value used by the fork-owned permissioned API. This
+ * is intentionally not an app.bsky.feed.post record. In alpha mode
+ * it is written through com.atproto.space.putRecord; the legacy adapter is an
+ * explicit migration-only escape hatch and is disabled by default.
  */
 export function buildPrivatePostValue(
   richtext: RichText,
   langs: string[],
   createdAt = new Date(),
+  embed?: LexMap,
+  reply?: LexMap,
 ) {
   return {
     $type: PRIVATE_POST_COLLECTION,
@@ -26,6 +28,8 @@ export function buildPrivatePostValue(
     ...(richtext.facets?.length ? {facets: richtext.facets} : {}),
     createdAt: toDatetimeString(createdAt),
     ...(langs.length ? {langs: langs.slice(0, 3)} : {}),
+    ...(embed ? {embed} : {}),
+    ...(reply ? {reply} : {}),
   }
 }
 
@@ -34,13 +38,15 @@ export async function writePrivateTextPost(
   space: string,
   richtext: RichText,
   langs: string[],
+  embed?: LexMap,
+  reply?: LexMap,
 ) {
-  const input = buildPrivatePostInput(space, richtext, langs)
+  const input = buildPrivatePostInput(space, richtext, langs, embed, reply)
   if (SPACES_ALPHA_ENABLED)
     return writePrivateSpaceTextPost(spacesClient(client), input)
   if (!LEGACY_RADLIB_PRIVATE_ENABLED) {
     throw new Error(
-      'Permissioned-data transport is disabled: enable Spaces alpha or the legacy Radlib adapter',
+      'Spaces alpha transport is disabled; the legacy Radlib adapter is migration-only',
     )
   }
   return client.call(org.radlib.private.putRecord, input)
@@ -52,13 +58,15 @@ export async function writePrivateTextPostToSpace(
   space: string,
   richtext: RichText,
   langs: string[],
+  embed?: LexMap,
+  reply?: LexMap,
 ) {
   if (!SPACES_ALPHA_ENABLED) {
     throw new Error('Community boards require Spaces alpha transport')
   }
   return writePrivateSpaceTextPost(
     client,
-    buildPrivatePostInput(space, richtext, langs),
+    buildPrivatePostInput(space, richtext, langs, embed, reply),
   )
 }
 
@@ -66,12 +74,14 @@ function buildPrivatePostInput(
   space: string,
   richtext: RichText,
   langs: string[],
+  embed?: LexMap,
+  reply?: LexMap,
 ) {
   return {
     space,
     collection: PRIVATE_POST_COLLECTION,
     rkey: TID.nextStr(),
-    record: buildPrivatePostValue(richtext, langs),
+    record: buildPrivatePostValue(richtext, langs, new Date(), embed, reply),
   }
 }
 

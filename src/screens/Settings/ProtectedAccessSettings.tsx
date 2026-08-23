@@ -50,7 +50,7 @@ export function ProtectedAccessSettingsScreen({}: Props) {
     input:
       | {action: 'request' | 'cancel'; target: string}
       | {
-          action: 'approve' | 'deny' | 'revoke'
+          action: 'approve' | 'deny' | 'revoke' | 'block'
           requester: string
         },
   ) {
@@ -193,6 +193,17 @@ export function ProtectedAccessSettingsScreen({}: Props) {
                     void run({action: 'revoke', requester: requester.trim()})
                   }>
                   <ButtonText>Remove access</ButtonText>
+                </Button>
+                <Button
+                  label={_(msg`Create a block and remove protected access`)}
+                  size="small"
+                  color="secondary"
+                  variant="outline"
+                  disabled={!requester.trim() || mutation.isPending}
+                  onPress={() =>
+                    void run({action: 'block', requester: requester.trim()})
+                  }>
+                  <ButtonText>Block requester</ButtonText>
                 </Button>
               </View>
             </View>

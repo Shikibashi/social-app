@@ -203,6 +203,14 @@ export class SpacesClient {
       }))
   }
 
+  registerNotify(input: {space: string; service: string}) {
+    return this.client.call(toSpaceRpc.registerNotify, input)
+  }
+
+  unregisterNotify(input: {space: string; service: string}) {
+    return this.client.call(toSpaceRpc.unregisterNotify, input)
+  }
+
   listSpaces(
     input: {
       type?: NsidString

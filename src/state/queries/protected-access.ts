@@ -1,9 +1,10 @@
-import {type DidString} from '@atproto/syntax'
+import {type DidString, toDatetimeString} from '@atproto/syntax'
 import {useMutation, useQuery, useQueryClient} from '@tanstack/react-query'
 
+import {createRadlibAuthorityClientForDid} from '#/lib/atproto/spaces'
 import {STALE} from '#/state/queries'
 import {usePdsClient} from '#/state/session'
-import {org} from '#/lexicons'
+import {app, org} from '#/lexicons'
 
 export type ProtectedAccessState =
   'none' | 'requested' | 'approved' | 'denied' | 'revoked' | 'blocked'
@@ -26,11 +27,20 @@ export function useProtectedAccessStateQuery(
     enabled:
       !!client.did && isDid(normalizedRequester) && isDid(normalizedTarget),
     staleTime: STALE.MINUTES.ONE,
-    queryFn: () =>
-      client.call(org.radlib.private.getFollowState, {
+    queryFn: async () => {
+      const authorityClient =
+        normalizedTarget !== client.did
+          ? await createRadlibAuthorityClientForDid(
+              client,
+              normalizedTarget as DidString,
+              org.radlib.private.getFollowState.$lxm,
+            )
+          : client
+      return authorityClient.call(org.radlib.private.getFollowState, {
         requester: normalizedRequester as DidString,
         target: normalizedTarget as DidString,
-      }),
+      })
+    },
   })
 }
 
@@ -49,12 +59,28 @@ export function useProtectedAccessMutation() {
       let result: {state: string} | undefined
       switch (input.action) {
         case 'request':
-          result = await client.call(org.radlib.private.requestFollow, {
+          result = await (
+            input.target !== client.did
+              ? await createRadlibAuthorityClientForDid(
+                  client,
+                  input.target as DidString,
+                  org.radlib.private.requestFollow.$lxm,
+                )
+              : client
+          ).call(org.radlib.private.requestFollow, {
             target: input.target as DidString,
           })
           break
         case 'cancel':
-          result = await client.call(org.radlib.private.cancelFollow, {
+          result = await (
+            input.target !== client.did
+              ? await createRadlibAuthorityClientForDid(
+                  client,
+                  input.target as DidString,
+                  org.radlib.private.cancelFollow.$lxm,
+                )
+              : client
+          ).call(org.radlib.private.cancelFollow, {
             target: input.target as DidString,
           })
           break
@@ -75,12 +101,25 @@ export function useProtectedAccessMutation() {
             requester: input.requester as DidString,
           })
           break
+        case 'block':
+          await client.create(app.bsky.graph.block, {
+            subject: input.requester as DidString,
+            createdAt: toDatetimeString(new Date()),
+          })
+          result = await client.call(org.radlib.private.revokeFollow, {
+            requester: input.requester as DidString,
+          })
+          break
       }
       if (!result) throw new Error('Unknown protected access action')
       return {state: result.state}
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({queryKey: [QUERY_KEY]})
+      void queryClient.invalidateQueries({queryKey: ['radlib-private-feed']})
+      void queryClient.invalidateQueries({
+        queryKey: ['radlib-community-board'],
+      })
     },
   })
 }
