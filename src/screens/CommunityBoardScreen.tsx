@@ -16,7 +16,7 @@ import {
   type CommonNavigatorParams,
   type NavigationProp,
 } from '#/lib/routes/types'
-import {usePdsClient} from '#/state/session'
+import {usePdsClient, useSessionApi} from '#/state/session'
 import {atoms as a} from '#/alf'
 import {Button, ButtonText} from '#/components/Button'
 import {Pin_Filled_Corner0_Rounded as PinIcon} from '#/components/icons/Pin'
@@ -117,6 +117,7 @@ const ECW_INSET = {
 
 export function CommunityBoardScreen({route}: Props) {
   const client = usePdsClient()
+  const {refreshSession} = useSessionApi()
   const navigation = useNavigation<NavigationProp>()
   const queryClient = useQueryClient()
   const requestedSpace = route.params?.space
@@ -129,6 +130,7 @@ export function CommunityBoardScreen({route}: Props) {
   const [communityDescription, setCommunityDescription] = useState('')
   const [communityVisibility, setCommunityVisibility] =
     useState<CommunityVisibility>('private')
+  const [boardRefreshPending, setBoardRefreshPending] = useState(false)
   const [membershipStates, setMembershipStates] = useState<
     Record<string, string>
   >({})
@@ -166,6 +168,23 @@ export function CommunityBoardScreen({route}: Props) {
       return {...localPage, spaces}
     },
   })
+
+  async function refreshBoardIndex() {
+    setBoardRefreshPending(true)
+    try {
+      await refreshSession()
+      const result = await communitySpacesQuery.refetch()
+      if (result.isError) throw result.error
+      setStatus('Board index refreshed.')
+    } catch (error) {
+      Alert.alert(
+        'Could not refresh board index',
+        error instanceof Error ? error.message : String(error),
+      )
+    } finally {
+      setBoardRefreshPending(false)
+    }
+  }
 
   const space =
     requestedSpace ?? communitySpacesQuery.data?.spaces[0]?.uri ?? ''
@@ -476,9 +495,25 @@ export function CommunityBoardScreen({route}: Props) {
                       Reading boards from the PDS…
                     </Text>
                   ) : communitySpacesQuery.isError ? (
-                    <Text style={{color: ECW.secondary}}>
-                      Boards are unavailable or not authorized on this PDS.
-                    </Text>
+                    <View style={[a.gap_xs]}>
+                      <Text style={{color: ECW.secondary}}>
+                        Boards are unavailable or not authorized on this PDS.
+                        Refresh the session and try again.
+                      </Text>
+                      <Button
+                        label="Refresh board index"
+                        size="small"
+                        color="secondary"
+                        variant="outline"
+                        disabled={boardRefreshPending}
+                        onPress={() => void refreshBoardIndex()}>
+                        <ButtonText>
+                          {boardRefreshPending
+                            ? 'Refreshing…'
+                            : 'Refresh index'}
+                        </ButtonText>
+                      </Button>
+                    </View>
                   ) : communities.length ? (
                     <View style={[a.gap_xs]}>
                       {communities.map((item, index) => {
