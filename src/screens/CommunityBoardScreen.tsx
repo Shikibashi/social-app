@@ -317,7 +317,9 @@ export function CommunityBoardScreen({route}: Props) {
   const community =
     communityQuery.data ??
     communitySpacesQuery.data?.spaces.find(item => item.uri === space)
-  const communities = communitySpacesQuery.data?.spaces ?? []
+  const communities =
+    communitySpacesQuery.data?.spaces ?? (community ? [community] : [])
+  const boardIndexUnavailable = communitySpacesQuery.isError && !community
   const spaceAuthority =
     community?.authorityDid || parseSpaceAuthoritySafe(space)
   const isOwner = community?.ownerDid === client.did
@@ -493,7 +495,7 @@ export function CommunityBoardScreen({route}: Props) {
                     <Text style={{color: ECW.secondary}}>
                       Reading boards from the PDS…
                     </Text>
-                  ) : communitySpacesQuery.isError ? (
+                  ) : boardIndexUnavailable ? (
                     <View style={[a.gap_xs]}>
                       <Text style={{color: ECW.secondary}}>
                         Boards are unavailable or not authorized on this PDS.
