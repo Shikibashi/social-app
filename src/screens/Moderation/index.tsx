@@ -1,10 +1,10 @@
 import {Fragment, useCallback} from 'react'
 import {Linking, View} from 'react-native'
-import {LABELS} from '#/lib/moderation'
 import {msg} from '@lingui/core/macro'
 import {useLingui} from '@lingui/react'
 import {Trans} from '@lingui/react/macro'
 
+import {LABELS} from '#/lib/moderation'
 import {getLabelingServiceTitle, isAppLabeler} from '#/lib/moderation'
 import {
   type CommonNavigatorParams,
@@ -377,7 +377,7 @@ export function ModerationScreenInner({
                   <Trans>
                     Adult content can only be enabled via the Web at{' '}
                     <InlineLinkText
-                      label={_(msg`The Bluesky web application`)}
+                      label={_(msg`The Edriffles web application`)}
                       to=""
                       onPress={evt => {
                         evt.preventDefault()

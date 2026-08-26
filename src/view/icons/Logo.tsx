@@ -1,5 +1,5 @@
 import {forwardRef} from 'react'
-import {type TextProps} from 'react-native'
+import {type ImageStyle, type TextProps} from 'react-native'
 import Svg, {
   Defs,
   LinearGradient,
@@ -11,8 +11,10 @@ import Svg, {
 import {Image} from 'expo-image'
 
 import {PRODUCT_NAME} from '#/lib/brand'
+import {EdrifflesBrandMark} from '#/view/icons/EdrifflesBrandMark'
 import {useLogoVariant} from '#/view/icons/useLogoVariant'
 import {flatten, useTheme} from '#/alf'
+import {IS_WEB} from '#/env'
 
 const ratio = 57 / 64
 
@@ -32,8 +34,11 @@ export const Logo = forwardRef(function LogoImpl(props: Props, ref) {
     : fill || styles?.color || t.palette.primary_500
   // @ts-ignore it's fiiiiine
   const size = parseInt(rest.width || 32, 10)
-
   const logoVariant = useLogoVariant(allowVariants)
+
+  if (IS_WEB) {
+    return <EdrifflesBrandMark size={size} style={styles as ImageStyle} />
+  }
 
   if (logoVariant !== 'default') {
     const isJapanLogo = logoVariant === 'japan'

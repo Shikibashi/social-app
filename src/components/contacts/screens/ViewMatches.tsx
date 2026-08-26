@@ -3,13 +3,13 @@ import {View} from 'react-native'
 import {useSafeAreaInsets} from 'react-native-safe-area-context'
 import * as SMS from 'expo-sms'
 import {type DidString} from '@atproto/syntax'
-import {type ModerationOpts} from '#/lib/moderation'
 import {msg} from '@lingui/core/macro'
 import {useLingui} from '@lingui/react'
 import {Plural, Trans} from '@lingui/react/macro'
 import {useMutation, useQueryClient} from '@tanstack/react-query'
 
 import {wait} from '#/lib/async/wait'
+import {type ModerationOpts} from '#/lib/moderation'
 import {cleanError, isNetworkError} from '#/lib/strings/errors'
 import {logger} from '#/logger'
 import {
@@ -321,8 +321,8 @@ export function ViewMatches({
             largeTitle
             subtitleText={
               <Trans>
-                Bluesky is more fun with friends. Do you want to invite some of
-                yours?{' '}
+                Edriffles is more fun with friends. Do you want to invite some
+                of yours?{' '}
                 <InviteInfo
                   iconStyle={t.atoms.text_contrast_medium}
                   iconOffset={2}
@@ -572,7 +572,7 @@ function ContactItem({
         </Text>
         {phoneNumber && currentAccount && (
           <Button
-            label={_(msg`Invite ${name} to join Bluesky`)}
+            label={_(msg`Invite ${name} to join Edriffles`)}
             color="secondary"
             size="small"
             onPress={async () => {
@@ -583,7 +583,7 @@ function ContactItem({
                 await SMS.sendSMSAsync(
                   [phoneNumber],
                   _(
-                    msg`I'm on Bluesky as ${currentAccount.handle} - come find me! https://bsky.app/download`,
+                    msg`I'm on Edriffles as ${currentAccount.handle} - come find me!`,
                   ),
                 )
               } catch (err) {

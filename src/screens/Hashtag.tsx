@@ -243,7 +243,7 @@ function HashtagScreenTab({
             <Text> </Text>
             <Text style={t.atoms.text_contrast_medium}>
               to search for news, sports, politics, and everything else
-              happening on Bluesky.
+              happening on Edriffles.
             </Text>
           </Trans>
         </Text>

@@ -2,7 +2,6 @@ import {useCallback, useEffect, useState} from 'react'
 import {type ListRenderItemInfo, View} from 'react-native'
 import * as Contacts from 'expo-contacts'
 import {type DidString} from '@atproto/syntax'
-import {type ModerationOpts} from '#/lib/moderation'
 import {msg} from '@lingui/core/macro'
 import {useLingui} from '@lingui/react'
 import {Plural, Trans} from '@lingui/react/macro'
@@ -11,6 +10,7 @@ import {useMutation, useQuery, useQueryClient} from '@tanstack/react-query'
 
 import {wait} from '#/lib/async/wait'
 import {HITSLOP_10, urls} from '#/lib/constants'
+import {type ModerationOpts} from '#/lib/moderation'
 import {isBlockedOrBlocking, isMuted} from '#/lib/moderation/blocked-and-muted'
 import {
   type AllNavigatorParams,
@@ -129,7 +129,7 @@ function Intro() {
       </Text>
       <Text style={[a.text_md, a.leading_snug, t.atoms.text_contrast_medium]}>
         <Trans>
-          Find your friends on Bluesky by verifying your phone number and
+          Find your friends on Edriffles by verifying your phone number and
           matching with your contacts. We protect your information and you
           control what happens next.{' '}
           <InlineLinkText
@@ -572,8 +572,8 @@ function StatusFooter({syncedAt}: {syncedAt: string}) {
         </Text>
         <Text style={[a.text_sm, a.leading_snug, t.atoms.text_contrast_medium]}>
           <Trans>
-            Bluesky stores your contacts as encoded data. Removing your contacts
-            will immediately delete this data.
+            Edriffles stores your contacts as encoded data. Removing your
+            contacts will immediately delete this data.
           </Trans>
         </Text>
         <Button

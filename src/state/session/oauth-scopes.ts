@@ -44,7 +44,7 @@ export const OAUTH_SIGNUP_PROMPT = 'create' as const
 /** The single metadata object shared by runtime OAuth clients and the public document. */
 export const OAUTH_CLIENT_METADATA = {
   client_id: `${PUBLIC_WEB_ORIGIN}/oauth-client-metadata.json`,
-  client_name: 'Social',
+  client_name: PRODUCT_NAME,
   client_uri: PUBLIC_WEB_ORIGIN,
   redirect_uris: [
     `${PUBLIC_WEB_ORIGIN}/oauth/callback`,
@@ -59,4 +59,4 @@ export const OAUTH_CLIENT_METADATA = {
 } as const satisfies OAuthClientMetadataInput
 import {type OAuthClientMetadataInput} from '@atproto/oauth-client-expo'
 
-import {PUBLIC_WEB_ORIGIN} from '#/lib/brand'
+import {PRODUCT_NAME, PUBLIC_WEB_ORIGIN} from '#/lib/brand'

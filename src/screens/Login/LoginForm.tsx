@@ -2,6 +2,7 @@ import {useRef, useState} from 'react'
 import {Keyboard, type TextInput, View} from 'react-native'
 import {Trans, useLingui} from '@lingui/react/macro'
 
+import {PRODUCT_NAME} from '#/lib/brand'
 import {DEFAULT_SERVICE} from '#/lib/constants'
 import {useRequestNotificationsPermission} from '#/lib/notifications/notifications'
 import {cleanError, isNetworkError} from '#/lib/strings/errors'
@@ -414,7 +415,7 @@ function HostingProviderIndicator({
         {state.status === 'detected' || state.status === 'overridden' ? (
           <Trans>Hosting provider: {toNiceHostingUrl(state.pdsUrl)}</Trans>
         ) : state.status === 'email' ? (
-          <Trans>Hosting provider: Bluesky</Trans>
+          <Trans>Hosting provider: {PRODUCT_NAME}</Trans>
         ) : (
           <Trans>Hosting provider</Trans>
         )}

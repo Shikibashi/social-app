@@ -162,7 +162,7 @@ export function Content({state}: {state: PolicyUpdateState}) {
           <Button
             label={_(msg`Continue`)}
             accessibilityHint={_(
-              msg`Tap to acknowledge that you understand and agree to these updates and continue using Bluesky`,
+              msg`Tap to acknowledge that you understand and agree to these updates and continue using Edriffles`,
             )}
             color="primary"
             size="large"

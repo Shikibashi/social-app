@@ -1,6 +1,8 @@
 import Svg, {Path, type PathProps, type SvgProps} from 'react-native-svg'
 
 import {usePalette} from '#/lib/hooks/usePalette'
+import {EdrifflesBrandMark} from '#/view/icons/EdrifflesBrandMark'
+import {IS_WEB} from '#/env'
 
 const ratio = 54 / 61
 
@@ -11,6 +13,10 @@ export function Logomark({
   const pal = usePalette('default')
   // @ts-ignore it's fiiiiine
   const size = parseInt(rest.width || 32)
+
+  if (IS_WEB) {
+    return <EdrifflesBrandMark size={size} style={rest.style} />
+  }
 
   return (
     <Svg

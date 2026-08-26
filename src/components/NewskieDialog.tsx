@@ -1,6 +1,5 @@
 import {useMemo, useState} from 'react'
 import {View} from 'react-native'
-import {moderateProfile} from '#/lib/moderation'
 import {msg} from '@lingui/core/macro'
 import {useLingui} from '@lingui/react'
 import {Trans} from '@lingui/react/macro'
@@ -8,6 +7,7 @@ import {differenceInSeconds} from 'date-fns'
 
 import {HITSLOP_10} from '#/lib/constants'
 import {useGetTimeAgo} from '#/lib/hooks/useTimeAgo'
+import {moderateProfile} from '#/lib/moderation'
 import {sanitizeDisplayName} from '#/lib/strings/display-names'
 import {useModerationOpts} from '#/state/preferences/moderation-opts'
 import {useSession} from '#/state/session'
@@ -102,18 +102,18 @@ function DialogInner({
     if (isMe) {
       if (profile.joinedViaStarterPack) {
         return _(
-          msg`You joined Bluesky using a starter pack ${timeAgoString} ago`,
+          msg`You joined Edriffles using a starter pack ${timeAgoString} ago`,
         )
       } else {
-        return _(msg`You joined Bluesky ${timeAgoString} ago`)
+        return _(msg`You joined Edriffles ${timeAgoString} ago`)
       }
     } else {
       if (profile.joinedViaStarterPack) {
         return _(
-          msg`${profileName} joined Bluesky using a starter pack ${timeAgoString} ago`,
+          msg`${profileName} joined Edriffles using a starter pack ${timeAgoString} ago`,
         )
       } else {
-        return _(msg`${profileName} joined Bluesky ${timeAgoString} ago`)
+        return _(msg`${profileName} joined Edriffles ${timeAgoString} ago`)
       }
     }
   }

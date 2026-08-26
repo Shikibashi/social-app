@@ -7,8 +7,7 @@ const isProductionBuild = process.env.EXPO_PUBLIC_ENV === 'production'
 
 if (isProductionBuild) {
   const configuredPublicWebOrigin =
-    process.env.EXPO_PUBLIC_PUBLIC_WEB_ORIGIN?.trim() ||
-    expectedPublicWebOrigin
+    process.env.EXPO_PUBLIC_PUBLIC_WEB_ORIGIN?.trim() || expectedPublicWebOrigin
   if (configuredPublicWebOrigin !== expectedPublicWebOrigin) {
     throw new Error(
       `Production web builds must use ${expectedPublicWebOrigin} as EXPO_PUBLIC_PUBLIC_WEB_ORIGIN; received ${configuredPublicWebOrigin}`,
@@ -82,6 +81,58 @@ const headersTarget = path.join(projectRoot, 'web-build/_headers')
 if (fs.existsSync(headersSource)) {
   fs.copyFileSync(headersSource, headersTarget)
   console.log(`Copied ${headersSource} to ${headersTarget}`)
+}
+
+// Expo's exporter does not copy public/ static files. Keep the Edriffles web
+// identity available at stable root URLs for browser tabs, install prompts,
+// and the server-rendered bskyweb shell.
+const publicBrandFiles = [
+  ['public/favicon.ico', 'web-build/favicon.ico'],
+  ['public/favicon-16.png', 'web-build/favicon-16.png'],
+  ['public/favicon-32.png', 'web-build/favicon-32.png'],
+  ['public/apple-touch-icon.png', 'web-build/apple-touch-icon.png'],
+  ['public/safari-pinned-tab.svg', 'web-build/safari-pinned-tab.svg'],
+  [
+    'public/social-card-default.png',
+    'web-build/static/social-card-default.png',
+  ],
+  [
+    'public/social-card-default-gradient.png',
+    'web-build/static/social-card-default-gradient.png',
+  ],
+]
+
+for (const [source, target] of publicBrandFiles) {
+  const sourcePath = path.join(projectRoot, source)
+  const targetPath = path.join(projectRoot, target)
+  if (!fs.existsSync(sourcePath)) {
+    throw new Error(`Missing required Edriffles web asset: ${sourcePath}`)
+  }
+  fs.copyFileSync(sourcePath, targetPath)
+  console.log(`Copied ${sourcePath} to ${targetPath}`)
+}
+
+const serverBrandFiles = [
+  ['public/apple-touch-icon.png', 'bskyweb/static/apple-touch-icon.png'],
+  ['public/favicon-32.png', 'bskyweb/static/favicon-32x32.png'],
+  ['public/favicon-16.png', 'bskyweb/static/favicon-16x16.png'],
+  ['assets/edriffles/edriffles-emblem.png', 'bskyweb/static/favicon.png'],
+  ['public/safari-pinned-tab.svg', 'bskyweb/static/safari-pinned-tab.svg'],
+  ['public/social-card-default.png', 'bskyweb/static/social-card-default.png'],
+  [
+    'public/social-card-default-gradient.png',
+    'bskyweb/static/social-card-default-gradient.png',
+  ],
+]
+
+for (const [source, target] of serverBrandFiles) {
+  const sourcePath = path.join(projectRoot, source)
+  const targetPath = path.join(projectRoot, target)
+  if (!fs.existsSync(sourcePath)) {
+    throw new Error(`Missing required server web asset: ${sourcePath}`)
+  }
+  fs.copyFileSync(sourcePath, targetPath)
+  console.log(`Copied ${sourcePath} to ${targetPath}`)
 }
 
 console.log(`Found ${entrypoints.length} entrypoints`)

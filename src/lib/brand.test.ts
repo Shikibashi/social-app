@@ -6,8 +6,8 @@ import {
 } from './brand'
 
 describe('public product identity', () => {
-  it('uses a neutral default product name', () => {
-    expect(resolveProductName(undefined)).toBe('Social')
+  it('uses the Edriffles default product name', () => {
+    expect(resolveProductName(undefined)).toBe('Edriffles')
     expect(resolveProductName('  My Social  ')).toBe('My Social')
     expect(PRODUCT_NAME).toBeTruthy()
   })

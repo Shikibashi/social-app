@@ -1,6 +1,6 @@
 {
   "client_id": "https://social.edriffles.us/oauth-client-metadata.json",
-  "client_name": "Social",
+  "client_name": "Edriffles",
   "client_uri": "https://social.edriffles.us",
   "redirect_uris": [
     "https://social.edriffles.us/oauth/callback",

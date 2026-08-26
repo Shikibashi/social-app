@@ -10,11 +10,6 @@ import {
 } from 'react-native'
 import {TID} from '@atproto/common-web'
 import {AtUri} from '@atproto/syntax'
-import {
-  moderateProfile,
-  type ModerationDecision,
-  type ModerationOpts,
-} from '#/lib/moderation'
 import {plural} from '@lingui/core/macro'
 import {Plural, Trans, useLingui} from '@lingui/react/macro'
 import {useNavigation} from '@react-navigation/native'
@@ -22,6 +17,11 @@ import {useQueryClient} from '@tanstack/react-query'
 
 import {MAX_POST_LINES} from '#/lib/constants'
 import {useAnimatedValue} from '#/lib/hooks/useAnimatedValue'
+import {
+  moderateProfile,
+  type ModerationDecision,
+  type ModerationOpts,
+} from '#/lib/moderation'
 import {makeProfileLink} from '#/lib/routes/links'
 import {type NavigationProp} from '#/lib/routes/types'
 import {forceLTR} from '#/lib/strings/bidi'
@@ -374,9 +374,9 @@ let NotificationFeedItem = ({
     }
     icon = <PersonPlusIcon size="xl" style={{color: t.palette.primary_500}} />
   } else if (item.type === 'contact-match') {
-    a11yLabel = l`Your contact ${firstAuthorName} is on Bluesky`
+    a11yLabel = l`Your contact ${firstAuthorName} is on Edriffles`
     notificationContent = (
-      <Trans>Your contact {firstAuthorLink} is on Bluesky</Trans>
+      <Trans>Your contact {firstAuthorLink} is on Edriffles</Trans>
     )
     icon = (
       <ContactsIconFilled size="xl" style={{color: t.palette.primary_500}} />

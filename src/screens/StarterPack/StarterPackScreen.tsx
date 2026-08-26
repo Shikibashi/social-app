@@ -2,7 +2,6 @@ import {useCallback, useEffect, useState} from 'react'
 import {View} from 'react-native'
 import {Image} from 'expo-image'
 import {AtUri} from '@atproto/syntax'
-import {type ModerationOpts} from '#/lib/moderation'
 import {RichText as RichTextAPI} from '@bsky/sdk/richtext'
 import {msg} from '@lingui/core/macro'
 import {useLingui} from '@lingui/react'
@@ -13,6 +12,7 @@ import {useQueryClient} from '@tanstack/react-query'
 
 import {batchedUpdates} from '#/lib/batchedUpdates'
 import {HITSLOP_20} from '#/lib/constants'
+import {type ModerationOpts} from '#/lib/moderation'
 import {isBlockedOrBlocking, isMuted} from '#/lib/moderation/blocked-and-muted'
 import {makeProfileLink, makeStarterPackLink} from '#/lib/routes/links'
 import {
@@ -468,7 +468,7 @@ function Header({
           {richText ? <RichText value={richText} style={[a.text_md]} /> : null}
           {!hasSession ? (
             <Button
-              label={_(msg`Join Bluesky`)}
+              label={_(msg`Join Edriffles`)}
               onPress={() => {
                 setActiveStarterPack({
                   uri: starterPack.uri,
@@ -478,7 +478,7 @@ function Header({
               color="primary"
               size="large">
               <ButtonText style={[a.text_lg]}>
-                <Trans>Join Bluesky</Trans>
+                <Trans>Join Edriffles</Trans>
               </ButtonText>
             </Button>
           ) : null}
@@ -494,12 +494,12 @@ function Header({
                   a.text_sm,
                   t.atoms.text_contrast_medium,
                 ]}>
-                <Trans comment="Number of users (always at least 25) who have joined Bluesky using a specific starter pack">
+                <Trans comment="Number of users (always at least 25) who have joined Edriffles using a specific starter pack">
                   <Plural
                     value={starterPack.joinedAllTimeCount || 0}
                     other="# people have"
                   />{' '}
-                  joined Bluesky via this starter pack!
+                  joined Edriffles via this starter pack!
                 </Trans>
               </Text>
             </View>

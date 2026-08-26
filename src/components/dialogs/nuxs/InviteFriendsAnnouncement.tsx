@@ -108,7 +108,7 @@ function Announcement({
               accessibilityIgnoresInvertColors
               source={require('../../../../assets/images/invite_friends_announcement_nux.webp')}
               style={[a.w_full, {aspectRatio: 754 / 440}]}
-              alt={l`An illustration of the Bluesky app with a paper airplane flying out of it, representing inviting friends`}
+              alt={l`An illustration of the Edriffles app with a paper airplane flying out of it, representing inviting friends`}
             />
             <View
               style={[
@@ -154,7 +154,7 @@ function Announcement({
                 <Trans>
                   You can now invite friends with a link or QR code. Share the
                   link anywhere, or let them scan the code to join you on
-                  Bluesky.
+                  Edriffles.
                 </Trans>
               </Text>
             </View>

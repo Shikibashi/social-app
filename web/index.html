@@ -16,9 +16,15 @@
     -->
     <link rel="preconnect" href="https://bsky.social">
     <link rel="preconnect" href="https://go.bsky.app">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5530a3">
     <title>%WEB_TITLE%</title>
     <meta name="application-name" content="%WEB_TITLE%">
-    <meta name="description" content="A user-controlled social network client.">
+    <meta name="description" content="Edriffles Computer Web, an independent social client for the AT Protocol.">
+    <meta property="og:site_name" content="Edriffles">
 
     <link rel="preload" as="font" type="font/woff2" href="/static/media/InterVariable.c504db5c06caaf7cdfba.woff2" crossorigin>
     <link rel="stylesheet" href="/static/style.css">
@@ -49,7 +55,7 @@
       body {
         margin: 0px;
         padding: 0px;
-        font-family: InterVariable, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Liberation Sans', Helvetica, Arial, sans-serif;
+        font-family: Verdana, 'DejaVu Sans', Tahoma, 'Noto Sans', Arial, sans-serif;
         text-rendering: optimizeLegibility;
         /* Platform-specific reset */
         -webkit-overflow-scrolling: touch;
@@ -199,8 +205,15 @@
 
     <!-- The root element for your Expo app. -->
     <div id="splash">
-      <!-- Bluesky SVG -->
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 57"><path fill="#006AFF" d="M13.873 3.805C21.21 9.332 29.103 20.537 32 26.55v15.882c0-.338-.13.044-.41.867-1.512 4.456-7.418 21.847-20.923 7.944-7.111-7.32-3.819-14.64 9.125-16.85-7.405 1.264-15.73-.825-18.014-9.015C1.12 23.022 0 8.51 0 6.55 0-3.268 8.579-.182 13.873 3.805ZM50.127 3.805C42.79 9.332 34.897 20.537 32 26.55v15.882c0-.338.13.044.41.867 1.512 4.456 7.418 21.847 20.923 7.944 7.111-7.32 3.819-14.64-9.125-16.85 7.405 1.264 15.73-.825 18.014-9.015C62.88 23.022 64 8.51 64 6.55c0-9.818-8.578-6.732-13.873-2.745Z"/></svg>
+      <!-- Edriffles Computer Web mark -->
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Edriffles">
+        <rect x="3" y="3" width="58" height="58" rx="12" fill="#f4f3eb" stroke="#11132d" stroke-width="3"/>
+        <circle cx="32" cy="28" r="18" fill="none" stroke="#b189ff" stroke-width="2"/>
+        <path d="M32 8v40M12 28h40" stroke="#b189ff" stroke-width="1.5"/>
+        <path d="M17 42h30l-6 9H23z" fill="#11132d"/>
+        <path d="M22 42l10-15 10 15" fill="#5530a3" stroke="#11132d" stroke-width="1.5"/>
+        <path d="M32 15v27" stroke="#ffd45c" stroke-width="2"/>
+      </svg>
     </div>
     <div id="root">
     </div>

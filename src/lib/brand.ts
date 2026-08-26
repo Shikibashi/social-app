@@ -1,4 +1,4 @@
-const DEFAULT_PRODUCT_NAME = 'Social'
+const DEFAULT_PRODUCT_NAME = 'Edriffles'
 const DEFAULT_PUBLIC_WEB_ORIGIN = 'https://social.edriffles.us'
 
 export function resolveProductName(value: string | undefined): string {

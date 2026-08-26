@@ -287,7 +287,9 @@ function LegalDisclaimer() {
       </Text>
       <Text style={style}>
         &bull;{' '}
-        <Trans>Held by Bluesky for 7 days to prevent abuse, then deleted</Trans>
+        <Trans>
+          Held by Edriffles for 7 days to prevent abuse, then deleted
+        </Trans>
       </Text>
       <Text style={style}>
         &bull;{' '}

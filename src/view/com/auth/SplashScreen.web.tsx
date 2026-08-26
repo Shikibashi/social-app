@@ -8,7 +8,6 @@ import {useWebMediaQueries} from '#/lib/hooks/useWebMediaQueries'
 import {ErrorBoundary} from '#/view/com/util/ErrorBoundary'
 import {Logo} from '#/view/icons/Logo'
 import {Logotype} from '#/view/icons/Logotype'
-import {useLogoVariant} from '#/view/icons/useLogoVariant'
 import {
   AppClipOverlay,
   postAppClipMessage,
@@ -46,10 +45,6 @@ export const SplashScreen = ({
     }
   }, [])
 
-  const logoVariant = useLogoVariant()
-  const kawaii = logoVariant === 'kawaii'
-  const japanLogo = logoVariant === 'japan'
-
   return (
     <>
       {onDismiss && (
@@ -83,13 +78,11 @@ export const SplashScreen = ({
           ]}>
           <ErrorBoundary>
             <View style={[a.justify_center, a.align_center]}>
-              <Logo width={kawaii ? 300 : japanLogo ? 120 : 92} fill="sky" />
+              <Logo width={92} />
 
-              {!kawaii && (
-                <View style={[a.pb_sm, a.pt_5xl]}>
-                  <Logotype width={161} fill={t.atoms.text.color} />
-                </View>
-              )}
+              <View style={[a.pb_sm, a.pt_5xl]}>
+                <Logotype width={161} fill={t.atoms.text.color} />
+              </View>
 
               <Text
                 style={[
@@ -108,9 +101,7 @@ export const SplashScreen = ({
                 testID="createAccountButton"
                 onPress={onPressCreateAccount}
                 label={_(msg`Create new account`)}
-                accessibilityHint={_(
-                  msg`Opens flow to create a new Bluesky account`,
-                )}
+                accessibilityHint={_(msg`Opens flow to create a new account`)}
                 size="large"
                 variant="solid"
                 color="primary">
@@ -123,7 +114,7 @@ export const SplashScreen = ({
                 onPress={onPressSignin}
                 label={_(msg`Sign in`)}
                 accessibilityHint={_(
-                  msg`Opens flow to sign in to your existing Bluesky account`,
+                  msg`Opens flow to sign in to your existing account`,
                 )}
                 size="large"
                 variant="solid"
@@ -166,21 +157,19 @@ function Footer() {
         t.atoms.border_contrast_medium,
       ]}>
       <InlineLinkText
-        label={_(msg`Learn more about Bluesky`)}
-        to="https://bsky.social">
-        <Trans>Business</Trans>
+        label={_(msg`Visit edriffles.us`)}
+        to="https://edriffles.us">
+        <Trans>Website</Trans>
       </InlineLinkText>
       <InlineLinkText
-        label={_(msg`Read the Bluesky blog`)}
-        to="https://bsky.social/about/blog">
+        label={_(msg`Read the edriffles blog`)}
+        to="https://edriffles.us/blog/">
         <Trans>Blog</Trans>
       </InlineLinkText>
       <InlineLinkText
-        label={_(msg`See jobs at Bluesky`)}
-        to="https://bsky.social/about/join">
-        <Trans comment="Link to a page with job openings at Bluesky">
-          Jobs
-        </Trans>
+        label={_(msg`Learn more about edriffles`)}
+        to="https://edriffles.us/about">
+        <Trans>About</Trans>
       </InlineLinkText>
 
       <View style={a.flex_1} />

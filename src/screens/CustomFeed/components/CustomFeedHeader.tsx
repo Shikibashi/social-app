@@ -511,7 +511,7 @@ function DialogInner({
                 numberOfLines={1}
                 onPress={() => control.close()}>
                 {info.creatorHandle === TRENDING_HANDLE
-                  ? l`Bluesky`
+                  ? l`Edriffles`
                   : sanitizeHandle(info.creatorHandle, '@')}
               </InlineLinkText>
             </Trans>

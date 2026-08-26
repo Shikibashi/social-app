@@ -34,7 +34,7 @@ module.exports = function (_config) {
   const UPDATES_ENABLED = IS_TESTFLIGHT || IS_PRODUCTION
 
   const USE_SENTRY = Boolean(process.env.SENTRY_AUTH_TOKEN)
-  const PRODUCT_NAME = process.env.EXPO_PUBLIC_BRAND_NAME?.trim() || 'Social'
+  const PRODUCT_NAME = process.env.EXPO_PUBLIC_BRAND_NAME?.trim() || 'Edriffles'
   const EXPECTED_PUBLIC_WEB_ORIGIN = 'https://social.edriffles.us'
   const PUBLIC_WEB_ORIGIN =
     process.env.EXPO_PUBLIC_PUBLIC_WEB_ORIGIN?.trim() ||
@@ -58,10 +58,10 @@ module.exports = function (_config) {
       version: VERSION,
       name: PRODUCT_NAME,
       slug: 'bluesky',
-  // Keep the existing app deep-link scheme and register the reverse-origin
-  // OAuth callback scheme required by the ATProto Expo client. The private-use
-  // callback must reverse the HTTPS client_id hostname, not the Lexicon NSID.
-  scheme: ['bluesky', 'us.edriffles.social'],
+      // Keep the existing app deep-link scheme and register the reverse-origin
+      // OAuth callback scheme required by the ATProto Expo client. The private-use
+      // callback must reverse the HTTPS client_id hostname, not the Lexicon NSID.
+      scheme: ['bluesky', 'us.edriffles.social'],
       owner: 'blueskysocial',
       runtimeVersion: {
         policy: 'appVersion',
@@ -233,7 +233,8 @@ module.exports = function (_config) {
         favicon: './assets/favicon.png',
         name: PRODUCT_NAME,
         shortName: PRODUCT_NAME,
-        description: 'A user-controlled social network client.',
+        description:
+          'Edriffles Computer Web, an independent social client for the AT Protocol.',
       },
       updates: {
         url: 'https://updates.bsky.app/manifest',
