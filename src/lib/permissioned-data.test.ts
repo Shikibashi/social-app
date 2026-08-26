@@ -7,6 +7,7 @@ import {
 } from './permissioned-data'
 
 jest.mock('#/env', () => ({
+  assertSpacesAlphaDeploymentSafe: jest.fn(),
   LEGACY_RADLIB_PRIVATE_ENABLED: true,
   SPACES_ALPHA_ENABLED: false,
 }))

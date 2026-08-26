@@ -41,6 +41,13 @@ type Community = {
 }
 
 const POST_COLLECTION = 'us.edriffles.radlib.private.post' as NsidString
+const LEGACY_POST_COLLECTION = 'org.radlib.private.post' as NsidString
+
+function postCollectionsForSpace(space: string): readonly NsidString[] {
+  return space.includes('/space/org.radlib.community/')
+    ? [LEGACY_POST_COLLECTION, POST_COLLECTION]
+    : [POST_COLLECTION]
+}
 
 const inputStyle = {
   minHeight: 128,
@@ -134,9 +141,12 @@ export function CommunityBoardScreen({route}: Props) {
       let localListError: unknown
 
       try {
-        localPage = (await client.call(us.edriffles.radlib.private.listCommunities, {
-          limit: 50,
-        })) as typeof localPage
+        localPage = (await client.call(
+          us.edriffles.radlib.private.listCommunities,
+          {
+            limit: 50,
+          },
+        )) as typeof localPage
       } catch (error) {
         if (!requestedSpace) throw error
         localListError = error
@@ -214,17 +224,21 @@ export function CommunityBoardScreen({route}: Props) {
     enabled: !!client.did && !!space && SPACES_ALPHA_ENABLED,
     queryFn: async () => {
       const session = await createSpaceCredentialSession(client, space)
-      return readAllSpaceRecords(
-        {
-          listRepos: session.client.listRepos.bind(session.client),
-          listRecords: session.client.listRecords.bind(session.client),
-          readerForRepo: session.forRepo,
-        },
-        {
-          space,
-          collection: POST_COLLECTION,
-        },
+      const reader = {
+        listRepos: session.client.listRepos.bind(session.client),
+        listRecords: session.client.listRecords.bind(session.client),
+        readerForRepo: session.forRepo,
+      }
+      const results = await Promise.all(
+        postCollectionsForSpace(space).map(collection =>
+          readAllSpaceRecords(reader, {space, collection}),
+        ),
       )
+      return {
+        records: results.flatMap(result => result.records),
+        errors: results.flatMap(result => result.errors),
+        complete: results.every(result => result.complete),
+      }
     },
   })
 
@@ -268,7 +282,9 @@ export function CommunityBoardScreen({route}: Props) {
                 : us.edriffles.radlib.private.joinCommunity.$lxm,
             )
       return leave
-        ? controlClient.call(us.edriffles.radlib.private.leaveCommunity, {space})
+        ? controlClient.call(us.edriffles.radlib.private.leaveCommunity, {
+            space,
+          })
         : controlClient.call(us.edriffles.radlib.private.joinCommunity, {
             space,
             inviteToken: inviteToken.trim() || undefined,

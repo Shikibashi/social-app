@@ -7,6 +7,8 @@ describe('Spaces alpha deployment gate', () => {
     expect(isSpacesAlphaDeploymentSafe('e2e', true)).toBe(true)
     expect(isSpacesAlphaDeploymentSafe('testflight', true)).toBe(true)
     expect(isSpacesAlphaDeploymentSafe('production', true)).toBe(false)
+    expect(isSpacesAlphaDeploymentSafe('production', true, false)).toBe(false)
+    expect(isSpacesAlphaDeploymentSafe('production', true, true)).toBe(true)
     expect(isSpacesAlphaDeploymentSafe('unknown', true)).toBe(false)
     expect(isSpacesAlphaDeploymentSafe(undefined, true)).toBe(false)
   })

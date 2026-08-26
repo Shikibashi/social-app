@@ -43,6 +43,15 @@ export const IS_INTERNAL = IS_DEV || IS_TESTFLIGHT
 export const SPACES_ALPHA_ENABLED =
   process.env.EXPO_PUBLIC_SPACES_ALPHA_ENABLED === '1'
 
+/**
+ * Explicit operator acknowledgement for a production web bundle that needs
+ * the alpha-backed community board. This does not make the alpha protocol a
+ * production-ready standard; it prevents an accidental production opt-in by
+ * requiring a second, separately named build setting.
+ */
+export const SPACES_ALPHA_PRODUCTION_ENABLED =
+  process.env.EXPO_PUBLIC_SPACES_ALPHA_PRODUCTION_ENABLED === '1'
+
 const SPACES_ALPHA_ALLOWED_ENVIRONMENTS = new Set([
   'development',
   'test',
@@ -53,17 +62,29 @@ const SPACES_ALPHA_ALLOWED_ENVIRONMENTS = new Set([
 export function isSpacesAlphaDeploymentSafe(
   environment: string | undefined,
   enabled: boolean,
+  productionEnabled = false,
 ): boolean {
-  return !enabled || SPACES_ALPHA_ALLOWED_ENVIRONMENTS.has(environment ?? '')
+  return (
+    !enabled ||
+    SPACES_ALPHA_ALLOWED_ENVIRONMENTS.has(environment ?? '') ||
+    (environment === 'production' && productionEnabled)
+  )
 }
 
 /**
- * Spaces alpha is permitted only in explicitly named non-production builds.
- * An unset or unknown environment fails closed instead of being treated as a
+ * Spaces alpha is permitted only in explicitly named non-production builds,
+ * or in a production build with the separate explicit operator opt-in. An
+ * unset or unknown environment fails closed instead of being treated as a
  * development bundle.
  */
 export function assertSpacesAlphaDeploymentSafe(): void {
-  if (!isSpacesAlphaDeploymentSafe(ENV, SPACES_ALPHA_ENABLED)) {
+  if (
+    !isSpacesAlphaDeploymentSafe(
+      ENV,
+      SPACES_ALPHA_ENABLED,
+      SPACES_ALPHA_PRODUCTION_ENABLED,
+    )
+  ) {
     throw new Error(
       `Spaces alpha is test-only and cannot be enabled in environment: ${ENV || 'unset'}`,
     )
