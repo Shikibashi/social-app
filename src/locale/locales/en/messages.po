@@ -196,11 +196,11 @@ msgstr ""
 msgid "{0, plural, one {post} other {posts}}"
 msgstr ""
 
-#. Number of users (always at least 25) who have joined Bluesky using a specific starter pack
+#. Number of users (always at least 25) who have joined Edriffles using a specific starter pack
 #. placeholder {0}: starterPack.joinedAllTimeCount || 0
 #: src/screens/StarterPack/StarterPackScreen.tsx:497
-msgid "{0, plural, other {# people have}} joined Bluesky via this starter pack!"
-msgstr ""
+msgid "{0, plural, other {# people have}} joined Edriffles via this starter pack!"
+msgstr "{0, plural, other {# people have}} joined Edriffles via this starter pack!"
 
 #. placeholder {0}: starterPack.list.listItemCount - 4
 #: src/components/dialogs/StarterPackDialog.tsx:354
@@ -701,7 +701,7 @@ msgctxt "Displayed when there are more than 20 requests to join a group chat"
 msgid "{JOIN_REQUESTS_THRESHOLD}+ new join requests"
 msgstr "{JOIN_REQUESTS_THRESHOLD}+ new join requests"
 
-#. Number of users (always at least 50) who have joined Bluesky using a specific starter pack
+#. Number of users (always at least 50) who have joined Edriffles using a specific starter pack
 #: src/components/StarterPack/StarterPackCard.tsx:98
 msgid "{joinedAllTimeCount, plural, other {# users have}} joined!"
 msgstr ""
@@ -758,12 +758,12 @@ msgid "{numMatches, plural, one {# contact found} other {# contacts found}}"
 msgstr ""
 
 #: src/components/NewskieDialog.tsx:116
-msgid "{profileName} joined Bluesky {timeAgoString} ago"
-msgstr ""
+msgid "{profileName} joined Edriffles {timeAgoString} ago"
+msgstr "{profileName} joined Edriffles {timeAgoString} ago"
 
 #: src/components/NewskieDialog.tsx:113
-msgid "{profileName} joined Bluesky using a starter pack {timeAgoString} ago"
-msgstr ""
+msgid "{profileName} joined Edriffles using a starter pack {timeAgoString} ago"
+msgstr "{profileName} joined Edriffles using a starter pack {timeAgoString} ago"
 
 #. The trending topic rank, i.e. "1. March Madness", "2. The Bachelor"
 #. The trending topic rank, i.e. "1. March Madness", "2. The Bachelor"
@@ -904,8 +904,8 @@ msgstr "<0>{displayName}</0><1/><2> added you</2>"
 
 #: src/screens/Hashtag.tsx:232
 #: src/screens/Search/SearchResults.tsx:412
-msgid "<0>Sign in</0><1> or </1><2>create an account</2><3> </3><4>to search for news, sports, politics, and everything else happening on Bluesky.</4>"
-msgstr ""
+msgid "<0>Sign in</0><1> or </1><2>create an account</2><3> </3><4>to search for news, sports, politics, and everything else happening on Edriffles.</4>"
+msgstr "<0>Sign in</0><1> or </1><2>create an account</2><3> </3><4>to search for news, sports, politics, and everything else happening on Edriffles.</4>"
 
 #. placeholder {0}: getName(items[1] /* [0] is self, skip it */)
 #: src/screens/StarterPack/Wizard/index.tsx:490
@@ -936,8 +936,8 @@ msgid "7 days"
 msgstr ""
 
 #: src/screens/Onboarding/StepFinished/ValuePropositionPager.shared.tsx:27
-msgid "A collection of popular feeds you can find on Bluesky, including News, Booksky, Game Dev, Blacksky, and Fountain Pens"
-msgstr ""
+msgid "A collection of popular feeds you can find on Edriffles, including News, Booksky, Game Dev, Blacksky, and Fountain Pens"
+msgstr "A collection of popular feeds you can find on Edriffles, including News, Booksky, Game Dev, Blacksky, and Fountain Pens"
 
 #. If last message does not contain text, fall back to "{user} reacted to {a message}"
 #: src/components/dms/getReactionInfo.ts:58
@@ -976,8 +976,8 @@ msgstr "A reply to a message sent before you joined"
 
 #. Contains a post that originally appeared in English. Consider translating the post text if it makes sense in your language, and noting that the post was translated from English.
 #: src/components/dialogs/nuxs/LiveNowBetaDialog.tsx:147
-msgid "A screenshot of a post from @esb.lol, showing the user is currently livestreaming content on Twitch. The post reads: \"Hello! I'm live on Twitch, and I'm testing Bluesky's latest feature too!\""
-msgstr ""
+msgid "A screenshot of a post from @esb.lol, showing the user is currently livestreaming content on Twitch. The post reads: \"Hello! I'm live on Twitch, and I'm testing Edriffles' latest feature too!\""
+msgstr "A screenshot of a post from @esb.lol, showing the user is currently livestreaming content on Twitch. The post reads: \"Hello! I'm live on Twitch, and I'm testing Edriffles' latest feature too!\""
 
 #. Contains a post that originally appeared in English. Consider translating the post text if it makes sense in your language, and noting that the post was translated from English.
 #: src/components/dialogs/nuxs/BookmarksAnnouncement.tsx:121
@@ -990,8 +990,8 @@ msgstr ""
 
 #. Contains a post that originally appeared in English. Consider translating the post text if it makes sense in your language, and noting that the post was translated from English.
 #: src/components/dialogs/nuxs/DraftsAnnouncement.tsx:98
-msgid "A screenshot of the post composer with a new button next to the post button that says \"Drafts\", with a rainbow firework effect. Below, the text in the composer reads \"Hey, did you hear the news? Bluesky has drafts now!!!\"."
-msgstr ""
+msgid "A screenshot of the post composer with a new button next to the post button that says \"Drafts\", with a rainbow firework effect. Below, the text in the composer reads \"Hey, did you hear the news? Edriffles has drafts now!!!\"."
+msgstr "A screenshot of the post composer with a new button next to the post button that says \"Drafts\", with a rainbow firework effect. Below, the text in the composer reads \"Hey, did you hear the news? Edriffles has drafts now!!!\"."
 
 #: src/components/dms/dialogs/NewChatDialog.tsx:102
 #: src/components/dms/dialogs/ShareViaChatDialog.tsx:118
@@ -1002,6 +1002,7 @@ msgstr "A selected recipient is not followed by the sender."
 #: src/screens/Settings/AboutSettings.tsx:85
 #: src/screens/Settings/Settings.tsx:301
 #: src/screens/Settings/Settings.tsx:304
+#: src/view/com/auth/SplashScreen.web.tsx:172
 msgid "About"
 msgstr ""
 
@@ -1126,8 +1127,8 @@ msgid "Account visibility"
 msgstr "Account visibility"
 
 #: src/components/verification/VerifierDialog.tsx:100
-msgid "Accounts with a scalloped blue check mark <0><1/></0> can verify others. These trusted verifiers are selected by Bluesky."
-msgstr ""
+msgid "Accounts with a scalloped blue check mark <0><1/></0> can verify others. These trusted verifiers are selected by Edriffles."
+msgstr "Accounts with a scalloped blue check mark <0><1/></0> can verify others. These trusted verifiers are selected by Edriffles."
 
 #: src/lib/hooks/useNotificationHandler.ts:214
 #: src/screens/Settings/NotificationSettings/ActivityNotificationSettings.tsx:105
@@ -1626,21 +1627,21 @@ msgstr ""
 
 #: src/components/contacts/components/HeroImage.tsx:28
 #: src/components/dialogs/nuxs/FindContactsAnnouncement.tsx:79
-msgid "An illustration depicting user avatars flowing from a contact book into the Bluesky app"
-msgstr ""
+msgid "An illustration depicting user avatars flowing from a contact book into the Edriffles app"
+msgstr "An illustration depicting user avatars flowing from a contact book into the Edriffles app"
 
 #: src/screens/Onboarding/StepFinished/ValuePropositionPager.shared.tsx:45
-msgid "An illustration of several Bluesky posts alongside repost, like, and comment icons"
-msgstr ""
+msgid "An illustration of several Edriffles posts alongside repost, like, and comment icons"
+msgstr "An illustration of several Edriffles posts alongside repost, like, and comment icons"
 
 #: src/components/dialogs/nuxs/InviteFriendsAnnouncement.tsx:111
-msgid "An illustration of the Bluesky app with a paper airplane flying out of it, representing inviting friends"
-msgstr "An illustration of the Bluesky app with a paper airplane flying out of it, representing inviting friends"
+msgid "An illustration of the Edriffles app with a paper airplane flying out of it, representing inviting friends"
+msgstr "An illustration of the Edriffles app with a paper airplane flying out of it, representing inviting friends"
 
 #: src/components/dialogs/nuxs/InitialVerificationAnnouncement.tsx:86
 #: src/components/verification/VerifierDialog.tsx:88
-msgid "An illustration showing that Bluesky selects trusted verifiers, and trusted verifiers in turn verify individual user accounts."
-msgstr ""
+msgid "An illustration showing that Edriffles selects trusted verifiers, and trusted verifiers in turn verify individual user accounts."
+msgstr "An illustration showing that Edriffles selects trusted verifiers, and trusted verifiers in turn verify individual user accounts."
 
 #: src/screens/Messages/components/InviteLinkDialog.tsx:195
 msgid "An invite link lets people join this group chat without being added directly. You control who can join the chat. You can disable the link at any time."
@@ -1670,8 +1671,8 @@ msgid "An issue occurred, please try again."
 msgstr ""
 
 #: src/components/dialogs/nuxs/InitialVerificationAnnouncement.tsx:121
-msgid "An mockup of a iPhone showing the Bluesky app open to the profile of a verified user with a blue checkmark next to their display name."
-msgstr ""
+msgid "An mockup of a iPhone showing the Edriffles app open to the profile of a verified user with a blue checkmark next to their display name."
+msgstr "An mockup of a iPhone showing the Edriffles app open to the profile of a verified user with a blue checkmark next to their display name."
 
 #: src/components/moderation/ModerationDetailsDialog.tsx:154
 #: src/lib/moderation/useModerationCauseDescription.ts:142
@@ -1703,8 +1704,8 @@ msgid "Announcement"
 msgstr ""
 
 #: src/components/dialogs/nuxs/InitialVerificationAnnouncement.tsx:39
-msgid "Announcing verification on Bluesky"
-msgstr ""
+msgid "Announcing verification on Edriffles"
+msgstr "Announcing verification on Edriffles"
 
 #. Placeholder text for a date picker
 #: src/screens/Search/components/AdvancedSearchDialog/ClearableDateField.tsx:43
@@ -1735,7 +1736,7 @@ msgstr "Anyone can request to join"
 
 #: src/screens/Settings/ActivityPrivacySettings.tsx:112
 #: src/screens/Settings/ActivityPrivacySettings.tsx:117
-#: src/screens/Settings/PrivacyAndSecuritySettings.tsx:200
+#: src/screens/Settings/PrivacyAndSecuritySettings.tsx:202
 msgid "Anyone who follows me"
 msgstr ""
 
@@ -2053,8 +2054,8 @@ msgstr "Avatar creator"
 #: src/screens/Login/ChooseAccountForm.tsx:100
 #: src/screens/Login/ForgotPasswordForm.tsx:123
 #: src/screens/Login/ForgotPasswordForm.tsx:128
-#: src/screens/Login/LoginForm.tsx:313
-#: src/screens/Login/LoginForm.tsx:318
+#: src/screens/Login/LoginForm.tsx:314
+#: src/screens/Login/LoginForm.tsx:319
 #: src/screens/Login/SetNewPasswordForm.tsx:162
 #: src/screens/Login/SetNewPasswordForm.tsx:168
 #: src/screens/Messages/components/ChatDisabled.tsx:162
@@ -2249,7 +2250,7 @@ msgstr ""
 msgid "Blocking will not prevent labels from being applied on your account, but it will stop this account from replying in your threads or interacting with you."
 msgstr ""
 
-#: src/view/com/auth/SplashScreen.web.tsx:176
+#: src/view/com/auth/SplashScreen.web.tsx:167
 msgid "Blog"
 msgstr ""
 
@@ -2258,76 +2259,9 @@ msgstr ""
 msgid "bloomscrolling booksky"
 msgstr "bloomscrolling booksky"
 
-#: src/components/dialogs/ServerInput.tsx:144
-#: src/components/dialogs/ServerInput.tsx:146
-#: src/screens/CustomFeed/components/CustomFeedHeader.tsx:514
-msgid "Bluesky"
-msgstr ""
-
-#: src/screens/PostThread/components/ThreadItemAnchor.tsx:649
-msgid "Bluesky cannot confirm the authenticity of the claimed date."
-msgstr ""
-
 #: src/screens/Settings/AppIconSettings/useAppIconSets.ts:165
 msgctxt "Name of app icon variant"
 msgid "Bluesky Classic™"
-msgstr ""
-
-#: src/components/contacts/screens/GetContacts.tsx:237
-msgid "Bluesky helps friends find each other by creating an encoded digital fingerprint, called a \"hash\", and then looking for matching hashes."
-msgstr ""
-
-#: src/components/dialogs/ServerInput.tsx:214
-#: src/screens/Login/components/HostingProviderDialog.tsx:236
-msgid "Bluesky is an open network where you can choose your hosting provider. If you're a developer, you can host your own server."
-msgstr ""
-
-#: src/components/dialogs/ServerInput.tsx:162
-msgid "Bluesky is an open network where you can choose your own provider. If you're new here, we recommend sticking with the default Bluesky Social option."
-msgstr ""
-
-#: src/components/ProgressGuide/List.tsx:115
-msgid "Bluesky is better with friends!"
-msgstr ""
-
-#: src/screens/Onboarding/StepFindContactsIntro/index.tsx:43
-msgid "Bluesky is more fun with friends"
-msgstr ""
-
-#: src/components/dialogs/nuxs/FindContactsAnnouncement.tsx:108
-msgid "Bluesky is more fun with friends! Import your contacts to see who’s already here."
-msgstr ""
-
-#: src/components/contacts/screens/ViewMatches.tsx:323
-msgid "Bluesky is more fun with friends. Do you want to invite some of yours? <0/>"
-msgstr ""
-
-#: src/features/inviteFriends/InviteScannerScreen.tsx:105
-msgid "Bluesky needs camera access to scan QR codes from other profiles."
-msgstr "Bluesky needs camera access to scan QR codes from other profiles."
-
-#: src/screens/Takendown.tsx:211
-msgid "Bluesky Social Terms of Service"
-msgstr ""
-
-#: src/screens/Settings/FindContactsSettings.tsx:574
-msgid "Bluesky stores your contacts as encoded data. Removing your contacts will immediately delete this data."
-msgstr ""
-
-#: src/components/StarterPack/ProfileStarterPacks.tsx:343
-msgid "Bluesky will choose a set of recommended accounts from people in your network."
-msgstr ""
-
-#: src/screens/Settings/components/PwiOptOut.tsx:101
-msgid "Bluesky will not show your account to logged-out users and will ask other apps to do the same. Other apps may not honor this request. It doesn't make your account private."
-msgstr "Bluesky will not show your account to logged-out users and will ask other apps to do the same. Other apps may not honor this request. It doesn't make your account private."
-
-#: src/screens/Settings/components/AlgoVisibilityOptOut.tsx:43
-msgid "Bluesky will not show your posts in the Discover feed (except to your followers) and will ask other apps not to show your posts in their own algorithmic recommendations."
-msgstr "Bluesky will not show your posts in the Discover feed (except to your followers) and will ask other apps not to show your posts in their own algorithmic recommendations."
-
-#: src/components/dialogs/nuxs/InitialVerificationAnnouncement.tsx:136
-msgid "Bluesky will proactively verify notable and authentic accounts."
 msgstr ""
 
 #: src/screens/Settings/AppIconSettings/index.tsx:97
@@ -2407,10 +2341,6 @@ msgstr ""
 msgid "Browse topic {displayName}"
 msgstr ""
 
-#: src/view/com/auth/SplashScreen.web.tsx:171
-msgid "Business"
-msgstr ""
-
 #: src/screens/Bookmarks.tsx:293
 msgid "Button to go back to the home timeline"
 msgstr ""
@@ -2434,7 +2364,7 @@ msgstr "by @{0}"
 
 #. The group chat creator, in the format 'By {displayName}'.
 #. placeholder {0}: createSanitizedDisplayName( joinLinkPreview.owner, true, moderateProfile(joinLinkPreview.owner, moderationOpts).ui( 'displayName', ), )
-#. placeholder {0}: info.creatorHandle === TRENDING_HANDLE ? l`Bluesky` : sanitizeHandle(info.creatorHandle, '@')
+#. placeholder {0}: info.creatorHandle === TRENDING_HANDLE ? l`Edriffles` : sanitizeHandle(info.creatorHandle, '@')
 #: src/components/intents/GroupChatJoinDialog.tsx:384
 #: src/screens/CustomFeed/components/CustomFeedHeader.tsx:502
 msgid "By <0>{0}</0>"
@@ -2449,7 +2379,7 @@ msgstr "By <0>{ownerDisplayName}</0>"
 msgid "By clicking \"Continue\" you acknowledge that you understand and agree to these updates."
 msgstr ""
 
-#: src/components/contacts/screens/PhoneInput.tsx:297
+#: src/components/contacts/screens/PhoneInput.tsx:299
 msgid "By continuing, you consent to this use. You may change your mind any time by visiting settings. <0>Learn more</0>"
 msgstr ""
 
@@ -2478,8 +2408,8 @@ msgid "Camera access needed"
 msgstr "Camera access needed"
 
 #: src/components/activity-notifications/SubscribeProfileDialog.tsx:210
-#: src/components/contacts/screens/GetContacts.tsx:294
-#: src/components/contacts/screens/GetContacts.tsx:299
+#: src/components/contacts/screens/GetContacts.tsx:295
+#: src/components/contacts/screens/GetContacts.tsx:300
 #: src/components/dialogs/DeviceLocationRequestDialog.tsx:141
 #: src/components/dialogs/DeviceLocationRequestDialog.tsx:146
 #: src/components/dialogs/EmailDialog/screens/Manage2FA/Enable.tsx:122
@@ -2611,7 +2541,7 @@ msgstr ""
 msgid "Change Handle"
 msgstr ""
 
-#: src/screens/Login/LoginForm.tsx:404
+#: src/screens/Login/LoginForm.tsx:405
 msgid "Change hosting provider"
 msgstr "Change hosting provider"
 
@@ -3169,12 +3099,12 @@ msgstr ""
 msgid "Connecting to service..."
 msgstr ""
 
-#: src/screens/Login/LoginForm.tsx:342
+#: src/screens/Login/LoginForm.tsx:343
 msgid "Connecting to service…"
 msgstr "Connecting to service…"
 
 #: src/screens/Login/ForgotPasswordForm.tsx:142
-#: src/screens/Login/LoginForm.tsx:348
+#: src/screens/Login/LoginForm.tsx:349
 msgid "Connecting…"
 msgstr "Connecting…"
 
@@ -3286,8 +3216,8 @@ msgstr "Continue to group name"
 msgid "Continue to next step"
 msgstr ""
 
-#: src/screens/Login/LoginForm.tsx:354
-#: src/screens/Login/LoginForm.tsx:359
+#: src/screens/Login/LoginForm.tsx:355
+#: src/screens/Login/LoginForm.tsx:360
 #: src/screens/Signup/OAuthSignup.tsx:66
 #: src/screens/Signup/OAuthSignup.tsx:71
 msgid "Continue with OAuth"
@@ -3610,7 +3540,7 @@ msgstr ""
 #: src/screens/Signup/index.tsx:139
 #: src/screens/Signup/OAuthSignup.tsx:53
 #: src/view/com/auth/SplashScreen.tsx:108
-#: src/view/com/auth/SplashScreen.web.tsx:118
+#: src/view/com/auth/SplashScreen.web.tsx:109
 #: src/view/shell/bottom-bar/BottomBar.tsx:346
 #: src/view/shell/bottom-bar/BottomBar.tsx:350
 #: src/view/shell/bottom-bar/BottomBarWeb.tsx:232
@@ -3664,7 +3594,7 @@ msgstr ""
 
 #: src/screens/Messages/JoinRequest.tsx:312
 #: src/view/com/auth/SplashScreen.tsx:89
-#: src/view/com/auth/SplashScreen.web.tsx:110
+#: src/view/com/auth/SplashScreen.web.tsx:103
 msgid "Create new account"
 msgstr ""
 
@@ -3733,8 +3663,8 @@ msgid "Customization options"
 msgstr ""
 
 #: src/screens/Onboarding/Layout.tsx:60
-msgid "Customizes your Bluesky experience"
-msgstr ""
+msgid "Customizes your Edriffles experience"
+msgstr "Customizes your Edriffles experience"
 
 #: src/components/moderation/ReportDialog/utils/useReportOptions.ts:202
 msgid "Dangerous challenges or activities"
@@ -4165,8 +4095,8 @@ msgstr ""
 #: src/components/dialogs/EmailDialog/screens/Verify.tsx:200
 #: src/components/dialogs/LanguageSelectDialog.tsx:327
 #: src/components/dialogs/NotificationSettingsDialog.tsx:106
-#: src/components/dialogs/ServerInput.tsx:237
-#: src/components/dialogs/ServerInput.tsx:239
+#: src/components/dialogs/ServerInput.tsx:238
+#: src/components/dialogs/ServerInput.tsx:240
 #: src/components/dms/AfterReportConversationDialog.tsx:164
 #: src/components/dms/AfterReportDialog.tsx:145
 #: src/components/forms/DateField/index.tsx:128
@@ -4174,8 +4104,8 @@ msgstr ""
 #: src/features/inviteFriends/InviteFriendsDialogInner.tsx:150
 #: src/features/inviteFriends/InviteFriendsDialogInner.tsx:156
 #: src/lib/media/picker.tsx:37
-#: src/screens/Login/components/HostingProviderDialog.tsx:253
-#: src/screens/Login/components/HostingProviderDialog.tsx:255
+#: src/screens/Login/components/HostingProviderDialog.tsx:254
+#: src/screens/Login/components/HostingProviderDialog.tsx:256
 #: src/screens/Onboarding/StepProfile/index.tsx:354
 #: src/screens/Onboarding/StepProfile/index.tsx:357
 #: src/screens/Settings/components/AddAppPasswordDialog.tsx:214
@@ -4202,10 +4132,6 @@ msgstr ""
 #: src/features/inviteFriends/components/ActionButtons.tsx:36
 msgid "Download"
 msgstr "Download"
-
-#: src/screens/StarterPack/StarterPackLandingScreen.tsx:321
-msgid "Download Bluesky"
-msgstr ""
 
 #: src/screens/Settings/components/ExportCarDialog.tsx:155
 msgid "Download chat data"
@@ -4420,6 +4346,56 @@ msgstr ""
 #: src/Navigation.tsx:637
 msgid "Edit your starter pack"
 msgstr ""
+
+#: src/components/dialogs/ServerInput.tsx:144
+#: src/components/dialogs/ServerInput.tsx:146
+#: src/screens/CustomFeed/components/CustomFeedHeader.tsx:514
+msgid "Edriffles"
+msgstr "Edriffles"
+
+#: src/components/contacts/screens/GetContacts.tsx:237
+msgid "Edriffles helps friends find each other by creating an encoded digital fingerprint, called a \"hash\", and then looking for matching hashes."
+msgstr "Edriffles helps friends find each other by creating an encoded digital fingerprint, called a \"hash\", and then looking for matching hashes."
+
+#: src/components/ProgressGuide/List.tsx:115
+msgid "Edriffles is better with friends!"
+msgstr "Edriffles is better with friends!"
+
+#: src/screens/Onboarding/StepFindContactsIntro/index.tsx:43
+msgid "Edriffles is more fun with friends"
+msgstr "Edriffles is more fun with friends"
+
+#: src/components/dialogs/nuxs/FindContactsAnnouncement.tsx:108
+msgid "Edriffles is more fun with friends! Import your contacts to see who’s already here."
+msgstr "Edriffles is more fun with friends! Import your contacts to see who’s already here."
+
+#: src/components/contacts/screens/ViewMatches.tsx:323
+msgid "Edriffles is more fun with friends. Do you want to invite some of yours? <0/>"
+msgstr "Edriffles is more fun with friends. Do you want to invite some of yours? <0/>"
+
+#: src/features/inviteFriends/InviteScannerScreen.tsx:105
+msgid "Edriffles needs camera access to scan QR codes from other profiles."
+msgstr "Edriffles needs camera access to scan QR codes from other profiles."
+
+#: src/screens/Settings/FindContactsSettings.tsx:574
+msgid "Edriffles stores your contacts as encoded data. Removing your contacts will immediately delete this data."
+msgstr "Edriffles stores your contacts as encoded data. Removing your contacts will immediately delete this data."
+
+#: src/components/StarterPack/ProfileStarterPacks.tsx:343
+msgid "Edriffles will choose a set of recommended accounts from people in your network."
+msgstr "Edriffles will choose a set of recommended accounts from people in your network."
+
+#: src/screens/Settings/components/PwiOptOut.tsx:101
+msgid "Edriffles will not show your account to logged-out users and will ask other apps to do the same. Other apps may not honor this request. It doesn't make your account private."
+msgstr "Edriffles will not show your account to logged-out users and will ask other apps to do the same. Other apps may not honor this request. It doesn't make your account private."
+
+#: src/screens/Settings/components/AlgoVisibilityOptOut.tsx:43
+msgid "Edriffles will not show your posts in the Discover feed (except to your followers) and will ask other apps not to show your posts in their own algorithmic recommendations."
+msgstr "Edriffles will not show your posts in the Discover feed (except to your followers) and will ask other apps not to show your posts in their own algorithmic recommendations."
+
+#: src/components/dialogs/nuxs/InitialVerificationAnnouncement.tsx:136
+msgid "Edriffles will proactively verify notable and authentic accounts."
+msgstr "Edriffles will proactively verify notable and authentic accounts."
 
 #: src/lib/interests.ts:59
 msgid "Education"
@@ -4647,7 +4623,7 @@ msgstr ""
 msgid "Enter the email you used to create your account. We'll send you a \"reset code\" so you can set a new password."
 msgstr ""
 
-#: src/screens/Login/LoginForm.tsx:245
+#: src/screens/Login/LoginForm.tsx:246
 msgid "Enter the identity you use with your hosting provider"
 msgstr "Enter the identity you use with your hosting provider"
 
@@ -4693,7 +4669,7 @@ msgstr ""
 msgid "Error loading post"
 msgstr ""
 
-#: src/screens/Settings/PrivacyAndSecuritySettings.tsx:191
+#: src/screens/Settings/PrivacyAndSecuritySettings.tsx:193
 msgid "Error loading preference"
 msgstr ""
 
@@ -5384,8 +5360,8 @@ msgstr "Find and invite friends"
 msgid "Find Contacts"
 msgstr ""
 
-#: src/components/contacts/screens/GetContacts.tsx:275
-#: src/components/contacts/screens/GetContacts.tsx:289
+#: src/components/contacts/screens/GetContacts.tsx:276
+#: src/components/contacts/screens/GetContacts.tsx:290
 msgid "Find my friends"
 msgstr ""
 
@@ -5402,8 +5378,8 @@ msgid "Find people you know"
 msgstr "Find people you know"
 
 #: src/screens/Search/Shell.tsx:765
-msgid "Find posts, users, and feeds on Bluesky"
-msgstr ""
+msgid "Find posts, users, and feeds on Edriffles"
+msgstr "Find posts, users, and feeds on Edriffles"
 
 #: src/components/dialogs/nuxs/FindContactsAnnouncement.tsx:98
 msgid "Find your friends"
@@ -5411,14 +5387,14 @@ msgstr ""
 
 #: src/screens/Onboarding/StepFindContactsIntro/index.tsx:46
 #: src/screens/Settings/FindContactsSettings.tsx:131
-msgid "Find your friends on Bluesky by verifying your phone number and matching with your contacts. We protect your information and you control what happens next. <0>Learn more</0>"
-msgstr ""
+msgid "Find your friends on Edriffles by verifying your phone number and matching with your contacts. We protect your information and you control what happens next. <0>Learn more</0>"
+msgstr "Find your friends on Edriffles by verifying your phone number and matching with your contacts. We protect your information and you control what happens next. <0>Learn more</0>"
 
 #: src/screens/Onboarding/StepFinished/ValuePropositionPager.shared.tsx:31
 msgid "Find your people"
 msgstr ""
 
-#: src/components/contacts/screens/GetContacts.tsx:283
+#: src/components/contacts/screens/GetContacts.tsx:284
 msgid "Finding friends..."
 msgstr ""
 
@@ -5663,8 +5639,8 @@ msgstr ""
 
 #. This is alt text for a marketing image which transcribes English text that appears in the image
 #: src/components/dialogs/nuxs/GroupChatsAnnouncement.tsx:153
-msgid "Four message bubbles representing a group chat. First message: \"Did you hear the news? Bluesky has group chats now!\" Second message: \"omg, no way\" Third message: \"Wow, 50 people in one chat!\" Fourth message: \"You can send invite links too!\""
-msgstr "Four message bubbles representing a group chat. First message: \"Did you hear the news? Bluesky has group chats now!\" Second message: \"omg, no way\" Third message: \"Wow, 50 people in one chat!\" Fourth message: \"You can send invite links too!\""
+msgid "Four message bubbles representing a group chat. First message: \"Did you hear the news? Edriffles has group chats now!\" Second message: \"omg, no way\" Third message: \"Wow, 50 people in one chat!\" Fourth message: \"You can send invite links too!\""
+msgstr "Four message bubbles representing a group chat. First message: \"Did you hear the news? Edriffles has group chats now!\" Second message: \"omg, no way\" Third message: \"Wow, 50 people in one chat!\" Fourth message: \"You can send invite links too!\""
 
 #: src/screens/Onboarding/StepFinished/ValuePropositionPager.shared.tsx:22
 msgid "Free your feed"
@@ -6112,8 +6088,8 @@ msgid "Having trouble?"
 msgstr ""
 
 #: src/components/contacts/screens/PhoneInput.tsx:290
-msgid "Held by Bluesky for 7 days to prevent abuse, then deleted"
-msgstr ""
+msgid "Held by Edriffles for 7 days to prevent abuse, then deleted"
+msgstr "Held by Edriffles for 7 days to prevent abuse, then deleted"
 
 #: src/screens/Settings/Settings.tsx:293
 #: src/screens/Settings/Settings.tsx:297
@@ -6306,18 +6282,18 @@ msgstr ""
 #: src/components/dialogs/ServerInput.tsx:138
 #: src/screens/Login/components/HostingProviderDialog.tsx:159
 #: src/screens/Login/ForgotPasswordForm.tsx:84
-#: src/screens/Login/LoginForm.tsx:419
+#: src/screens/Login/LoginForm.tsx:420
 msgid "Hosting provider"
 msgstr ""
 
 #. placeholder {0}: toNiceHostingUrl(state.pdsUrl)
-#: src/screens/Login/LoginForm.tsx:415
+#: src/screens/Login/LoginForm.tsx:416
 msgid "Hosting provider: {0}"
 msgstr "Hosting provider: {0}"
 
-#: src/screens/Login/LoginForm.tsx:417
-msgid "Hosting provider: Bluesky"
-msgstr "Hosting provider: Bluesky"
+#: src/screens/Login/LoginForm.tsx:418
+msgid "Hosting provider: {PRODUCT_NAME}"
+msgstr "Hosting provider: {PRODUCT_NAME}"
 
 #: src/components/contacts/components/InviteInfo.tsx:54
 msgid "How it works:"
@@ -6340,9 +6316,9 @@ msgstr "HTTPS origin checked before registration"
 msgid "Human trafficking"
 msgstr ""
 
-#: src/components/contacts/screens/GetContacts.tsx:269
-msgid "I consent to Bluesky using my contacts for mutual friend discovery and to retain hashed data for matching until I opt out."
-msgstr ""
+#: src/components/contacts/screens/GetContacts.tsx:270
+msgid "I consent to Edriffles using my contacts for mutual friend discovery and to retain hashed data for matching until I opt out."
+msgstr "I consent to Edriffles using my contacts for mutual friend discovery and to retain hashed data for matching until I opt out."
 
 #: src/screens/Settings/components/DisableEmail2FADialog.tsx:142
 #: src/screens/Settings/components/DisableEmail2FADialog.tsx:145
@@ -6360,8 +6336,8 @@ msgstr "I understand this does not unlink my identity"
 
 #. placeholder {0}: currentAccount.handle
 #: src/components/contacts/screens/ViewMatches.tsx:586
-msgid "I'm on Bluesky as {0} - come find me! https://bsky.app/download"
-msgstr ""
+msgid "I'm on Edriffles as {0} - come find me!"
+msgstr "I'm on Edriffles as {0} - come find me!"
 
 #: src/screens/Settings/IdentitySovereigntySettings.tsx:99
 msgid "Identity & recovery"
@@ -6671,8 +6647,8 @@ msgid "Invite"
 msgstr ""
 
 #: src/components/contacts/screens/ViewMatches.tsx:575
-msgid "Invite {name} to join Bluesky"
-msgstr ""
+msgid "Invite {name} to join Edriffles"
+msgstr "Invite {name} to join Edriffles"
 
 #: src/screens/Signup/StepInfo/index.tsx:160
 msgid "Invite code"
@@ -6775,26 +6751,21 @@ msgstr ""
 msgid "Job ID: {0}"
 msgstr ""
 
-#. Link to a page with job openings at Bluesky
-#: src/view/com/auth/SplashScreen.web.tsx:181
-msgid "Jobs"
-msgstr ""
-
 #: src/components/dms/ChatInvite/Root.tsx:118
 #: src/components/intents/GroupChatJoinDialog.tsx:301
 msgid "Join"
 msgstr "Join"
 
+#: src/screens/Settings/PermissionedSpacesSettings.tsx:474
+msgid "Join community"
+msgstr "Join community"
+
 #: src/screens/StarterPack/StarterPackLandingScreen.tsx:202
 #: src/screens/StarterPack/StarterPackLandingScreen.tsx:207
 #: src/screens/StarterPack/StarterPackScreen.tsx:471
 #: src/screens/StarterPack/StarterPackScreen.tsx:481
-msgid "Join Bluesky"
-msgstr ""
-
-#: src/screens/Settings/PermissionedSpacesSettings.tsx:474
-msgid "Join community"
-msgstr "Join community"
+msgid "Join Edriffles"
+msgstr "Join Edriffles"
 
 #: src/components/intents/GroupChatJoinDialog.tsx:70
 #: src/components/intents/GroupChatJoinDialog.tsx:469
@@ -6903,23 +6874,23 @@ msgctxt "english-only-resource"
 msgid "Learn more about <0>how to use advanced search</0>."
 msgstr "Learn more about <0>how to use advanced search</0>."
 
-#: src/view/com/auth/SplashScreen.web.tsx:169
-msgid "Learn more about Bluesky"
-msgstr ""
+#: src/view/com/auth/SplashScreen.web.tsx:170
+msgid "Learn more about edriffles"
+msgstr "Learn more about edriffles"
 
 #: src/components/contacts/components/InviteInfo.tsx:33
 msgid "Learn more about how inviting friends works"
 msgstr ""
 
-#: src/components/contacts/screens/PhoneInput.tsx:303
+#: src/components/contacts/screens/PhoneInput.tsx:305
 #: src/screens/Onboarding/StepFindContactsIntro/index.tsx:53
 #: src/screens/Settings/FindContactsSettings.tsx:138
 msgctxt "english-only-resource"
 msgid "Learn more about importing contacts"
 msgstr ""
 
-#: src/components/dialogs/ServerInput.tsx:220
-#: src/screens/Login/components/HostingProviderDialog.tsx:241
+#: src/components/dialogs/ServerInput.tsx:221
+#: src/screens/Login/components/HostingProviderDialog.tsx:242
 msgid "Learn more about self hosting your PDS."
 msgstr ""
 
@@ -6944,21 +6915,21 @@ msgstr ""
 #: src/components/verification/VerificationsDialog.tsx:153
 #: src/components/verification/VerifierDialog.tsx:122
 msgctxt "english-only-resource"
-msgid "Learn more about verification on Bluesky"
-msgstr ""
+msgid "Learn more about verification on Edriffles"
+msgstr "Learn more about verification on Edriffles"
 
 #: src/screens/Settings/PrivacyAndSecuritySettings.tsx:165
 #: src/screens/Settings/PrivacyAndSecuritySettings.tsx:168
-msgid "Learn more about what is public on Bluesky."
-msgstr ""
+msgid "Learn more about what is public on Edriffles."
+msgstr "Learn more about what is public on Edriffles."
 
 #: src/screens/Profile/components/GermButton.tsx:213
 msgid "Learn more about your Germ DM link"
 msgstr ""
 
-#: src/components/dialogs/ServerInput.tsx:222
+#: src/components/dialogs/ServerInput.tsx:223
 #: src/components/moderation/ContentHider.tsx:253
-#: src/screens/Login/components/HostingProviderDialog.tsx:243
+#: src/screens/Login/components/HostingProviderDialog.tsx:244
 msgid "Learn more."
 msgstr ""
 
@@ -7013,8 +6984,8 @@ msgstr "Leave this group chat"
 
 #: src/components/dialogs/LinkWarning.tsx:83
 #: src/components/dialogs/LinkWarning.tsx:91
-msgid "Leaving Bluesky"
-msgstr ""
+msgid "Leaving Edriffles"
+msgstr "Leaving Edriffles"
 
 #: src/screens/Messages/ConversationSettings/prompts.tsx:153
 msgid "Leaving this chat will lock it permanently and you won’t be able to rejoin."
@@ -8012,7 +7983,7 @@ msgstr "New reads will use {0}. PDS writes remain on your account host."
 msgid "New starter pack"
 msgstr ""
 
-#: src/screens/Login/LoginForm.tsx:368
+#: src/screens/Login/LoginForm.tsx:369
 msgid "New to Bluesky? <0>Sign up</0>"
 msgstr "New to Bluesky? <0>Sign up</0>"
 
@@ -8067,8 +8038,8 @@ msgid "No"
 msgstr "No"
 
 #: src/screens/Onboarding/StepFinished/ValuePropositionPager.shared.tsx:42
-msgid "No ads, no invasive tracking, no engagement traps. Bluesky respects your time and attention."
-msgstr ""
+msgid "No ads, no invasive tracking, no engagement traps. Edriffles respects your time and attention."
+msgstr "No ads, no invasive tracking, no engagement traps. Edriffles respects your time and attention."
 
 #: src/screens/Settings/AppPasswords.tsx:108
 msgid "No app passwords yet"
@@ -8192,7 +8163,7 @@ msgstr ""
 
 #: src/screens/Settings/ActivityPrivacySettings.tsx:130
 #: src/screens/Settings/ActivityPrivacySettings.tsx:135
-#: src/screens/Settings/PrivacyAndSecuritySettings.tsx:197
+#: src/screens/Settings/PrivacyAndSecuritySettings.tsx:199
 msgctxt "enable for"
 msgid "No one"
 msgstr ""
@@ -8372,8 +8343,8 @@ msgid "Note about sharing"
 msgstr ""
 
 #: src/screens/Settings/PrivacyAndSecuritySettings.tsx:155
-msgid "Note: Bluesky is part of the Atmosphere, an open public network. These settings ask other apps and websites to limit your visibility, but they can choose not to. Your public content may still appear elsewhere."
-msgstr "Note: Bluesky is part of the Atmosphere, an open public network. These settings ask other apps and websites to limit your visibility, but they can choose not to. Your public content may still appear elsewhere."
+msgid "Note: Edriffles is part of the Atmosphere, an open public network. These settings ask other apps and websites to limit your visibility, but they can choose not to. Your public content may still appear elsewhere."
+msgstr "Note: Edriffles is part of the Atmosphere, an open public network. These settings ask other apps and websites to limit your visibility, but they can choose not to. Your public content may still appear elsewhere."
 
 #: src/components/PostControls/ShareMenu/ShareMenuItems.web.tsx:131
 msgid "Note: This post is only visible to logged-in users."
@@ -8437,7 +8408,7 @@ msgid "Oh no!"
 msgstr ""
 
 #. Confirm button text.
-#: src/components/contacts/screens/GetContacts.tsx:319
+#: src/components/contacts/screens/GetContacts.tsx:320
 #: src/screens/Profile/Header/ProfileHeaderLabeler.tsx:224
 #: src/screens/Search/modules/ExploreInterestsCard.tsx:44
 #: src/screens/Settings/AppIconSettings/index.tsx:46
@@ -8534,7 +8505,7 @@ msgstr "Only followers can join this group chat."
 
 #: src/screens/Settings/ActivityPrivacySettings.tsx:121
 #: src/screens/Settings/ActivityPrivacySettings.tsx:126
-#: src/screens/Settings/PrivacyAndSecuritySettings.tsx:195
+#: src/screens/Settings/PrivacyAndSecuritySettings.tsx:197
 msgid "Only followers who I follow"
 msgstr ""
 
@@ -8715,6 +8686,10 @@ msgstr ""
 msgid "Open system log"
 msgstr ""
 
+#: src/screens/StarterPack/StarterPackLandingScreen.tsx:321
+msgid "Open the mobile app"
+msgstr "Open the mobile app"
+
 #: src/components/intents/GroupChatJoinDialog.tsx:452
 msgid "Open this group chat"
 msgstr "Open this group chat"
@@ -8728,7 +8703,7 @@ msgstr ""
 msgid "Opens a dialog to add a content warning to your post"
 msgstr ""
 
-#: src/screens/Login/LoginForm.tsx:405
+#: src/screens/Login/LoginForm.tsx:406
 msgid "Opens a dialog to change the hosting provider you sign in to"
 msgstr "Opens a dialog to change the hosting provider you sign in to"
 
@@ -8773,17 +8748,29 @@ msgstr ""
 msgid "Opens device gallery to select up to {MAX_GALLERY_IMAGES, plural, other {# images}}, or a single video or GIF."
 msgstr "Opens device gallery to select up to {MAX_GALLERY_IMAGES, plural, other {# images}}, or a single video or GIF."
 
-#: src/screens/Messages/JoinRequest.tsx:313
+#: src/view/com/auth/SplashScreen.web.tsx:104
+msgid "Opens flow to create a new account"
+msgstr "Opens flow to create a new account"
+
 #: src/view/com/auth/SplashScreen.tsx:91
-#: src/view/com/auth/SplashScreen.web.tsx:112
 msgid "Opens flow to create a new Bluesky account"
 msgstr ""
 
-#: src/screens/Messages/JoinRequest.tsx:299
+#: src/screens/Messages/JoinRequest.tsx:313
+msgid "Opens flow to create a new Edriffles account"
+msgstr "Opens flow to create a new Edriffles account"
+
+#: src/view/com/auth/SplashScreen.web.tsx:117
+msgid "Opens flow to sign in to your existing account"
+msgstr "Opens flow to sign in to your existing account"
+
 #: src/view/com/auth/SplashScreen.tsx:120
-#: src/view/com/auth/SplashScreen.web.tsx:126
 msgid "Opens flow to sign in to your existing Bluesky account"
 msgstr ""
+
+#: src/screens/Messages/JoinRequest.tsx:299
+msgid "Opens flow to sign in to your existing Edriffles account"
+msgstr "Opens flow to sign in to your existing Edriffles account"
 
 #: src/components/images/Gallery/index.tsx:458
 msgid "Opens full image"
@@ -8925,8 +8912,8 @@ msgid "Our moderation team has received your report."
 msgstr ""
 
 #: src/screens/Messages/components/ChatDisabled.tsx:54
-msgid "Our moderators have reviewed reports and decided to disable your access to chats on Bluesky."
-msgstr ""
+msgid "Our moderators have reviewed reports and decided to disable your access to chats on Edriffles."
+msgstr "Our moderators have reviewed reports and decided to disable your access to chats on Edriffles."
 
 #: src/components/dialogs/StarterPackDialog.tsx:376
 msgid "Owner"
@@ -9186,8 +9173,8 @@ msgid "Please choose your password."
 msgstr ""
 
 #: src/components/dialogs/EmailDialog/screens/Update.tsx:286
-msgid "Please click on the link in the email we just sent you to verify your new email address. This is an important step to allow you to continue enjoying all the features of Bluesky."
-msgstr ""
+msgid "Please click on the link in the email we just sent you to verify your new email address. This is an important step to allow you to continue enjoying all the features of Edriffles."
+msgstr "Please click on the link in the email we just sent you to verify your new email address. This is an important step to allow you to continue enjoying all the features of Edriffles."
 
 #: src/screens/Signup/state.ts:319
 msgid "Please complete the verification captcha."
@@ -9253,7 +9240,7 @@ msgstr ""
 msgid "Please enter your new email address."
 msgstr ""
 
-#: src/screens/Login/LoginForm.tsx:130
+#: src/screens/Login/LoginForm.tsx:131
 msgid "Please enter your username"
 msgstr ""
 
@@ -9295,8 +9282,8 @@ msgid "Please submit your report through the Report non-consensual intimate imag
 msgstr "Please submit your report through the Report non-consensual intimate imagery (NCII) form."
 
 #: src/features/inviteFriends/InviteScannerScreen.web.tsx:40
-msgid "Please use the Bluesky mobile app to scan a QR code."
-msgstr "Please use the Bluesky mobile app to scan a QR code."
+msgid "Please use the Edriffles mobile app to scan a QR code."
+msgstr "Please use the Edriffles mobile app to scan a QR code."
 
 #: src/screens/Settings/FindContactsSettings.tsx:105
 msgid "Please use the native app to import your contacts."
@@ -9406,8 +9393,8 @@ msgid "Post Interaction Settings"
 msgstr ""
 
 #: src/components/dialogs/nuxs/GroupChatsAnnouncement.tsx:193
-msgid "Post it to Bluesky or share anywhere."
-msgstr "Post it to Bluesky or share anywhere."
+msgid "Post it to Edriffles or share anywhere."
+msgstr "Post it to Edriffles or share anywhere."
 
 #. Accessibility label for button that opens dialog to choose post language settings
 #: src/view/com/composer/select-language/PostLanguageSelect.tsx:195
@@ -9827,19 +9814,19 @@ msgstr "Read private media"
 msgid "Read private record"
 msgstr "Read private record"
 
-#: src/view/com/auth/SplashScreen.web.tsx:174
-msgid "Read the Bluesky blog"
-msgstr ""
+#: src/view/com/auth/SplashScreen.web.tsx:165
+msgid "Read the edriffles blog"
+msgstr "Read the edriffles blog"
 
 #: src/screens/Signup/StepInfo/Policies.tsx:53
 #: src/screens/Signup/StepInfo/Policies.tsx:79
-msgid "Read the Bluesky Privacy Policy"
-msgstr ""
+msgid "Read the Privacy Policy"
+msgstr "Read the Privacy Policy"
 
 #: src/screens/Signup/StepInfo/Policies.tsx:46
 #: src/screens/Signup/StepInfo/Policies.tsx:66
-msgid "Read the Bluesky Terms of Service"
-msgstr ""
+msgid "Read the Terms of Service"
+msgstr "Read the Terms of Service"
 
 #: src/components/WelcomeModal.tsx:144
 msgid "Real conversations."
@@ -10555,8 +10542,8 @@ msgstr ""
 #: src/components/Post/Embed/VideoEmbed/VideoEmbedInner/VideoFallback.tsx:56
 #: src/components/Post/Embed/VideoEmbed/VideoEmbedInner/VideoFallback.tsx:59
 #: src/components/StarterPack/ProfileStarterPacks.tsx:380
-#: src/screens/Login/LoginForm.tsx:332
-#: src/screens/Login/LoginForm.tsx:337
+#: src/screens/Login/LoginForm.tsx:333
+#: src/screens/Login/LoginForm.tsx:338
 #: src/screens/Messages/ChatList.tsx:402
 #: src/screens/Messages/components/MessageListError.tsx:24
 #: src/screens/Messages/Inbox.tsx:200
@@ -10905,10 +10892,6 @@ msgstr ""
 msgid "See #{tag} posts by user"
 msgstr ""
 
-#: src/view/com/auth/SplashScreen.web.tsx:179
-msgid "See jobs at Bluesky"
-msgstr ""
-
 #: src/components/FeedInterstitials.tsx:495
 #: src/components/FeedInterstitials.tsx:554
 #: src/components/interstitials/FeedTrendingTopics.tsx:113
@@ -11240,11 +11223,11 @@ msgstr ""
 msgid "Set who can reply to your post"
 msgstr ""
 
-#: src/screens/Login/LoginForm.tsx:259
+#: src/screens/Login/LoginForm.tsx:260
 msgid "set your hosting provider manually"
 msgstr "set your hosting provider manually"
 
-#: src/screens/Login/LoginForm.tsx:288
+#: src/screens/Login/LoginForm.tsx:289
 msgid "Set your hosting provider manually"
 msgstr "Set your hosting provider manually"
 
@@ -11410,8 +11393,8 @@ msgid "Share this starter pack"
 msgstr ""
 
 #: src/components/StarterPack/ShareDialog.tsx:86
-msgid "Share this starter pack and help people join your community on Bluesky."
-msgstr ""
+msgid "Share this starter pack and help people join your community on Edriffles."
+msgstr "Share this starter pack and help people join your community on Edriffles."
 
 #: src/components/PostControls/ShareMenu/ShareMenuItems.tsx:128
 #: src/components/PostControls/ShareMenu/ShareMenuItems.tsx:131
@@ -11577,14 +11560,14 @@ msgstr ""
 #: src/screens/Hashtag.tsx:233
 #: src/screens/Login/index.tsx:138
 #: src/screens/Login/index.tsx:159
-#: src/screens/Login/LoginForm.tsx:185
+#: src/screens/Login/LoginForm.tsx:186
 #: src/screens/Messages/JoinRequest.tsx:298
 #: src/screens/Messages/JoinRequest.tsx:304
 #: src/screens/Search/SearchResults.tsx:413
 #: src/view/com/auth/SplashScreen.tsx:118
 #: src/view/com/auth/SplashScreen.tsx:125
-#: src/view/com/auth/SplashScreen.web.tsx:124
-#: src/view/com/auth/SplashScreen.web.tsx:132
+#: src/view/com/auth/SplashScreen.web.tsx:115
+#: src/view/com/auth/SplashScreen.web.tsx:123
 #: src/view/shell/bottom-bar/BottomBar.tsx:355
 #: src/view/shell/bottom-bar/BottomBar.tsx:359
 #: src/view/shell/bottom-bar/BottomBarWeb.tsx:242
@@ -11603,6 +11586,10 @@ msgstr ""
 msgid "Sign in as…"
 msgstr "Sign in as…"
 
+#: src/components/dialogs/Signin.tsx:47
+msgid "Sign in or create a new account"
+msgstr "Sign in or create a new account"
+
 #: src/screens/Deactivated.tsx:200
 #: src/screens/Deactivated.tsx:206
 msgid "Sign in or create an account"
@@ -11618,10 +11605,6 @@ msgstr "Sign in to accept invite."
 
 #: src/components/AccountList.tsx:70
 msgid "Sign in to account that is not listed"
-msgstr ""
-
-#: src/components/dialogs/Signin.tsx:47
-msgid "Sign in to Bluesky or create a new account"
 msgstr ""
 
 #: src/screens/Messages/JoinRequest.tsx:223
@@ -11654,7 +11637,7 @@ msgstr ""
 msgid "Sign out?"
 msgstr ""
 
-#: src/screens/Login/LoginForm.tsx:371
+#: src/screens/Login/LoginForm.tsx:372
 msgid "Sign up"
 msgstr "Sign up"
 
@@ -11840,7 +11823,7 @@ msgid "Sorry, we're unable to load account suggestions at this time."
 msgstr ""
 
 #: src/App.tsx:134
-#: src/App.web.tsx:146
+#: src/App.web.tsx:159
 msgid "Sorry! Your session expired. Please sign in again."
 msgstr ""
 
@@ -11969,7 +11952,7 @@ msgstr ""
 msgid "Storage cleared, you need to restart the app now."
 msgstr ""
 
-#: src/components/contacts/screens/PhoneInput.tsx:294
+#: src/components/contacts/screens/PhoneInput.tsx:296
 msgid "Stored as part of a secure code for matching with others"
 msgstr ""
 
@@ -11979,8 +11962,8 @@ msgid "Storybook"
 msgstr ""
 
 #: src/components/dialogs/nuxs/LiveNowBetaDialog.tsx:182
-msgid "Streaming on Twitch? Set your live status on Bluesky to add a badge to your avatar. Tapping it takes people straight to your stream."
-msgstr ""
+msgid "Streaming on Twitch? Set your live status on Edriffles to add a badge to your avatar. Tapping it takes people straight to your stream."
+msgstr "Streaming on Twitch? Set your live status on Edriffles to add a badge to your avatar. Tapping it takes people straight to your stream."
 
 #: src/components/moderation/AppealForm.tsx:165
 #: src/components/moderation/AppealForm.tsx:166
@@ -12160,8 +12143,8 @@ msgid "Take the conversation private."
 msgstr "Take the conversation private."
 
 #: src/components/dialogs/DeviceLocationRequestDialog.tsx:110
-msgid "Tap below to allow Bluesky to access your GPS location. We will then use that data to more accurately determine the content and features available in your region."
-msgstr ""
+msgid "Tap below to allow Edriffles to access your GPS location. We will then use that data to more accurately determine the content and features available in your region."
+msgstr "Tap below to allow Edriffles to access your GPS location. We will then use that data to more accurately determine the content and features available in your region."
 
 #: src/components/dms/MessageItem.tsx:699
 msgid "Tap for details"
@@ -12176,8 +12159,8 @@ msgid "Tap for more information"
 msgstr ""
 
 #: src/components/PolicyUpdateOverlay/updates/202508/index.tsx:165
-msgid "Tap to acknowledge that you understand and agree to these updates and continue using Bluesky"
-msgstr ""
+msgid "Tap to acknowledge that you understand and agree to these updates and continue using Edriffles"
+msgstr "Tap to acknowledge that you understand and agree to these updates and continue using Edriffles"
 
 #: src/components/ContextMenu/Backdrop.ios.tsx:54
 #: src/components/ContextMenu/Backdrop.ios.tsx:80
@@ -12276,6 +12259,7 @@ msgstr ""
 #: src/Navigation.tsx:351
 #: src/screens/Settings/AboutSettings.tsx:94
 #: src/screens/Settings/AboutSettings.tsx:97
+#: src/screens/Takendown.tsx:211
 #: src/view/screens/TermsOfService.tsx:25
 #: src/view/shell/Drawer.tsx:759
 #: src/view/shell/Drawer.tsx:761
@@ -12344,6 +12328,15 @@ msgstr ""
 msgid "The app will be restarted"
 msgstr ""
 
+#: src/components/dialogs/ServerInput.tsx:214
+#: src/screens/Login/components/HostingProviderDialog.tsx:236
+msgid "The AT Protocol is an open network where you can choose your hosting provider. If you're a developer, you can host your own server."
+msgstr "The AT Protocol is an open network where you can choose your hosting provider. If you're a developer, you can host your own server."
+
+#: src/components/dialogs/ServerInput.tsx:162
+msgid "The AT Protocol is an open network where you can choose your own provider. If you're new here, we recommend sticking with the default Edriffles service."
+msgstr "The AT Protocol is an open network where you can choose your own provider. If you're new here, we recommend sticking with the default Edriffles service."
+
 #: src/screens/Settings/PersonalizationSettings.tsx:254
 msgid "The authenticated encrypted archive is on the clipboard."
 msgstr "The authenticated encrypted archive is on the clipboard."
@@ -12355,10 +12348,6 @@ msgstr ""
 
 #: src/components/dialogs/BirthDateSettings.tsx:169
 msgid "The birthdate you've entered means you are under 18 years old. Certain content and features may be unavailable to you."
-msgstr ""
-
-#: src/screens/Moderation/index.tsx:380
-msgid "The Bluesky web application"
 msgstr ""
 
 #: src/view/screens/CommunityGuidelines.tsx:32
@@ -12377,9 +12366,13 @@ msgstr ""
 msgid "The Discover feed now knows what you like"
 msgstr ""
 
+#: src/screens/Moderation/index.tsx:380
+msgid "The Edriffles web application"
+msgstr "The Edriffles web application"
+
 #: src/screens/StarterPack/StarterPackLandingScreen.tsx:324
-msgid "The experience is better in the app. Download Bluesky now and we'll pick back up where you left off."
-msgstr ""
+msgid "The experience is better in the app. Open the mobile app now and we'll pick back up where you left off."
+msgstr "The experience is better in the app. Open the mobile app now and we'll pick back up where you left off."
 
 #: src/view/com/posts/FeedShutdownMsg.tsx:71
 msgid "The feed has been replaced with Discover."
@@ -12600,8 +12593,8 @@ msgid "There was an unexpected issue in the application. Please let us know if t
 msgstr ""
 
 #: src/screens/SignupQueued.tsx:140
-msgid "There's been a rush of new users to Bluesky! We'll activate your account as soon as we can."
-msgstr ""
+msgid "There's been a rush of new users to Edriffles! We'll activate your account as soon as we can."
+msgstr "There's been a rush of new users to Edriffles! We'll activate your account as soon as we can."
 
 #: src/components/dialogs/PostInteractionSettingsDialog.tsx:657
 msgid "These are your default settings"
@@ -12672,8 +12665,8 @@ msgstr ""
 
 #: src/features/liveNow/components/GoLiveDisabledDialog.tsx:113
 #: src/screens/Messages/components/ChatDisabled.tsx:136
-msgid "This appeal will be sent to Bluesky's moderation service."
-msgstr ""
+msgid "This appeal will be sent to the moderation service."
+msgstr "This appeal will be sent to the moderation service."
 
 #: src/screens/PostThread/components/ThreadItemAnchorNoUnauthenticated.tsx:27
 #: src/screens/PostThread/components/ThreadItemPostNoUnauthenticated.tsx:47
@@ -12681,8 +12674,8 @@ msgid "This author has chosen to make their posts visible only to people who are
 msgstr ""
 
 #: src/screens/Profile/components/GermButton.tsx:245
-msgid "This button lets others open the Germ DM app to send you a message. You can manage its visibility from the Germ DM app, or you can disconnect your Bluesky account from Germ DM altogether by clicking the button below."
-msgstr ""
+msgid "This button lets others open the Germ DM app to send you a message. You can manage its visibility from the Germ DM app, or you can disconnect your account from Germ DM altogether by clicking the button below."
+msgstr "This button lets others open the Germ DM app to send you a message. You can manage its visibility from the Germ DM app, or you can disconnect your account from Germ DM altogether by clicking the button below."
 
 #: src/screens/Messages/components/ChatEnded.tsx:48
 msgid "This chat has ended"
@@ -12734,8 +12727,8 @@ msgid "This content is not available because one of the users involved has block
 msgstr ""
 
 #: src/view/com/posts/PostFeedErrorMessage.tsx:120
-msgid "This content is not viewable without a Bluesky account."
-msgstr ""
+msgid "This content is not viewable without an account."
+msgstr "This content is not viewable without an account."
 
 #: src/components/intents/GroupChatJoinDialog.tsx:151
 msgid "This conversation is locked."
@@ -12852,12 +12845,12 @@ msgstr ""
 
 #. placeholder {0}: sanitizeHandle(list.creator.handle, '@')
 #: src/screens/List/ListHiddenScreen.tsx:141
-msgid "This list – created by <0>{0}</0> – contains possible violations of Bluesky's community guidelines in its name or description."
-msgstr ""
+msgid "This list – created by <0>{0}</0> – contains possible violations of Edriffles' community guidelines in its name or description."
+msgstr "This list – created by <0>{0}</0> – contains possible violations of Edriffles' community guidelines in its name or description."
 
 #: src/screens/List/ListHiddenScreen.tsx:136
-msgid "This list – created by you – contains possible violations of Bluesky's community guidelines in its name or description."
-msgstr ""
+msgid "This list – created by you – contains possible violations of Edriffles' community guidelines in its name or description."
+msgstr "This list – created by you – contains possible violations of Edriffles' community guidelines in its name or description."
 
 #: src/components/dialogs/lists/ReviewListMembersDialog.tsx:150
 msgid "This list has no members to review."
@@ -12896,8 +12889,8 @@ msgstr "This person is blocking you"
 #. placeholder {0}: niceDate(i18n, createdAt)
 #. placeholder {1}: niceDate(i18n, indexedAt)
 #: src/screens/PostThread/components/ThreadItemAnchor.tsx:636
-msgid "This post claims to have been created on <0>{0}</0>, but was first seen by Bluesky on <1>{1}</1>."
-msgstr ""
+msgid "This post claims to have been created on <0>{0}</0>, but was first indexed on <1>{1}</1>."
+msgstr "This post claims to have been created on <0>{0}</0>, but was first indexed on <1>{1}</1>."
 
 #: src/components/WhoCanReply.tsx:267
 msgid "This post has an unknown type of threadgate on it. Your app may be out of date."
@@ -12939,6 +12932,10 @@ msgstr ""
 #: src/screens/Messages/JoinRequests.tsx:98
 msgid "This screen is only available for group conversations."
 msgstr "This screen is only available for group conversations."
+
+#: src/screens/PostThread/components/ThreadItemAnchor.tsx:649
+msgid "This service cannot confirm the authenticity of the claimed date."
+msgstr "This service cannot confirm the authenticity of the claimed date."
 
 #: src/screens/Signup/StepInfo/Policies.tsx:32
 msgid "This service has not provided terms of service or a privacy policy."
@@ -13019,8 +13016,8 @@ msgid "This will delete \"{0}\" from your muted words. You can always add it bac
 msgstr ""
 
 #: src/screens/Settings/components/DeleteAccountDialog.tsx:336
-msgid "This will irreversibly delete your Bluesky account <0>{currentHandle}</0> and all associated data. Note that this will affect any other <1>AT Protocol</1> services you use with this account."
-msgstr ""
+msgid "This will irreversibly delete your Edriffles account <0>{currentHandle}</0> and all associated data. Note that this will affect any other <1>AT Protocol</1> services you use with this account."
+msgstr "This will irreversibly delete your Edriffles account <0>{currentHandle}</0> and all associated data. Note that this will affect any other <1>AT Protocol</1> services you use with this account."
 
 #. placeholder {0}: account.handle
 #: src/screens/Settings/Settings.tsx:724
@@ -13236,8 +13233,8 @@ msgid "Type:"
 msgstr ""
 
 #: src/components/dialogs/DeviceLocationRequestDialog.tsx:86
-msgid "Unable to access location. You'll need to visit your system settings to enable location services for Bluesky."
-msgstr ""
+msgid "Unable to access location. You'll need to visit your system settings to enable location services for Edriffles."
+msgstr "Unable to access location. You'll need to visit your system settings to enable location services for Edriffles."
 
 #: src/lib/hooks/useCleanError.ts:30
 #: src/lib/strings/errors.ts:40
@@ -13251,7 +13248,7 @@ msgstr ""
 
 #: src/screens/Login/ForgotPasswordForm.tsx:70
 #: src/screens/Login/index.tsx:100
-#: src/screens/Login/LoginForm.tsx:112
+#: src/screens/Login/LoginForm.tsx:113
 #: src/screens/Login/SetNewPasswordForm.tsx:82
 #: src/screens/Signup/index.tsx:89
 #: src/screens/Signup/OAuthSignup.tsx:44
@@ -13632,8 +13629,8 @@ msgid "Use {0}"
 msgstr "Use {0}"
 
 #: src/screens/Settings/AppPasswords.tsx:67
-msgid "Use app passwords to sign in to other Bluesky clients without giving full access to your account or password."
-msgstr ""
+msgid "Use app passwords to sign in to other AT Protocol clients without giving full access to your account or password."
+msgstr "Use app passwords to sign in to other AT Protocol clients without giving full access to your account or password."
 
 #: src/screens/Settings/FollowingFeedPreferences.tsx:124
 msgid "Use Balanced local ranking"
@@ -13759,8 +13756,8 @@ msgstr ""
 msgid "Username must only contain letters (a-z), numbers, and hyphens"
 msgstr ""
 
-#: src/screens/Login/LoginForm.tsx:215
-#: src/screens/Login/LoginForm.tsx:225
+#: src/screens/Login/LoginForm.tsx:216
+#: src/screens/Login/LoginForm.tsx:226
 msgid "Username, email, or DID"
 msgstr "Username, email, or DID"
 
@@ -13792,8 +13789,8 @@ msgid "Verification Settings"
 msgstr ""
 
 #: src/screens/Moderation/VerificationSettings.tsx:45
-msgid "Verifications on Bluesky work differently than on other platforms. <0>Learn more here.</0>"
-msgstr ""
+msgid "Verifications on Edriffles work differently than on other platforms. <0>Learn more here.</0>"
+msgstr "Verifications on Edriffles work differently than on other platforms. <0>Learn more here.</0>"
 
 #: src/components/verification/VerificationsDialog.tsx:105
 msgid "Verified by:"
@@ -14116,6 +14113,10 @@ msgstr ""
 msgid "Violent or threatening content"
 msgstr ""
 
+#: src/view/com/auth/SplashScreen.web.tsx:160
+msgid "Visit edriffles.us"
+msgstr "Visit edriffles.us"
+
 #: src/components/dialogs/LinkWarning.tsx:112
 #: src/components/dialogs/LinkWarning.tsx:122
 msgid "Visit site"
@@ -14148,7 +14149,7 @@ msgstr ""
 msgid "Watch now"
 msgstr ""
 
-#: src/components/contacts/screens/GetContacts.tsx:255
+#: src/components/contacts/screens/GetContacts.tsx:256
 msgid "We apply the highest privacy standards, and never share or sell your contact information."
 msgstr ""
 
@@ -14172,7 +14173,7 @@ msgstr ""
 msgid "We couldn't find any results for that topic."
 msgstr ""
 
-#: src/screens/Login/LoginForm.tsx:256
+#: src/screens/Login/LoginForm.tsx:257
 msgid "We couldn't find that account. Check the identity, or <0>set your hosting provider manually</0>."
 msgstr "We couldn't find that account. Check the identity, or <0>set your hosting provider manually</0>."
 
@@ -14188,11 +14189,11 @@ msgstr "We couldn’t load this conversation’s join requests"
 msgid "We couldn’t load this conversation’s settings"
 msgstr "We couldn’t load this conversation’s settings"
 
-#: src/screens/Login/LoginForm.tsx:284
+#: src/screens/Login/LoginForm.tsx:285
 msgid "We couldn’t verify your hosting provider. Check your internet connection, or <0>set your hosting provider manually</0>."
 msgstr "We couldn’t verify your hosting provider. Check your internet connection, or <0>set your hosting provider manually</0>."
 
-#: src/components/contacts/screens/GetContacts.tsx:246
+#: src/components/contacts/screens/GetContacts.tsx:247
 msgid "We delete hashes after matches are made"
 msgstr ""
 
@@ -14213,11 +14214,11 @@ msgstr ""
 msgid "We need to verify your number before we can look for your friends. A verification code will be sent to this number."
 msgstr ""
 
-#: src/components/contacts/screens/GetContacts.tsx:243
+#: src/components/contacts/screens/GetContacts.tsx:244
 msgid "We never keep plain phone numbers"
 msgstr ""
 
-#: src/components/contacts/screens/GetContacts.tsx:249
+#: src/components/contacts/screens/GetContacts.tsx:250
 msgid "We only suggest follows if both people consent"
 msgstr ""
 
@@ -14286,8 +14287,8 @@ msgid "We’re having network issues, try again"
 msgstr "We’re having network issues, try again"
 
 #: src/components/dialogs/nuxs/InitialVerificationAnnouncement.tsx:97
-msgid "We’re introducing a new layer of verification on Bluesky — an easy-to-see checkmark."
-msgstr ""
+msgid "We’re introducing a new layer of verification on Edriffles — an easy-to-see checkmark."
+msgstr "We’re introducing a new layer of verification on Edriffles — an easy-to-see checkmark."
 
 #: src/screens/Signup/index.tsx:140
 msgid "We’re so excited to have you join us!"
@@ -14342,6 +14343,10 @@ msgstr ""
 msgid "We’re updating our Terms of Service, Privacy Policy, and Copyright Policy, effective September 15th, 2025. We're also updating our Community Guidelines, and we want your input! These new guidelines will take effect on October 15th, 2025. Learn more about these changes and how to share your thoughts with us by reading our blog post."
 msgstr ""
 
+#: src/view/com/auth/SplashScreen.web.tsx:162
+msgid "Website"
+msgstr "Website"
+
 #: src/screens/Deactivated.tsx:122
 msgid "Welcome back!"
 msgstr ""
@@ -14363,7 +14368,7 @@ msgstr ""
 msgid "what’s up"
 msgstr "what’s up"
 
-#: src/view/com/auth/SplashScreen.web.tsx:100
+#: src/view/com/auth/SplashScreen.web.tsx:93
 #: src/view/com/composer/Composer.tsx:1785
 #: src/view/com/feeds/ComposerPrompt.tsx:195
 msgid "What's up?"
@@ -14594,8 +14599,8 @@ msgid "You can adjust your interests at any time from \"Content and media\" sett
 msgstr ""
 
 #: src/screens/Settings/components/DeleteAccountDialog.tsx:217
-msgid "You can also <0>temporarily deactivate</0> your account instead. Your profile, posts, feeds, and lists will no longer be visible to other Bluesky users. You can reactivate your account at any time by logging in."
-msgstr ""
+msgid "You can also <0>temporarily deactivate</0> your account instead. Your profile, posts, feeds, and lists will no longer be visible to other Edriffles users. You can reactivate your account at any time by logging in."
+msgstr "You can also <0>temporarily deactivate</0> your account instead. Your profile, posts, feeds, and lists will no longer be visible to other Edriffles users. You can reactivate your account at any time by logging in."
 
 #: src/view/com/posts/FollowingEmptyState.tsx:60
 #: src/view/com/posts/FollowingEndOfFeed.tsx:61
@@ -14606,7 +14611,7 @@ msgstr ""
 msgid "You can also download your chat data as a \"JSONL\" file. This file only includes chat messages that you have sent and does not include chat messages that you have received."
 msgstr ""
 
-#: src/components/contacts/screens/GetContacts.tsx:252
+#: src/components/contacts/screens/GetContacts.tsx:253
 msgid "You can always opt out and delete your data"
 msgstr ""
 
@@ -14624,8 +14629,8 @@ msgid "You can now choose to be notified when specific people post. If there’s
 msgstr ""
 
 #: src/components/dialogs/nuxs/InviteFriendsAnnouncement.tsx:154
-msgid "You can now invite friends with a link or QR code. Share the link anywhere, or let them scan the code to join you on Bluesky."
-msgstr "You can now invite friends with a link or QR code. Share the link anywhere, or let them scan the code to join you on Bluesky."
+msgid "You can now invite friends with a link or QR code. Share the link anywhere, or let them scan the code to join you on Edriffles."
+msgstr "You can now invite friends with a link or QR code. Share the link anywhere, or let them scan the code to join you on Edriffles."
 
 #: src/screens/Login/index.tsx:201
 #: src/screens/Login/PasswordUpdatedForm.tsx:25
@@ -14811,12 +14816,12 @@ msgid "You hid this reply."
 msgstr ""
 
 #: src/components/NewskieDialog.tsx:108
-msgid "You joined Bluesky {timeAgoString} ago"
-msgstr ""
+msgid "You joined Edriffles {timeAgoString} ago"
+msgstr "You joined Edriffles {timeAgoString} ago"
 
 #: src/components/NewskieDialog.tsx:105
-msgid "You joined Bluesky using a starter pack {timeAgoString} ago"
-msgstr ""
+msgid "You joined Edriffles using a starter pack {timeAgoString} ago"
+msgstr "You joined Edriffles using a starter pack {timeAgoString} ago"
 
 #: src/components/moderation/LabelsOnMeDialog.tsx:83
 msgid "You may appeal non-self labels if you feel they were placed in error."
@@ -14840,8 +14845,8 @@ msgid "You must be a chat owner to remove a member."
 msgstr "You must be a chat owner to remove a member."
 
 #: src/components/dialogs/BirthDateSettings.tsx:177
-msgid "You must be at least 13 years old to use Bluesky. Read our <0>Terms of Service</0> for more information."
-msgstr ""
+msgid "You must be at least 13 years old to use Edriffles. Read our <0>Terms of Service</0> for more information."
+msgstr "You must be at least 13 years old to use Edriffles. Read our <0>Terms of Service</0> for more information."
 
 #: src/components/StarterPack/ProfileStarterPacks.tsx:368
 msgid "You must be following at least seven other people to generate a starter pack."
@@ -14953,9 +14958,9 @@ msgstr ""
 msgid "You'll follow these people right away"
 msgstr ""
 
-#: src/components/contacts/screens/GetContacts.tsx:316
-msgid "You'll need to go to the System Settings for Bluesky and give permission if you want to use this feature."
-msgstr ""
+#: src/components/contacts/screens/GetContacts.tsx:317
+msgid "You'll need to go to the System Settings for Edriffles and give permission if you want to use this feature."
+msgstr "You'll need to go to the System Settings for Edriffles and give permission if you want to use this feature."
 
 #. placeholder {0}: sanitizeHandle(profile.handle, '@')
 #: src/components/activity-notifications/SubscribeProfileDialog.tsx:169
@@ -14988,7 +14993,7 @@ msgstr ""
 msgid "You've chosen to hide a word or tag within this post."
 msgstr ""
 
-#: src/components/contacts/screens/GetContacts.tsx:315
+#: src/components/contacts/screens/GetContacts.tsx:316
 msgid "You've denied access to your contacts"
 msgstr ""
 
@@ -15065,8 +15070,8 @@ msgid "Your account repository, containing all public data records, can be downl
 msgstr ""
 
 #: src/screens/Takendown.tsx:208
-msgid "Your account was found to be in violation of the <0>Bluesky Social Terms of Service</0>. You have been sent an email outlining the specific violation and suspension period, if applicable. You can appeal this decision if you believe it was made in error."
-msgstr ""
+msgid "Your account was found to be in violation of the <0>Terms of Service</0>. You have been sent an email outlining the specific violation and suspension period, if applicable. You can appeal this decision if you believe it was made in error."
+msgstr "Your account was found to be in violation of the <0>Terms of Service</0>. You have been sent an email outlining the specific violation and suspension period, if applicable. You can appeal this decision if you believe it was made in error."
 
 #: src/screens/Takendown.tsx:148
 msgid "Your appeal has been submitted. If your appeal succeeds, you will receive an email."
@@ -15085,12 +15090,12 @@ msgid "Your choice will be remembered for future links. You can change it at any
 msgstr ""
 
 #: src/view/com/notifications/NotificationFeedItem.tsx:379
-msgid "Your contact {firstAuthorLink} is on Bluesky"
-msgstr ""
+msgid "Your contact {firstAuthorLink} is on Edriffles"
+msgstr "Your contact {firstAuthorLink} is on Edriffles"
 
 #: src/view/com/notifications/NotificationFeedItem.tsx:377
-msgid "Your contact {firstAuthorName} is on Bluesky"
-msgstr ""
+msgid "Your contact {firstAuthorName} is on Edriffles"
+msgstr "Your contact {firstAuthorName} is on Edriffles"
 
 #: src/components/contacts/screens/ViewMatches.tsx:462
 msgid "Your contact {name}"
@@ -15109,8 +15114,8 @@ msgid "Your email appears to be invalid."
 msgstr ""
 
 #: src/components/dialogs/EmailDialog/screens/VerificationReminder.tsx:62
-msgid "Your email has not yet been verified. Please verify your email in order to enjoy all the features of Bluesky."
-msgstr ""
+msgid "Your email has not yet been verified. Please verify your email in order to enjoy all the features of Edriffles."
+msgstr "Your email has not yet been verified. Please verify your email in order to enjoy all the features of Edriffles."
 
 #: src/state/shell/progress-guide.tsx:214
 msgid "Your first like!"
@@ -15130,8 +15135,8 @@ msgid "Your full handle will be <0>@{0}</0>"
 msgstr ""
 
 #: src/screens/Login/components/HostingProviderDialog.tsx:182
-msgid "Your hosting provider can’t be detected from an email address, so the default Bluesky service will be used. Enter your username instead, or set your provider manually."
-msgstr "Your hosting provider can’t be detected from an email address, so the default Bluesky service will be used. Enter your username instead, or set your provider manually."
+msgid "Your hosting provider can’t be detected from an email address, so the default Edriffles service will be used. Enter your username instead, or set your provider manually."
+msgstr "Your hosting provider can’t be detected from an email address, so the default Edriffles service will be used. Enter your username instead, or set your provider manually."
 
 #: src/view/com/composer/state/video.ts:476
 msgid "Your hosting provider does not support videos this large. Please try again with a smaller file."
@@ -15141,7 +15146,7 @@ msgstr "Your hosting provider does not support videos this large. Please try aga
 msgid "Your hosting provider is detected automatically from the username you enter."
 msgstr "Your hosting provider is detected automatically from the username you enter."
 
-#: src/screens/Login/LoginForm.tsx:271
+#: src/screens/Login/LoginForm.tsx:272
 msgid "Your hosting provider will ask you to authorize this app. Your password stays with that provider."
 msgstr "Your hosting provider will ask you to authorize this app. Your password stays with that provider."
 
@@ -15179,8 +15184,8 @@ msgid "Your name, avatar, the name of the group chat, and the number of members 
 msgstr "Your name, avatar, the name of the group chat, and the number of members will be visible to everyone."
 
 #: src/screens/Settings/components/ChangePasswordDialog.tsx:74
-msgid "Your password has been changed successfully! Please use your new password when you sign in to Bluesky from now on."
-msgstr ""
+msgid "Your password has been changed successfully! Please use your new password when you sign in to Edriffles from now on."
+msgstr "Your password has been changed successfully! Please use your new password when you sign in to Edriffles from now on."
 
 #: src/screens/Signup/StepInfo/index.tsx:123
 msgid "Your password must be at least 8 characters long."
@@ -15208,8 +15213,8 @@ msgid "Your profile picture surrounded by concentric circles of other users' pro
 msgstr ""
 
 #: src/screens/Settings/components/DeactivateAccountDialog.tsx:76
-msgid "Your profile, posts, feeds, and lists will no longer be visible to other Bluesky users. You can reactivate your account at any time by logging in."
-msgstr ""
+msgid "Your profile, posts, feeds, and lists will no longer be visible to other Edriffles users. You can reactivate your account at any time by logging in."
+msgstr "Your profile, posts, feeds, and lists will no longer be visible to other Edriffles users. You can reactivate your account at any time by logging in."
 
 #: src/view/com/composer/Composer.tsx:1370
 msgid "Your reply was sent"

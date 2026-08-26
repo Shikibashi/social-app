@@ -110,9 +110,7 @@ export function DialogInner({
             </Trans>
           </Text>
           <Text style={[a.text_md, a.leading_snug]}>
-            <Trans>
-              This appeal will be sent to Bluesky's moderation service.
-            </Trans>
+            <Trans>This appeal will be sent to the moderation service.</Trans>
           </Text>
         </View>
 
