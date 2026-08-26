@@ -4,7 +4,7 @@
   "defs": {
     "main": {
       "type": "query",
-      "description": "List community metadata visible to the authenticated viewer. This is Radlib discovery; Space membership and record authorization remain standard ATProto Spaces behavior.",
+      "description": "List community metadata visible to the authenticated viewer. Public communities are discoverable; restricted, invite-only, and private communities are listed only for their owner or an approved member. Space membership and record authorization remain standard ATProto Spaces behavior.",
       "parameters": {
         "type": "params",
         "properties": {
