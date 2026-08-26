@@ -1,0 +1,30 @@
+{
+  "lexicon": 1,
+  "id": "us.edriffles.radlib.private.deleteCommunity",
+  "defs": {
+    "main": {
+      "type": "procedure",
+      "description": "Delete a community owned by the authenticated actor. Radlib metadata and dependent control-plane rows are removed; a non-public community's associated Standard Space is deleted or tombstoned first. Member repositories are not erased.",
+      "input": {
+        "encoding": "application/json",
+        "schema": {
+          "type": "object",
+          "required": ["space"],
+          "properties": {
+            "space": { "type": "string" }
+          }
+        }
+      },
+      "output": {
+        "encoding": "application/json",
+        "schema": {
+          "type": "object",
+          "required": ["space"],
+          "properties": {
+            "space": { "type": "string" }
+          }
+        }
+      }
+    }
+  }
+}

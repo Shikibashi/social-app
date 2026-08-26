@@ -1,5 +1,5 @@
 import {useEffect, useMemo, useState} from 'react'
-import {Alert, ScrollView, TextInput, View} from 'react-native'
+import {Alert, TextInput, View} from 'react-native'
 import {type LexMap} from '@atproto/lex'
 import {type NsidString} from '@atproto/syntax'
 import {RichText} from '@bsky/sdk/richtext'
@@ -44,6 +44,19 @@ type Community = {
   visibility?: CommunityVisibility
   createdAt?: string
 }
+
+type CommunityPage = {
+  spaces: Community[]
+  cursor?: string
+}
+
+type CommunityDeletionResult = {
+  deleted: Community[]
+  remaining: Community[]
+  error?: unknown
+}
+
+type CommunityDirectoryFilter = 'all' | 'named' | 'owned'
 
 type CommunityTab = 'threads' | 'latest' | 'members' | 'about'
 type ComposerMode = 'topic' | 'reply'
@@ -100,6 +113,10 @@ export function CommunityBoardScreen({route}: Props) {
   const [activeTab, setActiveTab] = useState<CommunityTab>('threads')
   const [selectedTopicKey, setSelectedTopicKey] = useState<string>()
   const [topicSearch, setTopicSearch] = useState('')
+  const [communitySearch, setCommunitySearch] = useState('')
+  const [communityFilter, setCommunityFilter] =
+    useState<CommunityDirectoryFilter>('named')
+  const [deleteAllArmed, setDeleteAllArmed] = useState(false)
   const [createCommunityOpen, setCreateCommunityOpen] = useState(false)
   const [communityName, setCommunityName] = useState('')
   const [communityDescription, setCommunityDescription] = useState('')
@@ -130,20 +147,29 @@ export function CommunityBoardScreen({route}: Props) {
     queryKey: ['radlib-community-spaces', client.did, requestedSpace],
     enabled: !!client.did && SPACES_ALPHA_ENABLED,
     queryFn: async () => {
-      let localPage: {spaces: Community[]; cursor?: string} = {spaces: []}
+      const spaces: Community[] = []
       let localListError: unknown
 
       try {
-        localPage = (await client.call(
-          us.edriffles.radlib.private.listCommunities,
-          {limit: 50},
-        )) as typeof localPage
+        let cursor: string | undefined
+        const seenCursors = new Set<string>()
+        do {
+          const page = (await client.call(
+            us.edriffles.radlib.private.listCommunities,
+            {
+              limit: 100,
+              ...(cursor ? {cursor} : {}),
+            },
+          )) as CommunityPage
+          spaces.push(...page.spaces)
+          if (!page.cursor || seenCursors.has(page.cursor)) break
+          seenCursors.add(page.cursor)
+          cursor = page.cursor
+        } while (cursor)
       } catch (error) {
         if (!requestedSpace) throw error
         localListError = error
       }
-
-      const spaces = [...localPage.spaces]
 
       // A member's own PDS does not host the authority's Radlib control DB.
       // Resolve a deep-linked remote community through a narrowly-scoped
@@ -165,7 +191,7 @@ export function CommunityBoardScreen({route}: Props) {
           throw localListError ?? error
         }
       }
-      return {...localPage, spaces}
+      return {spaces}
     },
   })
 
@@ -278,6 +304,85 @@ export function CommunityBoardScreen({route}: Props) {
     },
   })
 
+  const deleteCommunitiesMutation = useMutation({
+    mutationFn: async (
+      targets: Community[],
+    ): Promise<CommunityDeletionResult> => {
+      const deleted: Community[] = []
+
+      for (const target of targets) {
+        try {
+          // The client-side inventory is only a confirmation aid. The PDS
+          // repeats this owner check and refuses every non-community target.
+          if (
+            target.kind !== 'community' ||
+            target.ownerDid !== client.did ||
+            !target.uri
+          ) {
+            throw new Error('Deletion target is not owned by this account')
+          }
+
+          const authorityDid = parseSpaceAuthority(target.uri)
+          const controlClient =
+            authorityDid === client.did
+              ? client
+              : await createRadlibAuthorityClient(
+                  client,
+                  target.uri,
+                  us.edriffles.radlib.private.deleteCommunity.$lxm,
+                )
+          await controlClient.call(
+            us.edriffles.radlib.private.deleteCommunity,
+            {
+              space: target.uri,
+            },
+          )
+          deleted.push(target)
+        } catch (error) {
+          return {
+            deleted,
+            remaining: targets.slice(deleted.length),
+            error,
+          }
+        }
+      }
+
+      return {deleted, remaining: []}
+    },
+    onSuccess: result => {
+      setDeleteAllArmed(false)
+      void queryClient.invalidateQueries({
+        queryKey: ['radlib-community-spaces', client.did],
+      })
+
+      if (result.error) {
+        const message =
+          result.error instanceof Error
+            ? result.error.message
+            : 'The server rejected one deletion.'
+        setStatus(
+          `Cleanup stopped after ${result.deleted.length} deletion${
+            result.deleted.length === 1 ? '' : 's'
+          }. ${result.remaining.length} target${
+            result.remaining.length === 1 ? '' : 's'
+          } remain. ${message}`,
+        )
+      } else {
+        setStatus(
+          `Deleted ${result.deleted.length} owned communit${
+            result.deleted.length === 1 ? 'y' : 'ies'
+          }. Ready to start from scratch.`,
+        )
+      }
+
+      if (result.deleted.some(item => item.uri === space)) {
+        navigation.replace('CommunityBoard', {
+          space: result.remaining[0]?.uri,
+        })
+      }
+    },
+  })
+
   const records = notesQuery.data?.records
   const threadList = useMemo(() => buildThreads(records ?? []), [records])
   const selectedThread = threadList.find(
@@ -346,6 +451,52 @@ export function CommunityBoardScreen({route}: Props) {
     communitySpacesQuery.data?.spaces.find(item => item.uri === space)
   const communities =
     communitySpacesQuery.data?.spaces ?? (community ? [community] : [])
+  const ownedCommunities = useMemo(
+    () =>
+      communities.filter(
+        item =>
+          item.kind === 'community' &&
+          item.ownerDid === client.did &&
+          Boolean(item.uri),
+      ),
+    [client.did, communities],
+  )
+  const orderedCommunities = useMemo(
+    () =>
+      [...communities].sort((left, right) => {
+        const leftSelected = left.uri === space
+        const rightSelected = right.uri === space
+        if (leftSelected !== rightSelected) return leftSelected ? -1 : 1
+
+        const leftOwned = left.ownerDid === client.did
+        const rightOwned = right.ownerDid === client.did
+        if (leftOwned !== rightOwned) return leftOwned ? -1 : 1
+
+        const createdOrder = communityDate(right).localeCompare(
+          communityDate(left),
+        )
+        if (createdOrder !== 0) return createdOrder
+        return communityLabel(left).localeCompare(communityLabel(right))
+      }),
+    [client.did, communities, space],
+  )
+  const visibleCommunities = useMemo(() => {
+    const search = communitySearch.trim().toLocaleLowerCase()
+    return orderedCommunities.filter(item => {
+      const isSelected = item.uri === space
+      const isOwned = item.ownerDid === client.did
+      const isNamed = Boolean(item.name?.trim())
+      const matchesFilter =
+        communityFilter === 'all' ||
+        (communityFilter === 'named' ? isNamed : isOwned) ||
+        isSelected
+      const searchableText = [item.name, item.description, item.uri]
+        .filter(Boolean)
+        .join(' ')
+        .toLocaleLowerCase()
+      return matchesFilter && (!search || searchableText.includes(search))
+    })
+  }, [client.did, communityFilter, communitySearch, orderedCommunities, space])
   const boardIndexUnavailable = communitySpacesQuery.isError && !community
   const spaceAuthority =
     community?.authorityDid || parseSpaceAuthoritySafe(space)
@@ -361,6 +512,7 @@ export function CommunityBoardScreen({route}: Props) {
     setComposerMode(undefined)
     setText('')
     setTopicSearch('')
+    setDeleteAllArmed(false)
   }, [space])
 
   async function refreshCommunityIndex() {
@@ -375,6 +527,23 @@ export function CommunityBoardScreen({route}: Props) {
       Alert.alert(
         'Could not refresh community index',
         error instanceof Error ? error.message : String(error),
+      )
+    }
+  }
+
+  async function reviewOwnedCommunityDeletion() {
+    try {
+      const result = await communitySpacesQuery.refetch()
+      if (result.isError) {
+        throw result.error ?? new Error('Community inventory refresh failed')
+      }
+      setDeleteAllArmed(true)
+    } catch (error) {
+      Alert.alert(
+        'Could not prepare community deletion',
+        error instanceof Error
+          ? error.message
+          : 'The community inventory could not be refreshed.',
       )
     }
   }
@@ -484,11 +653,54 @@ export function CommunityBoardScreen({route}: Props) {
                   padding: 10,
                   gap: 8,
                 }}>
-                <View style={[a.flex_row, a.align_center, a.justify_between]}>
-                  <Text style={eyebrowStyle(colors)}>YOUR COMMUNITIES</Text>
-                  <Text style={metaStyle(colors)}>
-                    {communities.length} available
-                  </Text>
+                <View style={{gap: 8}}>
+                  <View style={[a.flex_row, a.align_center, a.justify_between]}>
+                    <Text style={eyebrowStyle(colors)}>
+                      COMMUNITY DIRECTORY
+                    </Text>
+                    <Text style={metaStyle(colors)}>
+                      {visibleCommunities.length} of {communities.length} shown
+                    </Text>
+                  </View>
+                  <TextInput
+                    accessibilityLabel="Search communities"
+                    accessibilityHint="Filters communities by name, description, or address"
+                    value={communitySearch}
+                    onChangeText={setCommunitySearch}
+                    placeholder="Find a community"
+                    placeholderTextColor={colors.muted}
+                    style={[
+                      fieldStyle(colors, 42),
+                      {textAlignVertical: 'center'},
+                    ]}
+                  />
+                  <View style={[a.flex_row, a.flex_wrap, a.gap_xs]}>
+                    {(
+                      [
+                        ['named', 'Named'],
+                        ['owned', 'Owned by me'],
+                        ['all', 'All'],
+                      ] as const
+                    ).map(([filter, label]) => (
+                      <Button
+                        key={filter}
+                        label={`Show ${label.toLocaleLowerCase()} communities`}
+                        accessibilityState={{
+                          selected: communityFilter === filter,
+                        }}
+                        size="small"
+                        shape="rectangular"
+                        color={
+                          communityFilter === filter ? 'primary' : 'secondary'
+                        }
+                        variant={
+                          communityFilter === filter ? 'solid' : 'outline'
+                        }
+                        onPress={() => setCommunityFilter(filter)}>
+                        <ButtonText>{label}</ButtonText>
+                      </Button>
+                    ))}
+                  </View>
                 </View>
                 {communitySpacesQuery.isPending ? (
                   <Text style={{color: colors.secondary}}>
@@ -515,14 +727,12 @@ export function CommunityBoardScreen({route}: Props) {
                       </ButtonText>
                     </Button>
                   </View>
-                ) : communities.length ? (
-                  <ScrollView
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    contentContainerStyle={{gap: 8}}>
-                    {communities.map(item => {
+                ) : visibleCommunities.length ? (
+                  <View style={{gap: 6}}>
+                    {visibleCommunities.map(item => {
                       const itemName = item.name || 'Untitled community'
                       const isSelected = item.uri === space
+                      const isOwned = item.ownerDid === client.did
                       return (
                         <Link
                           key={item.uri}
@@ -534,8 +744,8 @@ export function CommunityBoardScreen({route}: Props) {
                           shape="rectangular"
                           accessibilityState={{selected: isSelected}}
                           style={{
-                            minWidth: 150,
-                            maxWidth: 240,
+                            width: '100%',
+                            minHeight: 58,
                             paddingHorizontal: 12,
                             paddingVertical: 9,
                             borderWidth: 1,
@@ -548,29 +758,155 @@ export function CommunityBoardScreen({route}: Props) {
                               : colors.surface,
                             alignItems: 'flex-start',
                           }}>
-                          <View style={{gap: 3}}>
-                            <Text
-                              numberOfLines={1}
-                              style={{
-                                color: colors.ink,
-                                fontWeight: '700',
-                              }}>
-                              {itemName}
-                            </Text>
+                          <View style={[a.w_full, {gap: 3}]}>
+                            <View
+                              style={[
+                                a.flex_row,
+                                a.align_center,
+                                a.justify_between,
+                                a.gap_sm,
+                              ]}>
+                              <Text
+                                numberOfLines={1}
+                                style={[
+                                  a.flex_1,
+                                  {color: colors.ink, fontWeight: '700'},
+                                ]}>
+                                {itemName}
+                              </Text>
+                              {isSelected || isOwned ? (
+                                <Text style={metaStyle(colors)}>
+                                  {isSelected ? 'OPEN' : 'OWNED'}
+                                </Text>
+                              ) : null}
+                            </View>
                             <Text numberOfLines={1} style={metaStyle(colors)}>
                               {formatVisibility(item.visibility)}
-                              {isSelected ? ' · OPEN' : ''}
+                              {item.description ? ` · ${item.description}` : ''}
                             </Text>
                           </View>
                         </Link>
                       )
                     })}
-                  </ScrollView>
+                  </View>
                 ) : (
-                  <Text style={{color: colors.secondary}}>
-                    No communities are visible to this account yet.
-                  </Text>
+                  <View style={{gap: 6}}>
+                    <Text style={{color: colors.secondary}}>
+                      No communities match this view. Try All or clear the
+                      search.
+                    </Text>
+                    <Button
+                      label="Show all communities"
+                      size="small"
+                      color="secondary"
+                      variant="outline"
+                      shape="rectangular"
+                      onPress={() => {
+                        setCommunityFilter('all')
+                        setCommunitySearch('')
+                      }}>
+                      <ButtonText>Show all</ButtonText>
+                    </Button>
+                  </View>
                 )}
+
+                {ownedCommunities.length ? (
+                  <View
+                    style={{
+                      borderTopWidth: 1,
+                      borderColor: colors.border,
+                      paddingTop: 12,
+                      gap: 8,
+                    }}>
+                    <View
+                      style={[a.flex_row, a.align_center, a.justify_between]}>
+                      <Text style={eyebrowStyle(colors)}>
+                        OWNED COMMUNITIES
+                      </Text>
+                      <Text style={metaStyle(colors)}>
+                        {ownedCommunities.length} eligible for cleanup
+                      </Text>
+                    </View>
+                    {!deleteAllArmed ? (
+                      <View style={[a.flex_row, a.align_center, a.gap_sm]}>
+                        <Text style={[a.flex_1, {color: colors.secondary}]}>
+                          Remove all communities owned by this account and begin
+                          with a clean directory.
+                        </Text>
+                        <Button
+                          label="Review deletion of all owned communities"
+                          size="small"
+                          color="negative"
+                          variant="outline"
+                          shape="rectangular"
+                          disabled={communitySpacesQuery.isFetching}
+                          onPress={() => void reviewOwnedCommunityDeletion()}>
+                          <ButtonText>Review deletion</ButtonText>
+                        </Button>
+                      </View>
+                    ) : (
+                      <View
+                        style={{
+                          borderWidth: 1,
+                          borderColor: colors.negative,
+                          backgroundColor: colors.surface,
+                          padding: 10,
+                          gap: 8,
+                        }}>
+                        <Text
+                          style={{color: colors.negative, fontWeight: '700'}}>
+                          This permanently deletes all {ownedCommunities.length}{' '}
+                          owned communit
+                          {ownedCommunities.length === 1 ? 'y' : 'ies'}.
+                        </Text>
+                        <Text style={{color: colors.secondary}}>
+                          Confirm the exact targets below. Other owners’
+                          communities are not included and will not be changed.
+                        </Text>
+                        <View style={{gap: 5}}>
+                          {ownedCommunities.map(target => (
+                            <Text
+                              key={target.uri}
+                              selectable
+                              style={{color: colors.ink, lineHeight: 18}}>
+                              {communityLabel(target)} · {target.uri}
+                            </Text>
+                          ))}
+                        </View>
+                        <View style={[a.flex_row, a.flex_wrap, a.gap_xs]}>
+                          <Button
+                            label="Cancel community deletion"
+                            size="small"
+                            color="secondary"
+                            variant="outline"
+                            shape="rectangular"
+                            disabled={deleteCommunitiesMutation.isPending}
+                            onPress={() => setDeleteAllArmed(false)}>
+                            <ButtonText>Cancel</ButtonText>
+                          </Button>
+                          <Button
+                            label="Permanently delete all owned communities"
+                            size="small"
+                            color="negative"
+                            variant="solid"
+                            shape="rectangular"
+                            disabled={deleteCommunitiesMutation.isPending}
+                            onPress={() =>
+                              void deleteCommunitiesMutation.mutateAsync(
+                                ownedCommunities,
+                              )
+                            }>
+                            <ButtonText>
+                              {deleteCommunitiesMutation.isPending
+                                ? 'Deleting…'
+                                : 'Delete all owned communities'}
+                            </ButtonText>
+                          </Button>
+                        </View>
+                      </View>
+                    )}
+                  </View>
+                ) : null}
               </View>
 
               {createCommunityOpen ? (
@@ -1821,6 +2157,14 @@ function formatRelativeDate(value: LexMap | undefined): string {
   if (elapsed < day) return `${Math.floor(elapsed / hour)}h ago`
   if (elapsed < 7 * day) return `${Math.floor(elapsed / day)}d ago`
   return new Date(timestamp).toLocaleDateString()
+}
+
+function communityLabel(community: Community): string {
+  return community.name?.trim() || 'Untitled community'
+}
+
+function communityDate(community: Community): string {
+  return community.createdAt || new Date(0).toISOString()
 }
 
 function parseSpaceAuthority(space: string): string {

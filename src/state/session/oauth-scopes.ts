@@ -15,6 +15,7 @@ export const OAUTH_SPACE_SCOPES = [
   'space:us.edriffles.radlib.account?authority=self&collection=us.edriffles.radlib.private.post&action=create&action=update&action=delete',
   'space:us.edriffles.radlib.community?authority=*&action=read',
   'space:us.edriffles.radlib.community?authority=self&manage=create',
+  'space:us.edriffles.radlib.community?authority=self&manage=delete',
   'space:us.edriffles.radlib.community?authority=*&manage=update',
   'space:us.edriffles.radlib.community?authority=*&collection=us.edriffles.radlib.private.post&action=create&action=update&action=delete',
 ] as const
@@ -56,6 +57,6 @@ export const OAUTH_CLIENT_METADATA = {
   token_endpoint_auth_method: 'none',
   dpop_bound_access_tokens: true,
 } as const satisfies OAuthClientMetadataInput
-import type {OAuthClientMetadataInput} from '@atproto/oauth-client-expo'
+import {type OAuthClientMetadataInput} from '@atproto/oauth-client-expo'
 
 import {PUBLIC_WEB_ORIGIN} from '#/lib/brand'

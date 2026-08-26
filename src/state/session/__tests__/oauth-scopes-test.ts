@@ -1,14 +1,20 @@
-import {readFileSync} from 'node:fs'
-import {join} from 'node:path'
 import {describe, expect, it} from '@jest/globals'
 
 import {
   OAUTH_CLIENT_METADATA,
   OAUTH_SCOPE,
-  OAUTH_SPACE_SCOPES,
   OAUTH_SIGNUP_PROMPT,
+  OAUTH_SPACE_SCOPES,
   OAUTH_TRANSITION_SCOPES,
 } from '../oauth-scopes'
+
+type StaticOAuthClientMetadata = {
+  client_id: string
+  client_uri: string
+  redirect_uris: readonly string[]
+  scope: string
+  [key: string]: unknown
+}
 
 describe('OAuth permission contract', () => {
   it('includes the transition permissions needed for account, AppView, and chat RPCs', () => {
@@ -28,6 +34,7 @@ describe('OAuth permission contract', () => {
       'space:us.edriffles.radlib.account?authority=self&collection=us.edriffles.radlib.private.post&action=create&action=update&action=delete',
       'space:us.edriffles.radlib.community?authority=*&action=read',
       'space:us.edriffles.radlib.community?authority=self&manage=create',
+      'space:us.edriffles.radlib.community?authority=self&manage=delete',
       'space:us.edriffles.radlib.community?authority=*&manage=update',
       'space:us.edriffles.radlib.community?authority=*&collection=us.edriffles.radlib.private.post&action=create&action=update&action=delete',
     ])
@@ -41,12 +48,8 @@ describe('OAuth permission contract', () => {
   })
 
   it('keeps origin-bound metadata fields self-consistent', () => {
-    const staticMetadata = JSON.parse(
-      readFileSync(
-        join(__dirname, '../../../..', 'public/oauth-client-metadata.json'),
-        'utf8',
-      ),
-    )
+    const staticMetadata =
+      require('../../../../public/oauth-client-metadata.json') as StaticOAuthClientMetadata
 
     expect(OAUTH_CLIENT_METADATA.client_id).toBe(
       `${OAUTH_CLIENT_METADATA.client_uri}/oauth-client-metadata.json`,
