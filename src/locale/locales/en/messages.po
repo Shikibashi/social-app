@@ -1002,7 +1002,7 @@ msgstr "A selected recipient is not followed by the sender."
 #: src/screens/Settings/AboutSettings.tsx:85
 #: src/screens/Settings/Settings.tsx:301
 #: src/screens/Settings/Settings.tsx:304
-#: src/view/com/auth/SplashScreen.web.tsx:172
+#: src/view/com/auth/SplashScreen.web.tsx:174
 msgid "About"
 msgstr ""
 
@@ -2250,7 +2250,7 @@ msgstr ""
 msgid "Blocking will not prevent labels from being applied on your account, but it will stop this account from replying in your threads or interacting with you."
 msgstr ""
 
-#: src/view/com/auth/SplashScreen.web.tsx:167
+#: src/view/com/auth/SplashScreen.web.tsx:169
 msgid "Blog"
 msgstr ""
 
@@ -3540,7 +3540,7 @@ msgstr ""
 #: src/screens/Signup/index.tsx:139
 #: src/screens/Signup/OAuthSignup.tsx:53
 #: src/view/com/auth/SplashScreen.tsx:108
-#: src/view/com/auth/SplashScreen.web.tsx:109
+#: src/view/com/auth/SplashScreen.web.tsx:111
 #: src/view/shell/bottom-bar/BottomBar.tsx:346
 #: src/view/shell/bottom-bar/BottomBar.tsx:350
 #: src/view/shell/bottom-bar/BottomBarWeb.tsx:232
@@ -6874,7 +6874,7 @@ msgctxt "english-only-resource"
 msgid "Learn more about <0>how to use advanced search</0>."
 msgstr "Learn more about <0>how to use advanced search</0>."
 
-#: src/view/com/auth/SplashScreen.web.tsx:170
+#: src/view/com/auth/SplashScreen.web.tsx:172
 msgid "Learn more about edriffles"
 msgstr "Learn more about edriffles"
 
@@ -7984,8 +7984,8 @@ msgid "New starter pack"
 msgstr ""
 
 #: src/screens/Login/LoginForm.tsx:369
-msgid "New to Bluesky? <0>Sign up</0>"
-msgstr "New to Bluesky? <0>Sign up</0>"
+msgid "New to ATmosphere? <0>Sign up</0>"
+msgstr "New to ATmosphere? <0>Sign up</0>"
 
 #: src/components/NewskieDialog.tsx:123
 msgid "New user info dialog"
@@ -8748,29 +8748,17 @@ msgstr ""
 msgid "Opens device gallery to select up to {MAX_GALLERY_IMAGES, plural, other {# images}}, or a single video or GIF."
 msgstr "Opens device gallery to select up to {MAX_GALLERY_IMAGES, plural, other {# images}}, or a single video or GIF."
 
-#: src/view/com/auth/SplashScreen.web.tsx:104
-msgid "Opens flow to create a new account"
-msgstr "Opens flow to create a new account"
-
-#: src/view/com/auth/SplashScreen.tsx:91
-msgid "Opens flow to create a new Bluesky account"
-msgstr ""
-
 #: src/screens/Messages/JoinRequest.tsx:313
-msgid "Opens flow to create a new Edriffles account"
-msgstr "Opens flow to create a new Edriffles account"
-
-#: src/view/com/auth/SplashScreen.web.tsx:117
-msgid "Opens flow to sign in to your existing account"
-msgstr "Opens flow to sign in to your existing account"
-
-#: src/view/com/auth/SplashScreen.tsx:120
-msgid "Opens flow to sign in to your existing Bluesky account"
-msgstr ""
+#: src/view/com/auth/SplashScreen.tsx:91
+#: src/view/com/auth/SplashScreen.web.tsx:105
+msgid "Opens flow to create a new ATmosphere account"
+msgstr "Opens flow to create a new ATmosphere account"
 
 #: src/screens/Messages/JoinRequest.tsx:299
-msgid "Opens flow to sign in to your existing Edriffles account"
-msgstr "Opens flow to sign in to your existing Edriffles account"
+#: src/view/com/auth/SplashScreen.tsx:120
+#: src/view/com/auth/SplashScreen.web.tsx:119
+msgid "Opens flow to sign in to your existing ATmosphere account"
+msgstr "Opens flow to sign in to your existing ATmosphere account"
 
 #: src/components/images/Gallery/index.tsx:458
 msgid "Opens full image"
@@ -9253,7 +9241,7 @@ msgstr ""
 msgid "Please explain why you think your chats were incorrectly disabled"
 msgstr ""
 
-#: src/features/liveNow/components/GoLiveDisabledDialog.tsx:123
+#: src/features/liveNow/components/GoLiveDisabledDialog.tsx:121
 msgid "Please explain why you think your Go Live access was incorrectly disabled."
 msgstr ""
 
@@ -9814,7 +9802,7 @@ msgstr "Read private media"
 msgid "Read private record"
 msgstr "Read private record"
 
-#: src/view/com/auth/SplashScreen.web.tsx:165
+#: src/view/com/auth/SplashScreen.web.tsx:167
 msgid "Read the edriffles blog"
 msgstr "Read the edriffles blog"
 
@@ -11566,8 +11554,8 @@ msgstr ""
 #: src/screens/Search/SearchResults.tsx:413
 #: src/view/com/auth/SplashScreen.tsx:118
 #: src/view/com/auth/SplashScreen.tsx:125
-#: src/view/com/auth/SplashScreen.web.tsx:115
-#: src/view/com/auth/SplashScreen.web.tsx:123
+#: src/view/com/auth/SplashScreen.web.tsx:117
+#: src/view/com/auth/SplashScreen.web.tsx:125
 #: src/view/shell/bottom-bar/BottomBar.tsx:355
 #: src/view/shell/bottom-bar/BottomBar.tsx:359
 #: src/view/shell/bottom-bar/BottomBarWeb.tsx:242
@@ -11969,8 +11957,8 @@ msgstr "Streaming on Twitch? Set your live status on Edriffles to add a badge to
 #: src/components/moderation/AppealForm.tsx:166
 #: src/components/SendErrorReportDialog.tsx:90
 #: src/components/SendErrorReportDialog.tsx:95
-#: src/features/liveNow/components/GoLiveDisabledDialog.tsx:138
-#: src/features/liveNow/components/GoLiveDisabledDialog.tsx:139
+#: src/features/liveNow/components/GoLiveDisabledDialog.tsx:136
+#: src/features/liveNow/components/GoLiveDisabledDialog.tsx:137
 #: src/screens/Messages/components/ChatDisabled.tsx:173
 #: src/screens/Messages/components/ChatDisabled.tsx:175
 #: src/screens/Settings/components/BetaFeaturesFeedbackDialog.tsx:133
@@ -12271,7 +12259,7 @@ msgid "Text & tags"
 msgstr ""
 
 #: src/components/moderation/AppealForm.tsx:129
-#: src/features/liveNow/components/GoLiveDisabledDialog.tsx:121
+#: src/features/liveNow/components/GoLiveDisabledDialog.tsx:119
 #: src/screens/Messages/components/ChatDisabled.tsx:140
 msgid "Text input field"
 msgstr ""
@@ -13016,8 +13004,8 @@ msgid "This will delete \"{0}\" from your muted words. You can always add it bac
 msgstr ""
 
 #: src/screens/Settings/components/DeleteAccountDialog.tsx:336
-msgid "This will irreversibly delete your Edriffles account <0>{currentHandle}</0> and all associated data. Note that this will affect any other <1>AT Protocol</1> services you use with this account."
-msgstr "This will irreversibly delete your Edriffles account <0>{currentHandle}</0> and all associated data. Note that this will affect any other <1>AT Protocol</1> services you use with this account."
+msgid "This will irreversibly delete your ATmosphere account <0>{currentHandle}</0> and all associated data. Note that this will affect any other <1>AT Protocol</1> services you use with this account."
+msgstr "This will irreversibly delete your ATmosphere account <0>{currentHandle}</0> and all associated data. Note that this will affect any other <1>AT Protocol</1> services you use with this account."
 
 #. placeholder {0}: account.handle
 #: src/screens/Settings/Settings.tsx:724
@@ -14113,7 +14101,7 @@ msgstr ""
 msgid "Violent or threatening content"
 msgstr ""
 
-#: src/view/com/auth/SplashScreen.web.tsx:160
+#: src/view/com/auth/SplashScreen.web.tsx:162
 msgid "Visit edriffles.us"
 msgstr "Visit edriffles.us"
 
@@ -14343,7 +14331,7 @@ msgstr ""
 msgid "We’re updating our Terms of Service, Privacy Policy, and Copyright Policy, effective September 15th, 2025. We're also updating our Community Guidelines, and we want your input! These new guidelines will take effect on October 15th, 2025. Learn more about these changes and how to share your thoughts with us by reading our blog post."
 msgstr ""
 
-#: src/view/com/auth/SplashScreen.web.tsx:162
+#: src/view/com/auth/SplashScreen.web.tsx:164
 msgid "Website"
 msgstr "Website"
 

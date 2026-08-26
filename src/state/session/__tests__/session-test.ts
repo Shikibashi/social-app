@@ -66,7 +66,7 @@ describe('session', () => {
         "accounts": [],
         "currentBundleState": {
           "bundle": {
-            "service": "https://bsky.social/",
+            "service": "https://social.edriffles.us/",
           },
           "did": undefined,
         },
@@ -155,7 +155,7 @@ describe('session', () => {
         ],
         "currentBundleState": {
           "bundle": {
-            "service": "https://bsky.social/",
+            "service": "https://social.edriffles.us/",
           },
           "did": undefined,
         },
@@ -493,7 +493,7 @@ describe('session', () => {
         ],
         "currentBundleState": {
           "bundle": {
-            "service": "https://bsky.social/",
+            "service": "https://social.edriffles.us/",
           },
           "did": undefined,
         },
@@ -555,7 +555,7 @@ describe('session', () => {
         ],
         "currentBundleState": {
           "bundle": {
-            "service": "https://bsky.social/",
+            "service": "https://social.edriffles.us/",
           },
           "did": undefined,
         },
@@ -648,7 +648,7 @@ describe('session', () => {
         "accounts": [],
         "currentBundleState": {
           "bundle": {
-            "service": "https://bsky.social/",
+            "service": "https://social.edriffles.us/",
           },
           "did": undefined,
         },
@@ -828,7 +828,7 @@ describe('session', () => {
         ],
         "currentBundleState": {
           "bundle": {
-            "service": "https://bsky.social/",
+            "service": "https://social.edriffles.us/",
           },
           "did": undefined,
         },
@@ -1520,7 +1520,7 @@ describe('session', () => {
         ],
         "currentBundleState": {
           "bundle": {
-            "service": "https://bsky.social/",
+            "service": "https://social.edriffles.us/",
           },
           "did": undefined,
         },
@@ -1677,7 +1677,7 @@ describe('session', () => {
         ],
         "currentBundleState": {
           "bundle": {
-            "service": "https://bsky.social/",
+            "service": "https://social.edriffles.us/",
           },
           "did": undefined,
         },

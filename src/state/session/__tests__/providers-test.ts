@@ -37,12 +37,12 @@ describe('AppView provider validation and health probing', () => {
     jest.restoreAllMocks()
   })
 
-  it('does not call the public Bluesky endpoint the project provider', () => {
+  it('labels the external public AppView without borrowing its product name', () => {
     expect(getDefaultAppViewDisplayName('https://api.bsky.app')).toBe(
-      'Public Bluesky AppView (explicit read provider)',
+      'Public AT Protocol AppView (external read provider)',
     )
     expect(getDefaultAppViewDisplayName('https://public.api.bsky.app/')).toBe(
-      'Public Bluesky AppView (explicit read provider)',
+      'Public AT Protocol AppView (external read provider)',
     )
     expect(getDefaultAppViewDisplayName('https://appview.social.example')).toBe(
       'Project AppView',
@@ -121,7 +121,7 @@ describe('AppView provider validation and health probing', () => {
     await expect(
       probeAppViewProvider(DEFAULT_APPVIEW_PROVIDER),
     ).rejects.toThrow(
-      'AppView provider Project AppView is unavailable (HTTP 503)',
+      'AppView provider Public AT Protocol AppView (external read provider) is unavailable (HTTP 503)',
     )
   })
 

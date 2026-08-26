@@ -9,20 +9,13 @@ import {type SessionAccount} from '../types'
  * The provider pulls the whole app shell in through `#/state/util` and the
  * account factories. These mocks cut the tree back to the session lifecycle
  * itself, which is all these tests drive. They mirror provider-abort-test.tsx,
- * plus a stateful `#/state/persisted` (this suite drives cross-tab updates and
- * the expiry rescue's fresh persisted read) and an observable
+ * plus a stateful `#/state/persisted` for cross-tab updates and an observable
  * `emitSessionDropped`.
  */
-const mockPersisted: {session: Schema['session']; latest: Schema['session']} = {
+const mockPersisted: {session: Schema['session']} = {
   session: {accounts: [], currentAccount: undefined},
-  latest: {accounts: [], currentAccount: undefined},
 }
-/*
- * Every registered listener is kept, not just the newest. The provider's
- * subscription effect re-runs on every state change, so a callback captured
- * before a dispatch is exactly the stale-closure case the shouldActivate guard
- * exists to catch.
- */
+/* Every registered listener is kept so cross-tab callbacks can be exercised. */
 const mockPersistedListeners: ((value: Schema['session']) => void)[] = []
 jest.mock('#/state/persisted', () => {
   const {
@@ -33,10 +26,6 @@ jest.mock('#/state/persisted', () => {
     get: (key: string) =>
       key === 'session'
         ? mockPersisted.session
-        : defaults[key as keyof typeof defaults],
-    readLatest: (key: string) =>
-      key === 'session'
-        ? mockPersisted.latest
         : defaults[key as keyof typeof defaults],
     write: () => Promise.resolve(),
     onUpdate: (_key: string, cb: (value: Schema['session']) => void) => {
@@ -72,46 +61,14 @@ jest.mock('#/state/events', () => ({
   emitNetworkLost: () => {},
 }))
 
-/*
- * The factories are stubbed so a test controls exactly what each one returns
- * and when. `createSessionBundleFromStoredAccount` is stubbed faithfully rather
- * than replaced by a constant: it must still consult `shouldActivate` and
- * decline to hand back a bundle when the guard rejects, because that decision
- * is what these tests observe. Its disposal of a rejected bundle is pinned by
- * session-core-test; here we only assert what the provider does with the
- * result.
- */
+/* The factories are stubbed so each test controls exactly what it returns. */
 const mockLogin = jest.fn<(...args: unknown[]) => Promise<unknown>>()
 const mockResume = jest.fn<(...args: unknown[]) => Promise<unknown>>()
 const mockDisposeBundle = jest.fn()
-type Rebuild = {
-  account: SessionAccount
-  shouldActivate: boolean
-  bundle: FakeBundle
-}
-const mockRebuilds: Rebuild[] = []
-const mockRebuild = jest.fn(
-  (
-    account: SessionAccount,
-    _onSessionChange: unknown,
-    shouldActivate: (
-      bundle: unknown,
-      account: SessionAccount,
-    ) => boolean = () => true,
-  ) => {
-    const bundle = makeBundle(account)
-    const activated = shouldActivate(bundle, account)
-    mockRebuilds.push({account, shouldActivate: activated, bundle})
-    return activated ? {bundle, account} : undefined
-  },
-)
 jest.mock('../session-core', () => ({
   ...jest.requireActual<object>('../session-core'),
   createSessionBundleAndLogin: (...args: unknown[]) => mockLogin(...args),
   createSessionBundleAndResume: (...args: unknown[]) => mockResume(...args),
-  createSessionBundleFromStoredAccount: (...args: unknown[]) =>
-    // @ts-expect-error the stub's arity is checked by its own signature
-    mockRebuild(...args),
   disposeBundle: (bundle: unknown) => mockDisposeBundle(bundle),
 }))
 jest.mock('../create-account', () => ({
@@ -130,6 +87,7 @@ const SERVICE = 'https://bsky.social/'
 
 function makeAccount(overrides: Partial<SessionAccount> = {}): SessionAccount {
   return {
+    authType: 'oauth',
     service: SERVICE,
     did: DID,
     handle: 'alice.test',
@@ -151,7 +109,7 @@ function makeAccount(overrides: Partial<SessionAccount> = {}): SessionAccount {
  * The provider only ever reads `bundle.agent` (for context) and
  * `bundle.session.destroyed` / `bundle.session.session` (for the cross-tab
  * token comparison), and otherwise treats a bundle as an opaque identity. A
- * literal with those fields is enough, and keeps a real PasswordSession - with
+ * literal with those fields is enough, and keeps a real OAuth transport - with
  * its network and refresh machinery - out of a suite about provider dispatch.
  */
 type FakeBundle = {
@@ -165,6 +123,7 @@ function makeBundle(account: SessionAccount): FakeBundle {
     session: {
       destroyed: false,
       session: {
+        authType: 'oauth',
         accessJwt: account.accessJwt ?? '',
         refreshJwt: account.refreshJwt ?? '',
         /* SessionData types these as branded strings; the values are fixtures */
@@ -226,7 +185,7 @@ async function renderLoggedIn(
   }
 }
 
-/** The dying payload PasswordSession threads through its `onDeleted` hook. */
+/** The dying payload threads through its OAuth transport's deletion hook. */
 function dyingData(refreshJwt: string): SessionData {
   return {
     accessJwt: 'dead-access-jwt',
@@ -238,7 +197,7 @@ function dyingData(refreshJwt: string): SessionData {
   }
 }
 
-/** The rotated payload PasswordSession threads through its `onUpdated` hook. */
+/** The rotated payload threads through its OAuth transport's update hook. */
 function refreshedData(
   refreshJwt: string,
   didDoc?: SessionData['didDoc'],
@@ -270,38 +229,21 @@ function makeDidDoc(pdsUrl: string): SessionData['didDoc'] {
 
 beforeEach(() => {
   mockPersisted.session = {accounts: [], currentAccount: undefined}
-  mockPersisted.latest = {accounts: [], currentAccount: undefined}
   mockPersistedListeners.length = 0
-  mockRebuilds.length = 0
   mockLogin.mockReset()
   mockResume.mockReset()
-  mockRebuild.mockClear()
   mockDisposeBundle.mockReset()
   mockEmitSessionDropped.mockReset()
 })
 
-/*
- * A stale tab can expire a refresh token that another tab has already rotated
- * past. Logging every tab out on that event is the known-worst failure in this
- * subsystem, so the provider first looks for a newer token generation and
- * rebuilds onto it, only falling through to logout when there is nothing left
- * to try.
- */
-describe('expiry rescue', () => {
-  it('rebuilds onto a fresher persisted generation instead of logging out', async () => {
+describe('OAuth expiry handling', () => {
+  it('logs out an expired OAuth session', async () => {
     const account = makeAccount()
     const bundle = makeBundle(account)
     const {onSessionChange, hasSession, currentAccount} = await renderLoggedIn(
       account,
       bundle,
     )
-
-    /* another tab already rotated to generation 2 and wrote it to storage */
-    const fresher = makeAccount({
-      accessJwt: 'access-jwt-2',
-      refreshJwt: 'refresh-jwt-2',
-    })
-    mockPersisted.latest = {accounts: [fresher], currentAccount: fresher}
 
     act(() => {
       onSessionChange(
@@ -312,13 +254,9 @@ describe('expiry rescue', () => {
       )
     })
 
-    /* the rescue rebuilt onto the fresher generation ... */
-    expect(mockRebuilds.length).toBe(1)
-    expect(mockRebuilds[0].account.refreshJwt).toBe('refresh-jwt-2')
-    /* ... and adopted it, without ever reporting the session as dropped */
-    expect(hasSession()).toBe(true)
-    expect(currentAccount()?.refreshJwt).toBe('refresh-jwt-2')
-    expect(mockEmitSessionDropped).not.toHaveBeenCalled()
+    expect(mockEmitSessionDropped).toHaveBeenCalledTimes(1)
+    expect(hasSession()).toBe(false)
+    expect(currentAccount()).toBe(undefined)
   })
 
   it('drops the session and logs out when there is no fresher generation', async () => {
@@ -329,9 +267,6 @@ describe('expiry rescue', () => {
       bundle,
     )
 
-    /* storage agrees the dying token is the newest one anybody has */
-    mockPersisted.latest = {accounts: [account], currentAccount: account}
-
     act(() => {
       onSessionChange(
         bundle as unknown as SessionBundle,
@@ -341,54 +276,10 @@ describe('expiry rescue', () => {
       )
     })
 
-    expect(mockRebuilds.length).toBe(0)
     expect(mockEmitSessionDropped).toHaveBeenCalledTimes(1)
     expect(hasSession()).toBe(false)
     /* the reducer cleared the dead credentials rather than keeping them */
     expect(currentAccount()).toBe(undefined)
-  })
-
-  it('does not retry a generation that already failed', async () => {
-    const account = makeAccount()
-    const bundle = makeBundle(account)
-    const {onSessionChange, hasSession} = await renderLoggedIn(account, bundle)
-
-    const gen2 = makeAccount({
-      accessJwt: 'access-jwt-2',
-      refreshJwt: 'refresh-jwt-2',
-    })
-    mockPersisted.latest = {accounts: [gen2], currentAccount: gen2}
-
-    /* generation 1 dies and is rescued onto generation 2 */
-    act(() => {
-      onSessionChange(
-        bundle as unknown as SessionBundle,
-        DID,
-        'expired',
-        dyingData('refresh-jwt-1'),
-      )
-    })
-    expect(mockRebuilds.length).toBe(1)
-    const rescued = mockRebuilds[0].bundle
-
-    /*
-     * Generation 2 dies too, and a stale tab has meanwhile written generation 1
-     * back to storage. It differs from the dying token, so only the record of
-     * its earlier failure can reject it.
-     */
-    mockPersisted.latest = {accounts: [account], currentAccount: account}
-    act(() => {
-      onSessionChange(
-        rescued as unknown as SessionBundle,
-        DID,
-        'expired',
-        dyingData('refresh-jwt-2'),
-      )
-    })
-
-    expect(mockRebuilds.length).toBe(1)
-    expect(mockEmitSessionDropped).toHaveBeenCalledTimes(1)
-    expect(hasSession()).toBe(false)
   })
 })
 
@@ -451,11 +342,9 @@ function emitSynced(session: Schema['session']) {
 }
 
 /*
- * A `PasswordSession` cannot be patched in place, so adopting tokens another
- * tab refreshed means rebuilding the bundle. Doing that for every broadcast
- * would churn the agent (and the React tree under it) constantly, so the
- * provider rebuilds only when the tokens actually moved, and guards the swap
- * against the store having advanced underneath it.
+ * OAuth refresh tokens and DPoP keys stay in provider-owned storage and are not
+ * copied through the persisted account broadcast. Same-DID updates therefore
+ * update account metadata while the active provider transport remains intact.
  */
 describe('cross-tab sync', () => {
   it('short-circuits an update carrying the tokens the live session already has', async () => {
@@ -467,12 +356,11 @@ describe('cross-tab sync', () => {
       emitSynced({accounts: [account], currentAccount: account})
     })
 
-    /* identical tokens: nothing to adopt, so no rebuild */
-    expect(mockRebuilds.length).toBe(0)
+    /* identical metadata: the active provider transport remains untouched */
     expect(hasSession()).toBe(true)
   })
 
-  it('rebuilds onto tokens another tab rotated', async () => {
+  it('does not rebuild the active transport for a same-DID update', async () => {
     const account = makeAccount()
     const bundle = makeBundle(account)
     const {currentAccount} = await renderLoggedIn(account, bundle)
@@ -485,15 +373,14 @@ describe('cross-tab sync', () => {
       emitSynced({accounts: [rotated], currentAccount: rotated})
     })
 
-    expect(mockRebuilds.length).toBe(1)
-    expect(mockRebuilds[0].account.refreshJwt).toBe('refresh-jwt-2')
+    /* OAuth token material is not replayed from the persistence broadcast. */
     expect(currentAccount()?.refreshJwt).toBe('refresh-jwt-2')
   })
 
-  it('declines to activate a rebuild once the store has moved past the bundle it was built for', async () => {
+  it('keeps the active transport while same-DID updates arrive back to back', async () => {
     const account = makeAccount()
     const bundle = makeBundle(account)
-    await renderLoggedIn(account, bundle)
+    const {currentAccount} = await renderLoggedIn(account, bundle)
 
     const gen2 = makeAccount({
       accessJwt: 'access-jwt-2',
@@ -506,9 +393,8 @@ describe('cross-tab sync', () => {
 
     /*
      * Two broadcasts land back to back inside one act(), so React does not
-     * commit (and the effect does not re-subscribe) between them: the second
-     * runs the listener registered while the ORIGINAL bundle was current, even
-     * though the store has since advanced to the generation-2 rebuild.
+     * commit (and the effect does not re-subscribe) between them. Neither
+     * update should replace the active OAuth transport.
      */
     const listener = mockPersistedListeners[mockPersistedListeners.length - 1]
     act(() => {
@@ -516,11 +402,7 @@ describe('cross-tab sync', () => {
       listener({accounts: [gen3], currentAccount: gen3})
     })
 
-    expect(mockRebuilds.length).toBe(2)
-    expect(mockRebuilds[0].shouldActivate).toBe(true)
-    /* the stale closure's bundle is no longer current, so the swap is refused */
-    expect(mockRebuilds[1].account.refreshJwt).toBe('refresh-jwt-3')
-    expect(mockRebuilds[1].shouldActivate).toBe(false)
+    expect(currentAccount()?.refreshJwt).toBe('refresh-jwt-3')
   })
 
   it('cancels pending work when another tab logs the account out', async () => {
@@ -550,6 +432,5 @@ describe('cross-tab sync', () => {
 
     /* the superseded resume disposed its bundle rather than signing back in */
     expect(mockDisposeBundle).toHaveBeenCalledWith(resumedBundle)
-    expect(mockRebuilds.length).toBe(0)
   })
 })

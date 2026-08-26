@@ -31,7 +31,7 @@ export function getDefaultAppViewDisplayName(
   try {
     const hostname = new URL(endpoint).hostname.toLowerCase()
     if (hostname === 'api.bsky.app' || hostname === 'public.api.bsky.app') {
-      return 'Public Bluesky AppView (explicit read provider)'
+      return 'Public AT Protocol AppView (external read provider)'
     }
   } catch {
     // Endpoint validation reports the malformed endpoint separately.

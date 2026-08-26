@@ -2,9 +2,9 @@ import {beforeEach, expect, jest, test} from '@jest/globals'
 
 import {Storage} from '#/storage'
 
-jest.mock('react-native-mmkv', () => ({
-  MMKV: class MMKVMock {
-    _store = new Map()
+jest.mock('react-native-mmkv', () => {
+  class MMKVMock {
+    _store = new Map<string, unknown>()
 
     set(key: string, value: unknown) {
       this._store.set(key, value)
@@ -14,11 +14,32 @@ jest.mock('react-native-mmkv', () => ({
       return this._store.get(key)
     }
 
-    delete(key: string) {
+    remove(key: string) {
       return this._store.delete(key)
     }
-  },
-}))
+
+    clearAll() {
+      this._store.clear()
+    }
+
+    addOnValueChangedListener() {
+      return {remove() {}}
+    }
+  }
+
+  const stores = new Map<string, MMKVMock>()
+
+  return {
+    createMMKV({id}: {id: string}) {
+      let store = stores.get(id)
+      if (!store) {
+        store = new MMKVMock()
+        stores.set(id, store)
+      }
+      return store
+    },
+  }
+})
 
 type Schema = {
   boo: boolean

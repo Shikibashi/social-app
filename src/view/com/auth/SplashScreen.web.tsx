@@ -101,7 +101,9 @@ export const SplashScreen = ({
                 testID="createAccountButton"
                 onPress={onPressCreateAccount}
                 label={_(msg`Create new account`)}
-                accessibilityHint={_(msg`Opens flow to create a new account`)}
+                accessibilityHint={_(
+                  msg`Opens flow to create a new ATmosphere account`,
+                )}
                 size="large"
                 variant="solid"
                 color="primary">
@@ -114,7 +116,7 @@ export const SplashScreen = ({
                 onPress={onPressSignin}
                 label={_(msg`Sign in`)}
                 accessibilityHint={_(
-                  msg`Opens flow to sign in to your existing account`,
+                  msg`Opens flow to sign in to your existing ATmosphere account`,
                 )}
                 size="large"
                 variant="solid"

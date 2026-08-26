@@ -19,17 +19,17 @@ import {
 } from './moderation'
 import {networkAwareFetch} from './network'
 import {
-  OAuthSessionAdapter,
+  assertOAuthLoginInput,
+  type OAuthLoginInputWithLegacyFields,
+} from './oauth-login-input'
+import {
   type OAuthProviderSession,
+  OAuthSessionAdapter,
   restoreOAuthSession,
   signInWithOAuth,
 } from './oauth-session'
 import {resolvePdsEndpointForDid} from './pds-resolution'
 import {type AppViewProvider, getSelectedAppViewProvider} from './providers'
-import {
-  assertOAuthLoginInput,
-  type OAuthLoginInputWithLegacyFields,
-} from './oauth-login-input'
 import {type SessionData, sessionDataToSessionAccount} from './session-data'
 import {type AtpSessionEvent, type SessionAccount} from './types'
 
@@ -93,7 +93,10 @@ export function registerBundleKillSwitch(
   bundle: SessionBundle,
   kill: () => void,
 ) {
-  bundleKillSwitches.set(bundle, kill)
+  bundleKillSwitches.set(bundle, () => {
+    kill()
+    bundle.session.kill?.()
+  })
 }
 
 /**

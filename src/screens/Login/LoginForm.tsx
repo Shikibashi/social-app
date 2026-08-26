@@ -367,7 +367,7 @@ export const LoginForm = ({
       {IS_NATIVE && (
         <Text style={[a.text_md, native([a.text_center, a.mx_auto]), a.mt_sm]}>
           <Trans>
-            New to Bluesky?{' '}
+            New to ATmosphere?{' '}
             <InlineLinkText
               label={l`Sign up`}
               style={[a.text_md, native(a.text_center)]}

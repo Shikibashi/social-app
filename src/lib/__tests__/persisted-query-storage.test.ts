@@ -1,7 +1,7 @@
 import {beforeEach, describe, expect, it, jest} from '@jest/globals'
 
-jest.mock('react-native-mmkv', () => ({
-  MMKV: class MMKVMock {
+jest.mock('react-native-mmkv', () => {
+  class MMKVMock {
     _store = new Map<string, string>()
 
     getString(key: string) {
@@ -12,15 +12,28 @@ jest.mock('react-native-mmkv', () => ({
       this._store.set(key, value)
     }
 
-    delete(key: string) {
+    remove(key: string) {
       this._store.delete(key)
     }
 
     clearAll() {
       this._store.clear()
     }
-  },
-}))
+  }
+
+  const stores = new Map<string, MMKVMock>()
+
+  return {
+    createMMKV({id}: {id: string}) {
+      let store = stores.get(id)
+      if (!store) {
+        store = new MMKVMock()
+        stores.set(id, store)
+      }
+      return store
+    },
+  }
+})
 
 import {createPersistedQueryStorage} from '../persisted-query-storage'
 

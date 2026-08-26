@@ -65,6 +65,142 @@ jest.mock('../moderation', () => ({
   configureModerationForGuest: () => {},
 }))
 
+/*
+ * The factory tests exercise session-core's lifecycle and routing without
+ * requiring a browser IndexedDB OAuth store or the native Expo OAuth module.
+ * The adapter itself has a separate focused test surface; this transport keeps
+ * the factory tests deterministic while preserving the OAuth-only boundary.
+ */
+jest.mock('../oauth-session', () => {
+  type MockAccount = {
+    did: string
+    handle: string
+    service: string
+    accessJwt?: string
+    refreshJwt?: string
+    email?: string
+    emailConfirmed?: boolean
+    emailAuthFactor?: boolean
+    active?: boolean
+    status?: string
+  }
+  type MockHooks = {
+    onUpdated?: (data: unknown) => void
+    onDeleted?: (data: unknown) => void
+  }
+
+  function makeSession(
+    account: MockAccount,
+    hooks: MockHooks,
+    pdsUrl?: string,
+  ) {
+    let disposed = false
+    let current = {
+      authType: 'oauth' as const,
+      accessJwt: account.accessJwt ?? 'valid-access-jwt',
+      refreshJwt: account.refreshJwt ?? 'refresh-jwt',
+      did: account.did,
+      handle: account.handle,
+      email: account.email,
+      emailConfirmed: account.emailConfirmed,
+      emailAuthFactor: account.emailAuthFactor,
+      active: account.active ?? true,
+      status: account.status,
+      service: account.service,
+      ...(pdsUrl
+        ? {
+            didDoc: {
+              id: account.did,
+              service: [
+                {
+                  id: '#atproto_pds',
+                  type: 'AtprotoPersonalDataServer',
+                  serviceEndpoint: pdsUrl,
+                },
+              ],
+            },
+          }
+        : {}),
+    }
+
+    return {
+      get destroyed() {
+        return disposed
+      },
+      get did() {
+        return current.did
+      },
+      get service() {
+        return current.service
+      },
+      get session() {
+        return current
+      },
+      fetchHandler(path: string, init?: RequestInit) {
+        return Promise.resolve().then(() => {
+          if (disposed) throw new Error('session disposed')
+          return globalThis.fetch(new URL(path, current.service), init)
+        })
+      },
+      refresh() {
+        if (disposed) throw new Error('session disposed')
+        current = {
+          ...current,
+          accessJwt: 'access-jwt-2',
+          refreshJwt: 'refresh-jwt-2',
+        }
+        hooks.onUpdated?.(current)
+        return Promise.resolve(current)
+      },
+      logout() {
+        disposed = true
+        return Promise.resolve()
+      },
+      kill() {
+        disposed = true
+      },
+    }
+  }
+
+  class MockOAuthSessionAdapter {
+    static fromStoredAccount(account: MockAccount, hooks: MockHooks) {
+      return makeSession(account, hooks)
+    }
+
+    static fromSession(_providerSession: unknown, hooks: MockHooks) {
+      return Promise.resolve(
+        makeSession(
+          {
+            did: 'did:plc:example123',
+            handle: 'alice.test',
+            service: 'https://bsky.social',
+          },
+          hooks,
+        ),
+      )
+    }
+  }
+
+  return {
+    OAuthSessionAdapter: MockOAuthSessionAdapter,
+    restoreOAuthSession: (did: string, hooks: MockHooks, pdsUrl?: string) =>
+      Promise.resolve(
+        makeSession(
+          {
+            did,
+            handle: 'alice.test',
+            service: 'https://bsky.social',
+            accessJwt: 'valid-access-jwt',
+            refreshJwt: 'refresh-jwt',
+          },
+          hooks,
+          pdsUrl,
+        ),
+      ),
+    signInWithOAuth: jest.fn(),
+  }
+})
+
 jest.mock('jwt-decode', () => ({
   jwtDecode(token: string) {
     if (token === 'queued-access-jwt') {
@@ -109,6 +245,12 @@ import {
   SERVICE,
   urlsOf,
 } from './mock-fetch'
+
+function makeOAuthAccount(
+  overrides: Partial<SessionAccount> = {},
+): SessionAccount {
+  return makeAccount({authType: 'oauth', ...overrides})
+}
 
 function synthDidDoc(
   did: string,
@@ -363,7 +505,7 @@ describe('sessionAccountToSessionData', () => {
 describe('createSessionBundleFromStoredAccount', () => {
   it('builds three clients over one session', async () => {
     const result = createSessionBundleFromStoredAccount(
-      makeAccount(),
+      makeOAuthAccount(),
       jest.fn(),
     )!
 
@@ -416,7 +558,7 @@ describe('createSessionBundleFromStoredAccount', () => {
     const onSessionChange = jest.fn()
     let rejectedBundle: SessionBundle | undefined
     const result = createSessionBundleFromStoredAccount(
-      makeAccount(),
+      makeOAuthAccount(),
       onSessionChange,
       bundle => {
         rejectedBundle = bundle
@@ -641,7 +783,7 @@ describe('disposeBundle kill-switch', () => {
       getDid: () => DID,
     })
     /* the injected fetch is the kill-switch wrapper makeSessionHooks bakes in */
-    const injectedFetch = hooks.fetch!
+    const injectedFetch = hooks.fetch
 
     /*
      * A live session is required for disposeBundle to act (it early-returns on
@@ -813,11 +955,10 @@ describe('PasswordSession.refresh through armed hooks', () => {
 })
 
 /**
- * Load a fresh factory graph whose network leaf captures `fetch`.
+ * Load a fresh factory graph with the test transport's `fetch` override.
  *
- * `session-core`'s network leaf reads `globalThis.fetch` at module load, and
- * that captured fetch is what `PasswordSession`'s auto-refresh routes through,
- * so the module has to be re-required after the override is in place.
+ * The module is re-required inside the isolated registry so each factory test
+ * starts with a fresh dependency graph, just as a cold app start does.
  */
 async function withFreshFactory(
   fetch: typeof globalThis.fetch,
@@ -838,18 +979,16 @@ async function withFreshFactory(
 
 /*
  * The resume/login factories must snapshot the returned account after
- * the prep awaits, not before. A 401 during prep triggers PasswordSession's
- * internal auto-refresh (rotating BOTH tokens and firing an onUpdated the
- * disarmed latch drops); an early snapshot would persist the stale refreshJwt,
- * which is dead on the next cold start.
+ * the prep awaits, not before. A refresh during prep rotates BOTH tokens and
+ * fires an onUpdated event while the disarmed latch drops it; an early
+ * snapshot would persist the stale refreshJwt, which is dead on the next cold
+ * start.
  *
  * We simulate the mid-prep rotation by capturing the bundle from the mocked
  * `configureModerationForAccount` and making the mocked feature-gate refresh
  * (a genuine prep await in each factory) run a real `session.refresh()`. The
- * factory itself is re-required inside
- * `jest.isolateModulesAsync` AFTER overriding `globalThis.fetch`, because
- * the network leaf captures `globalThis.fetch` at module load - and that
- * captured fetch is what PasswordSession's auto-refresh routes through.
+ * factory itself is re-required inside `jest.isolateModulesAsync` after the
+ * fetch override is installed.
  */
 describe('factory account snapshot after preparation', () => {
   beforeEach(() => {
@@ -883,9 +1022,10 @@ describe('factory account snapshot after preparation', () => {
 
     await withFreshFactory(asFetch(fetchMock), async core => {
       const result = core.createSessionBundleAndResume(
-        makeAccount({accessJwt: 'valid-access-jwt', pdsUrl: PDS_URL}),
+        makeOAuthAccount({accessJwt: 'valid-access-jwt', pdsUrl: PDS_URL}),
         jest.fn(),
       )
+      await Promise.resolve()
       expect(capturedBundle).toBeDefined()
       await releasePreparation()
       const {account, bundle} = await result
@@ -909,7 +1049,7 @@ describe('factory account snapshot after preparation', () => {
 
     await withFreshFactory(asFetch(fetchMock), async core => {
       const {account} = await core.createSessionBundleAndResume(
-        makeAccount({accessJwt: 'valid-access-jwt'}),
+        makeOAuthAccount({accessJwt: 'valid-access-jwt'}),
         jest.fn(),
       )
       expect(account.accessJwt).toBe('valid-access-jwt')
@@ -932,11 +1072,11 @@ describe('factory account snapshot after preparation', () => {
 
     await withFreshFactory(didDocFetch as typeof fetch, async core => {
       const {account, bundle} = await core.createSessionBundleAndResume(
-        makeAccount({accessJwt: 'valid-access-jwt'}),
+        makeOAuthAccount({accessJwt: 'valid-access-jwt'}),
         jest.fn(),
       )
 
-      await bundle.session.fetchHandler(
+      await bundle.pdsClient.agent.fetchHandler(
         '/xrpc/com.atproto.server.getSession',
         {},
       )
@@ -963,7 +1103,7 @@ describe('factory account snapshot after preparation', () => {
 
     await withFreshFactory(didDocFetch as typeof fetch, async core => {
       const {account, bundle} = await core.createSessionBundleAndResume(
-        makeAccount({
+        makeOAuthAccount({
           accessJwt: 'valid-access-jwt',
           pdsUrl: 'https://bsky.social/',
           isSelfHosted: false,
@@ -971,7 +1111,7 @@ describe('factory account snapshot after preparation', () => {
         jest.fn(),
       )
 
-      await bundle.session.fetchHandler(
+      await bundle.pdsClient.agent.fetchHandler(
         '/xrpc/com.atproto.server.getSession',
         {},
       )
@@ -1030,9 +1170,10 @@ describe('a session destroyed or rejected during preparation', () => {
        * surface.
        */
       const result = core.createSessionBundleAndResume(
-        makeAccount({accessJwt: 'valid-access-jwt', pdsUrl: PDS_URL}),
+        makeOAuthAccount({accessJwt: 'valid-access-jwt', pdsUrl: PDS_URL}),
         jest.fn(),
       )
+      await Promise.resolve()
       expect(capturedBundle).toBeDefined()
       await releasePreparation()
       await expect(result).rejects.toThrow(
@@ -1059,7 +1200,7 @@ describe('a session destroyed or rejected during preparation', () => {
     await withFreshFactory(asFetch(fetchMock), async core => {
       await expect(
         core.createSessionBundleAndResume(
-          makeAccount({accessJwt: 'valid-access-jwt'}),
+          makeOAuthAccount({accessJwt: 'valid-access-jwt'}),
           jest.fn(),
         ),
       ).rejects.toThrow('prefetch blew up')
