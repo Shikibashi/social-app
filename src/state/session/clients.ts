@@ -158,12 +158,13 @@ export function routeSessionToPds(
        * an access token the new PDS no longer accepts. The OAuth adapter retries
        * ExpiredToken, but PDS migrations commonly surface InvalidToken or
        * AuthMissing instead. Refresh once through the login service and replay
-       * only body-less reads; writes must never be replayed implicitly because
-       * their request body may not be safely reusable.
+       * only a read or a write whose body is known to be reusable. Do not
+       * replay network, server, or validation failures: a write may have
+       * reached the server before those failures were returned.
        */
       if (
-        init?.body !== undefined ||
-        !(await isPdsAuthRecoveryResponse(response))
+        !(await isPdsAuthRecoveryResponse(response)) ||
+        !isReplayableRequest(init)
       ) {
         return response
       }
@@ -178,11 +179,38 @@ export function routeSessionToPds(
   }
 }
 
+/**
+ * A PDS authentication rejection is safe to replay only when the request is a
+ * read or the body can be supplied to fetch more than once. Lex serializes
+ * normal XRPC writes as strings, but keeping the other body types explicit
+ * prevents a consumed ReadableStream from being replayed accidentally.
+ */
+function isReplayableRequest(init?: RequestInit): boolean {
+  const method = init?.method?.toUpperCase() ?? 'GET'
+  if (method === 'GET' || method === 'HEAD') return true
+
+  const body = init?.body
+  if (body == null) return false
+  if (typeof body === 'string') return true
+  if (
+    typeof URLSearchParams !== 'undefined' &&
+    body instanceof URLSearchParams
+  ) {
+    return true
+  }
+  if (typeof Blob !== 'undefined' && body instanceof Blob) return true
+  if (typeof FormData !== 'undefined' && body instanceof FormData) return true
+  if (typeof ArrayBuffer !== 'undefined' && body instanceof ArrayBuffer) {
+    return true
+  }
+  return ArrayBuffer.isView(body)
+}
+
 async function isPdsAuthRecoveryResponse(response: Response): Promise<boolean> {
   // A PDS may return AuthMissing, InvalidToken, or another auth-specific
   // reason on a 401 depending on which verifier rejected the migrated token.
-  // The caller already limits this to body-less reads, so one refresh is safe
-  // and avoids coupling recovery to a provider-specific error label.
+  // One refresh is safe here because the caller only invokes this helper for
+  // explicit authentication failures and separately checks body replayability.
   if (response.status === 401) return true
   if (response.status !== 400) return false
   try {

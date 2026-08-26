@@ -510,6 +510,94 @@ describe('routeSessionToPds', () => {
     ])
   })
 
+  it('refreshes and replays a body-bearing write after an explicit auth rejection', async () => {
+    const requestBodies: string[] = []
+    const fetchMock = makeMockFetch({
+      'com.atproto.repo.createRecord': (_url, init) => {
+        if (typeof init.body !== 'string') {
+          throw new Error('Expected a string request body')
+        }
+        requestBodies.push(init.body)
+        const authorization = new Headers(init.headers).get('authorization')
+        if (authorization === 'Bearer access-jwt') {
+          return json(
+            {error: 'AuthMissing', message: 'Authentication required'},
+            401,
+          )
+        }
+        return json({
+          uri: 'at://did:plc:example123/app.bsky.feed.like/1',
+          cid: 'bafyreiayaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+        })
+      },
+    })
+    const session = makeSession(fetchMock)
+    /*
+     * PasswordSession retries every 401 itself. Bypass that legacy behavior so
+     * this test exercises the route's OAuth-era recovery of a 401 without a
+     * WWW-Authenticate header, which is the response shape from our PDS.
+     */
+    jest
+      .spyOn(session, 'fetchHandler')
+      .mockImplementation(async (path, init) => {
+        const headers = new Headers(init?.headers)
+        headers.set('authorization', `Bearer ${session.session.accessJwt}`)
+        return asFetch(fetchMock)(path, {...init, headers})
+      })
+    const agent = routeSessionToPds(session, PDS_HOST)
+    const body = JSON.stringify({
+      repo: DID,
+      collection: 'app.bsky.feed.like',
+      record: {
+        subject: {
+          uri: 'at://did:plc:example123/app.bsky.feed.post/1',
+          cid: 'bafyreiaybbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
+        },
+        createdAt: '2026-08-26T00:00:00.000Z',
+      },
+    })
+
+    const response = await agent.fetchHandler(
+      '/xrpc/com.atproto.repo.createRecord',
+      {
+        method: 'POST',
+        headers: {'content-type': 'application/json'},
+        body,
+      },
+    )
+
+    expect(response.status).toBe(200)
+    expect(requestBodies).toEqual([body, body])
+    expect(urlsOf(fetchMock)).toEqual([
+      `${PDS_HOST}/xrpc/com.atproto.repo.createRecord`,
+      `${SERVICE}/xrpc/com.atproto.server.refreshSession`,
+      `${PDS_HOST}/xrpc/com.atproto.repo.createRecord`,
+    ])
+  })
+
+  it('does not replay a body-bearing write after a non-auth failure', async () => {
+    const fetchMock = makeMockFetch({
+      'com.atproto.repo.createRecord': () =>
+        json({error: 'UpstreamFailure', message: 'Try again later'}, 503),
+    })
+    const session = makeSession(fetchMock)
+    const agent = routeSessionToPds(session, PDS_HOST)
+
+    const response = await agent.fetchHandler(
+      '/xrpc/com.atproto.repo.createRecord',
+      {
+        method: 'POST',
+        headers: {'content-type': 'application/json'},
+        body: '{}',
+      },
+    )
+
+    expect(response.status).toBe(503)
+    expect(urlsOf(fetchMock)).toEqual([
+      `${PDS_HOST}/xrpc/com.atproto.repo.createRecord`,
+    ])
+  })
+
   it('passes through the session did', () => {
     const session = makeSession(fetchMock)
     expect(routeSessionToPds(session, PDS_HOST).did).toBe(DID)

@@ -6,6 +6,7 @@ import {useLingui} from '@lingui/react/macro'
 
 import {CountWheel} from '#/lib/custom-animations/CountWheel'
 import {AnimatedLikeIcon} from '#/lib/custom-animations/LikeIcon'
+import {useCleanError} from '#/lib/hooks/useCleanError'
 import {useOpenComposer} from '#/lib/hooks/useOpenComposer'
 import {type Shadow} from '#/state/cache/types'
 import {useFeedFeedbackContext} from '#/state/feed-feedback'
@@ -92,10 +93,12 @@ let PostControls = ({
   const {sendInteraction} = useFeedFeedbackContext()
   const {enabled: quietMetricsEnabled} = useQuietMetrics()
   const {captureAction} = useProgressGuideControls()
+  const cleanError = useCleanError()
   const isBlocked = hasViewerInteractionBoundary(post.author)
   // The shadow cache uses this sentinel while the PDS write is in flight. It
   // is intentionally not a protocol value and is only used for local UX.
   const isLikePending = (post.viewer?.like as string | undefined) === 'pending'
+  const isLiked = Boolean(post.viewer?.like) && !isLikePending
   const replyDisabled = post.viewer?.replyDisabled
   const {gtPhone} = useBreakpoints()
   const formatPostStatCount = useFormatPostStatCount()
@@ -103,6 +106,10 @@ let PostControls = ({
   const [hasLikeIconBeenToggled, setHasLikeIconBeenToggled] = useState(false)
 
   const onPressToggleLike = async () => {
+    // A post may be remounted while another component still owns the write.
+    // Do not let a new queue interpret the local sentinel as a real at-uri.
+    if (isLikePending) return
+
     if (isBlocked) {
       Toast.show(l`Cannot interact with a blocked user`, {
         type: 'warning',
@@ -127,7 +134,11 @@ let PostControls = ({
     } catch (err) {
       const e = err as Error
       if (e?.name !== 'AbortError') {
-        throw e
+        const {clean, raw} = cleanError(err)
+        Toast.show(
+          clean || raw || l`Could not update the like. Please try again.`,
+          {type: 'error'},
+        )
       }
     }
   }
@@ -274,16 +285,17 @@ let PostControls = ({
             <PostControlButton
               testID="likeBtn"
               big={big}
-              active={Boolean(post.viewer?.like)}
+              active={isLiked}
               activeColor={t.palette.pink}
               onPress={() => requireAuth(() => onPressToggleLike())}
+              disabled={isLikePending}
               accessibilityState={{busy: isLikePending}}
               label={
                 quietMetricsEnabled
-                  ? post.viewer?.like
+                  ? isLiked
                     ? l`Unlike`
                     : l`Like`
-                  : post.viewer?.like
+                  : isLiked
                     ? l({
                         message: `Unlike (${plural(post.likeCount || 0, {
                           one: '# like',
@@ -302,7 +314,7 @@ let PostControls = ({
                       })
               }>
               <AnimatedLikeIcon
-                isLiked={Boolean(post.viewer?.like)}
+                isLiked={isLiked}
                 big={big}
                 hasBeenToggled={hasLikeIconBeenToggled}
               />
@@ -312,7 +324,7 @@ let PostControls = ({
               {!quietMetricsEnabled && (
                 <CountWheel
                   count={post.likeCount ?? 0}
-                  isToggled={Boolean(post.viewer?.like)}
+                  isToggled={isLiked}
                   hasBeenToggled={hasLikeIconBeenToggled}
                   renderCount={({count}) => (
                     <PostControlButtonText testID="likeCount">
