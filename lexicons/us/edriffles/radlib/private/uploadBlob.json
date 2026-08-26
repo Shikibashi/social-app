@@ -1,0 +1,37 @@
+{
+  "lexicon": 1,
+  "id": "us.edriffles.radlib.private.uploadBlob",
+  "defs": {
+    "main": {
+      "type": "procedure",
+      "description": "Upload a blob to a permissioned space. The bytes are stored outside the public PDS blob store and require a later authorized read.",
+      "input": {
+        "encoding": "application/json",
+        "schema": {
+          "type": "object",
+          "required": ["space", "mimeType", "bytes"],
+          "properties": {
+            "space": { "type": "string" },
+            "mimeType": { "type": "string", "maxLength": 200 },
+            "bytes": { "type": "bytes", "maxLength": 26214400 }
+          }
+        }
+      },
+      "output": {
+        "encoding": "application/json",
+        "schema": {
+          "type": "object",
+          "required": ["id", "space", "ownerDid", "mimeType", "size", "createdAt"],
+          "properties": {
+            "id": { "type": "string" },
+            "space": { "type": "string" },
+            "ownerDid": { "type": "string", "format": "did" },
+            "mimeType": { "type": "string" },
+            "size": { "type": "integer", "minimum": 0 },
+            "createdAt": { "type": "string", "format": "datetime" }
+          }
+        }
+      }
+    }
+  }
+}

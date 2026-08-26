@@ -1,0 +1,36 @@
+{
+  "lexicon": 1,
+  "id": "us.edriffles.radlib.moderation.defs",
+  "defs": {
+    "attestation": {
+      "type": "object",
+      "required": [
+        "version",
+        "subjectDid",
+        "listUriHash",
+        "providerDid",
+        "issuedAt",
+        "nonce",
+        "signature"
+      ],
+      "properties": {
+        "version": {
+          "type": "string",
+          "const": "radlib-list-mute-attestation/1"
+        },
+        "subjectDid": {"type": "string", "format": "did"},
+        "listUriHash": {
+          "type": "string",
+          "description": "Lower-case SHA-256 hex of the AT-URI of the list.",
+          "pattern": "^[0-9a-f]{64}$",
+          "maxLength": 64,
+          "minLength": 64
+        },
+        "providerDid": {"type": "string", "format": "did"},
+        "issuedAt": {"type": "string", "format": "datetime"},
+        "nonce": {"type": "string", "minLength": 16, "maxLength": 128},
+        "signature": {"type": "string", "minLength": 16, "maxLength": 512}
+      }
+    }
+  }
+}

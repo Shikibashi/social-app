@@ -2,6 +2,20 @@ const path = require('path')
 const fs = require('fs')
 
 const projectRoot = path.join(__dirname, '..')
+const expectedPublicWebOrigin = 'https://social.edriffles.us'
+const isProductionBuild = process.env.EXPO_PUBLIC_ENV === 'production'
+
+if (isProductionBuild) {
+  const configuredPublicWebOrigin =
+    process.env.EXPO_PUBLIC_PUBLIC_WEB_ORIGIN?.trim() ||
+    expectedPublicWebOrigin
+  if (configuredPublicWebOrigin !== expectedPublicWebOrigin) {
+    throw new Error(
+      `Production web builds must use ${expectedPublicWebOrigin} as EXPO_PUBLIC_PUBLIC_WEB_ORIGIN; received ${configuredPublicWebOrigin}`,
+    )
+  }
+}
+
 const templateFile = path.join(
   projectRoot,
   'bskyweb',
@@ -26,6 +40,48 @@ const rootRelativeIndexHtml = indexHtml.replace(
 if (rootRelativeIndexHtml !== indexHtml) {
   fs.writeFileSync(indexFile, rootRelativeIndexHtml)
   console.log(`Normalized static asset URLs in ${indexFile}`)
+}
+
+// Expo's web exporter does not copy this repository's public/ directory. The
+// OAuth client-id metadata document is therefore copied explicitly so the
+// discoverable HTTPS client ID remains bound to the deployed artifact.
+const oauthMetadataSource = path.join(
+  projectRoot,
+  'public/oauth-client-metadata.json',
+)
+const oauthMetadataTarget = path.join(
+  projectRoot,
+  'web-build/oauth-client-metadata.json',
+)
+if (fs.existsSync(oauthMetadataSource)) {
+  fs.copyFileSync(oauthMetadataSource, oauthMetadataTarget)
+  console.log(`Copied ${oauthMetadataSource} to ${oauthMetadataTarget}`)
+
+  if (isProductionBuild) {
+    const metadata = JSON.parse(fs.readFileSync(oauthMetadataTarget, 'utf8'))
+    const expectedClientId = `${expectedPublicWebOrigin}/oauth-client-metadata.json`
+    const expectedCallback = `${expectedPublicWebOrigin}/oauth/callback`
+    if (
+      metadata.client_id !== expectedClientId ||
+      metadata.client_uri !== expectedPublicWebOrigin ||
+      metadata.redirect_uris?.[0] !== expectedCallback
+    ) {
+      throw new Error(
+        `Production OAuth metadata must be bound to ${expectedPublicWebOrigin}`,
+      )
+    }
+  }
+}
+
+// Cloudflare Pages only applies response headers when the generated export
+// contains a root-level `_headers` file. Keep the repository's shared header
+// policy in the deployed artifact so the public alpha uses the same CSP and
+// privacy headers as the checked-in deployment contract.
+const headersSource = path.join(projectRoot, '../../deploy/static-headers')
+const headersTarget = path.join(projectRoot, 'web-build/_headers')
+if (fs.existsSync(headersSource)) {
+  fs.copyFileSync(headersSource, headersTarget)
+  console.log(`Copied ${headersSource} to ${headersTarget}`)
 }
 
 console.log(`Found ${entrypoints.length} entrypoints`)

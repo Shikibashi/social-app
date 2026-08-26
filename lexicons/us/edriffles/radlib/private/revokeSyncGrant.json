@@ -1,0 +1,33 @@
+{
+  "lexicon": 1,
+  "id": "us.edriffles.radlib.private.revokeSyncGrant",
+  "defs": {
+    "main": {
+      "type": "procedure",
+      "description": "Revoke a direct private-sync capability before its expiry.",
+      "input": {
+        "encoding": "application/json",
+        "schema": {
+          "type": "object",
+          "required": ["space", "id"],
+          "properties": {
+            "space": { "type": "string" },
+            "id": { "type": "string", "maxLength": 64 }
+          }
+        }
+      },
+      "output": {
+        "encoding": "application/json",
+        "schema": {
+          "type": "object",
+          "required": ["space", "id", "revoked"],
+          "properties": {
+            "space": { "type": "string" },
+            "id": { "type": "string" },
+            "revoked": { "type": "boolean" }
+          }
+        }
+      }
+    }
+  }
+}

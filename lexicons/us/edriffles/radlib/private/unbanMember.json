@@ -1,0 +1,33 @@
+{
+  "lexicon": 1,
+  "id": "us.edriffles.radlib.private.unbanMember",
+  "defs": {
+    "main": {
+      "type": "procedure",
+      "description": "Lift a community-local ban without granting membership automatically.",
+      "input": {
+        "encoding": "application/json",
+        "schema": {
+          "type": "object",
+          "required": ["space", "target"],
+          "properties": {
+            "space": { "type": "string" },
+            "target": { "type": "string", "format": "did" }
+          }
+        }
+      },
+      "output": {
+        "encoding": "application/json",
+        "schema": {
+          "type": "object",
+          "required": ["space", "target", "state"],
+          "properties": {
+            "space": { "type": "string" },
+            "target": { "type": "string", "format": "did" },
+            "state": { "type": "string", "knownValues": ["requested", "approved", "denied", "removed", "banned"] }
+          }
+        }
+      }
+    }
+  }
+}

@@ -4,10 +4,14 @@ import {toDatetimeString} from '@atproto/syntax'
 import {type RichText} from '@bsky/sdk/richtext'
 
 import {type SpacesClient, spacesClient} from '#/lib/atproto/spaces'
-import {LEGACY_RADLIB_PRIVATE_ENABLED, SPACES_ALPHA_ENABLED} from '#/env'
-import {org} from '#/lexicons'
+import {
+  assertSpacesAlphaDeploymentSafe,
+  LEGACY_RADLIB_PRIVATE_ENABLED,
+  SPACES_ALPHA_ENABLED,
+} from '#/env'
+import {us} from '#/lexicons'
 
-export const PRIVATE_POST_COLLECTION = 'org.radlib.private.post' as const
+export const PRIVATE_POST_COLLECTION = 'us.edriffles.radlib.private.post' as const
 
 /**
  * Build the private-post value used by the fork-owned permissioned API. This
@@ -41,6 +45,7 @@ export async function writePrivateTextPost(
   embed?: LexMap,
   reply?: LexMap,
 ) {
+  assertSpacesAlphaDeploymentSafe()
   const input = buildPrivatePostInput(space, richtext, langs, embed, reply)
   if (SPACES_ALPHA_ENABLED)
     return writePrivateSpaceTextPost(spacesClient(client), input)
@@ -49,7 +54,7 @@ export async function writePrivateTextPost(
       'Spaces alpha transport is disabled; the legacy Radlib adapter is migration-only',
     )
   }
-  return client.call(org.radlib.private.putRecord, input)
+  return client.call(us.edriffles.radlib.private.putRecord, input)
 }
 
 function buildPrivatePostInput(

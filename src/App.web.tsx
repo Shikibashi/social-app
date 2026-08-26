@@ -114,7 +114,7 @@ function WebMetadata() {
 function InnerApp() {
   const [isReady, setIsReady] = useState(false)
   const {currentAccount} = useSession()
-  const {resumeSession} = useSessionApi()
+  const {initializeOAuthSession, resumeSession} = useSessionApi()
   const theme = useColorModeTheme()
   const {t: l} = useLingui()
   const hasCheckedLanding = useLandingEntry()
@@ -122,21 +122,37 @@ function InnerApp() {
   // init
   useEffect(() => {
     async function onLaunch(account?: SessionAccount) {
+      // The OAuth client consumes and cleans the callback URL before the
+      // navigation container necessarily observes the history change. Keep
+      // the original location so a successful callback can return to the
+      // normal app route instead of leaving the router on NotFound.
       try {
-        if (account) {
+        const initializedOAuthSession = await initializeOAuthSession()
+        if (initializedOAuthSession) {
+          await features.init
+          // Clean the one-time callback URL without reloading the document.
+          // A hard reload can race the asynchronous persisted-session write
+          // performed by the session store and leave the freshly authorized
+          // account looking logged out on the home page.
+          if (window.location.pathname === '/oauth/callback') {
+            window.history.replaceState(window.history.state, '', '/')
+          }
+        } else if (account) {
           await resumeSession(account)
         } else {
           await features.init
         }
       } catch (e) {
-        logger.warn('session: resumeSession failed', {message: e})
+        logger.warn('session: resumeSession failed', {
+          message: e instanceof Error ? e.message : String(e),
+        })
       } finally {
         setIsReady(true)
       }
     }
     const account = readLastActiveAccount()
     void onLaunch(account)
-  }, [resumeSession])
+  }, [initializeOAuthSession, resumeSession])
 
   useEffect(() => {
     return listenSessionDropped(() => {

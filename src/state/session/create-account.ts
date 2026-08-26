@@ -1,8 +1,7 @@
 import {TID} from '@atproto/common-web'
 import {type Client} from '@atproto/lex'
-import {PasswordSession} from '@atproto/lex-password-session'
 import {toDatetimeString} from '@atproto/syntax'
-import {overwriteSavedFeeds, setPersonalDetails, upsertProfile} from '@bsky/sdk'
+import {overwriteSavedFeeds, upsertProfile} from '@bsky/sdk'
 
 import {networkRetry} from '#/lib/async/retry'
 import {
@@ -15,6 +14,7 @@ import {snoozeEmailConfirmationPrompt} from '#/state/shell/reminders'
 import {features} from '#/analytics'
 import {type app} from '#/lexicons'
 import {configureModerationForAccount} from './moderation'
+import {signUpWithOAuth} from './oauth-session'
 import {
   buildBundle,
   finishPreparation,
@@ -22,21 +22,27 @@ import {
   type OnSessionChange,
   registerBundleKillSwitch,
   type SessionBundle,
+  type SessionTransport,
 } from './session-core'
 import {sessionDataToSessionAccount} from './session-data'
 import {type SessionAccount} from './types'
 
-/** Create an account, prepare its session, and start post-signup writes. */
+/**
+ * The pre-OAuth signup API is retained only so stale test fixtures fail with a
+ * useful error instead of silently dropping authentication fields.
+ */
+export class LegacySignupRequiresOAuthError extends Error {
+  constructor() {
+    super(
+      'Password-based signup is no longer supported; start account creation through the provider-owned OAuth signup flow',
+    )
+    this.name = 'LegacySignupRequiresOAuthError'
+  }
+}
+
 export async function createSessionBundleAndCreateAccount(
   {
     service,
-    email,
-    password,
-    handle,
-    birthDate,
-    inviteCode,
-    verificationPhone,
-    verificationCode,
   }: {
     service: string
     email: string
@@ -49,6 +55,19 @@ export async function createSessionBundleAndCreateAccount(
   },
   onSessionChange: OnSessionChange,
 ): Promise<{account: SessionAccount; bundle: SessionBundle}> {
+  // Do not accept-and-ignore the legacy fields. The active UI calls `signUp`;
+  // stale callers must fail explicitly so a password is never mistaken for a
+  // credential that the provider accepted.
+  void service
+  void onSessionChange
+  throw new LegacySignupRequiresOAuthError()
+}
+
+/** Create an account through the provider-owned OAuth signup surface. */
+export async function createSessionBundleAndOAuthSignup(
+  {service}: {service: string},
+  onSessionChange: OnSessionChange,
+): Promise<{account: SessionAccount; bundle: SessionBundle}> {
   let bundle!: SessionBundle
   let accountDid = ''
   const hooks = makeSessionHooks({
@@ -56,46 +75,31 @@ export async function createSessionBundleAndCreateAccount(
     getBundle: () => bundle,
     getDid: () => accountDid,
   })
-
-  const session = await PasswordSession.createAccount(
-    {
-      email,
-      password,
-      /* the lexicon types handle as `${string}.${string}`; user input is a plain string */
-      handle: handle as `${string}.${string}`,
-      inviteCode,
-      verificationPhone,
-      verificationCode,
-    },
-    {...hooks, service},
-  )
+  const session = await signUpWithOAuth(service, hooks)
 
   bundle = buildBundle(session)
   registerBundleKillSwitch(bundle, hooks.kill)
-  // Seed the hook and the deferred writes with refresh-stable account fields.
-  const earlyAccount = snapshotNewAccount(session, email)
+  const earlyAccount = snapshotNewAccount(session)
   accountDid = earlyAccount.did
 
   const gates = features.refresh({strategy: 'prefer-fresh-gates'})
   configureModerationForAccount(bundle, earlyAccount)
 
   const createdAt = toDatetimeString(new Date())
-  // Post-signup writes all target the account's own repo and actor store.
-  const pdsClient = bundle.pdsClient
-
   const isProd = Boolean(IS_PROD_SERVICE(service))
   const postSignupTasks: Promise<unknown>[] = [
-    savePersonalDetails(pdsClient, birthDate),
-    initializeProfile(pdsClient, {handle, createdAt, isProd}),
+    initializeProfile(bundle.pdsClient, {
+      handle: earlyAccount.handle,
+      createdAt,
+      isProd,
+    }),
   ]
   if (isProd) {
-    postSignupTasks.push(initializeSavedFeeds(pdsClient))
+    postSignupTasks.push(initializeSavedFeeds(bundle.pdsClient))
   }
-  // Post-signup writes are not required to enter onboarding.
   void reportPostSignupFailures(postSignupTasks)
 
   try {
-    // snooze first prompt after signup, defer to next prompt
     snoozeEmailConfirmationPrompt()
   } catch (e) {
     logger.error(e instanceof Error ? e : String(e), {
@@ -103,25 +107,17 @@ export async function createSessionBundleAndCreateAccount(
     })
   }
 
-  // Preparation may auto-refresh the session while hooks are still disarmed.
   const account = await finishPreparation(bundle, gates, () =>
-    snapshotNewAccount(session, email),
+    snapshotNewAccount(session),
   )
   hooks.arm()
   return {account, bundle}
 }
 
-/**
- * Snapshot a just-created session as a `SessionAccount`.
- *
- * `com.atproto.server.createAccount` returns only tokens, handle, did and
- * didDoc, so the session carries no email state or `active` flag until the
- * first refresh. Synthesize those fields from the creation input so the
- * persisted account does not briefly claim the email is unknown.
- */
+/** Snapshot a provider-created OAuth session as a `SessionAccount`. */
 function snapshotNewAccount(
-  session: PasswordSession,
-  email: string,
+  session: SessionTransport,
+  email?: string,
 ): SessionAccount {
   const account = sessionDataToSessionAccount(
     session.session,
@@ -132,17 +128,15 @@ function snapshotNewAccount(
   }
   return {
     ...account,
-    email: account.email ?? email,
-    emailConfirmed: account.emailConfirmed ?? false,
-    emailAuthFactor: account.emailAuthFactor ?? false,
+    ...(email
+      ? {
+          email: account.email ?? email,
+          emailConfirmed: account.emailConfirmed ?? false,
+          emailAuthFactor: account.emailAuthFactor ?? false,
+        }
+      : {}),
     active: account.active ?? true,
   }
-}
-
-function savePersonalDetails(client: Client, birthDate: Date) {
-  return retryPostSignupTask('set birthDate', 3, () =>
-    client.call(setPersonalDetails, {birthDate}),
-  )
 }
 
 function initializeProfile(
@@ -186,7 +180,7 @@ function retryPostSignupTask<T>(
   task: () => Promise<T>,
 ) {
   return networkRetry(retries, task).catch(e => {
-    logger.info(`createSessionBundleAndCreateAccount: failed to ${description}`)
+    logger.info(`createSessionBundleAndOAuthSignup: failed to ${description}`)
     throw e
   })
 }
@@ -195,7 +189,7 @@ async function reportPostSignupFailures(tasks: Promise<unknown>[]) {
   const results = await Promise.allSettled(tasks)
   if (results.some(result => result.status === 'rejected')) {
     logger.error(
-      `session: createSessionBundleAndCreateAccount failed to save post-signup settings`,
+      `session: createSessionBundleAndOAuthSignup failed to save post-signup settings`,
     )
   }
 }

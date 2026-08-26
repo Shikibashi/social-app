@@ -108,11 +108,6 @@ export const Login = ({
     }
   }, [serviceError, serviceUrl, l, ax])
 
-  const onPressForgotPassword = () => {
-    gotoForm(Forms.ForgotPassword)
-    ax.metric('signin:forgotPasswordPressed', {})
-  }
-
   const handlePressBack = () => {
     onPressBack()
     setScreenTransitionDirection('Backward')
@@ -141,7 +136,7 @@ export const Login = ({
   switch (currentForm) {
     case Forms.Login:
       title = l`Sign in`
-      description = l`Enter your username and password`
+      description = l`Authorize this app with your hosting provider`
       goBack = () =>
         accounts.length ? gotoForm(Forms.ChooseAccount) : handlePressBack()
       content = (
@@ -155,7 +150,6 @@ export const Login = ({
           onAttemptSuccess={onAttemptSuccess}
           setServiceUrl={setServiceUrl}
           onPressBack={goBack}
-          onPressForgotPassword={onPressForgotPassword}
           onPressRetryConnect={() => void refetchService()}
           onPressCreateAccount={onPressCreateAccount}
         />

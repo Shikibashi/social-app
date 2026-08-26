@@ -1,4 +1,4 @@
-import {MMKV} from 'react-native-mmkv'
+import {createMMKV} from 'react-native-mmkv'
 import {setPolyfills} from '@growthbook/growthbook'
 import {GrowthBook} from '@growthbook/growthbook-react'
 import {type I18n} from '@lingui/core'
@@ -12,7 +12,7 @@ import * as env from '#/env'
 export {Features} from '#/analytics/features/types'
 
 const logger = Logger.create(Logger.Context.Growthbook)
-const CACHE = new MMKV({id: 'bsky_features_cache'})
+const CACHE = createMMKV({id: 'bsky_features_cache'})
 
 const BETA_USER_ATTRIBUTE = 'isBetaUser'
 

@@ -1,9 +1,8 @@
 import {useRef, useState} from 'react'
 import {Keyboard, type TextInput, View} from 'react-native'
-import {LexAuthFactorError} from '@atproto/lex-password-session'
 import {Trans, useLingui} from '@lingui/react/macro'
 
-import {DEFAULT_SERVICE, HITSLOP_10, HITSLOP_20} from '#/lib/constants'
+import {DEFAULT_SERVICE} from '#/lib/constants'
 import {useRequestNotificationsPermission} from '#/lib/notifications/notifications'
 import {cleanError, isNetworkError} from '#/lib/strings/errors'
 import {createFullHandle} from '#/lib/strings/handles'
@@ -16,7 +15,7 @@ import {
 } from '#/state/queries/pds-detection'
 import {useSession, useSessionApi} from '#/state/session'
 import {useLoggedOutViewControls} from '#/state/shell/logged-out'
-import {atoms as a, native, tokens, useBreakpoints, useTheme} from '#/alf'
+import {atoms as a, native, useBreakpoints, useTheme} from '#/alf'
 import * as Admonition from '#/components/Admonition'
 import {Button, ButtonIcon, ButtonText} from '#/components/Button'
 import {useDialogControl} from '#/components/Dialog'
@@ -24,14 +23,10 @@ import * as TextField from '#/components/forms/TextField'
 import {At_Stroke2_Corner0_Rounded as AtIcon} from '#/components/icons/At'
 import {TinyChevronBottom_Stroke2_Corner0_Rounded as TinyChevronIcon} from '#/components/icons/Chevron'
 import {Envelope_Stroke2_Corner0_Rounded as EmailIcon} from '#/components/icons/Envelope'
-import {Eye_Stroke2_Corner0_Rounded as EyeIcon} from '#/components/icons/Eye'
-import {EyeSlash_Stroke2_Corner0_Rounded as EyeSlashIcon} from '#/components/icons/EyeSlash'
-import {Lock_Stroke2_Corner0_Rounded as LockIcon} from '#/components/icons/Lock'
-import {Ticket_Stroke2_Corner0_Rounded as TicketIcon} from '#/components/icons/Ticket'
 import {createStaticClick, InlineLinkText} from '#/components/Link'
 import {Loader} from '#/components/Loader'
 import {Text} from '#/components/Typography'
-import {IS_IOS, IS_NATIVE} from '#/env'
+import {IS_NATIVE} from '#/env'
 import {type com} from '#/lexicons'
 import {ConfirmHostingProviderDialog} from './components/ConfirmHostingProviderDialog'
 import {HostingProviderDialog} from './components/HostingProviderDialog'
@@ -39,6 +34,10 @@ import {FormContainer} from './FormContainer'
 
 type ServiceDescription = com.atproto.server.describeServer.$OutputBody
 
+/**
+ * The login surface is deliberately OAuth-only. Credential collection happens
+ * in the PDS authorization UI opened by the official ATProto OAuth client.
+ */
 export const LoginForm = ({
   error,
   serviceUrl,
@@ -48,7 +47,6 @@ export const LoginForm = ({
   setServiceUrl,
   onPressRetryConnect,
   onPressBack,
-  onPressForgotPassword,
   onAttemptSuccess,
   onAttemptFailed,
   onPressCreateAccount,
@@ -61,28 +59,18 @@ export const LoginForm = ({
   setServiceUrl: (v: string) => void
   onPressRetryConnect: () => void
   onPressBack: () => void
-  onPressForgotPassword: () => void
   onAttemptSuccess: () => void
   onAttemptFailed: () => void
   onPressCreateAccount: () => void
 }) => {
   const t = useTheme()
   const [isProcessing, setIsProcessing] = useState(false)
-  const [errorField, setErrorField] = useState<
-    'none' | 'identifier' | 'password' | '2fa'
-  >('none')
-  const [isAuthFactorTokenNeeded, setIsAuthFactorTokenNeeded] = useState(false)
+  const [errorField, setErrorField] = useState<'none' | 'identifier'>('none')
   const [showResolveError, setShowResolveError] = useState(false)
   const identifierValueRef = useRef(initialHandle || '')
-  const passwordValueRef = useRef('')
+  const identifierRef = useRef<TextInput>(null)
   const [identifier, setIdentifier] = useState(initialHandle || '')
   const [identifierFocused, setIdentifierFocused] = useState(false)
-  const [authFactorToken, setAuthFactorToken] = useState('')
-  const identifierRef = useRef<TextInput>(null)
-  const passwordRef = useRef<TextInput>(null)
-  const hasFocusedOnce = useRef(false)
-  const [hasPassword, setHasPassword] = useState(false)
-  const [revealPassword, setRevealPassword] = useState(false)
   const {t: l} = useLingui()
   const {login} = useSessionApi()
   const {accounts} = useSession()
@@ -94,7 +82,6 @@ export const LoginForm = ({
   const [pendingLogin, setPendingLogin] = useState<{
     service: string
     fullIdent: string
-    passwordLength: number
   } | null>(null)
   const hostingProvider = useHostingProvider({
     identifier,
@@ -102,37 +89,13 @@ export const LoginForm = ({
   })
   const {gtMobile} = useBreakpoints()
 
-  /*
-   * Surface an inline error on the username field only once detection has
-   * settled on an unresolvable identifier and the user has moved on from the
-   * field. Hidden while focused so we don't nag mid-type, and it clears
-   * automatically when the identifier resolves or an override is set (both
-   * move `state.status` away from 'unresolved').
-   */
   const showUnresolvedError =
     hostingProvider.state.status === 'unresolved' && !identifierFocused
 
-  /**
-   * Performs the actual login attempt against a resolved service. Reads the
-   * password and 2FA token from the current form state, and manages
-   * `setIsProcessing` itself: it stays processing on success (the app
-   * transitions away) and clears it on any failure.
-   */
   const attemptLogin = async (service: string, fullIdent: string) => {
-    const password = passwordValueRef.current
     setIsProcessing(true)
-
     try {
-      // TODO remove double login
-      await login(
-        {
-          service,
-          identifier: fullIdent,
-          password,
-          authFactorToken: authFactorToken.trim(),
-        },
-        'LoginForm',
-      )
+      await login({service, identifier: fullIdent}, 'LoginForm')
       onAttemptSuccess()
       setShowLoggedOut(false)
       setHasCheckedForStarterPack(true)
@@ -140,39 +103,17 @@ export const LoginForm = ({
     } catch (err) {
       const errMsg = String(err)
       setIsProcessing(false)
-      /*
-       * `LexAuthFactorError` is what `PasswordSession.login` throws when the
-       * server demands an email 2FA token.
-       */
-      if (err instanceof LexAuthFactorError) {
-        setIsAuthFactorTokenNeeded(true)
+      onAttemptFailed()
+      if (isNetworkError(err)) {
+        logger.warn('Failed to start OAuth login due to network error', {
+          error: errMsg,
+        })
+        setError(
+          l`Unable to contact your service. Please check your Internet connection.`,
+        )
       } else {
-        onAttemptFailed()
-        if (errMsg.includes('Token is invalid')) {
-          logger.debug('Failed to login due to invalid 2fa token', {
-            error: errMsg,
-          })
-          setError(l`Invalid 2FA confirmation code.`)
-          setErrorField('2fa')
-        } else if (
-          errMsg.includes('Authentication Required') ||
-          errMsg.includes('Invalid identifier or password')
-        ) {
-          logger.debug('Failed to login due to invalid credentials', {
-            error: errMsg,
-          })
-          setError(l`Incorrect username or password`)
-        } else if (isNetworkError(err)) {
-          logger.warn('Failed to login due to network error', {error: errMsg})
-          setError(
-            l`Unable to contact your service. Please check your Internet connection.`,
-          )
-        } else {
-          logger.warn('Failed to login', {error: errMsg})
-          /* the error object, not its stringification: cleanError only
-           * extracts the clean server message from a live LexError */
-          setError(cleanError(err))
-        }
+        logger.warn('Failed to start OAuth login', {error: errMsg})
+        setError(cleanError(err))
       }
     }
   }
@@ -184,58 +125,38 @@ export const LoginForm = ({
     setErrorField('none')
     setShowResolveError(false)
 
-    const identifier = identifierValueRef.current.toLowerCase().trim()
-    const password = passwordValueRef.current
-
-    if (!identifier) {
+    const enteredIdentifier = identifierValueRef.current.toLowerCase().trim()
+    if (!enteredIdentifier) {
       setError(l`Please enter your username`)
       setErrorField('identifier')
       return
     }
 
-    if (!password) {
-      setError(l`Please enter your password`)
-      setErrorField('password')
-      return
-    }
-
     setIsProcessing(true)
-
-    // try to guess the handle if the user just gave their own username
-    let fullIdent = identifier
+    let fullIdent = enteredIdentifier
     if (
-      !identifier.includes('@') && // not an email
-      !identifier.includes('.') && // not a domain
-      !identifier.startsWith('did:') && // not a DID
+      !enteredIdentifier.includes('@') &&
+      !enteredIdentifier.includes('.') &&
+      !enteredIdentifier.startsWith('did:') &&
       serviceDescription &&
       serviceDescription.availableUserDomains.length > 0
     ) {
-      let matched = false
-      for (const domain of serviceDescription.availableUserDomains) {
-        if (fullIdent.endsWith(domain)) {
-          matched = true
-        }
-      }
+      const matched = serviceDescription.availableUserDomains.some(domain =>
+        fullIdent.endsWith(domain),
+      )
       if (!matched) {
         fullIdent = createFullHandle(
-          identifier,
+          enteredIdentifier,
           serviceDescription.availableUserDomains[0],
         )
       }
     }
 
-    /*
-     * Await autodetection against the current identifier before logging in.
-     * If detection is still in flight this waits for it (bypassing the
-     * debounce); otherwise it resolves near-instantly from cache. Falls back
-     * to the default service on anything unresolvable, but a network error
-     * throws - in that case we must NOT log in, since we can't be sure which
-     * server to send the password to.
-     */
     let service: string
     let did: string | null
     try {
-      ;({service, did} = await hostingProvider.resolveService(identifier))
+      ;({service, did} =
+        await hostingProvider.resolveService(enteredIdentifier))
     } catch (err) {
       logger.debug('Failed to resolve hosting provider', {error: String(err)})
       setIsProcessing(false)
@@ -243,17 +164,6 @@ export const LoginForm = ({
       return
     }
 
-    /*
-     * If detection landed on a non-Bluesky server, confirm before sending the
-     * password, to guard against typosquatted handles capturing credentials. A
-     * manual override is skipped: choosing a server by hand is explicit user
-     * consent, so only auto-detected hosts need the guard. An identity the
-     * user has signed into on this device before is also trusted: a
-     * typosquatted handle would resolve to the attacker's different DID, so
-     * DID membership in the account list is the correct skip condition
-     * (handles and hosts are not stable keys - service URLs drift and pdsUrl
-     * is often unset).
-     */
     const isKnownAccount =
       did != null && accounts.some(account => account.did === did)
     const needsConfirmation =
@@ -263,7 +173,7 @@ export const LoginForm = ({
 
     if (needsConfirmation) {
       setIsProcessing(false)
-      setPendingLogin({service, fullIdent, passwordLength: password.length})
+      setPendingLogin({service, fullIdent})
       confirmHostingProviderControl.open()
       return
     }
@@ -294,7 +204,6 @@ export const LoginForm = ({
         control={confirmHostingProviderControl}
         host={toNiceHostingUrl(pendingLogin?.service ?? '')}
         identifier={pendingLogin?.fullIdent ?? ''}
-        passwordLength={pendingLogin?.passwordLength ?? 0}
         onConfirm={() => {
           if (pendingLogin) {
             void attemptLogin(pendingLogin.service, pendingLogin.fullIdent)
@@ -303,7 +212,7 @@ export const LoginForm = ({
       />
       <View>
         <TextField.LabelText>
-          <Trans>Username or email</Trans>
+          <Trans>Username, email, or DID</Trans>
         </TextField.LabelText>
         <TextField.Root
           isInvalid={errorField === 'identifier' || showUnresolvedError}>
@@ -313,29 +222,27 @@ export const LoginForm = ({
           <TextField.Input
             testID="loginUsernameInput"
             inputRef={identifierRef}
-            label={l`Username or email address`}
+            label={l`Username, email, or DID`}
             placeholder={null}
             autoCapitalize="none"
-            autoFocus={!IS_IOS && !initialHandle}
+            autoFocus={!initialHandle}
             autoCorrect={false}
             autoComplete="username"
-            returnKeyType="next"
+            returnKeyType="go"
             textContentType="username"
             defaultValue={initialHandle || ''}
-            onChangeText={v => {
-              identifierValueRef.current = v
-              setIdentifier(v)
+            onChangeText={value => {
+              identifierValueRef.current = value
+              setIdentifier(value)
               if (errorField) setErrorField('none')
               if (showResolveError) setShowResolveError(false)
             }}
             onFocus={() => setIdentifierFocused(true)}
             onBlur={() => setIdentifierFocused(false)}
-            onSubmitEditing={() => {
-              passwordRef.current?.focus()
-            }}
-            blurOnSubmit={false} // prevents flickering due to onSubmitEditing going to next field
+            onSubmitEditing={() => void onPressNext()}
+            blurOnSubmit={false}
             editable={!isProcessing}
-            accessibilityHint={l`Enter the username or email address you used when you created your account`}
+            accessibilityHint={l`Enter the identity you use with your hosting provider`}
           />
         </TextField.Root>
         {showUnresolvedError && (
@@ -347,8 +254,7 @@ export const LoginForm = ({
               {color: t.palette.negative_500},
             ]}>
             <Trans>
-              We couldn't find an account with that username. Please check that
-              you've typed it correctly, or{' '}
+              We couldn't find that account. Check the identity, or{' '}
               <InlineLinkText
                 label={l`set your hosting provider manually`}
                 style={[a.text_sm, a.leading_snug]}
@@ -361,118 +267,13 @@ export const LoginForm = ({
         )}
       </View>
 
-      <View>
-        <TextField.LabelText>
-          <Trans>Password</Trans>
-        </TextField.LabelText>
-        <TextField.Root isInvalid={errorField === 'password'}>
-          <TextField.Icon icon={LockIcon} />
-          <TextField.Input
-            testID="loginPasswordInput"
-            inputRef={passwordRef}
-            label={l`Password`}
-            placeholder={null}
-            autoCapitalize="none"
-            autoFocus={!IS_IOS && !!initialHandle}
-            autoCorrect={false}
-            autoComplete="current-password"
-            returnKeyType="done"
-            enablesReturnKeyAutomatically={true}
-            secureTextEntry={!revealPassword}
-            onChangeText={v => {
-              passwordValueRef.current = v
-              if (errorField) setErrorField('none')
-              setHasPassword(!!v)
-            }}
-            onSubmitEditing={() => void onPressNext()}
-            blurOnSubmit={false} // HACK: https://github.com/facebook/react-native/issues/21911#issuecomment-558343069 Keyboard blur behavior is now handled in onSubmitEditing
-            editable={!isProcessing}
-            accessibilityHint={l`Enter your password`}
-            onLayout={
-              IS_IOS
-                ? () => {
-                    if (hasFocusedOnce.current) return
-                    hasFocusedOnce.current = true
-                    // kinda dumb, but if we use `autoFocus` to focus an
-                    // input, it happens before the password input gets
-                    // rendered. this breaks the password autofill on iOS (it
-                    // only does the username part). delaying it until both
-                    // inputs are rendered fixes the autofill. when a handle is
-                    // prefilled we focus the password field directly so the
-                    // user can go straight to typing it -sfn
-                    if (initialHandle) {
-                      passwordRef.current?.focus()
-                    } else {
-                      identifierRef.current?.focus()
-                    }
-                  }
-                : undefined
-            }
-            hitSlop={{...HITSLOP_20, right: 0}}
-          />
-          <RevealPasswordButton
-            active={revealPassword}
-            hasPassword={hasPassword}
-            onPress={() => setRevealPassword(r => !r)}
-          />
-        </TextField.Root>
+      <Text style={[a.text_sm, a.leading_snug, t.atoms.text_contrast_medium]}>
+        <Trans>
+          Your hosting provider will ask you to authorize this app. Your
+          password stays with that provider.
+        </Trans>
+      </Text>
 
-        {!isAuthFactorTokenNeeded && (
-          <Button
-            label={l`Forgot password?`}
-            accessibilityHint={l`Reset your password by sending a code to your email`}
-            style={[a.mt_md, a.self_start]}
-            hoverStyle={{opacity: 0.5}}
-            hitSlop={HITSLOP_10}
-            onPress={onPressForgotPassword}>
-            <ButtonText style={[t.atoms.text_contrast_medium]}>
-              <Trans>Forgot password?</Trans>
-            </ButtonText>
-          </Button>
-        )}
-      </View>
-      {isAuthFactorTokenNeeded && (
-        <View>
-          <TextField.LabelText>
-            <Trans>2FA Confirmation</Trans>
-          </TextField.LabelText>
-          <TextField.Root isInvalid={errorField === '2fa'}>
-            <TextField.Icon icon={TicketIcon} />
-            <TextField.Input
-              testID="loginAuthFactorTokenInput"
-              label={l`Confirmation code`}
-              autoCapitalize="none"
-              autoFocus
-              autoCorrect={false}
-              autoComplete="one-time-code"
-              returnKeyType="done"
-              blurOnSubmit={false} // prevents flickering due to onSubmitEditing going to next field
-              value={authFactorToken} // controlled input due to uncontrolled input not receiving pasted values properly
-              onChangeText={text => {
-                setAuthFactorToken(text)
-                if (errorField) setErrorField('none')
-              }}
-              onSubmitEditing={() => void onPressNext()}
-              editable={!isProcessing}
-              accessibilityHint={l`Input the code which has been emailed to you`}
-              style={{
-                textTransform: authFactorToken === '' ? 'none' : 'uppercase',
-              }}
-            />
-          </TextField.Root>
-          <Text style={[a.text_sm, t.atoms.text_contrast_medium, a.mt_sm]}>
-            <Trans>
-              Check your email for a sign in code and enter it here.
-            </Trans>
-          </Text>
-        </View>
-      )}
-
-      {/*
-       * At most one error is visible at a time. The inline username error
-       * (under the field) wins; otherwise the resolution-failure error takes
-       * precedence over the generic form error.
-       */}
       {!showUnresolvedError &&
         (showResolveError ? (
           <Admonition.Outer type="error">
@@ -517,7 +318,6 @@ export const LoginForm = ({
                 <Trans>Back</Trans>
               </ButtonText>
             </Button>
-
             <View style={[a.flex_shrink, a.justify_center, a.ml_auto]}>
               <HostingProviderIndicator
                 state={hostingProvider.state}
@@ -530,7 +330,6 @@ export const LoginForm = ({
           <Button
             testID="loginRetryButton"
             label={l`Retry`}
-            accessibilityHint={l`Retries signing in`}
             color="primary_subtle"
             size="large"
             onPress={onPressRetryConnect}>
@@ -552,13 +351,12 @@ export const LoginForm = ({
         ) : (
           <Button
             testID="loginNextButton"
-            label={l`Sign in`}
-            accessibilityHint={l`Navigates to the next screen`}
+            label={l`Continue with OAuth`}
             color="primary"
             size="large"
             onPress={() => void onPressNext()}>
             <ButtonText>
-              <Trans>Sign in</Trans>
+              <Trans>Continue with OAuth</Trans>
             </ButtonText>
             {isProcessing && <ButtonIcon icon={Loader} />}
           </Button>
@@ -572,7 +370,7 @@ export const LoginForm = ({
             <InlineLinkText
               label={l`Sign up`}
               style={[a.text_md, native(a.text_center)]}
-              {...createStaticClick(() => onPressCreateAccount())}>
+              {...createStaticClick(onPressCreateAccount)}>
               Sign up
             </InlineLinkText>
           </Trans>
@@ -586,50 +384,6 @@ export const LoginForm = ({
         />
       )}
     </FormContainer>
-  )
-}
-
-function RevealPasswordButton({
-  active,
-  hasPassword,
-  onPress,
-}: {
-  active: boolean
-  hasPassword: boolean
-  onPress: () => void
-}) {
-  const t = useTheme()
-  const {t: l} = useLingui()
-  const context = TextField.useTextFieldContext()
-
-  /*
-   * The icon shows the action the button performs, not the current state: an
-   * open eye when the password is hidden (tap to reveal), a crossed-out eye
-   * when it is visible (tap to hide).
-   */
-  const Icon = active ? EyeSlashIcon : EyeIcon
-
-  if (!hasPassword && !context.focused) return null
-
-  return (
-    <View style={[a.z_10, a.pl_sm, {marginRight: tokens.space.xs * -1}]}>
-      <Button
-        testID="showPasswordButton"
-        onPress={onPress}
-        label={active ? l`Hide password` : l`Reveal password`}
-        color="secondary"
-        size="small"
-        shape="round"
-        style={[a.bg_transparent]}
-        hitSlop={tokens.space.sm}>
-        <Icon
-          size="md"
-          style={[
-            context.focused ? t.atoms.text : t.atoms.text_contrast_medium,
-          ]}
-        />
-      </Button>
-    </View>
   )
 }
 

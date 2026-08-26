@@ -1,0 +1,34 @@
+{
+  "lexicon": 1,
+  "id": "us.edriffles.radlib.private.respondCommunityJoin",
+  "defs": {
+    "main": {
+      "type": "procedure",
+      "description": "Approve or deny a community join request. Only the community owner may respond.",
+      "input": {
+        "encoding": "application/json",
+        "schema": {
+          "type": "object",
+          "required": ["space", "requester", "approve"],
+          "properties": {
+            "space": { "type": "string" },
+            "requester": { "type": "string", "format": "did" },
+            "approve": { "type": "boolean" }
+          }
+        }
+      },
+      "output": {
+        "encoding": "application/json",
+        "schema": {
+          "type": "object",
+          "required": ["space", "requester", "state"],
+          "properties": {
+            "space": { "type": "string" },
+            "requester": { "type": "string", "format": "did" },
+            "state": { "type": "string", "knownValues": ["requested", "approved", "denied", "removed", "banned"] }
+          }
+        }
+      }
+    }
+  }
+}

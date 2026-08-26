@@ -6,22 +6,20 @@ import {atoms as a, native, useTheme, web} from '#/alf'
 import {Button, ButtonText} from '#/components/Button'
 import * as Dialog from '#/components/Dialog'
 import {Globe_Stroke2_Corner0_Rounded as GlobeIcon} from '#/components/icons/Globe'
-import {Key_Stroke2_Corner2_Rounded as KeyIcon} from '#/components/icons/Key'
 import {Person_Stroke2_Corner0_Rounded as PersonIcon} from '#/components/icons/Person'
 import {Text} from '#/components/Typography'
 
 /**
  * Confirmation gate shown before signing in to an auto-detected third-party
  * hosting provider. When a typed handle resolves to a non-Bluesky PDS, this
- * dialog exists to prevent typosquatting credential capture: it makes the user
- * explicitly acknowledge that their password will be sent to that server before
- * we send it, rather than silently trusting whatever host detection returned.
+ * dialog exists to prevent typosquatting authorization capture: it makes the
+ * user explicitly acknowledge the provider before an OAuth request is opened,
+ * rather than silently trusting whatever host detection returned.
  */
 export function ConfirmHostingProviderDialog({
   control,
   host,
   identifier,
-  passwordLength,
   onConfirm,
 }: {
   control: Dialog.DialogOuterProps['control']
@@ -29,22 +27,12 @@ export function ConfirmHostingProviderDialog({
   host: string
   /** The full handle (or DID) being signed in. */
   identifier: string
-  /**
-   * The length of the typed password, used to render a masked placeholder in
-   * the summary card. The password itself is deliberately never passed in.
-   */
-  passwordLength: number
   onConfirm: () => void
 }) {
   return (
     <Dialog.Outer control={control} nativeOptions={{preventExpansion: true}}>
       <Dialog.Handle />
-      <DialogInner
-        host={host}
-        identifier={identifier}
-        passwordLength={passwordLength}
-        onConfirm={onConfirm}
-      />
+      <DialogInner host={host} identifier={identifier} onConfirm={onConfirm} />
     </Dialog.Outer>
   )
 }
@@ -52,12 +40,10 @@ export function ConfirmHostingProviderDialog({
 function DialogInner({
   host,
   identifier,
-  passwordLength,
   onConfirm,
 }: {
   host: string
   identifier: string
-  passwordLength: number
   onConfirm: () => void
 }) {
   const control = Dialog.useDialogContext()
@@ -78,7 +64,7 @@ function DialogInner({
 
         <Text nativeID="dialog-description" style={[a.text_md, a.leading_snug]}>
           <Trans>
-            Your username and password will be shared with{' '}
+            Your identity and an OAuth authorization request will be sent to{' '}
             <Text style={[a.text_md, a.leading_snug, a.font_bold]}>{host}</Text>
             . If you don’t recognize this provider, double-check your username.
           </Trans>
@@ -101,11 +87,6 @@ function DialogInner({
               type: 'identifier',
               icon: PersonIcon,
               value: identifier,
-            },
-            {
-              type: 'password',
-              icon: KeyIcon,
-              value: '•'.repeat(passwordLength),
             },
           ].map((c, i) => (
             <Fragment key={c.type}>

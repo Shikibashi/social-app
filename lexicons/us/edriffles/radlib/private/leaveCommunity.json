@@ -1,0 +1,29 @@
+{
+  "lexicon": 1,
+  "id": "us.edriffles.radlib.private.leaveCommunity",
+  "defs": {
+    "main": {
+      "type": "procedure",
+      "description": "Leave a community without altering the user's public identity or public follows.",
+      "input": {
+        "encoding": "application/json",
+        "schema": {
+          "type": "object",
+          "required": ["space"],
+          "properties": { "space": { "type": "string" } }
+        }
+      },
+      "output": {
+        "encoding": "application/json",
+        "schema": {
+          "type": "object",
+          "required": ["space", "state"],
+          "properties": {
+            "space": { "type": "string" },
+            "state": { "type": "string", "knownValues": ["requested", "approved", "denied", "removed", "banned"] }
+          }
+        }
+      }
+    }
+  }
+}

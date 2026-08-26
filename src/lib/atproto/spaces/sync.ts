@@ -1,6 +1,11 @@
 import AsyncStorage from '@react-native-async-storage/async-storage'
 
-import {type SpaceRepoOp, type SpacesClient} from './client'
+import {
+  assertDid,
+  assertSpaceRef,
+  type SpaceRepoOp,
+  type SpacesClient,
+} from './client'
 
 const STORAGE_PREFIX = '@radlib/spaces-alpha/cursor/'
 const PAGE_SIZE = 100
@@ -11,6 +16,27 @@ export type SpaceSyncCursor = {
   rev?: string
   cursor?: string
 }
+
+export type SpaceSyncStatus =
+  | 'synchronized'
+  | 'in-progress'
+  | 'desynchronized'
+  | 'authorization-revoked'
+  | 'recoverable-error'
+
+export type SpaceSyncState = SpaceSyncCursor & {
+  status: SpaceSyncStatus
+  error?: string
+  updatedAt: string
+}
+
+const SPACE_SYNC_STATUSES: readonly SpaceSyncStatus[] = [
+  'synchronized',
+  'in-progress',
+  'desynchronized',
+  'authorization-revoked',
+  'recoverable-error',
+]
 
 export type SpaceSyncSink = {
   apply: (input: {
@@ -32,9 +58,8 @@ export class SpaceSyncCursorStore {
     const raw = await AsyncStorage.getItem(cursorKey(space, repo))
     if (!raw) return undefined
     try {
-      const value = JSON.parse(raw) as SpaceSyncCursor
-      if (value.space !== space || value.repo !== repo) return undefined
-      return value
+      const value: unknown = JSON.parse(raw)
+      return isSpaceSyncCursor(value, space, repo) ? value : undefined
     } catch {
       return undefined
     }
@@ -49,7 +74,64 @@ export class SpaceSyncCursorStore {
 
   async delete(space: string, repo: string): Promise<void> {
     await AsyncStorage.removeItem(cursorKey(space, repo))
+    await AsyncStorage.removeItem(stateKey(space, repo))
   }
+
+  async getState(
+    space: string,
+    repo: string,
+  ): Promise<SpaceSyncState | undefined> {
+    const raw = await AsyncStorage.getItem(stateKey(space, repo))
+    if (!raw) return undefined
+    try {
+      const value: unknown = JSON.parse(raw)
+      return isSpaceSyncState(value, space, repo) ? value : undefined
+    } catch {
+      return undefined
+    }
+  }
+
+  async setState(state: SpaceSyncState): Promise<void> {
+    await AsyncStorage.setItem(
+      stateKey(state.space, state.repo),
+      JSON.stringify(state),
+    )
+  }
+}
+
+function isSpaceSyncCursor(
+  value: unknown,
+  space: string,
+  repo: string,
+): value is SpaceSyncCursor {
+  if (!value || typeof value !== 'object') return false
+  const candidate = value as Record<string, unknown>
+  try {
+    assertSpaceRef(space)
+    assertDid(repo)
+  } catch {
+    return false
+  }
+  return (
+    candidate.space === space &&
+    candidate.repo === repo &&
+    (candidate.rev === undefined || typeof candidate.rev === 'string') &&
+    (candidate.cursor === undefined || typeof candidate.cursor === 'string')
+  )
+}
+
+function isSpaceSyncState(
+  value: unknown,
+  space: string,
+  repo: string,
+): value is SpaceSyncState {
+  if (!isSpaceSyncCursor(value, space, repo)) return false
+  const candidate = value as Record<string, unknown>
+  return (
+    typeof candidate.updatedAt === 'string' &&
+    SPACE_SYNC_STATUSES.includes(candidate.status as SpaceSyncStatus) &&
+    (candidate.error === undefined || typeof candidate.error === 'string')
+  )
 }
 
 /**
@@ -65,33 +147,59 @@ export async function reconcileSpaceRepo(
   input: {space: string; repo: string},
 ): Promise<SpaceSyncCursor> {
   const saved = await cursorStore.get(input.space, input.repo)
+  await cursorStore.setState({
+    ...saved,
+    space: input.space,
+    repo: input.repo,
+    status: 'in-progress',
+    updatedAt: new Date().toISOString(),
+  })
   let cursor: string | undefined = saved?.cursor
   let rev: string | undefined = saved?.rev
 
-  while (true) {
-    const page = await reader.listRepoOps({
-      space: input.space,
-      repo: input.repo,
-      since: rev,
-      cursor,
-      limit: PAGE_SIZE,
-    })
-    if (page.ops.length) {
-      await sink.apply({
+  try {
+    while (true) {
+      const page = await reader.listRepoOps({
         space: input.space,
         repo: input.repo,
-        ops: page.ops,
+        since: rev,
+        cursor,
+        limit: PAGE_SIZE,
       })
-      rev = page.ops.at(-1)?.rev ?? rev
+      if (page.ops.length) {
+        await sink.apply({
+          space: input.space,
+          repo: input.repo,
+          ops: page.ops,
+        })
+        rev = page.ops.at(-1)?.rev ?? rev
+      }
+      if (!page.cursor) {
+        cursor = undefined
+        break
+      }
+      if (page.cursor === cursor) {
+        throw new Error('PDS returned a repeating Space oplog cursor')
+      }
+      cursor = page.cursor
     }
-    if (!page.cursor) {
-      cursor = undefined
-      break
-    }
-    if (page.cursor === cursor) {
-      throw new Error('PDS returned a repeating Space oplog cursor')
-    }
-    cursor = page.cursor
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error)
+    await cursorStore.setState({
+      space: input.space,
+      repo: input.repo,
+      ...(rev ? {rev} : {}),
+      ...(cursor ? {cursor} : {}),
+      status:
+        message.includes('401') || message.includes('403')
+          ? 'authorization-revoked'
+          : message.includes('gap')
+            ? 'desynchronized'
+            : 'recoverable-error',
+      error: message,
+      updatedAt: new Date().toISOString(),
+    })
+    throw error
   }
 
   const next = {
@@ -101,9 +209,18 @@ export async function reconcileSpaceRepo(
     ...(cursor ? {cursor} : {}),
   }
   await cursorStore.set(next)
+  await cursorStore.setState({
+    ...next,
+    status: 'synchronized',
+    updatedAt: new Date().toISOString(),
+  })
   return next
 }
 
 function cursorKey(space: string, repo: string): string {
   return `${STORAGE_PREFIX}${encodeURIComponent(space)}:${encodeURIComponent(repo)}`
+}
+
+function stateKey(space: string, repo: string): string {
+  return `${STORAGE_PREFIX}state/${encodeURIComponent(space)}:${encodeURIComponent(repo)}`
 }

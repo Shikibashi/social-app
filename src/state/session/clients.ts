@@ -1,5 +1,4 @@
 import {type Agent, type Client} from '@atproto/lex'
-import {type PasswordSession} from '@atproto/lex-password-session'
 
 import {APPVIEW_ENDPOINT, CHAT_PROXY_SERVICE} from '#/lib/constants'
 import {createLexClient} from '#/lib/lexClient'
@@ -7,6 +6,7 @@ import {serviceBoundaryError} from '#/lib/service-boundary'
 import {getCachedIsBetaUser} from '#/state/preferences/beta-user-cache'
 import {networkAwareFetch} from './network'
 import {type AppViewProvider, DEFAULT_APPVIEW_PROVIDER} from './providers'
+import {type SessionTransport} from './session-core'
 
 const IS_BETA_USER_HEADER = 'X-Bsky-Is-Beta-User'
 
@@ -121,14 +121,14 @@ export function buildChatClient(agent: Agent): Client {
  * Wrap a session so requests resolve against a known PDS while auth and refresh
  * stay with the session.
  *
- * This exists for the pre-didDoc window. `PasswordSession` resolves each request
+ * This exists for the pre-didDoc window. The OAuth session resolves each request
  * against `extractPdsUrl(didDoc) ?? service`, so before a refresh has delivered
  * a didDoc it falls back to the login service - which for an entryway account
  * (`service: bsky.social`, PDS elsewhere) is the wrong host. The synchronous
  * resume fast path makes no network request at all, so that window covers every
  * request of a cold start until something triggers a refresh.
  *
- * Absolutizing here is enough because `PasswordSession.fetchHandler` builds its
+ * Absolutizing here is enough because the OAuth fetch handler builds its
  * URL with `new URL(path, base)`, which ignores the base for an already-absolute
  * input. So an absolute URL passes through untouched, and the session's own
  * didDoc routing still wins for any client built directly over it.
@@ -139,7 +139,7 @@ export function buildChatClient(agent: Agent): Client {
  * next cold start persists (and therefore pins) the new endpoint.
  */
 export function routeSessionToPds(
-  session: PasswordSession,
+  session: SessionTransport,
   pdsUrl: string,
 ): Agent {
   return {
@@ -148,11 +148,14 @@ export function routeSessionToPds(
     },
     async fetchHandler(path, init) {
       const absolutePath = new URL(path, pdsUrl).href
-      const response = await session.fetchHandler(absolutePath, init)
+      const response = await session.fetchHandler(
+        absolutePath as `/${string}`,
+        init ?? {},
+      )
 
       /*
        * A repository migration can leave a still-live entryway session with
-       * an access token the new PDS no longer accepts. PasswordSession retries
+       * an access token the new PDS no longer accepts. The OAuth adapter retries
        * ExpiredToken, but PDS migrations commonly surface InvalidToken or
        * AuthMissing instead. Refresh once through the login service and replay
        * only body-less reads; writes must never be replayed implicitly because
@@ -165,12 +168,12 @@ export function routeSessionToPds(
         return response
       }
 
-      const previousAccessJwt = session.session.accessJwt
+      const previousSession = session.session
       const refreshed = await session.refresh().catch(() => undefined)
-      if (!refreshed || refreshed.accessJwt === previousAccessJwt) {
+      if (!refreshed || refreshed === previousSession) {
         return response
       }
-      return session.fetchHandler(absolutePath, init)
+      return session.fetchHandler(absolutePath as `/${string}`, init ?? {})
     },
   }
 }

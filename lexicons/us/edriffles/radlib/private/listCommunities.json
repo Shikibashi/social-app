@@ -1,0 +1,48 @@
+{
+  "lexicon": 1,
+  "id": "us.edriffles.radlib.private.listCommunities",
+  "defs": {
+    "main": {
+      "type": "query",
+      "description": "List community metadata visible to the authenticated viewer. This is Radlib discovery; Space membership and record authorization remain standard ATProto Spaces behavior.",
+      "parameters": {
+        "type": "params",
+        "properties": {
+          "limit": { "type": "integer", "minimum": 1, "maximum": 100, "default": 50 },
+          "cursor": { "type": "string" }
+        }
+      },
+      "output": {
+        "encoding": "application/json",
+        "schema": {
+          "type": "object",
+          "required": ["spaces"],
+          "properties": {
+            "cursor": { "type": "string" },
+            "spaces": {
+              "type": "array",
+              "items": {
+                "type": "ref",
+                "ref": "#community"
+              }
+            }
+          }
+        }
+      }
+    },
+    "community": {
+      "type": "object",
+      "required": ["uri", "authorityDid", "ownerDid", "kind", "createdAt"],
+      "properties": {
+        "uri": { "type": "string" },
+        "authorityDid": { "type": "string", "format": "did" },
+        "ownerDid": { "type": "string", "format": "did" },
+        "kind": { "type": "string", "knownValues": ["community"] },
+        "visibility": { "type": "string", "knownValues": ["public", "restricted", "invite-only", "private"] },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "createdAt": { "type": "string", "format": "datetime" }
+      }
+    }
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "lexicon": 1,
+  "id": "us.edriffles.radlib.moderation.getMigrationStatus",
+  "defs": {
+    "main": {
+      "type": "query",
+      "description": "Returns redacted migration status for the authenticated account. Fork-specific; not an AT Protocol standard.",
+      "output": {
+        "encoding": "application/json",
+        "schema": {
+          "type": "object",
+          "required": [
+            "did",
+            "receiptPresent",
+            "status",
+            "updatedAt",
+            "listblocksDiscovered",
+            "convertedToPrivateMute",
+            "deleted",
+            "failed",
+            "remainingListblocks",
+            "attestationRequired",
+            "attestedListCount"
+          ],
+          "properties": {
+            "did": { "type": "string", "format": "did" },
+            "receiptPresent": { "type": "boolean" },
+            "status": {
+              "type": "string",
+              "knownValues": ["clean", "legacy", "migrating", "failed"]
+            },
+            "updatedAt": { "type": "string", "format": "datetime" },
+            "listblocksDiscovered": { "type": "integer", "minimum": 0 },
+            "convertedToPrivateMute": { "type": "integer", "minimum": 0 },
+            "deleted": { "type": "integer", "minimum": 0 },
+            "failed": { "type": "integer", "minimum": 0 },
+            "remainingListblocks": { "type": "integer", "minimum": 0 },
+            "attestationRequired": { "type": "boolean" },
+            "attestedListCount": { "type": "integer", "minimum": 0 },
+            "attestationProviderDid": { "type": "string", "format": "did" },
+            "error": { "type": "string", "maxLength": 240 }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "lexicon": 1,
+  "id": "us.edriffles.radlib.private.deleteRecord",
+  "defs": {
+    "main": {
+      "type": "procedure",
+      "description": "Delete a record from a permissioned space. Deletion does not create a public repository event.",
+      "input": {
+        "encoding": "application/json",
+        "schema": {
+          "type": "object",
+          "required": ["space", "collection", "rkey"],
+          "properties": {
+            "space": { "type": "string" },
+            "collection": { "type": "string", "format": "nsid" },
+            "rkey": { "type": "string", "format": "record-key" }
+          }
+        }
+      },
+      "output": {
+        "encoding": "application/json",
+        "schema": {
+          "type": "object",
+          "required": ["deleted"],
+          "properties": { "deleted": { "type": "boolean" } }
+        }
+      }
+    }
+  }
+}

@@ -1,7 +1,6 @@
-import {type SessionData} from '@atproto/lex-password-session'
-
 import {type Schema} from '../persisted'
 import {type Action, type State} from './reducer'
+import {type SessionData} from './session-data'
 import {type AtpSessionEvent, type SessionAccount} from './types'
 
 type Reducer = (state: State, action: Action) => State
@@ -139,13 +138,23 @@ type Log =
   | {
       type: 'method:start'
       method:
-        'createAccount' | 'login' | 'logout' | 'resumeSession' | 'removeAccount'
+        | 'createAccount'
+        | 'initializeOAuthSession'
+        | 'login'
+        | 'logout'
+        | 'resumeSession'
+        | 'removeAccount'
       account?: RedactedAccount
     }
   | {
       type: 'method:end'
       method:
-        'createAccount' | 'login' | 'logout' | 'resumeSession' | 'removeAccount'
+        | 'createAccount'
+        | 'initializeOAuthSession'
+        | 'login'
+        | 'logout'
+        | 'resumeSession'
+        | 'removeAccount'
       account?: RedactedAccount
     }
   | {

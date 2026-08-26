@@ -1,5 +1,6 @@
 import {type PersistedAccount} from '#/state/persisted'
 import {type Metrics} from '#/analytics/metrics'
+import {type OAuthLoginInput} from './oauth-login-input'
 
 export type SessionAccount = PersistedAccount
 
@@ -13,6 +14,13 @@ export type SessionStateContext = {
 }
 
 export type SessionApiContext = {
+  /** Starts the provider-owned OAuth account-creation flow. */
+  signUp: (
+    props: {service: string},
+    metrics: Metrics['account:create:success'],
+  ) => Promise<void>
+  /** Initializes browser OAuth and adopts a callback/restored session. */
+  initializeOAuthSession: () => Promise<boolean>
   createAccount: (
     props: {
       service: string
@@ -27,12 +35,7 @@ export type SessionApiContext = {
     metrics: Metrics['account:create:success'],
   ) => Promise<void>
   login: (
-    props: {
-      service: string
-      identifier: string
-      password: string
-      authFactorToken?: string | undefined
-    },
+    props: OAuthLoginInput,
     logContext: Metrics['account:loggedIn']['logContext'],
   ) => Promise<void>
   logoutCurrentAccount: (
@@ -65,5 +68,8 @@ export type SessionApiContext = {
    * and `SignupQueued` branches synchronously on the fresh `accessJwt`.
    */
   refreshSession: () => Promise<SessionAccount | undefined>
-  switchAppViewProvider: (providerId: string, persist?: boolean) => Promise<void>
+  switchAppViewProvider: (
+    providerId: string,
+    persist?: boolean,
+  ) => Promise<void>
 }

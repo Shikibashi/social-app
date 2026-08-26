@@ -20,7 +20,7 @@ import {Button, ButtonText} from '#/components/Button'
 import * as Layout from '#/components/Layout'
 import {Text} from '#/components/Typography'
 import {LEGACY_RADLIB_PRIVATE_ENABLED, SPACES_ALPHA_ENABLED} from '#/env'
-import {org} from '#/lexicons'
+import {us} from '#/lexicons'
 
 type Props = NativeStackScreenProps<
   CommonNavigatorParams,
@@ -41,10 +41,10 @@ export function PermissionedSpacesSettingsScreen({}: Props) {
   const queryClient = useQueryClient()
   const accountQuery = useProtectedAccountQuery()
   const [space, setSpace] = useState('')
-  const [collection, setCollection] = useState('org.radlib.private.post')
+  const [collection, setCollection] = useState('us.edriffles.radlib.private.post')
   const [lookupRepo, setLookupRepo] = useState('')
   const [lookupCollection, setLookupCollection] = useState(
-    'org.radlib.private.post',
+    'us.edriffles.radlib.private.post',
   )
   const [lookupRkey, setLookupRkey] = useState('')
   const [lookupResult, setLookupResult] = useState<string>()
@@ -81,11 +81,11 @@ export function PermissionedSpacesSettingsScreen({}: Props) {
           },
           {
             space,
-            collection: collection.trim() || 'org.radlib.private.post',
+            collection: collection.trim() || 'us.edriffles.radlib.private.post',
           },
         )
       }
-      const legacy = await client.call(org.radlib.private.listRecords, {
+      const legacy = await client.call(us.edriffles.radlib.private.listRecords, {
         space,
         collection: collection.trim()
           ? (collection.trim() as NsidString)
@@ -100,7 +100,7 @@ export function PermissionedSpacesSettingsScreen({}: Props) {
     queryKey: ['radlib-private-communities', client.did],
     enabled: !!client.did && SPACES_ALPHA_ENABLED,
     queryFn: async () => {
-      return client.call(org.radlib.private.listCommunities, {limit: 50})
+      return client.call(us.edriffles.radlib.private.listCommunities, {limit: 50})
     },
   })
 
@@ -115,14 +115,14 @@ export function PermissionedSpacesSettingsScreen({}: Props) {
               client,
               selectedSpace,
               leave
-                ? org.radlib.private.leaveCommunity.$lxm
-                : org.radlib.private.joinCommunity.$lxm,
+                ? us.edriffles.radlib.private.leaveCommunity.$lxm
+                : us.edriffles.radlib.private.joinCommunity.$lxm,
             )
       return leave
-        ? controlClient.call(org.radlib.private.leaveCommunity, {
+        ? controlClient.call(us.edriffles.radlib.private.leaveCommunity, {
             space: selectedSpace,
           })
-        : controlClient.call(org.radlib.private.joinCommunity, {
+        : controlClient.call(us.edriffles.radlib.private.joinCommunity, {
             space: selectedSpace,
             inviteToken: inviteToken.trim() || undefined,
           })
@@ -152,7 +152,7 @@ export function PermissionedSpacesSettingsScreen({}: Props) {
           rkey: lookupRkey.trim(),
         })
       } else {
-        result = await client.call(org.radlib.private.getRecord, {
+        result = await client.call(us.edriffles.radlib.private.getRecord, {
           space: space.trim(),
           repo: lookupRepo.trim() as DidString,
           collection: lookupCollection.trim() as NsidString,
@@ -186,7 +186,7 @@ export function PermissionedSpacesSettingsScreen({}: Props) {
           cid: blobId.trim(),
         })
       } else {
-        result = await client.call(org.radlib.private.getBlob, {
+        result = await client.call(us.edriffles.radlib.private.getBlob, {
           space: space.trim(),
           id: blobId.trim(),
         })

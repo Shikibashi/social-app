@@ -89,7 +89,7 @@ describe('untrusted feed provider security', () => {
             {
               ...post,
               reason: {
-                $type: 'org.radlib.feed#reason',
+                $type: 'us.edriffles.radlib.feed#reason',
                 reasonMetadata: {label: 'freshness branch', score: '0.9'},
               },
             },
@@ -105,7 +105,7 @@ describe('untrusted feed provider security', () => {
             {
               ...post,
               reason: {
-                $type: 'org.radlib.feed#reason',
+                $type: 'us.edriffles.radlib.feed#reason',
                 reasonMetadata: {label: 42},
               },
             },
@@ -116,12 +116,12 @@ describe('untrusted feed provider security', () => {
     ).toThrow('reason')
     expect(
       publicProviderReason({
-        $type: 'org.radlib.feed#reason',
+        $type: 'us.edriffles.radlib.feed#reason',
         reasonMetadata: {label: 'freshness branch', score: '0.9'},
       }),
     ).toBe('provider supplied: freshness branch')
     expect(
-      publicProviderReason({$type: 'org.radlib.feed#reason', score: '0.9'}),
+      publicProviderReason({$type: 'us.edriffles.radlib.feed#reason', score: '0.9'}),
     ).toBe('provider supplied no public ranking explanation')
     expect(
       publicProviderReason({

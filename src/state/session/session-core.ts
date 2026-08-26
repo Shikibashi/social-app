@@ -1,9 +1,4 @@
-import {type Client} from '@atproto/lex'
-import {
-  PasswordSession,
-  type PasswordSessionOptions,
-  type SessionData,
-} from '@atproto/lex-password-session'
+import {type Agent, type Client} from '@atproto/lex'
 
 import {PUBLIC_ACCOUNT_SERVICE} from '#/lib/constants'
 import {canParseUrl} from '#/lib/strings/url-helpers'
@@ -23,13 +18,19 @@ import {
   configureModerationForGuest,
 } from './moderation'
 import {networkAwareFetch} from './network'
+import {
+  OAuthSessionAdapter,
+  type OAuthProviderSession,
+  restoreOAuthSession,
+  signInWithOAuth,
+} from './oauth-session'
 import {resolvePdsEndpointForDid} from './pds-resolution'
 import {type AppViewProvider, getSelectedAppViewProvider} from './providers'
 import {
-  isSessionExpired,
-  sessionAccountToSessionData,
-  sessionDataToSessionAccount,
-} from './session-data'
+  assertOAuthLoginInput,
+  type OAuthLoginInputWithLegacyFields,
+} from './oauth-login-input'
+import {type SessionData, sessionDataToSessionAccount} from './session-data'
 import {type AtpSessionEvent, type SessionAccount} from './types'
 
 export {networkAwareFetch} from './network'
@@ -40,23 +41,28 @@ export {
 } from './session-data'
 export type {AtpSessionEvent} from './types'
 
-/**
- * The service the bundle authenticated against.
- *
- * `PasswordSession`'s getters throw once the session is destroyed, so the read
- * is guarded and falls back to the public service.
- */
-function deriveServiceUrl(session: PasswordSession | null): URL {
+/** The service the bundle authenticated against. */
+export type SessionTransport = Agent & {
+  readonly destroyed: boolean
+  readonly session: SessionData
+  readonly service?: string
+  refresh: () => Promise<SessionData>
+  signOut?: () => Promise<void>
+  logout: () => Promise<void>
+  kill?: () => void
+}
+
+function deriveServiceUrl(session: SessionTransport | null): URL {
   return new URL(
     session && !session.destroyed
-      ? session.session.service
+      ? (session.service ?? session.session.service)
       : PUBLIC_ACCOUNT_SERVICE,
   )
 }
 
-/** The three clients over one `PasswordSession`, the bundle's sole auth core. */
+/** The three clients over one OAuth-backed session transport. */
 export type SessionBundle = {
-  session: PasswordSession
+  session: SessionTransport
   appviewClient: Client
   pdsClient: Client
   chatClient: Client
@@ -65,9 +71,13 @@ export type SessionBundle = {
   readonly service: URL
 }
 
+/** OAuth session callbacks carry the same narrow snapshot used for persistence. */
+type SessionHookData = SessionData
+
 /**
- * `PasswordSession` exposes no local (logout-free) destroy, so disposal is
- * implemented by disabling its injected fetch and hooks. Keep that lifecycle
+ * OAuth sessions expose provider-backed revocation rather than a local
+ * logout-free destroy, so disposal is implemented by disabling the injected
+ * fetch and hooks. Keep that lifecycle
  * state private and tied to bundle identity.
  */
 const bundleKillSwitches = new WeakMap<SessionBundle, () => void>()
@@ -96,7 +106,7 @@ export function registerBundleKillSwitch(
  * session and it resolves them against its own service.
  */
 export function buildBundle(
-  session: PasswordSession,
+  session: SessionTransport,
   storedPdsUrl?: string,
   provider: AppViewProvider = getSelectedAppViewProvider(session.did ?? ''),
 ): SessionBundle {
@@ -122,37 +132,6 @@ export function buildBundle(
   }
 }
 
-/**
- * Give PasswordSession the same PDS route that the bundle will use. Older
- * persisted entryway sessions may have no DID document, which otherwise makes
- * an expired-session refresh go back to bsky.social before the bundle's PDS
- * routing shim is constructed.
- */
-function sessionDataWithPdsEndpoint(
-  sessionData: SessionData,
-  pdsUrl: string | undefined,
-): SessionData {
-  if (!pdsUrl || sessionData.didDoc) return sessionData
-  try {
-    new URL(pdsUrl)
-  } catch {
-    return sessionData
-  }
-  return {
-    ...sessionData,
-    didDoc: {
-      id: sessionData.did,
-      service: [
-        {
-          id: '#atproto_pds',
-          type: 'AtprotoPersonalDataServer',
-          serviceEndpoint: pdsUrl,
-        },
-      ],
-    },
-  }
-}
-
 export function switchAppViewProvider(
   bundle: SessionBundle,
   provider: AppViewProvider,
@@ -160,15 +139,22 @@ export function switchAppViewProvider(
   return buildBundle(bundle.session, bundle.pdsUrl, provider)
 }
 /**
- * PasswordSession delivers `sessionData` before updating its live getter. The
- * provider uses that payload for rotated tokens and expiry rescue.
+ * The OAuth adapter delivers `sessionData` before the provider render catches
+ * up. The provider uses that payload for refreshed identity metadata.
  */
 export type OnSessionChange = (
   bundle: SessionBundle,
   did: string,
   event: AtpSessionEvent,
-  sessionData?: SessionData,
+  sessionData?: SessionHookData,
 ) => void
+
+export type SessionHooks = {
+  fetch: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>
+  onUpdated: (data: SessionHookData) => void
+  onDeleted: (data: SessionHookData) => void
+  onUpdateFailure: () => void
+}
 
 /**
  * Hooks stay inert during initial session preparation. `kill()` disarms them
@@ -188,12 +174,12 @@ export function makeSessionHooks({
 }) {
   let armed = false
   let killed = false
-  const dispatch = (event: AtpSessionEvent, sessionData?: SessionData) => {
+  const dispatch = (event: AtpSessionEvent, sessionData?: SessionHookData) => {
     if (!armed) {
       return
     }
     /*
-     * A hook must never throw. PasswordSession awaits its hooks inside the
+     * A hook must never throw. The provider awaits its hooks inside the
      * assignment to its internal session promise, so a synchronous throw here
      * leaves that promise permanently rejected: every later request fails, and
      * because the session is never marked destroyed, disposeBundle cannot even
@@ -212,7 +198,7 @@ export function makeSessionHooks({
       })
     }
   }
-  const hooks: PasswordSessionOptions = {
+  const hooks: SessionHooks = {
     fetch: (input, init) => {
       if (killed) {
         throw new Error('session disposed')
@@ -288,7 +274,7 @@ export function createPublicSessionBundle(): PublicSessionBundle {
  * session that can only make unauthenticated requests. Failing instead matches
  * what `CredentialSession.resumeSession` did on a revoked token, and every
  * caller already handles a rejected factory. Checking `destroyed` first also
- * keeps `PasswordSession`'s `Logged out` getter throw from escaping as the
+ * keeps a revoked OAuth session's opaque provider error from escaping as the
  * opaque rejection a caller would surface, so `snapshot` only ever runs against
  * a live session.
  *
@@ -324,6 +310,11 @@ export async function createSessionBundleAndResume(
   storedAccount: SessionAccount,
   onSessionChange: OnSessionChange,
 ): Promise<{account: SessionAccount; bundle: SessionBundle}> {
+  if (storedAccount.authType !== 'oauth') {
+    throw new Error(
+      'This account has a legacy password session; sign in again with ATProto OAuth',
+    )
+  }
   const gates = features.refresh({strategy: 'prefer-low-latency'})
   let bundle!: SessionBundle
   const hooks = makeSessionHooks({
@@ -332,7 +323,7 @@ export async function createSessionBundleAndResume(
     getDid: () => storedAccount.did,
   })
 
-  let session: PasswordSession
+  let session: OAuthSessionAdapter
   /*
    * Hosted entryways authenticate accounts whose repository lives on a
    * different PDS. Older stored sessions can lack both pdsUrl and didDoc; in
@@ -368,27 +359,7 @@ export async function createSessionBundleAndResume(
       ? await resolvePdsEndpointForDid(storedAccount.did)
       : undefined
   const pdsUrl = resolvedPdsUrl ?? storedAccount.pdsUrl
-  const sessionData = sessionDataWithPdsEndpoint(
-    sessionAccountToSessionData(storedAccount),
-    pdsUrl,
-  )
-  if (isSessionExpired(storedAccount)) {
-    /*
-     * The arm latch swallows resume's initial onUpdated event.
-     *
-     * There is deliberately no network retry here: `resume` rejects only when
-     * the session is definitively invalid, and it swallows everything else -
-     * a failed refresh reports through `onUpdateFailure` and resolves with the
-     * stale tokens. So an offline cold start now stays signed in with dead
-     * tokens (requests fail until connectivity returns) rather than throwing
-     * the way the old `CredentialSession.resumeSession` did, and retrying a
-     * definitive rejection would only repeat a request that cannot succeed.
-     */
-    session = await PasswordSession.resume(sessionData, hooks)
-  } else {
-    // Sync fast path: trust the stored tokens, no network.
-    session = new PasswordSession(sessionData, hooks)
-  }
+  session = await restoreOAuthSession(storedAccount.did, hooks, pdsUrl)
 
   bundle = buildBundle(session, pdsUrl)
   registerBundleKillSwitch(bundle, hooks.kill)
@@ -396,7 +367,7 @@ export async function createSessionBundleAndResume(
   const earlyAccount =
     sessionDataToSessionAccount(
       session.session,
-      session.session.service,
+      session.service ?? session.session.service,
       pdsUrl,
     ) ?? storedAccount
 
@@ -409,7 +380,7 @@ export async function createSessionBundleAndResume(
     () =>
       sessionDataToSessionAccount(
         session.session,
-        session.session.service,
+        session.service ?? session.session.service,
         pdsUrl,
       ) ?? storedAccount,
   )
@@ -418,20 +389,13 @@ export async function createSessionBundleAndResume(
 }
 
 /**
- * Log in with credentials and build a {@link SessionBundle}.
+ * Adopt the browser OAuth session returned by the one-time startup
+ * initialization. This is the callback/reload entry point: unlike a stored
+ * account resume, it starts from the provider session that already consumed
+ * the authorization response or restored IndexedDB state.
  */
-export async function createSessionBundleAndLogin(
-  {
-    service,
-    identifier,
-    password,
-    authFactorToken,
-  }: {
-    service: string
-    identifier: string
-    password: string
-    authFactorToken?: string
-  },
+export async function createSessionBundleFromOAuthSession(
+  providerSession: OAuthProviderSession,
   onSessionChange: OnSessionChange,
 ): Promise<{account: SessionAccount; bundle: SessionBundle}> {
   let bundle!: SessionBundle
@@ -441,15 +405,43 @@ export async function createSessionBundleAndLogin(
     getBundle: () => bundle,
     getDid: () => accountDid,
   })
+  const session = await OAuthSessionAdapter.fromSession(providerSession, hooks)
 
-  const session = await PasswordSession.login({
-    ...hooks,
-    service,
-    identifier,
-    password,
-    authFactorToken,
-    allowTakendown: true,
+  bundle = buildBundle(session)
+  registerBundleKillSwitch(bundle, hooks.kill)
+  const earlyAccount = sessionDataToSessionAccountOrThrow(session)
+  accountDid = earlyAccount.did
+
+  const gates = features.refresh({strategy: 'prefer-fresh-gates'})
+  configureModerationForAccount(bundle, earlyAccount)
+  const account = await finishPreparation(bundle, gates, () =>
+    sessionDataToSessionAccountOrThrow(session),
+  )
+  hooks.arm()
+  return {account, bundle}
+}
+
+/**
+ * Start ATProto OAuth and build a {@link SessionBundle}.
+ */
+export async function createSessionBundleAndLogin(
+  input: OAuthLoginInputWithLegacyFields,
+  onSessionChange: OnSessionChange,
+): Promise<{account: SessionAccount; bundle: SessionBundle}> {
+  assertOAuthLoginInput(input)
+  const {service, identifier} = input
+  let bundle!: SessionBundle
+  let accountDid = ''
+  const hooks = makeSessionHooks({
+    onSessionChange,
+    getBundle: () => bundle,
+    getDid: () => accountDid,
   })
+
+  // OAuth accepts a handle, DID, or PDS host. An email identifier is resolved
+  // by the provider UI instead of being sent as a password credential.
+  const oauthInput = identifier.includes('@') ? service : identifier
+  const session = await signInWithOAuth(oauthInput, hooks)
 
   bundle = buildBundle(session)
   registerBundleKillSwitch(bundle, hooks.kill)
@@ -480,16 +472,16 @@ export function createSessionBundleFromStoredAccount(
     account: SessionAccount,
   ) => boolean = () => true,
 ): {account: SessionAccount; bundle: SessionBundle} | undefined {
+  if (storedAccount.authType !== 'oauth') {
+    return undefined
+  }
   let bundle!: SessionBundle
   const hooks = makeSessionHooks({
     onSessionChange,
     getBundle: () => bundle,
     getDid: () => storedAccount.did,
   })
-  const session = new PasswordSession(
-    sessionAccountToSessionData(storedAccount),
-    hooks,
-  )
+  const session = OAuthSessionAdapter.fromStoredAccount(storedAccount, hooks)
   bundle = buildBundle(session, storedAccount.pdsUrl)
   registerBundleKillSwitch(bundle, hooks.kill)
   configureModerationForAccount(bundle, storedAccount)
@@ -498,7 +490,7 @@ export function createSessionBundleFromStoredAccount(
     ? storedAccount
     : (sessionDataToSessionAccount(
         session.session,
-        session.session.service,
+        session.service ?? session.session.service,
         storedAccount.pdsUrl,
       ) ?? storedAccount)
   if (!shouldActivate(bundle, account)) {
@@ -510,11 +502,11 @@ export function createSessionBundleFromStoredAccount(
 }
 
 export function sessionDataToSessionAccountOrThrow(
-  session: PasswordSession,
+  session: SessionTransport,
 ): SessionAccount {
   const account = sessionDataToSessionAccount(
     session.session,
-    session.session.service,
+    session.service ?? session.session.service,
   )
   if (!account) {
     throw Error('Expected an active session')
@@ -523,9 +515,8 @@ export function sessionDataToSessionAccountOrThrow(
 }
 
 /**
- * Disable a replaced bundle without revoking its server session. PasswordSession
- * has no local destroy operation, so the registered lifecycle closure disables
- * its fetch and hooks instead.
+ * Disable a replaced bundle without revoking its server session. The registered
+ * lifecycle closure disables the OAuth fetch and hooks instead.
  */
 export function disposeBundle(bundle: SessionBundle | PublicSessionBundle) {
   const session = bundle.session

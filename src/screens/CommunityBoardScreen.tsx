@@ -24,7 +24,7 @@ import * as Layout from '#/components/Layout'
 import {Link} from '#/components/Link'
 import {Text} from '#/components/Typography'
 import {SPACES_ALPHA_ENABLED} from '#/env'
-import {org} from '#/lexicons'
+import {us} from '#/lexicons'
 
 type Props = NativeStackScreenProps<CommonNavigatorParams, 'CommunityBoard'>
 
@@ -40,7 +40,7 @@ type Community = {
   createdAt?: string
 }
 
-const POST_COLLECTION = 'org.radlib.private.post' as NsidString
+const POST_COLLECTION = 'us.edriffles.radlib.private.post' as NsidString
 
 const inputStyle = {
   minHeight: 128,
@@ -134,7 +134,7 @@ export function CommunityBoardScreen({route}: Props) {
       let localListError: unknown
 
       try {
-        localPage = (await client.call(org.radlib.private.listCommunities, {
+        localPage = (await client.call(us.edriffles.radlib.private.listCommunities, {
           limit: 50,
         })) as typeof localPage
       } catch (error) {
@@ -153,10 +153,10 @@ export function CommunityBoardScreen({route}: Props) {
           const authorityClient = await createRadlibAuthorityClient(
             client,
             requestedSpace,
-            org.radlib.private.getSpace.$lxm,
+            us.edriffles.radlib.private.getSpace.$lxm,
           )
           spaces.push(
-            (await authorityClient.call(org.radlib.private.getSpace, {
+            (await authorityClient.call(us.edriffles.radlib.private.getSpace, {
               space: requestedSpace,
             })) as Community,
           )
@@ -201,9 +201,9 @@ export function CommunityBoardScreen({route}: Props) {
           : await createRadlibAuthorityClient(
               client,
               space,
-              org.radlib.private.getSpace.$lxm,
+              us.edriffles.radlib.private.getSpace.$lxm,
             )
-      return controlClient.call(org.radlib.private.getSpace, {
+      return controlClient.call(us.edriffles.radlib.private.getSpace, {
         space,
       }) as Promise<Community>
     },
@@ -230,7 +230,7 @@ export function CommunityBoardScreen({route}: Props) {
 
   const communityMutation = useMutation({
     mutationFn: () =>
-      client.call(org.radlib.private.createCommunity, {
+      client.call(us.edriffles.radlib.private.createCommunity, {
         name: communityName.trim(),
         description: communityDescription.trim() || undefined,
         visibility: communityVisibility,
@@ -264,12 +264,12 @@ export function CommunityBoardScreen({route}: Props) {
               client,
               space,
               leave
-                ? org.radlib.private.leaveCommunity.$lxm
-                : org.radlib.private.joinCommunity.$lxm,
+                ? us.edriffles.radlib.private.leaveCommunity.$lxm
+                : us.edriffles.radlib.private.joinCommunity.$lxm,
             )
       return leave
-        ? controlClient.call(org.radlib.private.leaveCommunity, {space})
-        : controlClient.call(org.radlib.private.joinCommunity, {
+        ? controlClient.call(us.edriffles.radlib.private.leaveCommunity, {space})
+        : controlClient.call(us.edriffles.radlib.private.joinCommunity, {
             space,
             inviteToken: inviteToken.trim() || undefined,
           })

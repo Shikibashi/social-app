@@ -14,7 +14,7 @@ export const accountEmailStateQueryKey = ['accountEmailState'] as const
 export function useAccountEmailState() {
   /*
    * Read from the account rather than the agent's session: `partialRefreshSession`
-   * patches the email fields on the account in the reducer (`PasswordSession`
+   * patches the email fields on the account in the reducer (the OAuth adapter
    * has no setter for them), so the account is the fresh source of truth.
    */
   const {currentAccount} = useSession()

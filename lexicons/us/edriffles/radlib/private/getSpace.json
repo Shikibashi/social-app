@@ -1,0 +1,32 @@
+{
+  "lexicon": 1,
+  "id": "us.edriffles.radlib.private.getSpace",
+  "defs": {
+    "main": {
+      "type": "query",
+      "description": "Return permissioned-space metadata only when the authenticated viewer may discover it.",
+      "parameters": {
+        "type": "params",
+        "required": ["space"],
+        "properties": { "space": { "type": "string" } }
+      },
+      "output": {
+        "encoding": "application/json",
+        "schema": {
+          "type": "object",
+          "required": ["uri", "authorityDid", "ownerDid", "kind", "createdAt"],
+          "properties": {
+            "uri": { "type": "string" },
+            "authorityDid": { "type": "string", "format": "did" },
+            "ownerDid": { "type": "string", "format": "did" },
+            "kind": { "type": "string", "knownValues": ["account", "community"] },
+            "visibility": { "type": "string", "knownValues": ["public", "protected", "restricted", "invite-only", "private"] },
+            "name": { "type": "string" },
+            "description": { "type": "string" },
+            "createdAt": { "type": "string", "format": "datetime" }
+          }
+        }
+      }
+    }
+  }
+}

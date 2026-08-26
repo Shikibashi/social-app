@@ -4,6 +4,7 @@ import {spacesClient} from '#/lib/atproto/spaces'
 import {writePrivateTextPost} from './permissioned-data'
 
 jest.mock('#/env', () => ({
+  assertSpacesAlphaDeploymentSafe: jest.fn(),
   LEGACY_RADLIB_PRIVATE_ENABLED: false,
   SPACES_ALPHA_ENABLED: true,
 }))
@@ -22,7 +23,7 @@ describe('permissioned data Spaces transport', () => {
 
     await writePrivateTextPost(
       client,
-      'at://did:plc:owner/space/org.radlib.community/test',
+      'at://did:plc:owner/space/us.edriffles.radlib.community/test',
       new RichText({text: 'private board note'}),
       ['en'],
     )
@@ -30,10 +31,10 @@ describe('permissioned data Spaces transport', () => {
     expect(spacesClient).toHaveBeenCalledWith(client)
     expect(putRecord).toHaveBeenCalledWith(
       expect.objectContaining({
-        space: 'at://did:plc:owner/space/org.radlib.community/test',
-        collection: 'org.radlib.private.post',
+        space: 'at://did:plc:owner/space/us.edriffles.radlib.community/test',
+        collection: 'us.edriffles.radlib.private.post',
         record: expect.objectContaining({
-          $type: 'org.radlib.private.post',
+          $type: 'us.edriffles.radlib.private.post',
           text: 'private board note',
         }),
       }),

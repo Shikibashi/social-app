@@ -11,7 +11,7 @@ describe('query persistence privacy boundary', () => {
     ).toBe(false)
     expect(
       isQueryPersisted([
-        'org.radlib.private.getBlob',
+        'us.edriffles.radlib.private.getBlob',
         {space: 'private'},
         {persistedVersion: 1},
       ]),

@@ -5,7 +5,7 @@ import {readAllSpaceRecords} from '#/lib/atproto/spaces/fanout'
 import {STALE} from '#/state/queries'
 import {usePdsClient} from '#/state/session'
 import {LEGACY_RADLIB_PRIVATE_ENABLED, SPACES_ALPHA_ENABLED} from '#/env'
-import {org} from '#/lexicons'
+import {us} from '#/lexicons'
 
 export const PRIVATE_FEED_QUERY_ROOT = 'radlib-private-feed'
 
@@ -31,7 +31,7 @@ export function usePrivateFeedQuery(space: string) {
           },
           {
             space,
-            collection: 'org.radlib.private.post',
+            collection: 'us.edriffles.radlib.private.post',
           },
         )
         return {
@@ -56,7 +56,7 @@ export function usePrivateFeedQuery(space: string) {
           'Spaces alpha transport is disabled; the legacy Radlib adapter is migration-only',
         )
       }
-      const legacy = await client.call(org.radlib.private.getFeed, {
+      const legacy = await client.call(us.edriffles.radlib.private.getFeed, {
         space,
         limit: 50,
       })

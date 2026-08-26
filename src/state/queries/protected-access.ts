@@ -4,7 +4,7 @@ import {useMutation, useQuery, useQueryClient} from '@tanstack/react-query'
 import {createRadlibAuthorityClientForDid} from '#/lib/atproto/spaces'
 import {STALE} from '#/state/queries'
 import {usePdsClient} from '#/state/session'
-import {app, org} from '#/lexicons'
+import {app, us} from '#/lexicons'
 
 export type ProtectedAccessState =
   'none' | 'requested' | 'approved' | 'denied' | 'revoked' | 'blocked'
@@ -33,10 +33,10 @@ export function useProtectedAccessStateQuery(
           ? await createRadlibAuthorityClientForDid(
               client,
               normalizedTarget as DidString,
-              org.radlib.private.getFollowState.$lxm,
+              us.edriffles.radlib.private.getFollowState.$lxm,
             )
           : client
-      return authorityClient.call(org.radlib.private.getFollowState, {
+      return authorityClient.call(us.edriffles.radlib.private.getFollowState, {
         requester: normalizedRequester as DidString,
         target: normalizedTarget as DidString,
       })
@@ -64,10 +64,10 @@ export function useProtectedAccessMutation() {
               ? await createRadlibAuthorityClientForDid(
                   client,
                   input.target as DidString,
-                  org.radlib.private.requestFollow.$lxm,
+                  us.edriffles.radlib.private.requestFollow.$lxm,
                 )
               : client
-          ).call(org.radlib.private.requestFollow, {
+          ).call(us.edriffles.radlib.private.requestFollow, {
             target: input.target as DidString,
           })
           break
@@ -77,27 +77,27 @@ export function useProtectedAccessMutation() {
               ? await createRadlibAuthorityClientForDid(
                   client,
                   input.target as DidString,
-                  org.radlib.private.cancelFollow.$lxm,
+                  us.edriffles.radlib.private.cancelFollow.$lxm,
                 )
               : client
-          ).call(org.radlib.private.cancelFollow, {
+          ).call(us.edriffles.radlib.private.cancelFollow, {
             target: input.target as DidString,
           })
           break
         case 'approve':
-          result = await client.call(org.radlib.private.respondFollow, {
+          result = await client.call(us.edriffles.radlib.private.respondFollow, {
             requester: input.requester as DidString,
             approve: true,
           })
           break
         case 'deny':
-          result = await client.call(org.radlib.private.respondFollow, {
+          result = await client.call(us.edriffles.radlib.private.respondFollow, {
             requester: input.requester as DidString,
             approve: false,
           })
           break
         case 'revoke':
-          result = await client.call(org.radlib.private.revokeFollow, {
+          result = await client.call(us.edriffles.radlib.private.revokeFollow, {
             requester: input.requester as DidString,
           })
           break
@@ -106,7 +106,7 @@ export function useProtectedAccessMutation() {
             subject: input.requester as DidString,
             createdAt: toDatetimeString(new Date()),
           })
-          result = await client.call(org.radlib.private.revokeFollow, {
+          result = await client.call(us.edriffles.radlib.private.revokeFollow, {
             requester: input.requester as DidString,
           })
           break

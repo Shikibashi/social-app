@@ -102,7 +102,7 @@
   "dependencies": {
     "@atproto/common-web": "0.5.9",
     "@atproto/lex": "0.3.6",
-    "@atproto/lex-password-session": "0.2.0",
+    "@atproto/oauth-client-expo": "0.2.0",
     "@atproto/syntax": "0.7.4",
     "@bitdrift/react-native": "^0.6.8",
     "@braintree/sanitize-url": "^6.0.2",
@@ -237,7 +237,8 @@
     "react-native-edge-to-edge": "^1.8.1",
     "react-native-gesture-handler": "~2.32.0",
     "react-native-keyboard-controller": "1.21.9",
-    "react-native-mmkv": "^3.3.3",
+    "react-native-mmkv": "^4.3.2",
+    "react-native-nitro-modules": "0.37.0",
     "react-native-pager-view": "6.8.0",
     "react-native-progress": "^5.0.1",
     "react-native-qrcode-styled": "^0.3.3",
@@ -266,6 +267,7 @@
     "zod": "^3.25.76"
   },
   "devDependencies": {
+    "@atproto/lex-password-session": "0.2.0",
     "@babel/core": "^7.26.0",
     "@babel/preset-env": "^7.26.0",
     "@babel/runtime": "^7.26.0",

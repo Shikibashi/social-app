@@ -22,7 +22,7 @@ import {isRecordNotFoundError} from '#/lib/xrpc-error'
 import {type ImageMeta} from '#/state/gallery'
 import {STALE} from '#/state/queries'
 import {useAppviewClient, usePdsClient, useSession} from '#/state/session'
-import {app, com, org} from '#/lexicons'
+import {app, com, us} from '#/lexicons'
 import {FEED_INFO_RQKEY_ROOT} from './feed'
 import {invalidate as invalidateMyLists} from './my-lists'
 import {RQKEY as PROFILE_LISTS_RQKEY} from './profile-lists'
@@ -332,7 +332,7 @@ export function useLegacyListblockMigrationMutation() {
           async attestPrivateListMute(subjectListUri, listUriHash) {
             const nonce = String(uuid.v4())
             const {attestation} = await appviewClient.call(
-              org.radlib.moderation.getListMuteAttestation,
+              us.edriffles.radlib.moderation.getListMuteAttestation,
               {
                 list: subjectListUri as AtUriString,
                 listUriHash,
@@ -343,7 +343,7 @@ export function useLegacyListblockMigrationMutation() {
               throw new Error('provider attestation list hash did not match')
             }
             await pdsClient.call(
-              org.radlib.moderation.recordListMuteAttestation,
+              us.edriffles.radlib.moderation.recordListMuteAttestation,
               {attestation},
             )
           },

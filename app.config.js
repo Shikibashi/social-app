@@ -35,9 +35,16 @@ module.exports = function (_config) {
 
   const USE_SENTRY = Boolean(process.env.SENTRY_AUTH_TOKEN)
   const PRODUCT_NAME = process.env.EXPO_PUBLIC_BRAND_NAME?.trim() || 'Social'
+  const EXPECTED_PUBLIC_WEB_ORIGIN = 'https://social.edriffles.us'
   const PUBLIC_WEB_ORIGIN =
     process.env.EXPO_PUBLIC_PUBLIC_WEB_ORIGIN?.trim() ||
-    'https://social.edriffles.us'
+    EXPECTED_PUBLIC_WEB_ORIGIN
+
+  if (IS_PRODUCTION && PUBLIC_WEB_ORIGIN !== EXPECTED_PUBLIC_WEB_ORIGIN) {
+    throw new Error(
+      `Production web builds must use ${EXPECTED_PUBLIC_WEB_ORIGIN} as EXPO_PUBLIC_PUBLIC_WEB_ORIGIN; received ${PUBLIC_WEB_ORIGIN}`,
+    )
+  }
 
   const IOS_ICON_FILE =
     PLATFORM === 'web' // web build doesn't like .icon files
@@ -51,7 +58,10 @@ module.exports = function (_config) {
       version: VERSION,
       name: PRODUCT_NAME,
       slug: 'bluesky',
-      scheme: 'bluesky',
+  // Keep the existing app deep-link scheme and register the reverse-origin
+  // OAuth callback scheme required by the ATProto Expo client. The private-use
+  // callback must reverse the HTTPS client_id hostname, not the Lexicon NSID.
+  scheme: ['bluesky', 'us.edriffles.social'],
       owner: 'blueskysocial',
       runtimeVersion: {
         policy: 'appVersion',

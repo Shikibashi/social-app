@@ -1,5 +1,5 @@
 import {useCallback, useEffect, useState} from 'react'
-import {MMKV} from 'react-native-mmkv'
+import {createMMKV, type MMKV} from 'react-native-mmkv'
 
 import {type Account, type Device} from '#/storage/schema'
 
@@ -14,7 +14,7 @@ export class Storage<Scopes extends unknown[], Schema> {
   protected store: MMKV
 
   constructor({id}: {id: string}) {
-    this.store = new MMKV({id})
+    this.store = createMMKV({id})
   }
 
   /**
@@ -53,7 +53,7 @@ export class Storage<Scopes extends unknown[], Schema> {
    *   `remove([scope, key])`
    */
   remove<Key extends keyof Schema>(scopes: [...Scopes, Key]) {
-    this.store.delete(scopes.join(this.sep))
+    this.store.remove(scopes.join(this.sep))
   }
 
   /**

@@ -30,7 +30,7 @@ describe('permissioned data client boundary', () => {
 
   it('uses the fork-owned permissioned XRPC instead of a public post write', async () => {
     const call = jest.fn().mockResolvedValue({
-      space: 'at://did:plc:owner/space/org.radlib.account/private',
+      space: 'at://did:plc:owner/space/us.edriffles.radlib.account/private',
       repo: 'did:plc:owner',
       collection: PRIVATE_POST_COLLECTION,
       rkey: '3jzfcwz3q7s2a',
@@ -39,7 +39,7 @@ describe('permissioned data client boundary', () => {
 
     await writePrivateTextPost(
       {call} as never,
-      'at://did:plc:owner/space/org.radlib.account/private',
+      'at://did:plc:owner/space/us.edriffles.radlib.account/private',
       new RichText({text: 'permissioned write'}),
       ['en'],
     )
@@ -49,7 +49,7 @@ describe('permissioned data client boundary', () => {
       {$nsid: string},
       {collection: string; record: {$type: string}},
     ]
-    expect(procedure.$nsid).toBe('org.radlib.private.putRecord')
+    expect(procedure.$nsid).toBe('us.edriffles.radlib.private.putRecord')
     expect(input.collection).toBe(PRIVATE_POST_COLLECTION)
     expect(input.record.$type).toBe(PRIVATE_POST_COLLECTION)
   })
@@ -64,7 +64,7 @@ describe('permissioned data client boundary', () => {
         record: {
           $type: 'app.bsky.embed.record',
           record: {
-            uri: 'at://did:plc:owner/space/org.radlib.account/private/3jzfcwz3q7s2a',
+            uri: 'at://did:plc:owner/space/us.edriffles.radlib.account/private/3jzfcwz3q7s2a',
             cid: 'bafyreirecord',
           },
         },
@@ -75,11 +75,11 @@ describe('permissioned data client boundary', () => {
       },
       {
         root: {
-          uri: 'at://did:plc:owner/space/org.radlib.account/private/3jzfcwz3q7s2a',
+          uri: 'at://did:plc:owner/space/us.edriffles.radlib.account/private/3jzfcwz3q7s2a',
           cid: 'bafyreirecord',
         },
         parent: {
-          uri: 'at://did:plc:owner/space/org.radlib.account/private/3jzfcwz3q7s2a',
+          uri: 'at://did:plc:owner/space/us.edriffles.radlib.account/private/3jzfcwz3q7s2a',
           cid: 'bafyreirecord',
         },
       },

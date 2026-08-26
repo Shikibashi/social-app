@@ -121,7 +121,9 @@ function AccountItem({
     onSelect(account)
   }, [account, onSelect])
 
-  const isLoggedOut = !account.refreshJwt || isJwtExpired(account.refreshJwt)
+  const isLoggedOut =
+    account.authType !== 'oauth' &&
+    (!account.refreshJwt || isJwtExpired(account.refreshJwt))
 
   return (
     <Button

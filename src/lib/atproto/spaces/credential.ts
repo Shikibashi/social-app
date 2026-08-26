@@ -3,8 +3,9 @@ import {type DidString} from '@atproto/syntax'
 
 import {createLexClient} from '#/lib/lexClient'
 import {resolvePdsEndpointForDid} from '#/state/session/pds-resolution'
+import {assertSpacesAlphaDeploymentSafe} from '#/env'
 import {com} from '#/lexicons'
-import {SpacesClient} from './client'
+import {assertDid, assertSpaceRef, SpacesClient} from './client'
 import {toSpaceRpc} from './rpc'
 
 type DpopKey = {
@@ -31,6 +32,10 @@ export async function createSpaceCredentialSession(
     did: string,
   ) => Promise<string | undefined> = resolvePdsEndpointForDid,
 ): Promise<SpaceCredentialSession> {
+  // Fail before endpoint resolution, delegation exchange, key generation, or
+  // credential minting. Spaces alpha must never perform a sensitive operation
+  // in a production or otherwise unknown build.
+  assertSpacesAlphaDeploymentSafe()
   const authorityDid = parseSpaceAuthority(space)
   const authorityEndpoint = await resolveEndpoint(authorityDid)
   if (!authorityEndpoint) {
@@ -128,6 +133,7 @@ export async function createRadlibAuthorityClientForDid(
     did: string,
   ) => Promise<string | undefined> = resolvePdsEndpointForDid,
 ): Promise<Client> {
+  assertSpacesAlphaDeploymentSafe()
   const endpoint = await resolveEndpoint(authorityDid)
   if (!endpoint) {
     throw new Error(
@@ -239,9 +245,10 @@ async function createDpopProof(
 }
 
 function parseSpaceAuthority(space: string): DidString {
-  const match = /^at:\/\/(did:[^/]+)\/space\//.exec(space)
+  const validatedSpace = assertSpaceRef(space)
+  const match = /^at:\/\/(did:[^/]+)\/space\//.exec(validatedSpace)
   if (!match) throw new Error(`Invalid Space URI: ${space}`)
-  return match[1] as DidString
+  return assertDid(match[1])
 }
 
 function normalizeUrl(value: string): string {

@@ -1,0 +1,41 @@
+{
+  "lexicon": 1,
+  "id": "us.edriffles.radlib.private.createSyncGrant",
+  "defs": {
+    "main": {
+      "type": "procedure",
+      "description": "Create a narrowly scoped, expiring capability for one target PDS and actor to pull private records directly from this PDS. This is not a Relay credential.",
+      "input": {
+        "encoding": "application/json",
+        "schema": {
+          "type": "object",
+          "required": ["space", "targetPdsDid", "targetActorDid", "expiresAt"],
+          "properties": {
+            "space": { "type": "string" },
+            "targetPdsDid": { "type": "string", "format": "did" },
+            "targetActorDid": { "type": "string", "format": "did" },
+            "collection": { "type": "string", "format": "nsid" },
+            "expiresAt": { "type": "string", "format": "datetime" }
+          }
+        }
+      },
+      "output": {
+        "encoding": "application/json",
+        "schema": {
+          "type": "object",
+          "required": ["id", "token", "space", "targetPdsDid", "targetActorDid", "expiresAt", "createdAt"],
+          "properties": {
+            "id": { "type": "string", "maxLength": 64 },
+            "token": { "type": "string", "maxLength": 256 },
+            "space": { "type": "string" },
+            "targetPdsDid": { "type": "string", "format": "did" },
+            "targetActorDid": { "type": "string", "format": "did" },
+            "collection": { "type": "string", "format": "nsid" },
+            "expiresAt": { "type": "string", "format": "datetime" },
+            "createdAt": { "type": "string", "format": "datetime" }
+          }
+        }
+      }
+    }
+  }
+}

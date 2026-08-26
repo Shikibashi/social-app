@@ -1,7 +1,7 @@
 import {readAllSpaceRecords} from './fanout'
 
 describe('Space record fanout', () => {
-  const space = 'at://did:plc:owner/space/org.radlib.community/test'
+  const space = 'at://did:plc:owner/space/us.edriffles.radlib.community/test'
 
   it('exhausts repo and record cursors and applies a deterministic total order', async () => {
     const listRepos = jest
@@ -20,7 +20,7 @@ describe('Space record fanout', () => {
           return Promise.resolve({
             records: [
               {
-                collection: 'org.radlib.private.post',
+                collection: 'us.edriffles.radlib.private.post',
                 rkey: 'z',
                 cid: 'bafy-a',
                 value: {createdAt: '2026-08-23T00:00:00.000Z'},
@@ -32,7 +32,7 @@ describe('Space record fanout', () => {
           return Promise.resolve({
             records: [
               {
-                collection: 'org.radlib.private.post',
+                collection: 'us.edriffles.radlib.private.post',
                 rkey: 'b',
                 cid: 'bafy-b',
                 value: {createdAt: '2026-08-23T00:00:00.000Z'},
@@ -44,7 +44,7 @@ describe('Space record fanout', () => {
         return Promise.resolve({
           records: [
             {
-              collection: 'org.radlib.private.post',
+              collection: 'us.edriffles.radlib.private.post',
               rkey: 'a',
               cid: 'bafy-c',
               value: {createdAt: '2025-08-23T00:00:00.000Z'},
@@ -55,7 +55,7 @@ describe('Space record fanout', () => {
 
     const result = await readAllSpaceRecords(
       {listRepos, listRecords},
-      {space, collection: 'org.radlib.private.post', pageSize: 1},
+      {space, collection: 'us.edriffles.radlib.private.post', pageSize: 1},
     )
 
     expect(result.complete).toBe(true)
@@ -71,7 +71,7 @@ describe('Space record fanout', () => {
     expect(listRecords).toHaveBeenCalledWith({
       space,
       repo: 'did:plc:b',
-      collection: 'org.radlib.private.post',
+      collection: 'us.edriffles.radlib.private.post',
       limit: 1,
       reverse: true,
       cursor: 'records-2',
@@ -90,7 +90,7 @@ describe('Space record fanout', () => {
       return Promise.resolve({
         records: [
           {
-            collection: 'org.radlib.private.post',
+            collection: 'us.edriffles.radlib.private.post',
             rkey: 'a',
             cid: 'bafy-good',
             value: {createdAt: '2026-08-23T00:00:00.000Z'},
@@ -101,7 +101,7 @@ describe('Space record fanout', () => {
 
     const result = await readAllSpaceRecords(
       {listRepos, listRecords},
-      {space, collection: 'org.radlib.private.post'},
+      {space, collection: 'us.edriffles.radlib.private.post'},
     )
 
     expect(result.complete).toBe(false)

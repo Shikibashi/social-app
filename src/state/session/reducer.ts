@@ -109,6 +109,7 @@ let reducer = (state: State, action: Action): State => {
                 // If we didn't receive a refreshed account, clear out the tokens.
                 accessJwt: undefined,
                 refreshJwt: undefined,
+                ...(a.authType ? {authType: undefined} : {}),
               }
             }
           } else {
@@ -203,6 +204,7 @@ let reducer = (state: State, action: Action): State => {
                 ...a,
                 refreshJwt: undefined,
                 accessJwt: undefined,
+                ...(a.authType ? {authType: undefined} : {}),
               }
             : a,
         ),
@@ -226,6 +228,7 @@ let reducer = (state: State, action: Action): State => {
           // Clear tokens for *every* account (this is a hard logout).
           refreshJwt: undefined,
           accessJwt: undefined,
+          ...(a.authType ? {authType: undefined} : {}),
         })),
         currentBundleState: createPublicBundleState(),
         needsPersist: true,
@@ -245,7 +248,7 @@ let reducer = (state: State, action: Action): State => {
     case 'partial-refresh-session': {
       const {accountDid, patch} = action
 
-      // PasswordSession has no setter; consumers read these fields from the account.
+      // Consumers read these fields from the persisted account snapshot.
       return {
         ...state,
         accounts: state.accounts.map(a => {

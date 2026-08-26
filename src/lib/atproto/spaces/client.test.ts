@@ -1,12 +1,19 @@
 jest.unmock('multiformats/cid')
 
-import {SpacesClient} from './client'
+import {assertDid, assertSpaceRef, SpacesClient} from './client'
 import {toSpaceRpc} from './rpc'
 
 describe('Spaces client boundary', () => {
+  it('rejects malformed Space and repository identifiers before network calls', () => {
+    expect(() => assertSpaceRef('at://not-a-space')).toThrow(
+      'Invalid Space reference',
+    )
+    expect(() => assertDid('alice.example')).toThrow('Invalid DID')
+  })
+
   it('writes through the standard Space procedure with the session DID as repo', async () => {
     const call = jest.fn().mockResolvedValue({
-      uri: 'at://did:plc:owner/space/org.radlib.account/private/org.radlib.private.post/abc',
+      uri: 'at://did:plc:owner/space/us.edriffles.radlib.account/private/us.edriffles.radlib.private.post/abc',
       cid: 'bafyspace',
     })
     const client = new SpacesClient({
@@ -15,10 +22,10 @@ describe('Spaces client boundary', () => {
     } as never)
 
     await client.putRecord({
-      space: 'at://did:plc:owner/space/org.radlib.account/private',
-      collection: 'org.radlib.private.post',
+      space: 'at://did:plc:owner/space/us.edriffles.radlib.account/private',
+      collection: 'us.edriffles.radlib.private.post',
       rkey: 'abc',
-      record: {$type: 'org.radlib.private.post', text: 'hello'},
+      record: {$type: 'us.edriffles.radlib.private.post', text: 'hello'},
     })
 
     expect(call).toHaveBeenCalledTimes(1)
@@ -31,14 +38,14 @@ describe('Spaces client boundary', () => {
     )
     expect(input.repo).toBe('did:plc:writer')
     expect(input.space).toContain('/space/')
-    expect(input.collection).toBe('org.radlib.private.post')
+    expect(input.collection).toBe('us.edriffles.radlib.private.post')
   })
 
   it('accepts the permissioned URI returned by the Spaces alpha PDS', async () => {
     const result = await toSpaceRpc.putRecord.$output.schema[
       '~standard'
     ].validate({
-      uri: 'at://did:plc:owner/space/org.radlib.account/private/did:plc:writer/org.radlib.private.post/abc',
+      uri: 'at://did:plc:owner/space/us.edriffles.radlib.account/private/did:plc:writer/us.edriffles.radlib.private.post/abc',
       cid: 'bafyreieawtmh7hwfrqpamqkodza5r62bbfhsepe2iyustgxhgbhi6b2lfi',
     })
 
@@ -53,9 +60,9 @@ describe('Spaces client boundary', () => {
     } as never)
 
     await client.listRecords({
-      space: 'at://did:plc:owner/space/org.radlib.account/private',
+      space: 'at://did:plc:owner/space/us.edriffles.radlib.account/private',
       repo: 'did:plc:writer',
-      collection: 'org.radlib.private.post',
+      collection: 'us.edriffles.radlib.private.post',
       limit: 50,
     })
 
@@ -65,7 +72,7 @@ describe('Spaces client boundary', () => {
     ]
     expect(query.nsid ?? query.$nsid).toBe('com.atproto.space.listRecords')
     expect(params.repo).toBe('did:plc:writer')
-    expect(params.collection).toBe('org.radlib.private.post')
+    expect(params.collection).toBe('us.edriffles.radlib.private.post')
     expect(params.limit).toBe(50)
   })
 
@@ -77,9 +84,9 @@ describe('Spaces client boundary', () => {
     } as never)
 
     await client.getBlob({
-      space: 'at://did:plc:owner/space/org.radlib.account/private',
+      space: 'at://did:plc:owner/space/us.edriffles.radlib.account/private',
       repo: 'did:plc:member',
-      cid: 'bafyblob',
+      cid: 'bafkreieq5jui4j25lacwomsqgjeswwl3y5zcdrresptwgmfylxo2depppq',
     })
 
     const [query, params] = call.mock.calls[0] as [
@@ -88,7 +95,28 @@ describe('Spaces client boundary', () => {
     ]
     expect(query.nsid ?? query.$nsid).toBe('com.atproto.space.getBlob')
     expect(params.repo).toBe('did:plc:member')
-    expect(params.cid).toBe('bafyblob')
+    expect(params.cid).toBe(
+      'bafkreieq5jui4j25lacwomsqgjeswwl3y5zcdrresptwgmfylxo2depppq',
+    )
+  })
+
+  it('validates runtime Space query and blob inputs before network calls', () => {
+    const call = jest.fn()
+    const client = new SpacesClient({did: 'did:plc:writer', call} as never)
+
+    expect(() => client.listSpaces({type: 'not-an-nsid' as never})).toThrow(
+      'Invalid NSID',
+    )
+    expect(() => client.listSpaces({did: 'not-a-did' as never})).toThrow(
+      'Invalid DID',
+    )
+    expect(() =>
+      client.getBlob({
+        space: 'at://did:plc:owner/space/us.edriffles.radlib.account/private',
+        cid: 'not-a-cid',
+      }),
+    ).toThrow('Invalid blob CID')
+    expect(call).not.toHaveBeenCalled()
   })
 
   it('exposes the standard repo recovery and incremental-op queries', async () => {
@@ -99,7 +127,7 @@ describe('Spaces client boundary', () => {
     } as never)
 
     await client.listRepoOps({
-      space: 'at://did:plc:owner/space/org.radlib.account/private',
+      space: 'at://did:plc:owner/space/us.edriffles.radlib.account/private',
       repo: 'did:plc:member',
       since: '3jzfcijwz2s2a',
       excludeValues: true,
@@ -113,5 +141,23 @@ describe('Spaces client boundary', () => {
     expect(params.repo).toBe('did:plc:member')
     expect(params.since).toBe('3jzfcijwz2s2a')
     expect(params.excludeValues).toBe(true)
+  })
+
+  it('rejects malformed repo operations returned by the PDS', async () => {
+    const client = new SpacesClient({
+      did: 'did:plc:writer',
+      call: jest.fn().mockResolvedValue({
+        ops: [
+          {rev: '3jz', collection: 'bad', rkey: 'ok', cid: null, prev: null},
+        ],
+      }),
+    } as never)
+
+    await expect(
+      client.listRepoOps({
+        space: 'at://did:plc:owner/space/us.edriffles.radlib.account/private',
+        repo: 'did:plc:member',
+      }),
+    ).rejects.toThrow('Invalid NSID')
   })
 })

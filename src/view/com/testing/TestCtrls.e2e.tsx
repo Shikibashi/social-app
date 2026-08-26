@@ -42,7 +42,6 @@ export function TestCtrls() {
       {
         service: 'http://localhost:3000',
         identifier: 'alice.test',
-        password: 'hunter2',
       },
       'LoginForm',
     )
@@ -54,7 +53,6 @@ export function TestCtrls() {
       {
         service: 'http://localhost:3000',
         identifier: 'bob.test',
-        password: 'hunter2',
       },
       'LoginForm',
     )

@@ -18,12 +18,17 @@ const appviewProviderSchema = z.object({
   serviceDid: z.string().refine(isDidString),
   serviceFragment: z.string().min(1),
   endpoint: z.string().url(),
-  healthPath: z.string().regex(/^\/xrpc\/[A-Za-z0-9._-]+$/).optional(),
+  healthPath: z
+    .string()
+    .regex(/^\/xrpc\/[A-Za-z0-9._-]+$/)
+    .optional(),
   builtin: z.boolean(),
   enabled: z.boolean(),
 })
 export type PersistedAppViewProvider = z.infer<typeof appviewProviderSchema>
 const accountSchema = z.object({
+  /** The active credential profile for this account. */
+  authType: z.enum(['oauth', 'password']).optional(),
   service: z.string(),
   /**
    * Genuinely validated, not just branded: the refinement rejects malformed
@@ -71,7 +76,9 @@ export type PersistedCurrentAccount = z.infer<typeof currentAccountSchema>
 const schema = z.object({
   appviewProviders: z.array(appviewProviderSchema).optional(),
   appviewSelections: z.record(z.string(), z.string()).optional(),
-  appviewFallbacks: z.record(z.string(), z.record(z.string(), z.string())).optional(),
+  appviewFallbacks: z
+    .record(z.string(), z.record(z.string(), z.string()))
+    .optional(),
   /** Local read preference; does not change the public data returned by an AppView. */
   threadCurationView: z.enum(['all', 'author']).optional(),
   colorMode: z.enum(['system', 'light', 'dark']),
@@ -162,7 +169,9 @@ export type Schema = z.infer<typeof schema>
 
 const configuredProjectAppViewDid =
   process.env.EXPO_PUBLIC_APPVIEW_SERVICE_DID ||
-  (__DEV__ ? 'did:plc:dw4kbjf5mn7nhenabiqpkyh3' : 'did:example:unconfigured-appview')
+  (__DEV__
+    ? 'did:plc:dw4kbjf5mn7nhenabiqpkyh3'
+    : 'did:example:unconfigured-appview')
 const configuredProjectAppViewEndpoint =
   process.env.EXPO_PUBLIC_PUBLIC_APPVIEW_URL ||
   process.env.EXPO_PUBLIC_APPVIEW_ENDPOINT ||

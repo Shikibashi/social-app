@@ -1,9 +1,9 @@
-import {MMKV} from 'react-native-mmkv'
+import {createMMKV} from 'react-native-mmkv'
 
 import {type DB} from '#/storage/archive/db/types'
 
 export function create({id}: {id: string}): DB {
-  const store = new MMKV({id})
+  const store = createMMKV({id})
 
   return {
     get(key: string) {
@@ -13,7 +13,7 @@ export function create({id}: {id: string}): DB {
       return store.set(key, value)
     },
     delete(key: string) {
-      return store.delete(key)
+      store.remove(key)
     },
     clear() {
       return store.clearAll()

@@ -1,0 +1,32 @@
+{
+  "lexicon": 1,
+  "id": "us.edriffles.radlib.private.respondFollow",
+  "defs": {
+    "main": {
+      "type": "procedure",
+      "description": "Approve or deny a protected-account access request. Only the protected account may respond.",
+      "input": {
+        "encoding": "application/json",
+        "schema": {
+          "type": "object",
+          "required": ["requester", "approve"],
+          "properties": {
+            "requester": { "type": "string", "format": "did" },
+            "approve": { "type": "boolean" }
+          }
+        }
+      },
+      "output": {
+        "encoding": "application/json",
+        "schema": {
+          "type": "object",
+          "required": ["requester", "state"],
+          "properties": {
+            "requester": { "type": "string", "format": "did" },
+            "state": { "type": "string", "knownValues": ["none", "requested", "approved", "denied", "revoked", "blocked"] }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "lexicon": 1,
+  "id": "us.edriffles.radlib.private.getBlob",
+  "defs": {
+    "main": {
+      "type": "query",
+      "description": "Read a private blob only after the viewer passes the permissioned-space ACL. This endpoint is not the public com.atproto.sync.getBlob route.",
+      "parameters": {
+        "type": "params",
+        "required": ["space", "id"],
+        "properties": {
+          "space": { "type": "string" },
+          "id": { "type": "string" }
+        }
+      },
+      "output": { "encoding": "*/*" },
+      "errors": [{ "name": "BlobNotFound" }]
+    }
+  }
+}

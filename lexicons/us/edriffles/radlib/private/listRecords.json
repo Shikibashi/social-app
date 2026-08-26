@@ -1,0 +1,49 @@
+{
+  "lexicon": 1,
+  "id": "us.edriffles.radlib.private.listRecords",
+  "defs": {
+    "record": {
+      "type": "object",
+      "required": ["space", "repo", "collection", "rkey", "cid", "record", "createdAt", "updatedAt"],
+      "properties": {
+        "space": { "type": "string" },
+        "repo": { "type": "string", "format": "did" },
+        "collection": { "type": "string", "format": "nsid" },
+        "rkey": { "type": "string", "format": "record-key" },
+        "cid": { "type": "string", "format": "cid" },
+        "record": { "type": "unknown" },
+        "createdAt": { "type": "string", "format": "datetime" },
+        "updatedAt": { "type": "string", "format": "datetime" }
+      }
+    },
+    "main": {
+      "type": "query",
+      "description": "List records from an authorized permissioned space. The result is viewer-authorized and is not a public repository listing.",
+      "parameters": {
+        "type": "params",
+        "required": ["space"],
+        "properties": {
+          "space": { "type": "string" },
+          "collection": { "type": "string", "format": "nsid" },
+          "limit": { "type": "integer", "minimum": 1, "maximum": 100, "default": 50 },
+          "cursor": { "type": "string", "maxLength": 128 }
+        }
+      },
+      "output": {
+        "encoding": "application/json",
+        "schema": {
+          "type": "object",
+          "required": ["records"],
+          "properties": {
+            "records": {
+              "type": "array",
+              "maxLength": 100,
+              "items": { "type": "ref", "ref": "#record" }
+            },
+            "cursor": { "type": "string" }
+          }
+        }
+      }
+    }
+  }
+}

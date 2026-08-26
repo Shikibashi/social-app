@@ -58,7 +58,7 @@ export function isQueryPersisted(
     typeof queryKey[0] === 'string' &&
     (queryKey[0] === 'radlib-private' ||
       queryKey[0].startsWith('radlib-private-') ||
-      queryKey[0].startsWith('org.radlib.private.'))
+      queryKey[0].startsWith('us.edriffles.radlib.private.'))
   ) {
     return false
   }

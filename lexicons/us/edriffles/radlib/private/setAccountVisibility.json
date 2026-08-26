@@ -1,0 +1,32 @@
+{
+  "lexicon": 1,
+  "id": "us.edriffles.radlib.private.setAccountVisibility",
+  "defs": {
+    "main": {
+      "type": "procedure",
+      "description": "Set the account's protected-account mode. This fork-specific operation stores no private content in the public repository.",
+      "input": {
+        "encoding": "application/json",
+        "schema": {
+          "type": "object",
+          "required": ["visibility"],
+          "properties": {
+            "visibility": { "type": "string", "knownValues": ["public", "protected"] }
+          }
+        }
+      },
+      "output": {
+        "encoding": "application/json",
+        "schema": {
+          "type": "object",
+          "required": ["did", "visibility", "space"],
+          "properties": {
+            "did": { "type": "string", "format": "did" },
+            "visibility": { "type": "string", "knownValues": ["public", "protected"] },
+            "space": { "type": "string" }
+          }
+        }
+      }
+    }
+  }
+}

@@ -884,6 +884,19 @@ const LINKING = {
   },
 
   getStateFromPath(path: string) {
+    // OAuth callbacks are consumed by the browser OAuth client during app
+    // startup, not by React Navigation. Route the transient callback URL to
+    // Home while initialization finishes so a successful authorization never
+    // renders the generic NotFound screen.
+    const callbackPath = new URL(path, 'https://social.edriffles.us').pathname
+    if (
+      IS_WEB &&
+      (callbackPath === '/oauth/callback' ||
+        callbackPath.startsWith('/oauth/callback/'))
+    ) {
+      return buildStateObject('Flat', 'Home', {})
+    }
+
     const [name, params] = router.matchPath(path)
 
     // Any time we receive a url that starts with `intent/` we want to ignore it here. It will be handled in the

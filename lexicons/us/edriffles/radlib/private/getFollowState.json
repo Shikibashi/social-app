@@ -1,0 +1,30 @@
+{
+  "lexicon": 1,
+  "id": "us.edriffles.radlib.private.getFollowState",
+  "defs": {
+    "main": {
+      "type": "query",
+      "description": "Read the directional protected-access state when the authenticated actor is either the requester or target. This does not read or create a public follow record.",
+      "parameters": {
+        "type": "params",
+        "required": ["requester", "target"],
+        "properties": {
+          "requester": { "type": "string", "format": "did" },
+          "target": { "type": "string", "format": "did" }
+        }
+      },
+      "output": {
+        "encoding": "application/json",
+        "schema": {
+          "type": "object",
+          "required": ["requester", "target", "state"],
+          "properties": {
+            "requester": { "type": "string", "format": "did" },
+            "target": { "type": "string", "format": "did" },
+            "state": { "type": "string", "knownValues": ["none", "requested", "approved", "denied", "revoked", "blocked"] }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,66 @@
+{
+  "lexicon": 1,
+  "id": "us.edriffles.radlib.private.syncPull",
+  "defs": {
+    "record": {
+      "type": "object",
+      "required": ["space", "repo", "collection", "rkey", "cid", "record", "createdAt", "updatedAt"],
+      "properties": {
+        "space": { "type": "string" },
+        "repo": { "type": "string", "format": "did" },
+        "collection": { "type": "string", "format": "nsid" },
+        "rkey": { "type": "string", "format": "record-key" },
+        "cid": { "type": "string", "format": "cid" },
+        "record": { "type": "unknown" },
+        "createdAt": { "type": "string", "format": "datetime" },
+        "updatedAt": { "type": "string", "format": "datetime" }
+      }
+    },
+    "grant": {
+      "type": "object",
+      "required": ["id", "space", "targetPdsDid", "targetActorDid", "expiresAt", "createdAt"],
+      "properties": {
+        "id": { "type": "string" },
+        "space": { "type": "string" },
+        "targetPdsDid": { "type": "string", "format": "did" },
+        "targetActorDid": { "type": "string", "format": "did" },
+        "collection": { "type": "string", "format": "nsid" },
+        "expiresAt": { "type": "string", "format": "datetime" },
+        "createdAt": { "type": "string", "format": "datetime" }
+      }
+    },
+    "main": {
+      "type": "procedure",
+      "description": "Pull private records over a direct PDS-to-PDS connection using a scoped capability. The response is never published to the public repository, Relay, or public AppView.",
+      "input": {
+        "encoding": "application/json",
+        "schema": {
+          "type": "object",
+          "required": ["grant", "space", "targetPdsDid", "targetActorDid"],
+          "properties": {
+            "grant": { "type": "string", "maxLength": 256 },
+            "space": { "type": "string" },
+            "targetPdsDid": { "type": "string", "format": "did" },
+            "targetActorDid": { "type": "string", "format": "did" },
+            "collection": { "type": "string", "format": "nsid" },
+            "limit": { "type": "integer", "minimum": 1, "maximum": 100, "default": 50 },
+            "cursor": { "type": "string", "maxLength": 128 }
+          }
+        }
+      },
+      "output": {
+        "encoding": "application/json",
+        "schema": {
+          "type": "object",
+          "required": ["grant", "space", "records"],
+          "properties": {
+            "grant": { "type": "ref", "ref": "#grant" },
+            "space": { "type": "string" },
+            "records": { "type": "array", "maxLength": 100, "items": { "type": "ref", "ref": "#record" } },
+            "cursor": { "type": "string" }
+          }
+        }
+      }
+    }
+  }
+}

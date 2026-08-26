@@ -43,6 +43,33 @@ export const IS_INTERNAL = IS_DEV || IS_TESTFLIGHT
 export const SPACES_ALPHA_ENABLED =
   process.env.EXPO_PUBLIC_SPACES_ALPHA_ENABLED === '1'
 
+const SPACES_ALPHA_ALLOWED_ENVIRONMENTS = new Set([
+  'development',
+  'test',
+  'e2e',
+  'testflight',
+])
+
+export function isSpacesAlphaDeploymentSafe(
+  environment: string | undefined,
+  enabled: boolean,
+): boolean {
+  return !enabled || SPACES_ALPHA_ALLOWED_ENVIRONMENTS.has(environment ?? '')
+}
+
+/**
+ * Spaces alpha is permitted only in explicitly named non-production builds.
+ * An unset or unknown environment fails closed instead of being treated as a
+ * development bundle.
+ */
+export function assertSpacesAlphaDeploymentSafe(): void {
+  if (!isSpacesAlphaDeploymentSafe(ENV, SPACES_ALPHA_ENABLED)) {
+    throw new Error(
+      `Spaces alpha is test-only and cannot be enabled in environment: ${ENV || 'unset'}`,
+    )
+  }
+}
+
 export const LEGACY_RADLIB_PRIVATE_ENABLED =
   process.env.EXPO_PUBLIC_LEGACY_RADLIB_PRIVATE_ENABLED === '1'
 

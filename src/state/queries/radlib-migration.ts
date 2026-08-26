@@ -2,10 +2,10 @@ import {useQuery} from '@tanstack/react-query'
 
 import {STALE} from '#/state/queries'
 import {usePdsClient} from '#/state/session'
-import {org} from '#/lexicons'
+import {us} from '#/lexicons'
 
 export const radlibMigrationStatusQueryKey = (did?: string) => [
-  'org.radlib.moderation.getMigrationStatus',
+  'us.edriffles.radlib.moderation.getMigrationStatus',
   did ?? 'logged-out',
 ]
 
@@ -18,6 +18,6 @@ export function useRadlibMigrationStatusQuery() {
     refetchOnWindowFocus: true,
     enabled: !!client.did,
     queryFn: async () =>
-      client.call(org.radlib.moderation.getMigrationStatus),
+      client.call(us.edriffles.radlib.moderation.getMigrationStatus),
   })
 }
