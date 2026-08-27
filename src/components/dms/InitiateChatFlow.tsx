@@ -247,7 +247,7 @@ export function InitiateChatFlow({
   const [footerHeight, setFooterHeight] = useState(0)
   const listRef = useRef<ListMethods>(null)
   const {currentAccount} = useSession()
-  const inputRef = useRef<TextInput>(null)
+  const inputRef = useRef<React.ComponentRef<typeof TextInput>>(null)
   const accountTooNewPromptControl = Dialog.useDialogControl()
 
   const {data: convos} = useListConvosQuery({

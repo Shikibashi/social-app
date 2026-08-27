@@ -1,8 +1,6 @@
 import {Fragment, useCallback} from 'react'
 import {Linking, View} from 'react-native'
-import {msg} from '@lingui/core/macro'
-import {useLingui} from '@lingui/react'
-import {Trans} from '@lingui/react/macro'
+import {Trans, useLingui} from '@lingui/react/macro'
 
 import {LABELS} from '#/lib/moderation'
 import {getLabelingServiceTitle, isAppLabeler} from '#/lib/moderation'
@@ -32,6 +30,7 @@ import {type Props as SVGIconProps} from '#/components/icons/common'
 import {EditBig_Stroke2_Corner2_Rounded as EditBig} from '#/components/icons/EditBig'
 import {Filter_Stroke2_Corner0_Rounded as Filter} from '#/components/icons/Filter'
 import {Group3_Stroke2_Corner0_Rounded as Group} from '#/components/icons/Group'
+import {Inbox_Stroke2_Corner2_Rounded as Inbox} from '#/components/icons/Inbox'
 import {Person_Stroke2_Corner0_Rounded as Person} from '#/components/icons/Person'
 import * as LabelingService from '#/components/LabelingServiceCard'
 import * as Layout from '#/components/Layout'
@@ -41,7 +40,10 @@ import {Loader} from '#/components/Loader'
 import {GlobalLabelPreference} from '#/components/moderation/LabelPreference'
 import * as Toast from '#/components/Toast'
 import {Text} from '#/components/Typography'
+import {useAnalytics} from '#/analytics'
 import {IS_IOS} from '#/env'
+
+const UNREAD_NOTIFICATION_CAP = 100
 
 function ErrorState({error}: {error: string}) {
   const t = useTheme()
@@ -77,7 +79,7 @@ function ErrorState({error}: {error: string}) {
 export function ModerationScreen(
   _props: NativeStackScreenProps<CommonNavigatorParams, 'Moderation'>,
 ) {
-  const {_} = useLingui()
+  const {t: l} = useLingui()
   const {
     isLoading: isPreferencesLoading,
     error: preferencesError,
@@ -105,7 +107,7 @@ export function ModerationScreen(
           <ErrorState
             error={
               preferencesError?.toString() ||
-              _(msg`Something went wrong, please try again.`)
+              l`Something went wrong, please try again.`
             }
           />
         ) : (
@@ -119,12 +121,15 @@ export function ModerationScreen(
 function SubItem({
   title,
   icon: Icon,
+  badge,
   style,
 }: ViewStyleProp & {
   title: string
   icon: React.ComponentType<SVGIconProps>
+  badge?: number
 }) {
   const t = useTheme()
+  const {t: l, i18n} = useLingui()
   return (
     <View
       style={[
@@ -140,10 +145,38 @@ function SubItem({
         <Icon size="md" style={[t.atoms.text_contrast_medium]} />
         <Text style={[a.text_sm, a.font_semi_bold]}>{title}</Text>
       </View>
-      <ChevronRight
-        size="sm"
-        style={[t.atoms.text_contrast_low, a.self_end, {paddingBottom: 2}]}
-      />
+      <View style={[a.flex_row, a.align_center, a.gap_md]}>
+        {badge ? (
+          <View
+            style={[
+              a.rounded_lg,
+              a.align_center,
+              a.justify_center,
+              a.px_sm,
+              {
+                minWidth: 24,
+                height: 24,
+                backgroundColor: t.palette.primary_500,
+              },
+            ]}>
+            <Text
+              style={[
+                a.text_xs,
+                a.font_semi_bold,
+                {color: t.palette.white, fontVariant: ['tabular-nums']},
+              ]}>
+              {badge >= UNREAD_NOTIFICATION_CAP
+                ? l({
+                    message: `${i18n.number(UNREAD_NOTIFICATION_CAP - 1)}+`,
+                    comment:
+                      'Displayed when the number of notifications exceeds the cap – for example, 99+ notifications',
+                  })
+                : i18n.number(badge)}
+            </Text>
+          </View>
+        ) : null}
+        <ChevronRight size="sm" style={[t.atoms.text_contrast_low]} />
+      </View>
     </View>
   )
 }
@@ -153,10 +186,14 @@ export function ModerationScreenInner({
 }: {
   preferences: UsePreferencesQueryResponse
 }) {
-  const {_} = useLingui()
+  const {t: l} = useLingui()
   const t = useTheme()
   const {gtMobile} = useBreakpoints()
   const {mutedWordsDialogControl} = useGlobalDialogsControlContext()
+  const ax = useAnalytics()
+  const isModerationInboxEnabled = ax.features.enabled(
+    ax.features.ModerationInboxEnable,
+  )
   const {
     isLoading: isLabelersLoading,
     data: labelers,
@@ -177,10 +214,11 @@ export function ModerationScreenInner({
   const handleCleanup = async () => {
     try {
       await removeLabelers({dids: unavailableDids})
-      Toast.show(_(msg`Removed unavailable services`), {
+      Toast.show(l`Removed unavailable services`, {
         type: 'success',
       })
-    } catch (e: any) {
+    } catch (error) {
+      const e = error as Error
       logger.error('Failed to remove unavailable labelers', {
         safeMessage: e.message,
       })
@@ -202,7 +240,8 @@ export function ModerationScreenInner({
         await setAdultContentPref({
           enabled: selected,
         })
-      } catch (e: any) {
+      } catch (error) {
+        const e = error as Error
         logger.error(`Failed to set adult content pref`, {
           message: e.message,
         })
@@ -213,6 +252,25 @@ export function ModerationScreenInner({
 
   return (
     <View style={[a.pt_2xl, a.px_lg, gtMobile && a.px_2xl]}>
+      {isModerationInboxEnabled && (
+        <Link
+          label={l`View your moderation inbox`}
+          testID="moderationInboxBtn"
+          to="/moderation/inbox"
+          style={[a.mb_2xl, a.rounded_md, a.overflow_hidden]}>
+          {state => (
+            <SubItem
+              title={l`Moderation inbox`}
+              icon={Inbox}
+              badge={3} // TODO This is a placeholder value. -dsb
+              style={[
+                t.atoms.bg_contrast_25,
+                (state.hovered || state.pressed) && [t.atoms.bg_contrast_50],
+              ]}
+            />
+          )}
+        </Link>
+      )}
       <Text
         style={[
           a.text_md,
@@ -222,7 +280,6 @@ export function ModerationScreenInner({
         ]}>
         <Trans>Moderation tools</Trans>
       </Text>
-
       <View
         style={[
           a.w_full,
@@ -231,12 +288,12 @@ export function ModerationScreenInner({
           t.atoms.bg_contrast_25,
         ]}>
         <Link
-          label={_(msg`View your default post interaction settings`)}
+          label={l`View your default post interaction settings`}
           testID="interactionSettingsBtn"
           to="/moderation/interaction-settings">
           {state => (
             <SubItem
-              title={_(msg`Interaction settings`)}
+              title={l`Interaction settings`}
               icon={EditBig}
               style={[
                 (state.hovered || state.pressed) && [t.atoms.bg_contrast_50],
@@ -247,11 +304,11 @@ export function ModerationScreenInner({
         <Divider />
         <Button
           testID="mutedWordsBtn"
-          label={_(msg`Open muted words and tags settings`)}
+          label={l`Open muted words and tags settings`}
           onPress={() => mutedWordsDialogControl.open()}>
           {state => (
             <SubItem
-              title={_(msg`Muted words & tags`)}
+              title={l`Muted words & tags`}
               icon={Filter}
               style={[
                 (state.hovered || state.pressed) && [t.atoms.bg_contrast_50],
@@ -261,12 +318,12 @@ export function ModerationScreenInner({
         </Button>
         <Divider />
         <Link
-          label={_(msg`View your moderation lists`)}
+          label={l`View your moderation lists`}
           testID="moderationlistsBtn"
           to="/moderation/modlists">
           {state => (
             <SubItem
-              title={_(msg`Moderation lists`)}
+              title={l`Moderation lists`}
               icon={Group}
               style={[
                 (state.hovered || state.pressed) && [t.atoms.bg_contrast_50],
@@ -276,12 +333,12 @@ export function ModerationScreenInner({
         </Link>
         <Divider />
         <Link
-          label={_(msg`View your muted accounts`)}
+          label={l`View your muted accounts`}
           testID="mutedAccountsBtn"
           to="/moderation/muted-accounts">
           {state => (
             <SubItem
-              title={_(msg`Muted accounts`)}
+              title={l`Muted accounts`}
               icon={Person}
               style={[
                 (state.hovered || state.pressed) && [t.atoms.bg_contrast_50],
@@ -291,12 +348,12 @@ export function ModerationScreenInner({
         </Link>
         <Divider />
         <Link
-          label={_(msg`View your blocked accounts`)}
+          label={l`View your blocked accounts`}
           testID="blockedAccountsBtn"
           to="/moderation/blocked-accounts">
           {state => (
             <SubItem
-              title={_(msg`Blocked accounts`)}
+              title={l`Blocked accounts`}
               icon={CircleBanSign}
               style={[
                 (state.hovered || state.pressed) && [t.atoms.bg_contrast_50],
@@ -306,12 +363,12 @@ export function ModerationScreenInner({
         </Link>
         <Divider />
         <Link
-          label={_(msg`Manage verification settings`)}
+          label={l`Manage verification settings`}
           testID="verificationSettingsBtn"
           to="/moderation/verification-settings">
           {state => (
             <SubItem
-              title={_(msg`Verification settings`)}
+              title={l`Verification settings`}
               icon={CircleCheck}
               style={[
                 (state.hovered || state.pressed) && [t.atoms.bg_contrast_50],
@@ -320,7 +377,6 @@ export function ModerationScreenInner({
           )}
         </Link>
       </View>
-
       <Text
         style={[
           a.pt_2xl,
@@ -331,7 +387,6 @@ export function ModerationScreenInner({
         ]}>
         <Trans>Content filters</Trans>
       </Text>
-
       <View style={[a.gap_md]}>
         <View
           style={[
@@ -354,7 +409,7 @@ export function ModerationScreenInner({
                 <Trans>Enable adult content</Trans>
               </Text>
               <Toggle.Item
-                label={_(msg`Toggle to enable or disable adult content`)}
+                label={l`Toggle to enable or disable adult content`}
                 disabled={adultContentUIDisabled}
                 name="adultContent"
                 value={adultContentEnabled}
@@ -377,11 +432,11 @@ export function ModerationScreenInner({
                   <Trans>
                     Adult content can only be enabled via the Web at{' '}
                     <InlineLinkText
-                      label={_(msg`The Edriffles web application`)}
+                      label={l`The Edriffles web application`}
                       to=""
                       onPress={evt => {
                         evt.preventDefault()
-                        Linking.openURL('https://bsky.app/')
+                        void Linking.openURL('https://bsky.app/')
                         return false
                       }}>
                       bsky.app
@@ -409,7 +464,6 @@ export function ModerationScreenInner({
           </>
         </View>
       </View>
-
       <Text
         style={[
           a.text_md,
@@ -420,7 +474,6 @@ export function ModerationScreenInner({
         ]}>
         <Trans>Advanced</Trans>
       </Text>
-
       {unavailableDids.length > 0 && (
         <Admonition.Outer type="tip" style={[a.mb_md]}>
           <Admonition.Row>
@@ -434,7 +487,7 @@ export function ModerationScreenInner({
             </Admonition.Content>
             <Admonition.Button
               color="primary_subtle"
-              label={_(msg`Remove unavailable moderation services`)}
+              label={l`Remove unavailable moderation services`}
               onPress={handleCleanup}
               disabled={isRemovingLabelers}>
               <ButtonText>
@@ -445,7 +498,6 @@ export function ModerationScreenInner({
           </Admonition.Row>
         </Admonition.Outer>
       )}
-
       {isLabelersLoading ? (
         <View style={[a.w_full, a.align_center, a.p_lg]}>
           <Loader size="xl" />

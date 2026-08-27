@@ -54,8 +54,8 @@ export function StepInfo({
   const prevEmailValueRef = useRef<string>(state.email)
   const passwordValueRef = useRef<string>(state.password)
 
-  const emailInputRef = useRef<TextInput>(null)
-  const passwordInputRef = useRef<TextInput>(null)
+  const emailInputRef = useRef<React.ComponentRef<typeof TextInput>>(null)
+  const passwordInputRef = useRef<React.ComponentRef<typeof TextInput>>(null)
   const birthdateInputRef = useRef<DateFieldRef>(null)
 
   const [hasWarnedEmail, setHasWarnedEmail] = useState<boolean>(false)

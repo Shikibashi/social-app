@@ -157,7 +157,7 @@ function ReviewListMembersDialogInner({
             <View style={[a.py_lg, a.align_center]}>
               <Loader size="lg" />
             </View>
-          ) : null
+          ) : undefined
         }
         onEndReached={() => {
           if (hasNextPage && !isFetchingNextPage) void fetchNextPage()

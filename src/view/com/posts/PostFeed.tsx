@@ -1155,6 +1155,7 @@ let PostFeed = ({
             post={item.post}
             localExplanation={localExplanation}
             record={item.record}
+            postNumbering={item.postNumbering}
             reason={indexInSlice === 0 ? slice.reason : undefined}
             feedContext={slice.feedContext}
             reqId={slice.reqId}

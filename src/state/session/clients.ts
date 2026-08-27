@@ -9,7 +9,6 @@ import {type AppViewProvider, DEFAULT_APPVIEW_PROVIDER} from './providers'
 import {type SessionTransport} from './session-core'
 
 const IS_BETA_USER_HEADER = 'X-Bsky-Is-Beta-User'
-
 /**
  * Build the signed-in appview {@link Client}.
  *

@@ -151,7 +151,7 @@ function HomeScreenReady({
   const headerMode = useHomeHeaderMode()
   const showHeader = useCallback(() => {
     'worklet'
-    headerMode.set(() =>
+    headerMode.set(
       withSpring(0, {
         ...Reanimated3DefaultSpringConfig,
         overshootClamping: true,
@@ -224,7 +224,7 @@ function HomeScreenReady({
             {...props}
             testID="homeScreenFeedTabs"
             onPressSelected={onPressSelected}
-            // @ts-ignore
+            // @ts-expect-error
             feeds={[{displayName: 'Following'}, {displayName: 'Discover'}]}
           />
         )

@@ -20,14 +20,15 @@ import * as SplashScreen from 'expo-splash-screen'
 
 import {Logotype} from '#/view/icons/Logotype'
 import {atoms as a} from '#/alf'
-// @ts-ignore
+// @ts-expect-error
 import splashImagePointer from '../assets/splash/splash.png'
-// @ts-ignore
+// @ts-expect-error
 import darkSplashImagePointer from '../assets/splash/splash-dark.png'
-const splashImageUri = RNImage.resolveAssetSource(splashImagePointer).uri
+
+const splashImageUri = RNImage.resolveAssetSource(splashImagePointer)!.uri
 const darkSplashImageUri = RNImage.resolveAssetSource(
   darkSplashImagePointer,
-).uri
+)!.uri
 
 export const Logo = forwardRef(function LogoImpl(props: SvgProps, ref) {
   const width = 1000
@@ -35,7 +36,7 @@ export const Logo = forwardRef(function LogoImpl(props: SvgProps, ref) {
   return (
     <Svg
       fill="none"
-      // @ts-ignore it's fiiiiine
+      // @ts-expect-error it's fiiiiine
       ref={ref}
       viewBox="0 0 64 66"
       style={[{width, height}, props.style]}>
@@ -124,14 +125,14 @@ export function Splash(props: React.PropsWithChildren<Props>) {
     if (isReady) {
       SplashScreen.hideAsync()
         .then(() => {
-          intro.set(() =>
+          intro.set(
             withTiming(
               1,
               {duration: 400, easing: Easing.out(Easing.cubic)},
               () => {
                 'worklet'
                 // set these values to check animation at specific point
-                outroLogo.set(() =>
+                outroLogo.set(
                   withTiming(
                     1,
                     {duration: 1200, easing: Easing.in(Easing.cubic)},
@@ -140,13 +141,13 @@ export function Splash(props: React.PropsWithChildren<Props>) {
                     },
                   ),
                 )
-                outroApp.set(() =>
+                outroApp.set(
                   withTiming(1, {
                     duration: 1200,
                     easing: Easing.inOut(Easing.cubic),
                   }),
                 )
-                outroAppOpacity.set(() =>
+                outroAppOpacity.set(
                   withTiming(1, {
                     duration: 1200,
                     easing: Easing.in(Easing.cubic),
