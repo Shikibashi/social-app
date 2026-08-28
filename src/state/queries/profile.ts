@@ -207,6 +207,9 @@ export function useProfileUpdateMutation() {
         } else {
           next.displayName = updates.displayName || undefined
           next.description = updates.description || undefined
+          if ('website' in updates) {
+            next.website = updates.website
+          }
           if ('pinnedPost' in updates) {
             next.pinnedPost = updates.pinnedPost
           }

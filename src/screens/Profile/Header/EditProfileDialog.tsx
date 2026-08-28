@@ -7,6 +7,7 @@ import {Plural, Trans} from '@lingui/react/macro'
 import {MAX_DESCRIPTION, MAX_DISPLAY_NAME, urls} from '#/lib/constants'
 import {cleanError} from '#/lib/strings/errors'
 import {isOverMaxGraphemeCount} from '#/lib/strings/helpers'
+import {definitelyUrl} from '#/lib/strings/url-helpers'
 import {logger} from '#/logger'
 import {type ImageMeta} from '#/state/gallery'
 import {useProfileUpdateMutation} from '#/state/queries/profile'
@@ -111,6 +112,8 @@ function DialogInner({
   const [displayName, setDisplayName] = useState(initialDisplayName)
   const initialDescription = profile.description || ''
   const [description, setDescription] = useState(initialDescription)
+  const initialWebsite = profile.website || ''
+  const [website, setWebsite] = useState(initialWebsite)
   const [userBanner, setUserBanner] = useState<string | undefined | null>(
     profile.banner,
   )
@@ -127,8 +130,20 @@ function DialogInner({
   const dirty =
     displayName !== initialDisplayName ||
     description !== initialDescription ||
+    website !== initialWebsite ||
     userAvatar !== profile.avatar ||
     userBanner !== profile.banner
+
+  const trimmedWebsite = website.trim()
+  const normalizedWebsite = trimmedWebsite
+    ? definitelyUrl(trimmedWebsite)
+    : undefined
+  const websiteInvalid = trimmedWebsite !== '' && !normalizedWebsite
+  const websiteForUpdate = (
+    trimmedWebsite === initialWebsite.trim()
+      ? initialWebsite.trim() || undefined
+      : normalizedWebsite || undefined
+  ) as app.bsky.actor.profile.Main['website']
 
   useEffect(() => {
     setDirty(dirty)
@@ -172,12 +187,14 @@ function DialogInner({
 
   const onPressSave = useCallback(async () => {
     setImageError('')
+    if (websiteInvalid) return
     try {
       await updateProfileMutation({
         profile,
         updates: {
           displayName: displayName.trimEnd(),
           description: description.trimEnd(),
+          website: websiteForUpdate,
         },
         newUserAvatar,
         newUserBanner,
@@ -194,6 +211,8 @@ function DialogInner({
     control,
     displayName,
     description,
+    websiteForUpdate,
+    websiteInvalid,
     newUserAvatar,
     newUserBanner,
     setImageError,
@@ -236,7 +255,8 @@ function DialogInner({
           !dirty ||
           isUpdatingProfile ||
           displayNameTooLong ||
-          descriptionTooLong
+          descriptionTooLong ||
+          websiteInvalid
         }
         size="small"
         color="primary"
@@ -257,6 +277,7 @@ function DialogInner({
       isUpdatingProfile,
       displayNameTooLong,
       descriptionTooLong,
+      websiteInvalid,
     ],
   )
 
@@ -354,6 +375,36 @@ function DialogInner({
               </Trans>
             </Admonition>
           )}
+
+        <View>
+          <TextField.LabelText>
+            <Trans>Website</Trans>
+          </TextField.LabelText>
+          <TextField.Root isInvalid={websiteInvalid}>
+            <Dialog.Input
+              defaultValue={website}
+              onChangeText={setWebsite}
+              label={_(msg`Website`)}
+              placeholder={_(msg`https://example.com`)}
+              keyboardType="url"
+              autoCapitalize="none"
+              autoComplete="url"
+              autoCorrect={false}
+              testID="editProfileWebsiteInput"
+            />
+          </TextField.Root>
+          {websiteInvalid && (
+            <Text
+              style={[
+                a.text_sm,
+                a.mt_xs,
+                a.font_semi_bold,
+                {color: t.palette.negative_400},
+              ]}>
+              <Trans>This is not a valid link</Trans>
+            </Text>
+          )}
+        </View>
 
         <View>
           <TextField.LabelText>
