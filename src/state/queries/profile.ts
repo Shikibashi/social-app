@@ -24,6 +24,7 @@ import {
 } from '@tanstack/react-query'
 
 import {uploadBlob} from '#/lib/api'
+import {fetchAccountProfile} from '#/lib/api/account-profile'
 import {until} from '#/lib/async/until'
 import {useToggleMutationQueue} from '#/lib/hooks/useToggleMutationQueue'
 import {updateProfileShadow} from '#/state/cache/profile-shadow'
@@ -82,6 +83,7 @@ export function useProfileQuery({
   const client = useAppviewClient()
   const pdsClient = useMaybePdsClient()
   const {currentAccount} = useSession()
+  const ownerAccount = currentAccount?.did === did ? currentAccount : undefined
   const {getUnstableProfile} = useUnstableProfileViewCache()
   return useQuery<app.bsky.actor.defs.ProfileViewDetailed>({
     // WARNING
@@ -92,24 +94,22 @@ export function useProfileQuery({
     refetchOnWindowFocus: true,
     queryKey: RQKEY(did ?? ''),
     queryFn: async () => {
-      const profile = await client.call(app.bsky.actor.getProfile, {
+      if (pdsClient && ownerAccount) {
+        try {
+          return await fetchAccountProfile({
+            pdsClient,
+            appviewClient: client,
+            actor: ownerAccount.did,
+            handle: ownerAccount.handle,
+          })
+        } catch {
+          // Keep the AppView path when the account PDS is temporarily unavailable.
+        }
+      }
+
+      return await client.call(app.bsky.actor.getProfile, {
         actor: (did ?? '') as AtIdentifierString,
       })
-      if (!pdsClient || currentAccount?.did !== did) return profile
-
-      try {
-        const record = await pdsClient.get(app.bsky.actor.profile.main)
-        if (app.bsky.actor.profile.main.matches(record.value)) {
-          return {
-            ...profile,
-            displayName: record.value.displayName,
-            description: record.value.description,
-          }
-        }
-      } catch {
-        // Keep the AppView profile if the account PDS is temporarily unavailable.
-      }
-      return profile
     },
     placeholderData: () => {
       if (!did) return

@@ -7,6 +7,8 @@ import {
   type HandleString,
 } from '@atproto/syntax'
 
+import {createServiceClient} from '#/lib/lexClient'
+import {resolvePdsEndpointForDid} from '#/state/session/pds-resolution'
 import {app, com} from '#/lexicons'
 import * as bsky from '#/types/bsky'
 
@@ -20,6 +22,10 @@ export type AccountPostFeed = {
   cursor?: string
   feed: app.bsky.feed.defs.FeedViewPost[]
 }
+
+export type MissingPostResolver = (
+  uri: AtUriString,
+) => Promise<app.bsky.feed.defs.PostView | undefined>
 
 /**
  * Account-owned records are authoritative for the signed-in actor. The
@@ -71,7 +77,7 @@ export async function fetchAccountPostFeed({
   const posts = await hydrateAccountPostRecords(appviewClient, records)
   const postsByUri = new Map(posts.map(post => [post.uri, post]))
   const author = records.some(record => !postsByUri.has(record.uri))
-    ? await getAccountPostAuthor(appviewClient, actor)
+    ? await getAccountPostAuthor(appviewClient, pdsClient, actor)
     : undefined
 
   return {
@@ -102,20 +108,59 @@ export async function fetchAccountPost({
 }): Promise<app.bsky.feed.defs.PostView | undefined> {
   if (!canReadAccountPosts(pdsClient, actor)) return undefined
 
-  const atUri = new AtUri(uri)
-  if (!atUri.host.startsWith('did:')) {
-    const resolved = await appviewClient.call(
-      com.atproto.identity.resolveHandle,
-      {handle: atUri.host as HandleString},
-    )
-    atUri.host = resolved.did
-  }
+  const atUri = await resolvePostUri(appviewClient, uri)
   if (atUri.host !== actor || atUri.collection !== app.bsky.feed.post.$type) {
     return undefined
   }
 
+  return fetchPostRecord({
+    pdsClient,
+    appviewClient,
+    actor,
+    atUri,
+  })
+}
+
+/**
+ * Recover a public post directly from the PDS named by its author DID when an
+ * AppView has not indexed it yet. The result is still passed through the
+ * authenticated relationship check by callers before it is rendered.
+ */
+export async function fetchPostFromAuthorPds({
+  appviewClient,
+  uri,
+}: {
+  appviewClient: Client
+  uri: AtUriString
+}): Promise<app.bsky.feed.defs.PostView | undefined> {
+  const atUri = await resolvePostUri(appviewClient, uri)
+  if (!atUri.host.startsWith('did:')) return undefined
+  if (atUri.collection !== app.bsky.feed.post.$type) return undefined
+
+  const endpoint = await resolvePdsEndpointForDid(atUri.host)
+  if (!endpoint || !isHttpsUrl(endpoint)) return undefined
+
+  return fetchPostRecord({
+    pdsClient: createServiceClient(endpoint),
+    appviewClient,
+    actor: atUri.host,
+    atUri,
+  })
+}
+
+async function fetchPostRecord({
+  pdsClient,
+  appviewClient,
+  actor,
+  atUri,
+}: {
+  pdsClient: Client
+  appviewClient: Client
+  actor: string
+  atUri: AtUri
+}): Promise<app.bsky.feed.defs.PostView | undefined> {
   const record = await pdsClient.call(com.atproto.repo.getRecord, {
-    repo: actor,
+    repo: actor as AtIdentifierString,
     collection: app.bsky.feed.post.$type,
     rkey: atUri.rkeySafe,
   })
@@ -123,7 +168,7 @@ export async function fetchAccountPost({
     return undefined
   }
 
-  const author = await getAccountPostAuthor(appviewClient, actor)
+  const author = await getAccountPostAuthor(appviewClient, pdsClient, actor)
   return postRecordToView(
     {
       cid: record.cid,
@@ -132,6 +177,25 @@ export async function fetchAccountPost({
     },
     author,
   )
+}
+
+async function resolvePostUri(client: Client, uri: string): Promise<AtUri> {
+  const atUri = new AtUri(uri)
+  if (!atUri.host.startsWith('did:')) {
+    const resolved = await client.call(com.atproto.identity.resolveHandle, {
+      handle: atUri.host as HandleString,
+    })
+    atUri.host = resolved.did
+  }
+  return atUri
+}
+
+function isHttpsUrl(value: string): boolean {
+  try {
+    return new URL(value).protocol === 'https:'
+  } catch {
+    return false
+  }
 }
 
 function matchesAuthorFilter(value: unknown, filter: string | undefined) {
@@ -170,11 +234,12 @@ async function hydrateAccountPostRecords(
 }
 
 async function getAccountPostAuthor(
-  client: Client,
+  appviewClient: Client,
+  pdsClient: Client,
   actor: string,
 ): Promise<app.bsky.actor.defs.ProfileViewBasic> {
   try {
-    const profile = await client.call(app.bsky.actor.getProfile, {
+    const profile = await appviewClient.call(app.bsky.actor.getProfile, {
       actor: actor as AtIdentifierString,
     })
     return {
@@ -182,6 +247,23 @@ async function getAccountPostAuthor(
       $type: 'app.bsky.actor.defs#profileViewBasic',
     }
   } catch {
+    try {
+      const record = await pdsClient.call(com.atproto.repo.getRecord, {
+        repo: actor as AtIdentifierString,
+        collection: app.bsky.actor.profile.$type,
+        rkey: 'self',
+      })
+      if (app.bsky.actor.profile.main.matches(record.value)) {
+        return {
+          $type: 'app.bsky.actor.defs#profileViewBasic',
+          did: actor as DidString,
+          handle: actor as HandleString,
+          displayName: record.value.displayName,
+        }
+      }
+    } catch {
+      // Fall through to the identity-only profile below.
+    }
     return {
       did: actor as DidString,
       handle: actor as HandleString,

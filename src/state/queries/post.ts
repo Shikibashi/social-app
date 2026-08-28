@@ -72,13 +72,11 @@ export function usePostQuery(
 
       let post: app.bsky.feed.defs.PostView | undefined
       let primaryError: Error | undefined
-      try {
-        post = await fetchPost(client, uri)
-      } catch (error) {
-        primaryError = error instanceof Error ? error : new Error(String(error))
-      }
 
-      if (!post && pdsClient && currentAccount?.did) {
+      // The signed-in actor's PDS is the authoritative source for its own
+      // post records. Read it before the eventually consistent AppView so a
+      // newly published post cannot appear missing in its own detail view.
+      if (pdsClient && currentAccount?.did) {
         try {
           post = await fetchAccountPost({
             pdsClient,
@@ -86,8 +84,18 @@ export function usePostQuery(
             actor: currentAccount.did,
             uri,
           })
-        } catch {
-          // Continue to the existing public fallback/error behavior below.
+        } catch (error) {
+          primaryError =
+            error instanceof Error ? error : new Error(String(error))
+        }
+      }
+
+      if (!post) {
+        try {
+          post = await fetchPost(client, uri)
+        } catch (error) {
+          primaryError ??=
+            error instanceof Error ? error : new Error(String(error))
         }
       }
 

@@ -1,6 +1,7 @@
 import {type Client} from '@atproto/lex'
 import {describe, expect, it, jest} from '@jest/globals'
 
+import {type MissingPostResolver} from '#/lib/api/account-posts'
 import {app, com} from '#/lexicons'
 import {LikesFeedAPI} from './likes'
 
@@ -14,8 +15,9 @@ const feedParams = {
 
 function fakeClient(
   call: (method: unknown, params: unknown) => Promise<unknown>,
+  assertDid?: string,
 ): Client {
-  return {call: jest.fn(call)} as unknown as Client
+  return {assertDid, call: jest.fn(call)} as unknown as Client
 }
 
 describe('LikesFeedAPI', () => {
@@ -45,7 +47,7 @@ describe('LikesFeedAPI', () => {
           },
         ],
       })
-    })
+    }, actor)
     const appview = fakeClient(method => {
       expect(method).toBe(app.bsky.feed.getPosts)
       return Promise.resolve({
@@ -73,6 +75,82 @@ describe('LikesFeedAPI', () => {
         limit: 30,
       }),
     )
+  })
+
+  it('recovers an AppView-missing liked post from its author PDS', async () => {
+    const account = fakeClient(method => {
+      expect(method).toBe(com.atproto.repo.listRecords)
+      return Promise.resolve({
+        records: [
+          {
+            uri: `at://${actor}/app.bsky.feed.like/1`,
+            cid: 'bafyreia',
+            value: {
+              $type: 'app.bsky.feed.like',
+              subject: {uri: secondPostUri, cid: 'bafyreia'},
+              createdAt: '2026-08-27T00:00:00.000Z',
+            },
+          },
+        ],
+      })
+    }, actor)
+    const appview = fakeClient(method => {
+      expect(method).toBe(app.bsky.feed.getPosts)
+      return Promise.resolve({posts: []})
+    })
+    const recoveredPost = {
+      uri: secondPostUri,
+      cid: 'bafyre-second',
+      author: {
+        did: 'did:plc:author',
+        handle: 'author.test',
+        viewer: {},
+      },
+      record: {
+        $type: 'app.bsky.feed.post',
+        text: 'Recovered from the author PDS',
+        createdAt: '2026-08-27T00:00:00.000Z',
+      },
+      indexedAt: '2026-08-27T00:00:00.000Z',
+    } as app.bsky.feed.defs.PostView
+    const resolveMissingPost = jest
+      .fn<MissingPostResolver>()
+      .mockResolvedValue(recoveredPost)
+    const api = new LikesFeedAPI({
+      client: appview,
+      accountClient: account,
+      feedParams,
+      resolveMissingPost,
+    })
+
+    await expect(api.fetch({cursor: undefined, limit: 30})).resolves.toEqual({
+      cursor: undefined,
+      feed: [{post: recoveredPost}],
+    })
+    expect(resolveMissingPost).toHaveBeenCalledWith(secondPostUri)
+  })
+
+  it('does not read another actor through the signed-in account PDS', async () => {
+    const otherActor = 'did:plc:someone-else' as typeof feedParams.actor
+    const account = fakeClient(() => Promise.resolve(undefined), actor)
+    const appviewFeed = {
+      cursor: 'appview-cursor',
+      feed: [{post: {uri: firstPostUri}}],
+    }
+    const appview = fakeClient(method => {
+      expect(method).toBe(app.bsky.feed.getActorLikes)
+      return Promise.resolve(appviewFeed)
+    })
+    const api = new LikesFeedAPI({
+      client: appview,
+      accountClient: account,
+      feedParams: {actor: otherActor},
+    })
+
+    await expect(api.fetch({cursor: undefined, limit: 30})).resolves.toEqual(
+      appviewFeed,
+    )
+    expect(account.call).not.toHaveBeenCalled()
   })
 
   it('keeps the AppView implementation when no account client is available', async () => {
