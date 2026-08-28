@@ -36,13 +36,21 @@ module.exports = function (_config) {
   const USE_SENTRY = Boolean(process.env.SENTRY_AUTH_TOKEN)
   const PRODUCT_NAME = process.env.EXPO_PUBLIC_BRAND_NAME?.trim() || 'Edriffles'
   const EXPECTED_PUBLIC_WEB_ORIGIN = 'https://social.edriffles.us'
+  const EXPECTED_ACCOUNT_SERVICE = 'https://pds.edriffles.us'
   const PUBLIC_WEB_ORIGIN =
     process.env.EXPO_PUBLIC_PUBLIC_WEB_ORIGIN?.trim() ||
     EXPECTED_PUBLIC_WEB_ORIGIN
+  const ACCOUNT_SERVICE =
+    process.env.EXPO_PUBLIC_ACCOUNT_SERVICE?.trim() || EXPECTED_ACCOUNT_SERVICE
 
   if (IS_PRODUCTION && PUBLIC_WEB_ORIGIN !== EXPECTED_PUBLIC_WEB_ORIGIN) {
     throw new Error(
       `Production web builds must use ${EXPECTED_PUBLIC_WEB_ORIGIN} as EXPO_PUBLIC_PUBLIC_WEB_ORIGIN; received ${PUBLIC_WEB_ORIGIN}`,
+    )
+  }
+  if (IS_PRODUCTION && ACCOUNT_SERVICE !== EXPECTED_ACCOUNT_SERVICE) {
+    throw new Error(
+      `Production web builds must use ${EXPECTED_ACCOUNT_SERVICE} as EXPO_PUBLIC_ACCOUNT_SERVICE; received ${ACCOUNT_SERVICE}`,
     )
   }
 

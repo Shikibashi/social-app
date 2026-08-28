@@ -16,12 +16,16 @@ export const LOCAL_DEV_SERVICE =
 export const STAGING_SERVICE = 'https://staging.bsky.dev'
 export const BSKY_SERVICE = 'https://bsky.social'
 export const BSKY_SERVICE_DID = 'did:web:bsky.social'
+export const EDRIFFLES_ACCOUNT_SERVICE = 'https://pds.edriffles.us'
 /**
  * Optional account entryway used before login and for handle availability.
  * This is not an AppView read authority; public reads use PUBLIC_APPVIEW_URL.
  */
 export const PUBLIC_ACCOUNT_SERVICE =
-  process.env.EXPO_PUBLIC_ACCOUNT_SERVICE || BSKY_SERVICE
+  process.env.EXPO_PUBLIC_ACCOUNT_SERVICE ||
+  (process.env.EXPO_PUBLIC_ENV === 'production'
+    ? EDRIFFLES_ACCOUNT_SERVICE
+    : BSKY_SERVICE)
 /** @deprecated Use PUBLIC_APPVIEW_URL. */
 export const APPVIEW_ENDPOINT = PUBLIC_APPVIEW_URL
 /**

@@ -3,6 +3,7 @@ const fs = require('fs')
 
 const projectRoot = path.join(__dirname, '..')
 const expectedPublicWebOrigin = 'https://social.edriffles.us'
+const expectedAccountService = 'https://pds.edriffles.us'
 const isProductionBuild = process.env.EXPO_PUBLIC_ENV === 'production'
 
 if (isProductionBuild) {
@@ -11,6 +12,13 @@ if (isProductionBuild) {
   if (configuredPublicWebOrigin !== expectedPublicWebOrigin) {
     throw new Error(
       `Production web builds must use ${expectedPublicWebOrigin} as EXPO_PUBLIC_PUBLIC_WEB_ORIGIN; received ${configuredPublicWebOrigin}`,
+    )
+  }
+  const configuredAccountService =
+    process.env.EXPO_PUBLIC_ACCOUNT_SERVICE?.trim() || expectedAccountService
+  if (configuredAccountService !== expectedAccountService) {
+    throw new Error(
+      `Production web builds must use ${expectedAccountService} as EXPO_PUBLIC_ACCOUNT_SERVICE; received ${configuredAccountService}`,
     )
   }
 }
