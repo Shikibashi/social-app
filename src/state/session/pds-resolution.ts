@@ -33,6 +33,16 @@ export async function resolvePdsEndpointForDid(
     })
     if (!response.ok) return undefined
     const document = (await response.json()) as DidDocument
+    if (document.id !== did) {
+      logger.debug(
+        'session: DID document subject did not match requested DID',
+        {
+          did,
+          documentId: document.id,
+        },
+      )
+      return undefined
+    }
     return getPdsEndpoint(document) ?? undefined
   } catch (error) {
     logger.debug('session: could not resolve account PDS endpoint', {

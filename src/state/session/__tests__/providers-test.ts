@@ -5,6 +5,7 @@ const mockPersistedState: Record<string, unknown> = {
   appviewProviders: undefined,
   appviewSelections: {},
   appviewFallbacks: {},
+  identityResolutionPolicy: undefined,
 }
 
 jest.mock('#/state/persisted', () => ({
@@ -18,11 +19,15 @@ jest.mock('#/state/persisted', () => ({
 import {
   DEFAULT_APPVIEW_PROVIDER,
   getAppViewProviders,
+  getAppViewProvidersForCapability,
   getDefaultAppViewDisplayName,
+  getIdentityResolutionPolicy,
   getSelectedAppViewProvider,
   probeAppViewProvider,
   registerAppViewProvider,
   selectAppViewProvider,
+  setAppViewProviderCapabilities,
+  setIdentityResolutionPolicy,
   validateAppViewProvider,
 } from '../providers'
 
@@ -31,6 +36,7 @@ describe('AppView provider validation and health probing', () => {
     mockPersistedState.appviewProviders = undefined
     mockPersistedState.appviewSelections = {}
     mockPersistedState.appviewFallbacks = {}
+    mockPersistedState.identityResolutionPolicy = undefined
   })
 
   afterEach(() => {
@@ -176,5 +182,109 @@ describe('AppView provider validation and health probing', () => {
     ])
     await selectAppViewProvider(DID, alternate.id)
     expect(getSelectedAppViewProvider(DID).id).toBe(alternate.id)
+  })
+
+  it('routes capabilities independently and keeps legacy providers read-only', () => {
+    const readOnly = {
+      ...DEFAULT_APPVIEW_PROVIDER,
+      id: 'read-only-appview',
+      displayName: 'Read-only AppView',
+      capabilities: ['public-read'] as const,
+    }
+    mockPersistedState.appviewProviders = [
+      {
+        ...DEFAULT_APPVIEW_PROVIDER,
+        id: 'legacy-appview',
+        displayName: 'Legacy AppView',
+        serviceDid:
+          'did:web:legacy.example' as typeof DEFAULT_APPVIEW_PROVIDER.serviceDid,
+        endpoint: 'https://legacy.example',
+        builtin: false,
+        capabilities: undefined,
+      },
+      readOnly,
+    ]
+
+    expect(
+      getAppViewProvidersForCapability('identity-resolution').map(
+        provider => provider.id,
+      ),
+    ).toEqual([DEFAULT_APPVIEW_PROVIDER.id])
+    const providers = getAppViewProviders()
+    expect(
+      providers.find(provider => provider.id === 'legacy-appview'),
+    )?.toMatchObject({
+      capabilities: ['public-read'],
+    })
+    expect(
+      providers.find(provider => provider.id === readOnly.id),
+    )?.toMatchObject({
+      capabilities: ['public-read'],
+    })
+  })
+
+  it('persists an explicit identity reconciliation policy', async () => {
+    const alternate = {
+      ...DEFAULT_APPVIEW_PROVIDER,
+      id: 'alternate-appview',
+      displayName: 'Alternate AppView',
+      serviceDid:
+        'did:web:alternate.example' as typeof DEFAULT_APPVIEW_PROVIDER.serviceDid,
+      endpoint: 'https://alternate.example',
+      builtin: false,
+    }
+    mockPersistedState.appviewProviders = [DEFAULT_APPVIEW_PROVIDER, alternate]
+
+    expect(getIdentityResolutionPolicy()).toEqual({mode: 'require-agreement'})
+    await setIdentityResolutionPolicy({
+      mode: 'prefer-provider',
+      preferredProviderId: alternate.id,
+    })
+    expect(getIdentityResolutionPolicy()).toEqual({
+      mode: 'prefer-provider',
+      preferredProviderId: alternate.id,
+    })
+    await expect(
+      setIdentityResolutionPolicy({
+        mode: 'prefer-provider',
+        preferredProviderId: 'missing',
+      }),
+    ).rejects.toThrow('Preferred identity resolver is not registered')
+  })
+
+  it('keeps identity resolution opt-in and revokes a preferred provider safely', async () => {
+    const alternate = {
+      ...DEFAULT_APPVIEW_PROVIDER,
+      id: 'alternate-appview',
+      displayName: 'Alternate AppView',
+      serviceDid:
+        'did:web:alternate.example' as typeof DEFAULT_APPVIEW_PROVIDER.serviceDid,
+      endpoint: 'https://alternate.example',
+      builtin: false,
+      capabilities: ['public-read'] as const,
+    }
+    mockPersistedState.appviewProviders = [DEFAULT_APPVIEW_PROVIDER, alternate]
+
+    expect(
+      getAppViewProvidersForCapability('identity-resolution').map(
+        item => item.id,
+      ),
+    ).toEqual([DEFAULT_APPVIEW_PROVIDER.id])
+    await setAppViewProviderCapabilities(alternate.id, [
+      'public-read',
+      'identity-resolution',
+    ])
+    await setIdentityResolutionPolicy({
+      mode: 'prefer-provider',
+      preferredProviderId: alternate.id,
+    })
+    await setAppViewProviderCapabilities(alternate.id, ['public-read'])
+
+    expect(
+      getAppViewProvidersForCapability('identity-resolution').map(
+        item => item.id,
+      ),
+    ).toEqual([DEFAULT_APPVIEW_PROVIDER.id])
+    expect(getIdentityResolutionPolicy()).toEqual({mode: 'require-agreement'})
   })
 })

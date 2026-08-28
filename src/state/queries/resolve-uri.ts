@@ -1,57 +1,65 @@
-import {type Client} from '@atproto/lex'
 import {AtUri, type HandleString} from '@atproto/syntax'
 import {type QueryClient, queryOptions, useQuery} from '@tanstack/react-query'
 
-import {serviceBoundaryError} from '#/lib/service-boundary'
+import {
+  IdentityResolutionDisagreementError,
+  type IdentityResolutionPolicy,
+  IdentityResolutionUnavailableError,
+  resolveIdentityClaims,
+  type ResolverProvider,
+} from '#/lib/identity-runtime'
 import {STALE} from '#/state/queries'
-import {useAppviewClient, useSession} from '#/state/session'
-import {getSelectedAppViewProvider} from '#/state/session/providers'
+import {getPublicAppviewClient} from '#/state/session/clients'
+import {resolvePdsEndpointForDid} from '#/state/session/pds-resolution'
+import {
+  type AppViewProvider,
+  getAppViewProvidersForCapability,
+  getIdentityResolutionPolicy,
+} from '#/state/session/providers'
 import {com} from '#/lexicons'
-import {useUnstableProfileViewCache} from './profile'
 
 const RQKEY_ROOT = 'resolved-did'
-export const RQKEY = (didOrHandle: string) => [RQKEY_ROOT, didOrHandle]
+type ResolutionQueryContext = {
+  providerIds: string[]
+  policy: IdentityResolutionPolicy
+}
+export const RQKEY = (didOrHandle: string, context?: ResolutionQueryContext) =>
+  context
+    ? [RQKEY_ROOT, didOrHandle, context.providerIds, context.policy]
+    : [RQKEY_ROOT, didOrHandle]
 
 const resolvedDidQueryOptions = (
-  client: Client,
-  getUnstableProfile: (did: string) => {did: string} | undefined,
   didOrHandle: string | undefined,
-  provider: ReturnType<typeof getSelectedAppViewProvider>,
+  providers: AppViewProvider[],
+  policy: IdentityResolutionPolicy,
 ) =>
   queryOptions({
     staleTime: STALE.HOURS.ONE,
-    queryKey: RQKEY(didOrHandle ?? ''),
+    queryKey: RQKEY(didOrHandle ?? '', {
+      providerIds: providers.map(provider => provider.id),
+      policy,
+    }),
     queryFn: async () => {
       if (!didOrHandle) return ''
       // Just return the did if it's already one
       if (didOrHandle.startsWith('did:')) return didOrHandle
 
       /*
-       * Resolution stays on the appview client: the old agent call was proxied
-       * to the appview, and the PDS implementation is not equivalent for
-       * handles hosted elsewhere.
+       * Handle resolution is a read capability, not a property of the one
+       * AppView selected for feeds and profiles. Query each explicitly
+       * identity-capable provider without a session token, then let the local
+       * identity policy reconcile the attributable claims.
        */
-      try {
-        const data = await client.call(com.atproto.identity.resolveHandle, {
-          handle: didOrHandle as HandleString,
-        })
-        return data.did
-      } catch (error) {
-        throw serviceBoundaryError(
-          {
-            kind: 'identity resolver',
-            displayName: provider.displayName,
-            serviceDid: provider.serviceDid,
-          },
-          error,
-        )
+      const result = await resolveIdentityClaims(
+        didOrHandle,
+        makeIdentityResolverProviders(providers),
+        policy,
+      )
+      if (result.selected) return result.selected.did
+      if (result.status === 'disagreement') {
+        throw new IdentityResolutionDisagreementError(result)
       }
-    },
-    initialData: () => {
-      // Return undefined if no did or handle
-      if (!didOrHandle) return
-      const profile = getUnstableProfile(didOrHandle)
-      return profile?.did
+      throw new IdentityResolutionUnavailableError(result)
     },
     enabled: !!didOrHandle,
   })
@@ -60,29 +68,63 @@ export function useResolveUriQuery(uri: string | undefined) {
   const urip = new AtUri(uri || '')
   const host = urip.host
 
-  const client = useAppviewClient()
-  const {currentAccount} = useSession()
-  const {getUnstableProfile} = useUnstableProfileViewCache()
-  const provider = getSelectedAppViewProvider(currentAccount?.did ?? '')
+  const providers = getAppViewProvidersForCapability('identity-resolution')
+  const policy = getIdentityResolutionPolicy()
 
   return useQuery({
-    ...resolvedDidQueryOptions(client, getUnstableProfile, host, provider),
+    ...resolvedDidQueryOptions(host, providers, policy),
     select: did => ({
       did,
-      uri: AtUri.make(did, urip.collection, urip.rkey).toString(),
+      uri: AtUri.make(did!, urip.collection, urip.rkey).toString(),
     }),
   })
 }
 
 export function useResolveDidQuery(didOrHandle: string | undefined) {
-  const client = useAppviewClient()
-  const {currentAccount} = useSession()
-  const {getUnstableProfile} = useUnstableProfileViewCache()
-  const provider = getSelectedAppViewProvider(currentAccount?.did ?? '')
+  const providers = getAppViewProvidersForCapability('identity-resolution')
+  const policy = getIdentityResolutionPolicy()
 
-  return useQuery(
-    resolvedDidQueryOptions(client, getUnstableProfile, didOrHandle, provider),
-  )
+  return useQuery(resolvedDidQueryOptions(didOrHandle, providers, policy))
+}
+
+/**
+ * Adapt registered public AppViews to the identity-runtime contract. These
+ * requests intentionally use unauthenticated clients: resolving a public
+ * handle must not mint or disclose an account-PDS service-auth token to every
+ * resolver the user has registered.
+ *
+ * DID documents are fetched through the protocol's DID method resolution after
+ * each provider supplies a handle claim. The shared promise map avoids
+ * duplicate DID-document requests while keeping the resolver claims
+ * attributable to the AppView that supplied the handle mapping.
+ */
+function makeIdentityResolverProviders(
+  providers: AppViewProvider[],
+): ResolverProvider[] {
+  const didEndpointPromises = new Map<string, Promise<string | undefined>>()
+
+  return providers.map(provider => {
+    const client = getPublicAppviewClient(provider.endpoint)
+    return {
+      id: provider.id,
+      resolveHandle: async (handle: string) => {
+        const data = await client.call(com.atproto.identity.resolveHandle, {
+          handle: handle as HandleString,
+        })
+        return {did: data.did}
+      },
+      resolveDid: async (did: string) => {
+        let endpointPromise = didEndpointPromises.get(did)
+        if (!endpointPromise) {
+          endpointPromise = resolvePdsEndpointForDid(did)
+          didEndpointPromises.set(did, endpointPromise)
+        }
+        const endpoint = await endpointPromise
+        if (!endpoint) throw new Error('DID document did not declare a PDS')
+        return {endpoint}
+      },
+    }
+  })
 }
 
 export function precacheResolvedUri(
@@ -90,5 +132,5 @@ export function precacheResolvedUri(
   handle: string,
   did: string,
 ) {
-  queryClient.setQueryData<string>(RQKEY(handle), did)
+  queryClient.setQueriesData<string>({queryKey: RQKEY(handle)}, did)
 }

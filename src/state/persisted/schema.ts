@@ -24,6 +24,10 @@ const appviewProviderSchema = z.object({
     .optional(),
   builtin: z.boolean(),
   enabled: z.boolean(),
+  /** Optional for persisted providers created before capability routing. */
+  capabilities: z
+    .array(z.enum(['public-read', 'identity-resolution']))
+    .optional(),
 })
 export type PersistedAppViewProvider = z.infer<typeof appviewProviderSchema>
 const accountSchema = z.object({
@@ -78,6 +82,12 @@ const schema = z.object({
   appviewSelections: z.record(z.string(), z.string()).optional(),
   appviewFallbacks: z
     .record(z.string(), z.record(z.string(), z.string()))
+    .optional(),
+  identityResolutionPolicy: z
+    .object({
+      mode: z.enum(['require-agreement', 'first-verified', 'prefer-provider']),
+      preferredProviderId: z.string().min(1).optional(),
+    })
     .optional(),
   /** Local read preference; does not change the public data returned by an AppView. */
   threadCurationView: z.enum(['all', 'author']).optional(),
@@ -191,10 +201,14 @@ export const defaults: Schema = {
       healthPath: configuredProjectAppViewHealthPath,
       builtin: true,
       enabled: configuredProjectAppViewEndpoint !== 'https://appview.invalid',
+      capabilities: ['public-read', 'identity-resolution'],
     },
   ],
   appviewSelections: {},
   appviewFallbacks: {},
+  identityResolutionPolicy: {
+    mode: 'require-agreement',
+  },
   threadCurationView: 'all',
   colorMode: 'system',
   darkTheme: 'dim',

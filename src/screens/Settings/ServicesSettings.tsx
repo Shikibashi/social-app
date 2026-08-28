@@ -5,14 +5,20 @@ import {useLingui} from '@lingui/react'
 import {Trans} from '@lingui/react/macro'
 import {type NativeStackScreenProps} from '@react-navigation/native-stack'
 
+import {type IdentityResolutionPolicy} from '#/lib/identity-runtime'
 import {type CommonNavigatorParams} from '#/lib/routes/types'
 import {useSession, useSessionApi} from '#/state/session'
 import {
   type AppViewProvider,
+  type AppViewProviderCapability,
   getAppViewProviders,
+  getAppViewProvidersForCapability,
+  getIdentityResolutionPolicy,
   getSelectedAppViewProvider,
   probeAppViewProvider,
   registerAppViewProvider,
+  setAppViewProviderCapabilities,
+  setIdentityResolutionPolicy as persistIdentityResolutionPolicy,
 } from '#/state/session/providers'
 import * as SettingsList from '#/screens/Settings/components/SettingsList'
 import {atoms as a, useTheme} from '#/alf'
@@ -34,6 +40,8 @@ export function ServicesSettingsScreen({}: Props) {
       ? getSelectedAppViewProvider(currentAccount.did).id
       : undefined,
   )
+  const [identityPolicy, setIdentityPolicy] =
+    useState<IdentityResolutionPolicy>(() => getIdentityResolutionPolicy())
   const [providerName, setProviderName] = useState('')
   const [providerEndpoint, setProviderEndpoint] = useState('')
   const [providerDid, setProviderDid] = useState('')
@@ -42,9 +50,95 @@ export function ServicesSettingsScreen({}: Props) {
 
   useEffect(() => {
     setProviders(getAppViewProviders())
+    setIdentityPolicy(getIdentityResolutionPolicy())
     if (currentAccount)
       setSelected(getSelectedAppViewProvider(currentAccount.did).id)
   }, [currentAccount])
+
+  async function saveIdentityPolicy(policy: IdentityResolutionPolicy) {
+    try {
+      await persistIdentityResolutionPolicy(policy)
+      setIdentityPolicy(policy)
+    } catch (error) {
+      Alert.alert(
+        'Identity policy not saved',
+        error instanceof Error ? error.message : String(error),
+      )
+    }
+  }
+
+  function chooseIdentityPolicy() {
+    const identityProviders = getAppViewProvidersForCapability(
+      'identity-resolution',
+    )
+    Alert.alert(
+      'Identity resolution policy',
+      'Every identity-capable provider is queried. This policy controls how the client handles disagreement; it does not grant a provider ownership of your identity.',
+      [
+        {
+          text: 'Require agreement',
+          onPress: () => void saveIdentityPolicy({mode: 'require-agreement'}),
+        },
+        {
+          text: 'Use first verified result',
+          onPress: () => void saveIdentityPolicy({mode: 'first-verified'}),
+        },
+        {
+          text: 'Prefer one provider',
+          onPress: () => {
+            Alert.alert(
+              'Preferred identity provider',
+              'Choose the provider whose verified claim may be used when claims are incomplete or disagree.',
+              [
+                ...identityProviders.map(provider => ({
+                  text: provider.displayName,
+                  onPress: () =>
+                    void saveIdentityPolicy({
+                      mode: 'prefer-provider',
+                      preferredProviderId: provider.id,
+                    }),
+                })),
+                {text: 'Cancel', style: 'cancel' as const},
+              ],
+            )
+          },
+        },
+        {text: 'Cancel', style: 'cancel'},
+      ],
+    )
+  }
+
+  async function toggleIdentityProvider(provider: AppViewProvider) {
+    const capabilities: AppViewProviderCapability[] = provider.capabilities ?? [
+      'public-read',
+    ]
+    const nextCapabilities: AppViewProviderCapability[] = capabilities.includes(
+      'identity-resolution',
+    )
+      ? capabilities.filter(capability => capability !== 'identity-resolution')
+      : [...capabilities, 'identity-resolution']
+    try {
+      await setAppViewProviderCapabilities(provider.id, nextCapabilities)
+      setProviders(getAppViewProviders())
+      setIdentityPolicy(getIdentityResolutionPolicy())
+    } catch (error) {
+      Alert.alert(
+        'Identity provider not changed',
+        error instanceof Error ? error.message : String(error),
+      )
+    }
+  }
+
+  const identityPolicyLabel =
+    identityPolicy.mode === 'require-agreement'
+      ? 'Require agreement from all identity providers'
+      : identityPolicy.mode === 'first-verified'
+        ? 'Use the first verified provider result'
+        : `Prefer ${
+            providers.find(
+              provider => provider.id === identityPolicy.preferredProviderId,
+            )?.displayName ?? identityPolicy.preferredProviderId
+          }`
 
   async function choose(provider: AppViewProvider) {
     if (!currentAccount) return
@@ -105,6 +199,7 @@ export function ServicesSettingsScreen({}: Props) {
       healthPath: '/xrpc/_health',
       builtin: false,
       enabled: true,
+      capabilities: ['public-read'],
     }
     setIsRegistering(true)
     try {
@@ -171,6 +266,52 @@ export function ServicesSettingsScreen({}: Props) {
               </SettingsList.BadgeText>
             </SettingsList.PressableItem>
           ))}
+          <SettingsList.Item>
+            <View style={[a.flex_1, a.gap_sm]}>
+              <SettingsList.ItemText style={[{paddingHorizontal: 0}]}>
+                Identity resolver providers
+              </SettingsList.ItemText>
+              <SettingsList.ItemText
+                style={[
+                  {paddingHorizontal: 0},
+                  a.text_sm,
+                  t.atoms.text_contrast_medium,
+                ]}>
+                Providers start with public-read only. Allow identity resolution
+                separately; this sends only public resolver requests and remains
+                revocable on this device.
+              </SettingsList.ItemText>
+            </View>
+          </SettingsList.Item>
+          {providers.map(provider => (
+            <SettingsList.PressableItem
+              key={`identity-${provider.id}`}
+              label={`${
+                provider.capabilities?.includes('identity-resolution')
+                  ? 'Remove identity resolution from'
+                  : 'Allow identity resolution for'
+              } ${provider.displayName}`}
+              onPress={() => void toggleIdentityProvider(provider)}>
+              <SettingsList.ItemText>
+                {provider.displayName}
+              </SettingsList.ItemText>
+              <SettingsList.BadgeText>
+                {provider.capabilities?.includes('identity-resolution')
+                  ? 'Identity resolution allowed'
+                  : 'Public reads only'}
+              </SettingsList.BadgeText>
+            </SettingsList.PressableItem>
+          ))}
+          <SettingsList.PressableItem
+            label="Identity resolution policy"
+            onPress={chooseIdentityPolicy}>
+            <SettingsList.ItemText>
+              Identity resolution policy
+            </SettingsList.ItemText>
+            <SettingsList.BadgeText>
+              {identityPolicyLabel}
+            </SettingsList.BadgeText>
+          </SettingsList.PressableItem>
           <SettingsList.Divider />
           <SettingsList.Item>
             <View style={[a.flex_1, a.gap_sm]}>
@@ -185,7 +326,9 @@ export function ServicesSettingsScreen({}: Props) {
                 ]}>
                 <Trans>
                   Register an AppView read provider by its own endpoint. The
-                  endpoint is checked first; no silent fallback is added.
+                  endpoint is checked first; new providers start with
+                  public-read only. Identity resolution is a separate, revocable
+                  choice.
                 </Trans>
               </SettingsList.ItemText>
               <TextInput

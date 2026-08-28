@@ -1,8 +1,10 @@
 import {
   IdentityCache,
+  IdentityResolutionDisagreementError,
   IdentityRuntimeCoordinator,
   MigrationMachine,
   resolveIdentity,
+  resolveIdentityClaims,
   validateIdentityEndpoint,
 } from './identity-runtime'
 describe('identity runtime', () => {
@@ -21,6 +23,130 @@ describe('identity runtime', () => {
     ])
     expect(r.status).toBe('verified')
     expect(r.provenance.resolver).toBe('primary')
+  })
+
+  it('collects attributable claims from all resolvers when they agree', async () => {
+    const result = await resolveIdentityClaims('alice.example', [
+      {
+        id: 'resolver-a',
+        resolveHandle: () => Promise.resolve({did: 'did:plc:alice'}),
+        resolveDid: () =>
+          Promise.resolve({
+            handle: 'alice.example',
+            endpoint: 'https://pds.example',
+          }),
+      },
+      {
+        id: 'resolver-b',
+        resolveHandle: () => Promise.resolve({did: 'did:plc:alice'}),
+        resolveDid: () =>
+          Promise.resolve({
+            handle: 'alice.example',
+            endpoint: 'https://pds.example',
+          }),
+      },
+    ])
+
+    expect(result.status).toBe('verified')
+    expect(result.claims.map(claim => claim.providerId)).toEqual([
+      'resolver-a',
+      'resolver-b',
+    ])
+    expect(result.selected?.providerId).toBe('resolver-a')
+    expect(result.claims[1]?.provenance.resolver).toBe('resolver-b')
+  })
+
+  it('fails closed on disagreement and preserves the disputed claims', async () => {
+    const result = await resolveIdentityClaims('alice.example', [
+      {
+        id: 'resolver-a',
+        resolveHandle: () => Promise.resolve({did: 'did:plc:alice'}),
+        resolveDid: () =>
+          Promise.resolve({
+            handle: 'alice.example',
+            endpoint: 'https://pds-a.example',
+          }),
+      },
+      {
+        id: 'resolver-b',
+        resolveHandle: () => Promise.resolve({did: 'did:plc:other'}),
+        resolveDid: () =>
+          Promise.resolve({
+            handle: 'alice.example',
+            endpoint: 'https://pds-b.example',
+          }),
+      },
+    ])
+
+    expect(result.status).toBe('disagreement')
+    expect(result.selected).toBeUndefined()
+    expect(result.claims.map(claim => claim.did)).toEqual([
+      'did:plc:alice',
+      'did:plc:other',
+    ])
+    expect(() => {
+      throw new IdentityResolutionDisagreementError(result)
+    }).toThrow('Identity resolvers disagree for alice.example')
+  })
+
+  it('allows an explicit preferred-provider policy without hiding disagreement', async () => {
+    const result = await resolveIdentityClaims(
+      'alice.example',
+      [
+        {
+          id: 'resolver-a',
+          resolveHandle: () => Promise.resolve({did: 'did:plc:alice'}),
+          resolveDid: () =>
+            Promise.resolve({
+              handle: 'alice.example',
+              endpoint: 'https://pds-a.example',
+            }),
+        },
+        {
+          id: 'resolver-b',
+          resolveHandle: () => Promise.resolve({did: 'did:plc:other'}),
+          resolveDid: () =>
+            Promise.resolve({
+              handle: 'alice.example',
+              endpoint: 'https://pds-b.example',
+            }),
+        },
+      ],
+      {mode: 'prefer-provider', preferredProviderId: 'resolver-b'},
+    )
+
+    expect(result.status).toBe('disagreement')
+    expect(result.selected?.providerId).toBe('resolver-b')
+    expect(result.selected?.did).toBe('did:plc:other')
+  })
+
+  it('records unavailable providers and requires an explicit partial-result policy', async () => {
+    const providers = [
+      {
+        id: 'resolver-a',
+        resolveHandle: () => Promise.resolve({did: 'did:plc:alice'}),
+        resolveDid: () =>
+          Promise.resolve({
+            handle: 'alice.example',
+            endpoint: 'https://pds.example',
+          }),
+      },
+      {
+        id: 'resolver-b',
+        resolveHandle: () => Promise.reject(new Error('offline')),
+        resolveDid: () => Promise.reject(new Error('offline')),
+      },
+    ]
+    const agreement = await resolveIdentityClaims('alice.example', providers)
+    expect(agreement.status).toBe('resolver-unavailable')
+    expect(agreement.unavailableResolvers).toEqual(['resolver-b'])
+    expect(agreement.selected).toBeUndefined()
+
+    const explicit = await resolveIdentityClaims('alice.example', providers, {
+      mode: 'first-verified',
+    })
+    expect(explicit.status).toBe('resolver-unavailable')
+    expect(explicit.selected?.providerId).toBe('resolver-a')
   })
   it('rejects unsafe endpoints and tries no unsafe authority', async () => {
     expect(validateIdentityEndpoint('http://127.0.0.1')).toBe(false)

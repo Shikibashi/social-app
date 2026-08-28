@@ -1,5 +1,9 @@
 import {type DidString, isDidString} from '@atproto/lex'
 
+import {
+  DEFAULT_IDENTITY_RESOLUTION_POLICY,
+  type IdentityResolutionPolicy,
+} from '#/lib/identity-runtime'
 import * as persisted from '#/state/persisted'
 import {
   APPVIEW_PROXY_DID,
@@ -11,6 +15,13 @@ import {
 const configuredAppViewDisplayName = process.env
   .EXPO_PUBLIC_APPVIEW_DISPLAY_NAME as string | undefined
 
+export const APPVIEW_PROVIDER_CAPABILITIES = [
+  'public-read',
+  'identity-resolution',
+] as const
+export type AppViewProviderCapability =
+  (typeof APPVIEW_PROVIDER_CAPABILITIES)[number]
+
 export type AppViewProvider = {
   id: string
   displayName: string
@@ -20,6 +31,12 @@ export type AppViewProvider = {
   healthPath?: string
   builtin: boolean
   enabled: boolean
+  /**
+   * Capabilities are declarations about the endpoint, not grants to it. The
+   * legacy shape is accepted without this field and normalized to public-read
+   * only; identity resolution must be an explicit opt-in.
+   */
+  capabilities?: AppViewProviderCapability[]
 }
 
 export function getDefaultAppViewDisplayName(
@@ -52,6 +69,7 @@ export const DEFAULT_APPVIEW_PROVIDER: AppViewProvider = {
   // absent so failure is attributable to this service, never silently routed
   // to a stock AppView.
   enabled: true,
+  capabilities: [...APPVIEW_PROVIDER_CAPABILITIES],
 }
 
 export type AppViewProviderValidationOptions = {
@@ -97,10 +115,14 @@ export function validateAppViewProvider(
   const healthPath = provider.healthPath ?? '/xrpc/_health'
   if (!/^\/xrpc\/[A-Za-z0-9._-]+$/.test(healthPath))
     throw new Error('AppView provider health path is invalid')
+  const capabilities = provider.capabilities?.length
+    ? [...new Set(provider.capabilities)]
+    : (['public-read'] satisfies AppViewProviderCapability[])
   return {
     ...provider,
     endpoint: endpoint.toString().replace(/\/$/, ''),
     healthPath,
+    capabilities,
   }
 }
 
@@ -112,7 +134,9 @@ export function getAppViewProviders(): AppViewProvider[] {
   const candidates = configured
     ? persistedProviders.some(provider => provider.id === configured.id)
       ? persistedProviders.map(provider =>
-          provider.id === configured.id ? configured : provider,
+          provider.id === configured.id
+            ? {...configured, capabilities: provider.capabilities}
+            : provider,
         )
       : [...persistedProviders, configured]
     : persistedProviders
@@ -128,6 +152,53 @@ export function getAppViewProviders(): AppViewProvider[] {
     .filter((provider): provider is AppViewProvider =>
       Boolean(provider?.enabled),
     )
+}
+
+/**
+ * Return providers that explicitly participate in one read capability. A
+ * provider may be registered for public reads without being trusted for
+ * identity resolution, and future capabilities can be added without changing
+ * the account-host client or creating another provider registry.
+ */
+export function getAppViewProvidersForCapability(
+  capability: AppViewProviderCapability,
+): AppViewProvider[] {
+  return getAppViewProviders().filter(
+    provider => provider.capabilities?.includes(capability) ?? false,
+  )
+}
+
+export function getIdentityResolutionPolicy(): IdentityResolutionPolicy {
+  const policy = persisted.get('identityResolutionPolicy')
+  if (!policy) return DEFAULT_IDENTITY_RESOLUTION_POLICY
+  if (policy.mode === 'first-verified') return {mode: 'first-verified'}
+  if (
+    policy.mode === 'prefer-provider' &&
+    policy.preferredProviderId &&
+    getAppViewProvidersForCapability('identity-resolution').some(
+      provider => provider.id === policy.preferredProviderId,
+    )
+  ) {
+    return {
+      mode: 'prefer-provider',
+      preferredProviderId: policy.preferredProviderId,
+    }
+  }
+  return DEFAULT_IDENTITY_RESOLUTION_POLICY
+}
+
+export async function setIdentityResolutionPolicy(
+  policy: IdentityResolutionPolicy,
+): Promise<void> {
+  if (
+    policy.mode === 'prefer-provider' &&
+    !getAppViewProvidersForCapability('identity-resolution').some(
+      provider => provider.id === policy.preferredProviderId,
+    )
+  ) {
+    throw new Error('Preferred identity resolver is not registered')
+  }
+  await persisted.write('identityResolutionPolicy', policy)
 }
 
 function configuredProjectProvider(): AppViewProvider | undefined {
@@ -190,6 +261,43 @@ export async function registerAppViewProvider(
   await persisted.write('appviewProviders', [...providers, validated])
   return validated
 }
+
+/**
+ * Change only the local capability declaration for a registered provider.
+ * Endpoint identity remains validated from the provider record, while
+ * capability grants stay user-revocable and do not require a new provider
+ * registry or a new network authority.
+ */
+export async function setAppViewProviderCapabilities(
+  providerId: string,
+  capabilities: AppViewProviderCapability[],
+): Promise<AppViewProvider> {
+  const provider = getAppViewProviders().find(item => item.id === providerId)
+  if (!provider) throw new Error('Unknown AppView provider')
+  const updated = validateAppViewProvider({
+    ...provider,
+    capabilities: [...new Set(capabilities)],
+  })
+  await persisted.write(
+    'appviewProviders',
+    getAppViewProviders().map(item =>
+      item.id === providerId ? updated : item,
+    ),
+  )
+
+  const policy = getIdentityResolutionPolicy()
+  if (
+    policy.mode === 'prefer-provider' &&
+    policy.preferredProviderId === providerId &&
+    !updated.capabilities?.includes('identity-resolution')
+  ) {
+    await persisted.write('identityResolutionPolicy', {
+      mode: 'require-agreement',
+    })
+  }
+  return updated
+}
+
 export async function selectAppViewProvider(
   did: string,
   providerId: string,
