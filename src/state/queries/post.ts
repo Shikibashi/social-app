@@ -1,10 +1,6 @@
 import {useCallback} from 'react'
 import {type Client} from '@atproto/lex'
-import {
-  AtUri,
-  type AtUriString,
-  type HandleString,
-} from '@atproto/syntax'
+import {AtUri, type AtUriString, type HandleString} from '@atproto/syntax'
 import {deleteLike, deletePost, deleteRepost, like, repost} from '@bsky/sdk'
 import {
   type QueryClient,
@@ -13,13 +9,16 @@ import {
   useQueryClient,
 } from '@tanstack/react-query'
 
+import {fetchAccountPost} from '#/lib/api/account-posts'
 import {useToggleMutationQueue} from '#/lib/hooks/useToggleMutationQueue'
 import {updatePostShadow} from '#/state/cache/post-shadow'
 import {type Shadow} from '#/state/cache/types'
+import {RQKEY_ROOT as POST_FEED_RQKEY_ROOT} from '#/state/queries/post-feed'
 import {hasDirectViewerBlock} from '#/state/queries/public-visibility'
 import {hasViewerBlockBoundary} from '#/state/queries/usePostThread/blocked'
 import {
   useAppviewClient,
+  useMaybePdsClient,
   usePdsClient,
   usePublicAppviewClient,
   useSession,
@@ -55,9 +54,7 @@ async function viewerOwnsDirectBlockForPost(
 
 const RQKEY_ROOT = 'post'
 export const RQKEY = (postUri: string, allowPublicFallback = false) =>
-  allowPublicFallback
-    ? [RQKEY_ROOT, postUri, true]
-    : [RQKEY_ROOT, postUri]
+  allowPublicFallback ? [RQKEY_ROOT, postUri, true] : [RQKEY_ROOT, postUri]
 
 export function usePostQuery(
   uri: string | undefined,
@@ -65,6 +62,8 @@ export function usePostQuery(
 ) {
   const client = useAppviewClient()
   const publicClient = usePublicAppviewClient()
+  const pdsClient = useMaybePdsClient()
+  const {currentAccount} = useSession()
   const allowPublicFallback = opts.allowPublicFallback === true
   return useQuery<app.bsky.feed.defs.PostView>({
     queryKey: RQKEY(uri || '', allowPublicFallback),
@@ -72,17 +71,40 @@ export function usePostQuery(
       if (!uri) throw new Error('[unreachable] No URI provided')
 
       let post: app.bsky.feed.defs.PostView | undefined
+      let primaryError: Error | undefined
       try {
         post = await fetchPost(client, uri)
       } catch (error) {
-        if (!allowPublicFallback) throw error
+        primaryError = error instanceof Error ? error : new Error(String(error))
+      }
+
+      if (!post && pdsClient && currentAccount?.did) {
+        try {
+          post = await fetchAccountPost({
+            pdsClient,
+            appviewClient: client,
+            actor: currentAccount.did,
+            uri,
+          })
+        } catch {
+          // Continue to the existing public fallback/error behavior below.
+        }
+      }
+
+      if (!post && primaryError && !allowPublicFallback) {
+        throw primaryError
+      }
+
+      if (!post && allowPublicFallback) {
         if (await viewerOwnsDirectBlockForPost(client, uri)) {
-          throw error
+          if (primaryError) throw primaryError
+          throw new Error('No data')
         }
         try {
           post = await fetchPost(publicClient, uri)
         } catch {
-          throw error
+          if (primaryError) throw primaryError
+          throw new Error('No data')
         }
       }
 
@@ -195,6 +217,7 @@ export function usePostLikeMutationQueue(
   logContext: Metrics['post:like']['logContext'],
 ) {
   const queryClient = useQueryClient()
+  const {currentAccount} = useSession()
   const postUri = post.uri
   const postCid = post.cid
   const initialLikeUri = post.viewer?.like
@@ -228,6 +251,11 @@ export function usePostLikeMutationQueue(
       updatePostShadow(queryClient, postUri, {
         likeUri: finalLikeUri,
       })
+      if (currentAccount?.did) {
+        void queryClient.invalidateQueries({
+          queryKey: [POST_FEED_RQKEY_ROOT, `likes|${currentAccount.did}`],
+        })
+      }
     },
   })
 

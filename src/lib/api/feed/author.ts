@@ -1,6 +1,10 @@
 import {type Client, type XrpcRequestParams} from '@atproto/lex'
 
 import {
+  canReadAccountPosts,
+  fetchAccountPostFeed,
+} from '#/lib/api/account-posts'
+import {
   filterPublicPostsForViewer,
   hasDirectViewerBlock,
 } from '#/state/queries/public-visibility'
@@ -15,19 +19,23 @@ type GetAuthorFeedParams = XrpcRequestParams<
 export class AuthorFeedAPI implements FeedAPI {
   client: Client
   fallbackClient?: Client
+  accountClient?: Client
   _params: GetAuthorFeedParams
 
   constructor({
     client,
     fallbackClient,
+    accountClient,
     feedParams,
   }: {
     client: Client
     fallbackClient?: Client
+    accountClient?: Client | null
     feedParams: GetAuthorFeedParams
   }) {
     this.client = client
     this.fallbackClient = fallbackClient
+    this.accountClient = accountClient ?? undefined
     this._params = feedParams
   }
 
@@ -38,6 +46,18 @@ export class AuthorFeedAPI implements FeedAPI {
   }
 
   async peekLatest(): Promise<app.bsky.feed.defs.FeedViewPost> {
+    if (canReadAccountPosts(this.accountClient, this.params.actor)) {
+      try {
+        const data = await this.fetchFromAccountPds({
+          cursor: undefined,
+          limit: 1,
+        })
+        return data.feed[0]
+      } catch {
+        // Keep the AppView path as a compatibility fallback when the account
+        // PDS is temporarily unavailable.
+      }
+    }
     const data = await this.client.call(app.bsky.feed.getAuthorFeed, {
       ...this.params,
       limit: 1,
@@ -52,6 +72,15 @@ export class AuthorFeedAPI implements FeedAPI {
     cursor: string | undefined
     limit: number
   }): Promise<FeedAPIResponse> {
+    if (canReadAccountPosts(this.accountClient, this.params.actor)) {
+      try {
+        return await this.fetchFromAccountPds({cursor, limit})
+      } catch {
+        // Keep the AppView path as a compatibility fallback when the account
+        // PDS is temporarily unavailable.
+      }
+    }
+
     /*
      * A failed request rejects rather than resolving, so the error propagates
      * to the query and drives the feed error UI (blocked actor, rate limit).
@@ -117,6 +146,23 @@ export class AuthorFeedAPI implements FeedAPI {
       cursor: data.cursor,
       feed: this._filter(data.feed),
     }
+  }
+
+  private fetchFromAccountPds({
+    cursor,
+    limit,
+  }: {
+    cursor: string | undefined
+    limit: number
+  }): Promise<FeedAPIResponse> {
+    return fetchAccountPostFeed({
+      pdsClient: this.accountClient!,
+      appviewClient: this.client,
+      actor: this.params.actor,
+      cursor,
+      limit,
+      filter: this.params.filter,
+    })
   }
 
   private async viewerOwnsDirectBlock(): Promise<boolean> {

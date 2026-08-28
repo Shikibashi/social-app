@@ -3,11 +3,6 @@ import {AppState} from 'react-native'
 import {type Client} from '@atproto/lex'
 import {type AtIdentifierString, AtUri, type AtUriString} from '@atproto/syntax'
 import {
-  moderatePost,
-  type ModerationDecision,
-  type ModerationPrefs,
-} from '#/lib/moderation'
-import {
   type InfiniteData,
   type QueryClient,
   type QueryKey,
@@ -31,11 +26,17 @@ import {
   type FeedTunerFn,
 } from '#/lib/api/feed-manip'
 import {DISCOVER_FEED_URI} from '#/lib/constants'
+import {
+  moderatePost,
+  type ModerationDecision,
+  type ModerationPrefs,
+} from '#/lib/moderation'
 import {logger} from '#/logger'
 import {STALE} from '#/state/queries'
 import {DEFAULT_LOGGED_OUT_PREFERENCES} from '#/state/queries/preferences/const'
 import {
   useAppviewClient,
+  useMaybePdsClient,
   usePublicAppviewClient,
   useSession,
 } from '#/state/session'
@@ -158,6 +159,7 @@ export function usePostFeedQuery(
     ) ?? -1
   const enableFollowingToDiscoverFallback = followingPinnedIndex === 0
   const {hasSession} = useSession()
+  const accountClient = useMaybePdsClient()
   const client = useAppviewClient()
   const publicClient = usePublicAppviewClient()
   const lastRun = useRef<{
@@ -205,6 +207,7 @@ export function usePostFeedQuery(
               feedParams: params || {},
               feedTuners,
               client,
+              accountClient,
               publicClient,
               // Not in the query key because they don't change:
               userInterests,
@@ -461,6 +464,7 @@ function createApi({
   feedTuners,
   userInterests,
   client,
+  accountClient,
   publicClient,
   enableFollowingToDiscoverFallback,
 }: {
@@ -469,6 +473,7 @@ function createApi({
   feedTuners: FeedTunerFn[]
   userInterests?: string
   client: Client
+  accountClient?: Client | null
   publicClient?: Client
   enableFollowingToDiscoverFallback: boolean
 }) {
@@ -496,12 +501,14 @@ function createApi({
     return new AuthorFeedAPI({
       client,
       fallbackClient: publicClient,
+      accountClient,
       feedParams: {actor: actor as AtIdentifierString, filter},
     })
   } else if (feedDesc.startsWith('likes')) {
     const [__, actor] = feedDesc.split('|')
     return new LikesFeedAPI({
       client,
+      accountClient,
       feedParams: {actor: actor as AtIdentifierString},
     })
   } else if (feedDesc.startsWith('feedgen')) {

@@ -3,6 +3,7 @@ import {type Client} from '@atproto/lex'
 import {type AtUriString} from '@atproto/syntax'
 import {useQuery, useQueryClient} from '@tanstack/react-query'
 
+import {fetchAccountPost} from '#/lib/api/account-posts'
 import {useModerationOpts} from '#/state/preferences/moderation-opts'
 import {useThreadPreferences} from '#/state/queries/preferences/useThreadPreferences'
 import {
@@ -36,6 +37,7 @@ import {getThreadgateRecord} from '#/state/queries/usePostThread/utils'
 import * as views from '#/state/queries/usePostThread/views'
 import {
   useAppviewClient,
+  useMaybePdsClient,
   usePublicAppviewClient,
   useSession,
 } from '#/state/session'
@@ -43,6 +45,7 @@ import {useMergeThreadgateHiddenReplies} from '#/state/threadgate-hidden-replies
 import {useBreakpoints} from '#/alf'
 import {IS_WEB} from '#/env'
 import {app} from '#/lexicons'
+import * as bsky from '#/types/bsky'
 
 const EMPTY_THREADGATE_HIDDEN_REPLIES = new Set<string>()
 
@@ -79,7 +82,10 @@ async function fetchThreadPostsWithPublicFallback(
     const publicData = await publicClient.call(app.bsky.feed.getPosts, {
       uris,
     })
-    const publicPosts = await filterPublicPostsForViewer(client, publicData.posts)
+    const publicPosts = await filterPublicPostsForViewer(
+      client,
+      publicData.posts,
+    )
     const primaryByUri = new Map(primary.posts.map(post => [post.uri, post]))
     const publicByUri = new Map(publicPosts.map(post => [post.uri, post]))
 
@@ -107,7 +113,8 @@ export function usePostThread({anchor}: {anchor?: string}) {
   const qc = useQueryClient()
   const client = useAppviewClient()
   const publicClient = usePublicAppviewClient()
-  const {hasSession} = useSession()
+  const pdsClient = useMaybePdsClient()
+  const {currentAccount, hasSession} = useSession()
   const {gtPhone} = useBreakpoints()
   const moderationOpts = useModerationOpts()
   const mergeThreadgateHiddenReplies = useMergeThreadgateHiddenReplies()
@@ -141,12 +148,48 @@ export function usePostThread({anchor}: {anchor?: string}) {
     enabled: isThreadPreferencesLoaded && !!anchor && !!moderationOpts,
     queryKey: postThreadQueryKey,
     async queryFn(ctx) {
-      const data = await client.call(app.bsky.unspecced.getPostThreadV2, {
-        anchor: anchor! as AtUriString,
-        branchingFactor: view === 'linear' ? LINEAR_VIEW_BF : TREE_VIEW_BF,
-        below,
-        sort: sort,
-      })
+      let data: app.bsky.unspecced.getPostThreadV2.$OutputBody
+      try {
+        data = await client.call(app.bsky.unspecced.getPostThreadV2, {
+          anchor: anchor! as AtUriString,
+          branchingFactor: view === 'linear' ? LINEAR_VIEW_BF : TREE_VIEW_BF,
+          below,
+          sort: sort,
+        })
+      } catch (error) {
+        if (!pdsClient || !currentAccount?.did) throw error
+        const directPost = await fetchAccountPost({
+          pdsClient,
+          appviewClient: client,
+          actor: currentAccount.did,
+          uri: anchor!,
+        })
+        if (!directPost) throw error
+        data = {
+          hasOtherReplies: false,
+          thread: [views.postViewToThreadPlaceholder(directPost)],
+        }
+      }
+
+      const missingAnchor = data.thread.some(
+        item =>
+          item.depth === 0 &&
+          bsky.isType(app.bsky.unspecced.defs.threadItemNotFound, item.value),
+      )
+      if (missingAnchor && pdsClient && currentAccount?.did) {
+        const directPost = await fetchAccountPost({
+          pdsClient,
+          appviewClient: client,
+          actor: currentAccount.did,
+          uri: anchor!,
+        })
+        if (directPost) {
+          data = {
+            hasOtherReplies: false,
+            thread: [views.postViewToThreadPlaceholder(directPost)],
+          }
+        }
+      }
 
       const hydratedThread = await hydrateBlockedThreadItems(
         data.thread || [],

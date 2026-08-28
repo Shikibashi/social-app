@@ -38,7 +38,12 @@ import {
   useUnstableProfileViewCache,
 } from '#/state/queries/unstable-profile-cache'
 import {useUpdateProfileVerificationCache} from '#/state/queries/verification/useUpdateProfileVerificationCache'
-import {useAppviewClient, usePdsClient, useSession} from '#/state/session'
+import {
+  useAppviewClient,
+  useMaybePdsClient,
+  usePdsClient,
+  useSession,
+} from '#/state/session'
 import * as userActionHistory from '#/state/userActionHistory'
 import {useAnalytics} from '#/analytics'
 import {type Metrics, toClout} from '#/analytics/metrics'
@@ -75,6 +80,8 @@ export function useProfileQuery({
   staleTime?: number
 }) {
   const client = useAppviewClient()
+  const pdsClient = useMaybePdsClient()
+  const {currentAccount} = useSession()
   const {getUnstableProfile} = useUnstableProfileViewCache()
   return useQuery<app.bsky.actor.defs.ProfileViewDetailed>({
     // WARNING
@@ -85,9 +92,24 @@ export function useProfileQuery({
     refetchOnWindowFocus: true,
     queryKey: RQKEY(did ?? ''),
     queryFn: async () => {
-      return await client.call(app.bsky.actor.getProfile, {
+      const profile = await client.call(app.bsky.actor.getProfile, {
         actor: (did ?? '') as AtIdentifierString,
       })
+      if (!pdsClient || currentAccount?.did !== did) return profile
+
+      try {
+        const record = await pdsClient.get(app.bsky.actor.profile.main)
+        if (app.bsky.actor.profile.main.matches(record.value)) {
+          return {
+            ...profile,
+            displayName: record.value.displayName,
+            description: record.value.description,
+          }
+        }
+      } catch {
+        // Keep the AppView profile if the account PDS is temporarily unavailable.
+      }
+      return profile
     },
     placeholderData: () => {
       if (!did) return
@@ -203,40 +225,51 @@ export function useProfileUpdateMutation() {
         }
         return next
       })
-      await whenAppViewReady(
-        appviewClient,
-        profile.did,
+      // Text-only edits are authoritative as soon as the PDS write succeeds.
+      // Waiting for the external AppView made a successful bio edit look stuck
+      // when that index was unavailable or behind the account PDS. Keep the
+      // propagation wait for settings that explicitly need AppView state or
+      // need refreshed blob URLs.
+      if (
         checkCommitted ||
-          (fresh => {
-            if (typeof newUserAvatar !== 'undefined') {
-              if (newUserAvatar === null && fresh.avatar) {
-                // url hasn't cleared yet
-                return false
-              } else if (fresh.avatar === profile.avatar) {
-                // url hasn't changed yet
-                return false
+        typeof newUserAvatar !== 'undefined' ||
+        typeof newUserBanner !== 'undefined'
+      ) {
+        await whenAppViewReady(
+          appviewClient,
+          profile.did,
+          checkCommitted ||
+            (fresh => {
+              if (typeof newUserAvatar !== 'undefined') {
+                if (newUserAvatar === null && fresh.avatar) {
+                  // url hasn't cleared yet
+                  return false
+                } else if (fresh.avatar === profile.avatar) {
+                  // url hasn't changed yet
+                  return false
+                }
               }
-            }
-            if (typeof newUserBanner !== 'undefined') {
-              if (newUserBanner === null && fresh.banner) {
-                // url hasn't cleared yet
-                return false
-              } else if (fresh.banner === profile.banner) {
-                // url hasn't changed yet
-                return false
+              if (typeof newUserBanner !== 'undefined') {
+                if (newUserBanner === null && fresh.banner) {
+                  // url hasn't changed yet
+                  return false
+                } else if (fresh.banner === profile.banner) {
+                  // url hasn't changed yet
+                  return false
+                }
               }
-            }
-            if (typeof updates === 'function') {
-              return true
-            }
-            return (
-              fresh.displayName === updates.displayName &&
-              fresh.description === updates.description
-            )
-          }),
-      )
+              if (typeof updates === 'function') {
+                return true
+              }
+              return (
+                fresh.displayName === updates.displayName &&
+                fresh.description === updates.description
+              )
+            }),
+        )
+      }
     },
-    async onSuccess(_, variables) {
+    onSuccess(_, variables) {
       // invalidate cache
       void queryClient.invalidateQueries({
         queryKey: RQKEY(variables.profile.did),
@@ -244,7 +277,10 @@ export function useProfileUpdateMutation() {
       void queryClient.invalidateQueries({
         queryKey: [profilesQueryKeyRoot, [variables.profile.did]],
       })
-      await updateProfileVerificationCache({profile: variables.profile})
+      // Verification is derived by the external AppView and is not part of
+      // the profile record write. Do not keep the edit dialog open while that
+      // best-effort cache refresh waits on a lagging provider.
+      void updateProfileVerificationCache({profile: variables.profile})
     },
   })
 }
