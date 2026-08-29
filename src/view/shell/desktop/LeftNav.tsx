@@ -19,6 +19,7 @@ import {useFetchHandle} from '#/state/queries/handle'
 import {useUnreadMessageCount} from '#/state/queries/messages/list-conversations'
 import {useUnreadNotifications} from '#/state/queries/notifications/unread'
 import {useProfilesQuery} from '#/state/queries/profile'
+import {useCurrentAccountProfile} from '#/state/queries/useCurrentAccountProfile'
 import {type SessionAccount, useSession, useSessionApi} from '#/state/session'
 import {useLoggedOutViewControls} from '#/state/shell/logged-out'
 import {useCloseAllActiveElements} from '#/state/util'
@@ -102,15 +103,22 @@ const LEFT_NAV_PWI_WIDTH = 245
 function ProfileCard({minimal}: {minimal: boolean}) {
   const {currentAccount, accounts} = useSession()
   const {logoutEveryAccount} = useSessionApi()
-  const {isLoading, data} = useProfilesQuery({
+  const {isLoading: isProfilesLoading, data} = useProfilesQuery({
     handles: accounts.map(acc => acc.did),
   })
+  const currentProfile = useCurrentAccountProfile()
   const profiles = data?.profiles
   const signOutPromptControl = Prompt.usePromptControl()
   const {t: l} = useLingui()
   const t = useTheme()
 
-  const profile = profiles?.find(p => p.did === currentAccount!.did)
+  // The signed-in account's PDS is authoritative for its profile. The batch
+  // AppView query remains useful for account switching, but an AppView outage
+  // or provider composition disagreement must not leave the current account
+  // avatar stuck on a loading placeholder.
+  const profile =
+    profiles?.find(p => p.did === currentAccount!.did) ?? currentProfile
+  const isLoading = isProfilesLoading && !profile
   const otherAccounts = accounts
     .filter(acc => acc.did !== currentAccount!.did)
     .map(account => ({

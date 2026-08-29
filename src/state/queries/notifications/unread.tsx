@@ -19,12 +19,20 @@ import BroadcastChannel from '#/lib/broadcast'
 import {resetBadgeCount} from '#/lib/notifications/notifications'
 import {logger} from '#/logger'
 import {useModerationOpts} from '#/state/preferences/moderation-opts'
+import {
+  composeAppViewProviderRead,
+  requireComposedProviderValue,
+} from '#/state/queries/provider-composition'
 import {truncateAndInvalidate} from '#/state/queries/util'
-import {useAppviewClient, useSession} from '#/state/session'
+import {
+  useAppviewClient,
+  useAppviewProviderClientFactory,
+  useSession,
+} from '#/state/session'
 import {app} from '#/lexicons'
 import {RQKEY as RQKEY_NOTIFS} from './feed'
 import {type CachedFeedPage, type FeedPage} from './types'
-import {fetchPage} from './util'
+import {fetchPage, notificationPageClaimKey} from './util'
 
 const UPDATE_INTERVAL = 30 * 1e3 // 30sec
 
@@ -56,6 +64,7 @@ apiContext.displayName = 'NotificationsUnreadApiContext'
 export function Provider({children}: React.PropsWithChildren<{}>) {
   const {hasSession} = useSession()
   const client = useAppviewClient()
+  const providerClientFactory = useAppviewProviderClientFactory()
   const queryClient = useQueryClient()
   const moderationOpts = useModerationOpts()
 
@@ -159,18 +168,28 @@ export function Provider({children}: React.PropsWithChildren<{}>) {
           isFetchingRef.current = true
 
           // count
-          const {page, indexedAt: lastIndexed} = await fetchPage({
-            client,
-            cursor: undefined,
-            limit: 40,
-            queryClient,
-            moderationOpts,
-            reasons: [],
+          const {page, indexedAt: lastIndexed} = requireComposedProviderValue(
+            await composeAppViewProviderRead(
+              'notifications',
+              providerClient =>
+                fetchPage({
+                  client: providerClient,
+                  cursor: undefined,
+                  limit: 40,
+                  queryClient,
+                  moderationOpts,
+                  reasons: [],
 
-            // only fetch subjects when the page is going to be used
-            // in the notifications query, otherwise skip it
-            fetchAdditionalData: !!invalidate,
-          })
+                  // only fetch subjects when the page is going to be used
+                  // in the notifications query, otherwise skip it
+                  fetchAdditionalData: !!invalidate,
+                }),
+              {
+                clientForProvider: providerClientFactory,
+                claimKey: notificationPageClaimKey,
+              },
+            ),
+          )
           const unreadCount = countUnread(page)
           const unreadCountStr =
             unreadCount >= 30
@@ -222,7 +241,14 @@ export function Provider({children}: React.PropsWithChildren<{}>) {
         }
       },
     }
-  }, [setNumUnread, queryClient, moderationOpts, client, hasSession])
+  }, [
+    setNumUnread,
+    queryClient,
+    moderationOpts,
+    client,
+    providerClientFactory,
+    hasSession,
+  ])
   checkUnreadRef.current = api.checkUnread
 
   return (

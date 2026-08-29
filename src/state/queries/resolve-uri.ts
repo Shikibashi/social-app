@@ -2,6 +2,7 @@ import {AtUri, type HandleString} from '@atproto/syntax'
 import {type QueryClient, queryOptions, useQuery} from '@tanstack/react-query'
 
 import {
+  getKnownAccountDidForHandle,
   IdentityResolutionDisagreementError,
   type IdentityResolutionPolicy,
   IdentityResolutionUnavailableError,
@@ -9,11 +10,12 @@ import {
   type ResolverProvider,
 } from '#/lib/identity-runtime'
 import {STALE} from '#/state/queries'
+import {useSession} from '#/state/session'
 import {getPublicAppviewClient} from '#/state/session/clients'
 import {resolvePdsEndpointForDid} from '#/state/session/pds-resolution'
 import {
   type AppViewProvider,
-  getAppViewProvidersForCapability,
+  getAppViewProvidersForHandleResolution,
   getIdentityResolutionPolicy,
 } from '#/state/session/providers'
 import {com} from '#/lexicons'
@@ -65,14 +67,16 @@ const resolvedDidQueryOptions = (
   })
 
 export function useResolveUriQuery(uri: string | undefined) {
+  const {currentAccount} = useSession()
   const urip = new AtUri(uri || '')
   const host = urip.host
 
-  const providers = getAppViewProvidersForCapability('identity-resolution')
+  const providers = getAppViewProvidersForHandleResolution()
   const policy = getIdentityResolutionPolicy()
+  const knownAccountDid = getKnownAccountDidForHandle(host, currentAccount)
 
   return useQuery({
-    ...resolvedDidQueryOptions(host, providers, policy),
+    ...resolvedDidQueryOptions(knownAccountDid ?? host, providers, policy),
     select: did => ({
       did,
       uri: AtUri.make(did!, urip.collection, urip.rkey).toString(),
@@ -81,10 +85,17 @@ export function useResolveUriQuery(uri: string | undefined) {
 }
 
 export function useResolveDidQuery(didOrHandle: string | undefined) {
-  const providers = getAppViewProvidersForCapability('identity-resolution')
+  const {currentAccount} = useSession()
+  const providers = getAppViewProvidersForHandleResolution()
   const policy = getIdentityResolutionPolicy()
+  const knownAccountDid = getKnownAccountDidForHandle(
+    didOrHandle,
+    currentAccount,
+  )
 
-  return useQuery(resolvedDidQueryOptions(didOrHandle, providers, policy))
+  return useQuery(
+    resolvedDidQueryOptions(knownAccountDid ?? didOrHandle, providers, policy),
+  )
 }
 
 /**

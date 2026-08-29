@@ -10,15 +10,15 @@ import {
 } from 'react'
 import {type Client} from '@atproto/lex'
 
+import {logger} from '#/logger'
 import * as persisted from '#/state/persisted'
 import {useCloseAllActiveElements} from '#/state/util'
 import {useGlobalDialogsControlContext} from '#/components/dialogs/Context'
 import {AnalyticsContext, useAnalyticsBase, utils} from '#/analytics'
 import {IS_WEB} from '#/env'
 import {com} from '#/lexicons'
-import {logger} from '#/logger'
 import {emitAppViewProviderChanged, emitSessionDropped} from '../events'
-import {getPublicAppviewClient} from './clients'
+import {buildAppviewClient, getPublicAppviewClient} from './clients'
 import {
   createSessionBundleAndCreateAccount,
   createSessionBundleAndOAuthSignup,
@@ -33,6 +33,7 @@ import {type Action, getInitialState, reducer, type State} from './reducer'
 import {
   type AtpSessionEvent,
   createSessionBundleAndLogin,
+  createSessionBundleAndOAuthUpgrade,
   createSessionBundleAndResume,
   createSessionBundleFromOAuthSession,
   disposeBundle,
@@ -49,6 +50,8 @@ import {
   redactPersistedSession,
   redactState,
 } from './logging'
+import {type OAuthFeature} from './oauth-scopes'
+import {type AppViewProvider} from './providers'
 import {type SessionData} from './session-data'
 export type {SessionAccount} from '#/state/session/types'
 
@@ -74,7 +77,7 @@ BundleContext.displayName = 'SessionBundleContext'
 
 const ApiContext = createContext<SessionApiContext>({
   signUp: async () => {},
-  initializeOAuthSession: async () => false,
+  initializeOAuthSession: () => Promise.resolve(false),
   createAccount: async () => {},
   login: async () => {},
   logoutCurrentAccount: () => {},
@@ -84,6 +87,7 @@ const ApiContext = createContext<SessionApiContext>({
   switchAppViewProvider: async () => {},
   partialRefreshSession: async () => {},
   refreshSession: () => Promise.resolve(undefined),
+  upgradeOAuthFeature: async (_feature: OAuthFeature) => {},
 })
 ApiContext.displayName = 'SessionApiContext'
 
@@ -500,6 +504,38 @@ export function Provider({children}: React.PropsWithChildren<{}>) {
     )
   }, [store])
 
+  const upgradeOAuthFeature = useCallback<
+    SessionApiContext['upgradeOAuthFeature']
+  >(
+    async feature => {
+      const signal = cancelPendingTask()
+      const currentState = store.getState()
+      const account = currentState.accounts.find(
+        item => item.did === currentState.currentBundleState.did,
+      )
+      if (!account) throw new Error('No active OAuth account')
+      const {bundle, account: upgradedAccount} =
+        await createSessionBundleAndOAuthUpgrade(
+          account,
+          feature,
+          onSessionChange,
+        )
+      if (
+        signal.aborted ||
+        store.getState().currentBundleState.did !== account.did
+      ) {
+        disposeBundle(bundle)
+        return
+      }
+      store.dispatch({
+        type: 'switched-to-account',
+        newBundle: bundle,
+        newAccount: upgradedAccount,
+      })
+    },
+    [store, onSessionChange, cancelPendingTask],
+  )
+
   const removeAccount = useCallback<SessionApiContext['removeAccount']>(
     account => {
       addSessionDebugLog({
@@ -607,6 +643,7 @@ export function Provider({children}: React.PropsWithChildren<{}>) {
       removeAccount,
       partialRefreshSession,
       refreshSession,
+      upgradeOAuthFeature,
       switchAppViewProvider: switchAppView,
     }),
     [
@@ -620,6 +657,7 @@ export function Provider({children}: React.PropsWithChildren<{}>) {
       removeAccount,
       partialRefreshSession,
       refreshSession,
+      upgradeOAuthFeature,
       switchAppView,
     ],
   )
@@ -726,6 +764,36 @@ export function useAppviewClient(): Client {
     throw Error('useAppviewClient() must be below <SessionProvider>.')
   }
   return bundle.appviewClient
+}
+
+/**
+ * Build an AppView client for an explicitly selected provider.
+ *
+ * Authenticated bundles retain the route-to-PDS wrapper used to mint
+ * endpoint-scoped service-auth tokens. Logged-out bundles use public clients.
+ * The fallback keeps lightweight test bundles compatible while still making
+ * provider selection explicit at every call site.
+ */
+export function useAppviewProviderClientFactory(): (
+  provider: AppViewProvider,
+) => Client {
+  const bundle = useContext(BundleContext)
+  if (!bundle) {
+    throw Error(
+      'useAppviewProviderClientFactory() must be below <SessionProvider>.',
+    )
+  }
+  return useCallback(
+    (provider: AppViewProvider) => {
+      if (bundle.appviewClientForProvider) {
+        return bundle.appviewClientForProvider(provider)
+      }
+      return bundle.session
+        ? buildAppviewClient(bundle.session, provider)
+        : getPublicAppviewClient(provider.endpoint)
+    },
+    [bundle],
+  )
 }
 
 /**

@@ -4,6 +4,13 @@ import {
   DEFAULT_IDENTITY_RESOLUTION_POLICY,
   type IdentityResolutionPolicy,
 } from '#/lib/identity-runtime'
+import {
+  PROVIDER_RECONCILIATION_MODES,
+  PROVIDER_SURFACES,
+  type ProviderReconciliationMode,
+  type ProviderReconciliationPolicy,
+  type ProviderSurface,
+} from '#/lib/provider-composition'
 import * as persisted from '#/state/persisted'
 import {
   APPVIEW_PROXY_DID,
@@ -14,13 +21,37 @@ import {
 
 const configuredAppViewDisplayName = process.env
   .EXPO_PUBLIC_APPVIEW_DISPLAY_NAME as string | undefined
+const configuredAppViewOperatorId = process.env
+  .EXPO_PUBLIC_APPVIEW_OPERATOR_ID as string | undefined
 
 export const APPVIEW_PROVIDER_CAPABILITIES = [
   'public-read',
-  'identity-resolution',
+  ...PROVIDER_SURFACES,
 ] as const
 export type AppViewProviderCapability =
   (typeof APPVIEW_PROVIDER_CAPABILITIES)[number]
+
+export const APPVIEW_POLICY_FORMAT = 'org.radical-liberal.provider-policy'
+export const APPVIEW_POLICY_VERSION = 1 as const
+
+export type PortableAppViewPolicy = {
+  format: typeof APPVIEW_POLICY_FORMAT
+  version: typeof APPVIEW_POLICY_VERSION
+  exportedAt: string
+  /** Endpoint identity is intentionally omitted; imports cannot add a host. */
+  providers: Array<{
+    id: string
+    enabled: boolean
+    capabilities: AppViewProviderCapability[]
+    operatorId?: string
+  }>
+  selections: Record<string, string>
+  fallbacks: Record<string, Record<string, string>>
+  reconciliationPolicies: Partial<
+    Record<ProviderSurface, ProviderReconciliationPolicy>
+  >
+  identityResolutionPolicy: IdentityResolutionPolicy
+}
 
 export type AppViewProvider = {
   id: string
@@ -31,6 +62,8 @@ export type AppViewProvider = {
   healthPath?: string
   builtin: boolean
   enabled: boolean
+  /** Declared operator identity; the client cannot prove control from this field. */
+  operatorId?: string
   /**
    * Capabilities are declarations about the endpoint, not grants to it. The
    * legacy shape is accepted without this field and normalized to public-read
@@ -38,6 +71,15 @@ export type AppViewProvider = {
    */
   capabilities?: AppViewProviderCapability[]
 }
+
+const ANONYMOUS_PUBLIC_READ_SURFACES = [
+  'profiles',
+  'threads',
+  'feeds',
+  'search',
+  'labels',
+  'media',
+] as const satisfies readonly ProviderSurface[]
 
 export function getDefaultAppViewDisplayName(
   endpoint: string,
@@ -65,6 +107,7 @@ export const DEFAULT_APPVIEW_PROVIDER: AppViewProvider = {
   endpoint: PUBLIC_APPVIEW_URL,
   healthPath: '/xrpc/_health',
   builtin: true,
+  operatorId: configuredAppViewOperatorId || 'project-appview-operator',
   // Keep the named provider visible even when deployment configuration is
   // absent so failure is attributable to this service, never silently routed
   // to a stock AppView.
@@ -135,7 +178,11 @@ export function getAppViewProviders(): AppViewProvider[] {
     ? persistedProviders.some(provider => provider.id === configured.id)
       ? persistedProviders.map(provider =>
           provider.id === configured.id
-            ? {...configured, capabilities: provider.capabilities}
+            ? {
+                ...configured,
+                capabilities: provider.capabilities,
+                operatorId: provider.operatorId ?? configured.operatorId,
+              }
             : provider,
         )
       : [...persistedProviders, configured]
@@ -166,6 +213,101 @@ export function getAppViewProvidersForCapability(
   return getAppViewProviders().filter(
     provider => provider.capabilities?.includes(capability) ?? false,
   )
+}
+
+/**
+ * Resolve a public handle for navigation and public record links.
+ *
+ * Explicit identity-capable providers remain the source for identity claims.
+ * When none are enabled, an enabled public-read provider may still perform
+ * this narrow anonymous lookup so a public profile link does not fail closed
+ * merely because the user has not opted a provider into broader identity
+ * reconciliation. No session credential is sent on this path.
+ */
+export function getAppViewProvidersForHandleResolution(): AppViewProvider[] {
+  const identityProviders = getAppViewProvidersForCapability(
+    'identity-resolution',
+  )
+  if (identityProviders.length > 0) return identityProviders
+  return getAnonymousPublicReadProviders()
+}
+
+/**
+ * Return providers for a read surface without widening authenticated or
+ * private capabilities. Optional public surfaces inherit the anonymous
+ * public-read declaration when no surface-specific provider was enabled.
+ */
+export function getAppViewProvidersForSurface(
+  surface: ProviderSurface,
+): AppViewProvider[] {
+  const providers = getAppViewProvidersForCapability(surface)
+  if (providers.length > 0 || !isAnonymousPublicReadSurface(surface)) {
+    return providers
+  }
+  return getAnonymousPublicReadProviders()
+}
+
+function getAnonymousPublicReadProviders(): AppViewProvider[] {
+  return getAppViewProviders().filter(
+    provider => provider.capabilities?.includes('public-read') ?? false,
+  )
+}
+
+function isAnonymousPublicReadSurface(
+  surface: ProviderSurface,
+): surface is (typeof ANONYMOUS_PUBLIC_READ_SURFACES)[number] {
+  return (ANONYMOUS_PUBLIC_READ_SURFACES as readonly string[]).includes(surface)
+}
+
+export function getAppViewReconciliationPolicy(
+  surface: ProviderSurface,
+): ProviderReconciliationPolicy {
+  if (surface === 'identity-resolution') {
+    const identityPolicy = getIdentityResolutionPolicy()
+    return identityPolicy.mode === 'prefer-provider'
+      ? identityPolicy
+      : {mode: identityPolicy.mode}
+  }
+  const policy = persisted.get('appviewReconciliationPolicies')?.[surface]
+  if (!policy || !PROVIDER_RECONCILIATION_MODES.includes(policy.mode)) {
+    return {mode: 'require-agreement'}
+  }
+  if (policy.mode === 'prefer-provider' && !policy.preferredProviderId) {
+    return {mode: 'require-agreement'}
+  }
+  return policy
+}
+
+export async function setAppViewReconciliationPolicy(
+  surface: ProviderSurface,
+  policy: ProviderReconciliationPolicy,
+): Promise<void> {
+  if (
+    policy.mode === 'prefer-provider' &&
+    !getAppViewProvidersForSurface(surface).some(
+      provider => provider.id === policy.preferredProviderId,
+    )
+  ) {
+    throw new Error('Preferred provider is not registered for this surface')
+  }
+  if (surface === 'identity-resolution') {
+    if (policy.mode === 'merge') {
+      throw new Error('Identity resolution does not support merge policy')
+    }
+    await setIdentityResolutionPolicy(
+      policy.mode === 'prefer-provider'
+        ? {
+            mode: 'prefer-provider',
+            preferredProviderId: policy.preferredProviderId!,
+          }
+        : {mode: policy.mode},
+    )
+    return
+  }
+  await persisted.write('appviewReconciliationPolicies', {
+    ...(persisted.get('appviewReconciliationPolicies') ?? {}),
+    [surface]: policy,
+  })
 }
 
 export function getIdentityResolutionPolicy(): IdentityResolutionPolicy {
@@ -296,6 +438,362 @@ export async function setAppViewProviderCapabilities(
     })
   }
   return updated
+}
+
+/**
+ * Export only local provider choices and declarations. Endpoints, tokens,
+ * service-auth material, and other authority-bearing connection details never
+ * cross this boundary, so importing this file cannot register a new host.
+ */
+export function exportAppViewPolicy(): string {
+  const providers = (
+    persisted.get('appviewProviders') ?? [DEFAULT_APPVIEW_PROVIDER]
+  ).flatMap(provider => {
+    try {
+      const validated = validateAppViewProvider(provider)
+      return [
+        {
+          id: validated.id,
+          enabled: validated.enabled,
+          capabilities: validated.capabilities ?? ['public-read'],
+          ...(validated.operatorId ? {operatorId: validated.operatorId} : {}),
+        },
+      ]
+    } catch {
+      return []
+    }
+  })
+  const output: PortableAppViewPolicy = {
+    format: APPVIEW_POLICY_FORMAT,
+    version: APPVIEW_POLICY_VERSION,
+    exportedAt: new Date().toISOString(),
+    providers,
+    selections: persisted.get('appviewSelections') ?? {},
+    fallbacks: persisted.get('appviewFallbacks') ?? {},
+    reconciliationPolicies:
+      persisted.get('appviewReconciliationPolicies') ?? {},
+    identityResolutionPolicy: getIdentityResolutionPolicy(),
+  }
+  return JSON.stringify(output)
+}
+
+/**
+ * Import a provider policy onto already registered providers. Provider IDs are
+ * the portability handle; endpoint registration remains an explicit local
+ * action and is never performed from imported JSON.
+ */
+export async function importAppViewPolicy(serialized: string): Promise<void> {
+  const parsed = parsePortableAppViewPolicy(serialized)
+  const registered = (
+    persisted.get('appviewProviders') ?? [DEFAULT_APPVIEW_PROVIDER]
+  ).map(provider => validateAppViewProvider(provider))
+  const knownIds = new Set(registered.map(provider => provider.id))
+  const importedById = new Map(
+    parsed.providers
+      .filter(provider => knownIds.has(provider.id))
+      .map(provider => [provider.id, provider]),
+  )
+  const nextProviders = registered.map(provider => {
+    const imported = importedById.get(provider.id)
+    return imported
+      ? validateAppViewProvider({
+          ...provider,
+          enabled: imported.enabled,
+          capabilities: imported.capabilities,
+          operatorId: imported.operatorId ?? provider.operatorId,
+        })
+      : provider
+  })
+  const enabledIds = new Set(
+    nextProviders
+      .filter(provider => provider.enabled)
+      .map(provider => provider.id),
+  )
+  const selections = filterProviderSelections(parsed.selections, enabledIds)
+  const fallbacks = filterProviderFallbacks(parsed.fallbacks, enabledIds)
+  const reconciliationPolicies = filterReconciliationPolicies(
+    parsed.reconciliationPolicies,
+    enabledIds,
+    nextProviders,
+  )
+  const identityResolutionPolicy = filterIdentityPolicy(
+    parsed.identityResolutionPolicy,
+    enabledIds,
+    nextProviders,
+  )
+
+  await persisted.write('appviewProviders', nextProviders)
+  await persisted.write('appviewSelections', selections)
+  await persisted.write('appviewFallbacks', fallbacks)
+  await persisted.write('appviewReconciliationPolicies', reconciliationPolicies)
+  await persisted.write('identityResolutionPolicy', identityResolutionPolicy)
+}
+
+/** Revoke all optional provider participation without deleting registrations. */
+export async function resetAppViewPolicy(): Promise<void> {
+  const registered = (
+    persisted.get('appviewProviders') ?? [DEFAULT_APPVIEW_PROVIDER]
+  ).map(provider =>
+    validateAppViewProvider({...provider, capabilities: ['public-read']}),
+  )
+  await persisted.write('appviewProviders', registered)
+  await persisted.write('appviewSelections', {})
+  await persisted.write('appviewFallbacks', {})
+  await persisted.write('appviewReconciliationPolicies', {})
+  await persisted.write('identityResolutionPolicy', {
+    mode: 'require-agreement',
+  })
+}
+
+function parsePortableAppViewPolicy(serialized: string): PortableAppViewPolicy {
+  if (
+    typeof serialized !== 'string' ||
+    new TextEncoder().encode(serialized).byteLength > 250_000
+  ) {
+    throw new Error('Provider policy import exceeds the maximum size')
+  }
+  let value: unknown
+  try {
+    value = JSON.parse(serialized)
+  } catch {
+    throw new Error('Provider policy import is not valid JSON')
+  }
+  if (!isRecord(value)) throw new Error('Provider policy import is invalid')
+  if (
+    value.format !== APPVIEW_POLICY_FORMAT ||
+    value.version !== APPVIEW_POLICY_VERSION ||
+    !Array.isArray(value.providers) ||
+    !isStringRecord(value.selections) ||
+    !isNestedStringRecord(value.fallbacks) ||
+    !isRecord(value.reconciliationPolicies)
+  ) {
+    throw new Error('Provider policy import shape is invalid')
+  }
+
+  const providers = value.providers.map(parsePortableProvider)
+  const reconciliationPolicies: Partial<
+    Record<ProviderSurface, ProviderReconciliationPolicy>
+  > = {}
+  for (const [surface, policy] of Object.entries(
+    value.reconciliationPolicies,
+  )) {
+    if (!isProviderSurface(surface)) continue
+    reconciliationPolicies[surface] = parseReconciliationPolicy(policy)
+  }
+  const identityResolutionPolicy = parseIdentityPolicy(
+    value.identityResolutionPolicy,
+  )
+  return {
+    format: APPVIEW_POLICY_FORMAT,
+    version: APPVIEW_POLICY_VERSION,
+    exportedAt:
+      typeof value.exportedAt === 'string'
+        ? value.exportedAt
+        : new Date().toISOString(),
+    providers,
+    selections: value.selections,
+    fallbacks: value.fallbacks,
+    reconciliationPolicies,
+    identityResolutionPolicy,
+  }
+}
+
+function parsePortableProvider(
+  value: unknown,
+): PortableAppViewPolicy['providers'][number] {
+  if (!isRecord(value)) throw new Error('Provider policy entry is invalid')
+  if (
+    typeof value.id !== 'string' ||
+    !value.id ||
+    value.id.length > 256 ||
+    typeof value.enabled !== 'boolean' ||
+    !Array.isArray(value.capabilities) ||
+    value.capabilities.length > APPVIEW_PROVIDER_CAPABILITIES.length ||
+    value.capabilities.some(
+      capability => !isAppViewProviderCapability(capability),
+    )
+  ) {
+    throw new Error('Provider policy capability entry is invalid')
+  }
+  if (
+    value.operatorId !== undefined &&
+    (typeof value.operatorId !== 'string' ||
+      !value.operatorId ||
+      value.operatorId.length > 256)
+  ) {
+    throw new Error('Provider policy operator declaration is invalid')
+  }
+  return {
+    id: value.id,
+    enabled: value.enabled,
+    capabilities: [
+      ...new Set(value.capabilities),
+    ] as AppViewProviderCapability[],
+    operatorId: value.operatorId,
+  }
+}
+
+function parseReconciliationPolicy(
+  value: unknown,
+): ProviderReconciliationPolicy {
+  if (!isRecord(value) || !isProviderReconciliationMode(value.mode)) {
+    throw new Error('Provider reconciliation policy is invalid')
+  }
+  if (
+    value.preferredProviderId !== undefined &&
+    (typeof value.preferredProviderId !== 'string' ||
+      !value.preferredProviderId ||
+      value.preferredProviderId.length > 256)
+  ) {
+    throw new Error('Provider reconciliation preference is invalid')
+  }
+  if (value.mode === 'prefer-provider' && !value.preferredProviderId) {
+    throw new Error('Provider reconciliation preference is missing')
+  }
+  return {
+    mode: value.mode,
+    ...(value.preferredProviderId
+      ? {preferredProviderId: value.preferredProviderId}
+      : {}),
+  }
+}
+
+function parseIdentityPolicy(value: unknown): IdentityResolutionPolicy {
+  if (!isRecord(value)) throw new Error('Identity resolution policy is invalid')
+  if (value.mode === 'require-agreement' || value.mode === 'first-verified') {
+    return {mode: value.mode}
+  }
+  if (
+    value.mode === 'prefer-provider' &&
+    typeof value.preferredProviderId === 'string' &&
+    value.preferredProviderId.length > 0 &&
+    value.preferredProviderId.length <= 256
+  ) {
+    return {
+      mode: 'prefer-provider',
+      preferredProviderId: value.preferredProviderId,
+    }
+  }
+  throw new Error('Identity resolution policy is invalid')
+}
+
+function filterProviderSelections(
+  selections: Record<string, string>,
+  enabledIds: Set<string>,
+): Record<string, string> {
+  return Object.fromEntries(
+    Object.entries(selections).filter(
+      ([did, providerId]) => did.length <= 256 && enabledIds.has(providerId),
+    ),
+  )
+}
+
+function filterProviderFallbacks(
+  fallbacks: Record<string, Record<string, string>>,
+  enabledIds: Set<string>,
+): Record<string, Record<string, string>> {
+  return Object.fromEntries(
+    Object.entries(fallbacks)
+      .filter(([did]) => did.length <= 256)
+      .map(([did, entries]) => [
+        did,
+        Object.fromEntries(
+          Object.entries(entries).filter(([, providerId]) =>
+            enabledIds.has(providerId),
+          ),
+        ),
+      ])
+      .filter(([, entries]) => Object.keys(entries).length > 0),
+  )
+}
+
+function filterReconciliationPolicies(
+  policies: Partial<Record<ProviderSurface, ProviderReconciliationPolicy>>,
+  enabledIds: Set<string>,
+  providers: AppViewProvider[],
+): Partial<Record<ProviderSurface, ProviderReconciliationPolicy>> {
+  return Object.fromEntries(
+    Object.entries(policies)
+      .filter(([surface]) => isProviderSurface(surface))
+      .map(([surface, policy]) => {
+        if (
+          policy.mode === 'prefer-provider' &&
+          (!policy.preferredProviderId ||
+            !enabledIds.has(policy.preferredProviderId) ||
+            !providers.some(
+              provider =>
+                provider.id === policy.preferredProviderId &&
+                provider.capabilities?.includes(surface as ProviderSurface),
+            ))
+        ) {
+          return [surface, {mode: 'require-agreement' as const}]
+        }
+        return [surface, policy]
+      }),
+  )
+}
+
+function filterIdentityPolicy(
+  policy: IdentityResolutionPolicy,
+  enabledIds: Set<string>,
+  providers: AppViewProvider[],
+): IdentityResolutionPolicy {
+  if (
+    policy.mode === 'prefer-provider' &&
+    policy.preferredProviderId &&
+    enabledIds.has(policy.preferredProviderId) &&
+    providers.some(
+      provider =>
+        provider.id === policy.preferredProviderId &&
+        provider.capabilities?.includes('identity-resolution'),
+    )
+  ) {
+    return policy
+  }
+  return policy.mode === 'prefer-provider'
+    ? {mode: 'require-agreement'}
+    : policy
+}
+
+function isAppViewProviderCapability(
+  value: unknown,
+): value is AppViewProviderCapability {
+  return (
+    typeof value === 'string' &&
+    (APPVIEW_PROVIDER_CAPABILITIES as readonly string[]).includes(value)
+  )
+}
+
+function isProviderReconciliationMode(
+  value: unknown,
+): value is ProviderReconciliationMode {
+  return (
+    typeof value === 'string' &&
+    (PROVIDER_RECONCILIATION_MODES as readonly string[]).includes(value)
+  )
+}
+
+function isProviderSurface(value: string): value is ProviderSurface {
+  return (PROVIDER_SURFACES as readonly string[]).includes(value)
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+function isStringRecord(value: unknown): value is Record<string, string> {
+  return (
+    isRecord(value) &&
+    Object.values(value).every(item => typeof item === 'string')
+  )
+}
+
+function isNestedStringRecord(
+  value: unknown,
+): value is Record<string, Record<string, string>> {
+  return (
+    isRecord(value) && Object.values(value).every(item => isStringRecord(item))
+  )
 }
 
 export async function selectAppViewProvider(

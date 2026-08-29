@@ -1,14 +1,14 @@
 import {type Client} from '@atproto/lex'
 import {type AtUriString} from '@atproto/syntax'
-import {
-  hasMutedWord,
-  moderateNotification,
-  type ModerationOpts,
-} from '#/lib/moderation'
 import {type QueryClient} from '@tanstack/react-query'
 import chunk from 'lodash.chunk'
 
-import {labelIsHideableOffense} from '#/lib/moderation'
+import {
+  hasMutedWord,
+  labelIsHideableOffense,
+  moderateNotification,
+  type ModerationOpts,
+} from '#/lib/moderation'
 import {app} from '#/lexicons'
 import * as bsky from '#/types/bsky'
 import {precacheProfile} from '../profile'
@@ -106,6 +106,18 @@ export async function fetchPage({
     },
     indexedAt,
   }
+}
+
+/**
+ * Claim key for composed notification pages. Timestamps are intentionally
+ * excluded because independent providers can index the same notification set
+ * at different moments; item identity and pagination are the user-visible
+ * evidence being reconciled.
+ */
+export function notificationPageClaimKey({page}: {page: FeedPage}): string {
+  return [page.cursor ?? '', ...page.items.map(item => item._reactKey)].join(
+    '|',
+  )
 }
 
 // internal methods

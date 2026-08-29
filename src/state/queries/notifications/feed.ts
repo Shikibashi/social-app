@@ -18,7 +18,6 @@
 
 import {useCallback, useEffect, useMemo, useRef} from 'react'
 import {AtUri} from '@atproto/syntax'
-import {moderatePost} from '#/lib/moderation'
 import {
   type InfiniteData,
   type QueryClient,
@@ -27,9 +26,14 @@ import {
   useQueryClient,
 } from '@tanstack/react-query'
 
+import {moderatePost} from '#/lib/moderation'
 import {useModerationOpts} from '#/state/preferences/moderation-opts'
 import {STALE} from '#/state/queries'
-import {useAppviewClient} from '#/state/session'
+import {
+  composeAppViewProviderRead,
+  requireComposedProviderValue,
+} from '#/state/queries/provider-composition'
+import {useAppviewProviderClientFactory} from '#/state/session'
 import {useThreadgateHiddenReplyUris} from '#/state/threadgate-hidden-replies'
 import {app} from '#/lexicons'
 import * as bsky from '#/types/bsky'
@@ -40,7 +44,7 @@ import {
 } from '../util'
 import {type FeedPage} from './types'
 import {useUnreadNotificationsApi} from './unread'
-import {fetchPage} from './util'
+import {fetchPage, notificationPageClaimKey} from './util'
 
 export type {FeedNotification, FeedPage, NotificationType} from './types'
 
@@ -57,7 +61,7 @@ export function useNotificationFeedQuery(opts: {
   enabled?: boolean
   filter: 'all' | 'mentions'
 }) {
-  const client = useAppviewClient()
+  const providerClientFactory = useAppviewProviderClientFactory()
   const queryClient = useQueryClient()
   const moderationOpts = useModerationOpts()
   const unreads = useUnreadNotificationsApi()
@@ -102,16 +106,25 @@ export function useNotificationFeedQuery(opts: {
             'quote',
           ]
         }
-        const {page: fetchedPage} = await fetchPage({
-          client,
-          limit: PAGE_SIZE,
-          cursor: pageParam,
-          queryClient,
-          moderationOpts,
-          fetchAdditionalData: true,
-          reasons,
-        })
-        page = fetchedPage
+        page = requireComposedProviderValue(
+          await composeAppViewProviderRead<FeedPage>(
+            'notifications',
+            providerClient =>
+              fetchPage({
+                client: providerClient,
+                limit: PAGE_SIZE,
+                cursor: pageParam,
+                queryClient,
+                moderationOpts,
+                fetchAdditionalData: true,
+                reasons,
+              }).then(result => result.page),
+            {
+              clientForProvider: providerClientFactory,
+              claimKey: page => notificationPageClaimKey({page}),
+            },
+          ),
+        )
       }
 
       if (filter === 'all' && !pageParam) {

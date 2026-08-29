@@ -33,6 +33,10 @@ import {type ImageMeta} from '#/state/gallery'
 import {STALE} from '#/state/queries'
 import {resetProfilePostsQueries} from '#/state/queries/post-feed'
 import {RQKEY as PROFILE_FOLLOWS_RQKEY} from '#/state/queries/profile-follows'
+import {
+  composeAppViewProviderRead,
+  requireComposedProviderValue,
+} from '#/state/queries/provider-composition'
 import {hasDirectViewerBlock} from '#/state/queries/public-visibility'
 import {
   unstableCacheProfileView,
@@ -41,6 +45,7 @@ import {
 import {useUpdateProfileVerificationCache} from '#/state/queries/verification/useUpdateProfileVerificationCache'
 import {
   useAppviewClient,
+  useAppviewProviderClientFactory,
   useMaybePdsClient,
   usePdsClient,
   useSession,
@@ -81,6 +86,7 @@ export function useProfileQuery({
   staleTime?: number
 }) {
   const client = useAppviewClient()
+  const providerClientFactory = useAppviewProviderClientFactory()
   const pdsClient = useMaybePdsClient()
   const {currentAccount} = useSession()
   const ownerAccount = currentAccount?.did === did ? currentAccount : undefined
@@ -107,9 +113,15 @@ export function useProfileQuery({
         }
       }
 
-      return await client.call(app.bsky.actor.getProfile, {
-        actor: (did ?? '') as AtIdentifierString,
-      })
+      const composed = await composeAppViewProviderRead(
+        'profiles',
+        providerClient =>
+          providerClient.call(app.bsky.actor.getProfile, {
+            actor: (did ?? '') as AtIdentifierString,
+          }),
+        {clientForProvider: providerClientFactory},
+      )
+      return requireComposedProviderValue(composed)
     },
     placeholderData: () => {
       if (!did) return
@@ -126,15 +138,21 @@ export function useProfilesQuery({
   handles: string[]
   maintainData?: boolean
 }) {
-  const client = useAppviewClient()
+  const providerClientFactory = useAppviewProviderClientFactory()
   return useQuery({
     enabled: handles.length > 0,
     staleTime: STALE.MINUTES.FIVE,
     queryKey: profilesQueryKey(handles),
     queryFn: async () => {
-      return await client.call(app.bsky.actor.getProfiles, {
-        actors: handles as AtIdentifierString[],
-      })
+      const composed = await composeAppViewProviderRead(
+        'profiles',
+        providerClient =>
+          providerClient.call(app.bsky.actor.getProfiles, {
+            actors: handles as AtIdentifierString[],
+          }),
+        {clientForProvider: providerClientFactory},
+      )
+      return requireComposedProviderValue(composed)
     },
     placeholderData: maintainData ? keepPreviousData : undefined,
   })

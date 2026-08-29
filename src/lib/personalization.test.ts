@@ -6,6 +6,7 @@ import {
   defaultContentFilterPolicy,
 } from './feed-sovereignty/content-filter'
 import {
+  defaultLocalCurationConfig,
   defaultRadlibCurationConfig,
   legacyRadlibCurationConfig,
 } from './feed-sovereignty/radlib-curation'
@@ -22,7 +23,10 @@ import {
   loadPersonalization,
   PERSONALIZATION_STORAGE_PREFIX,
   type PersonalizationState,
+  resetAttentionPolicy,
   resetLearnedState,
+  resetModerationPolicy,
+  resetPortablePolicyState,
   setExplicitPostPreference,
 } from './personalization'
 
@@ -193,6 +197,84 @@ describe('portable personalization', () => {
     expect(next.learned.inferredTopics).toEqual({})
   })
 
+  it('ports provider declarations and reconciliation policies with the profile', () => {
+    const current = createPersonalizationState(did, {
+      services: {
+        ...defaultServiceConfiguration,
+        appView: 'project-appview',
+        feedProviders: ['feed-provider-a'],
+        searchProvider: 'search-provider-a',
+        labelers: ['labeler-a'],
+        providerCapabilities: {
+          'project-appview': ['profiles', 'threads'],
+        },
+        reconciliationPolicies: {
+          profiles: {
+            mode: 'prefer-provider',
+            preferredProviderId: 'project-appview',
+          },
+          threads: {mode: 'require-agreement'},
+        },
+      },
+    })
+    const restored = importPersonalization(
+      exportPersonalization(current, 'settings'),
+      did,
+    )
+    expect(restored.services).toEqual(current.services)
+  })
+
+  it('resets attention and moderation independently, then resets all portable policy state', () => {
+    const current = createPersonalizationState(did, {
+      explicit: {
+        ...defaultExplicitPreferences,
+        selectedFeedPreset: 'discover',
+        discovery: 0.9,
+        contentFilterPolicy: {
+          ...defaultContentFilterPolicy,
+          enabled: true,
+          customTerms: ['local-only'],
+        },
+        radlibCuration: {
+          ...defaultRadlibCurationConfig,
+          enabled: true,
+        },
+      },
+      services: {
+        ...defaultServiceConfiguration,
+        appView: 'project-appview',
+        feedProviders: ['feed-provider-a'],
+        providerCapabilities: {a: ['feeds']},
+        reconciliationPolicies: {feeds: {mode: 'merge'}},
+      },
+    })
+
+    const attention = resetAttentionPolicy(current)
+    expect(attention.explicit.selectedFeedPreset).toBe('following')
+    expect(attention.explicit.contentFilterPolicy).toEqual(
+      current.explicit.contentFilterPolicy,
+    )
+    expect(attention.explicit.radlibCuration).toEqual(
+      current.explicit.radlibCuration,
+    )
+
+    const moderation = resetModerationPolicy(current)
+    expect(moderation.explicit.selectedFeedPreset).toBe('discover')
+    expect(moderation.explicit.discovery).toBe(0.9)
+    expect(moderation.explicit.contentFilterPolicy).toEqual(
+      defaultContentFilterPolicy,
+    )
+    expect(moderation.explicit.radlibCuration).toEqual(
+      defaultLocalCurationConfig,
+    )
+
+    const all = resetPortablePolicyState(current, 'all')
+    expect(all.explicit.selectedFeedPreset).toBe('following')
+    expect(all.explicit.contentFilterPolicy).toEqual(defaultContentFilterPolicy)
+    expect(all.explicit.radlibCuration).toEqual(defaultLocalCurationConfig)
+    expect(all.services).toEqual(defaultServiceConfiguration)
+  })
+
   it('defaults public post metrics to hidden until the user opts out', () => {
     expect(defaultExplicitPreferences.quietMode).toEqual({
       enabled: true,
@@ -259,7 +341,9 @@ describe('portable personalization', () => {
     )
 
     const restored = await loadPersonalization(did)
-    expect(restored.explicit.radlibCuration?.branchWeights?.legacyWeight).toBe(10)
+    expect(restored.explicit.radlibCuration?.branchWeights?.legacyWeight).toBe(
+      10,
+    )
     expect(restored.explicit.radlibCuration?.excludedTerms).toEqual(
       legacyRadlibCurationConfig.excludedTerms,
     )

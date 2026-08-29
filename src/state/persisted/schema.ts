@@ -24,12 +24,46 @@ const appviewProviderSchema = z.object({
     .optional(),
   builtin: z.boolean(),
   enabled: z.boolean(),
+  /** Operator assertion used to disclose whether provider operators differ. */
+  operatorId: z.string().min(1).optional(),
   /** Optional for persisted providers created before capability routing. */
   capabilities: z
-    .array(z.enum(['public-read', 'identity-resolution']))
+    .array(
+      z.enum([
+        'public-read',
+        'identity-resolution',
+        'profiles',
+        'threads',
+        'feeds',
+        'search',
+        'notifications',
+        'labels',
+        'media',
+        'communities',
+      ]),
+    )
     .optional(),
 })
 export type PersistedAppViewProvider = z.infer<typeof appviewProviderSchema>
+const providerReconciliationPolicySchema = z.object({
+  mode: z.enum([
+    'require-agreement',
+    'first-verified',
+    'prefer-provider',
+    'merge',
+  ]),
+  preferredProviderId: z.string().min(1).optional(),
+})
+const plcResolverSchema = z.object({
+  id: z.string().min(1),
+  displayName: z.string().min(1),
+  endpoint: z.string().url(),
+  /** This is a declared operator identity, not proof of independent control. */
+  operatorId: z.string().min(1),
+  builtin: z.boolean(),
+  enabled: z.boolean(),
+})
+export type PersistedPlcResolver = z.infer<typeof plcResolverSchema>
 const accountSchema = z.object({
   /** The active credential profile for this account. */
   authType: z.enum(['oauth', 'password']).optional(),
@@ -51,6 +85,8 @@ const accountSchema = z.object({
   emailAuthFactor: z.boolean().optional(),
   refreshJwt: z.string().optional(), // optional because it can expire
   accessJwt: z.string().optional(), // optional because it can expire
+  /** OAuth scopes are public capability metadata, never bearer credentials. */
+  oauthScopes: z.array(z.string().min(1)).optional(),
   signupQueued: z.boolean().optional(),
   active: z.boolean().optional(), // optional for backwards compat
   /**
@@ -83,6 +119,10 @@ const schema = z.object({
   appviewFallbacks: z
     .record(z.string(), z.record(z.string(), z.string()))
     .optional(),
+  appviewReconciliationPolicies: z
+    .record(z.string(), providerReconciliationPolicySchema)
+    .optional(),
+  plcResolvers: z.array(plcResolverSchema).optional(),
   identityResolutionPolicy: z
     .object({
       mode: z.enum(['require-agreement', 'first-verified', 'prefer-provider']),
@@ -200,12 +240,28 @@ export const defaults: Schema = {
       endpoint: configuredProjectAppViewEndpoint,
       healthPath: configuredProjectAppViewHealthPath,
       builtin: true,
+      operatorId:
+        process.env.EXPO_PUBLIC_APPVIEW_OPERATOR_ID ||
+        'project-appview-operator',
       enabled: configuredProjectAppViewEndpoint !== 'https://appview.invalid',
-      capabilities: ['public-read', 'identity-resolution'],
+      capabilities: [
+        'public-read',
+        'identity-resolution',
+        'profiles',
+        'threads',
+        'feeds',
+        'search',
+        'notifications',
+        'labels',
+        'media',
+        'communities',
+      ],
     },
   ],
   appviewSelections: {},
   appviewFallbacks: {},
+  appviewReconciliationPolicies: {},
+  plcResolvers: [],
   identityResolutionPolicy: {
     mode: 'require-agreement',
   },

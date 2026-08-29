@@ -3,7 +3,7 @@ import {
   type OAuthSession as AtprotoOAuthSession,
 } from '@atproto/oauth-client-expo'
 
-import {PUBLIC_WEB_ORIGIN} from '#/lib/brand'
+import {getRuntimePublicWebOrigin} from '#/lib/brand'
 import {PUBLIC_ACCOUNT_SERVICE} from '#/lib/constants'
 import {createLexClient} from '#/lib/lexClient'
 import {IS_WEB} from '#/env'
@@ -11,16 +11,21 @@ import {com} from '#/lexicons'
 import {networkAwareFetch} from './network'
 import {ExpoOAuthClient} from './oauth-client'
 import {
-  OAUTH_CLIENT_METADATA,
+  getMissingOAuthScopes,
+  getOAuthFeatureScopes,
+  getRuntimeOAuthClientMetadata,
+  mergeOAuthScopes,
+  normalizeOAuthScopes,
   OAUTH_SCOPE,
   OAUTH_SIGNUP_PROMPT,
+  type OAuthFeature,
 } from './oauth-scopes'
 import {sessionAccountToSessionData, type SessionData} from './session-data'
 import {type SessionAccount} from './types'
 
 type OAuthRedirectUri = `https://${string}` | `${string}.${string}:/${string}`
 
-export const OAUTH_WEB_REDIRECT_URI = `${PUBLIC_WEB_ORIGIN}/oauth/callback`
+export const OAUTH_WEB_REDIRECT_URI = `${getRuntimePublicWebOrigin()}/oauth/callback`
 export const OAUTH_NATIVE_REDIRECT_URI = 'us.edriffles.social:/oauth/callback'
 
 export type OAuthSessionHooks = {
@@ -30,6 +35,13 @@ export type OAuthSessionHooks = {
 }
 
 export type OAuthFlow = 'login' | 'create'
+
+export type OAuthSignInOptions = {
+  flow?: OAuthFlow
+  /** An upgrade supplies the existing grant plus the newly requested scopes. */
+  scope?: string | readonly string[]
+  prompt?: 'consent' | 'create'
+}
 
 let oauthClient: ExpoOAuthClient | undefined
 let oauthInitialization: Promise<AtprotoOAuthSession | undefined> | undefined
@@ -50,7 +62,7 @@ export async function initializeBrowserOAuthClient(
 
 export function getOAuthClient() {
   return (oauthClient ??= new ExpoOAuthClient({
-    clientMetadata: OAUTH_CLIENT_METADATA,
+    clientMetadata: getRuntimeOAuthClientMetadata(),
     handleResolver: PUBLIC_ACCOUNT_SERVICE,
     fetch: networkAwareFetch,
   }))
@@ -67,7 +79,7 @@ export async function initializeOAuthClient(): Promise<
 > {
   if (!IS_WEB) return undefined
   oauthInitialization ??= (async () => {
-    return initializeBrowserOAuthClient(getOAuthClient() as BrowserOAuthClient)
+    return initializeBrowserOAuthClient(getOAuthClient())
   })()
   return oauthInitialization
 }
@@ -75,18 +87,64 @@ export async function initializeOAuthClient(): Promise<
 export async function signInWithOAuth(
   identifierOrService: string,
   hooks: OAuthSessionHooks = {},
-  options: {flow?: OAuthFlow} = {},
+  options: OAuthSignInOptions = {},
 ) {
+  const scope =
+    typeof options.scope === 'string'
+      ? options.scope
+      : options.scope
+        ? mergeOAuthScopes(options.scope).join(' ')
+        : OAUTH_SCOPE
   return OAuthSessionAdapter.fromSession(
     await getOAuthClient().signIn(identifierOrService, {
       redirect_uri: (IS_WEB
         ? OAUTH_WEB_REDIRECT_URI
         : OAUTH_NATIVE_REDIRECT_URI) as OAuthRedirectUri,
-      scope: OAUTH_SCOPE,
-      ...(options.flow === 'create' ? {prompt: OAUTH_SIGNUP_PROMPT} : {}),
+      scope,
+      ...(options.prompt
+        ? {prompt: options.prompt}
+        : options.flow === 'create'
+          ? {prompt: OAUTH_SIGNUP_PROMPT}
+          : {}),
     }),
     hooks,
   )
+}
+
+/**
+ * Reauthorize one feature without dropping the session's existing grant. The
+ * OAuth client continues to own PAR, PKCE, DPoP, state, refresh, and storage;
+ * this boundary only computes and requests the additional scope set.
+ */
+export async function reauthorizeOAuthFeature(
+  identifierOrService: string,
+  feature: OAuthFeature,
+  hooks: OAuthSessionHooks = {},
+  grantedScopes?: string | readonly string[],
+) {
+  let resolvedScopes = grantedScopes
+  if (!resolvedScopes) {
+    try {
+      const current = await getOAuthClient().restore(identifierOrService, false)
+      resolvedScopes = normalizeOAuthScopes(
+        (await current.getTokenInfo(false)).scope,
+      )
+    } catch {
+      // Older persisted accounts may not have a readable local scope snapshot.
+      // Preserve the known baseline rather than silently replacing the grant.
+      resolvedScopes = OAUTH_SCOPE
+    }
+  }
+  const missing = getMissingOAuthScopes(resolvedScopes, feature)
+  const scope = mergeOAuthScopes(
+    'atproto',
+    resolvedScopes,
+    missing.length ? getOAuthFeatureScopes(feature) : [],
+  )
+  return signInWithOAuth(identifierOrService, hooks, {
+    scope,
+    prompt: 'consent',
+  })
 }
 
 /**
@@ -172,6 +230,19 @@ export class OAuthSessionAdapter {
     return this.snapshot
   }
 
+  /** Return the live token capability set without exposing token material. */
+  async getGrantedScopes(): Promise<string[]> {
+    if (this.snapshot.oauthScopes?.length) {
+      return [...this.snapshot.oauthScopes]
+    }
+    const session = await this.ensureCurrent()
+    const info = await session.getTokenInfo(false)
+    const scopes = normalizeOAuthScopes(info.scope)
+    this.snapshot = {...this.snapshot, oauthScopes: scopes}
+    this.hooks.onUpdated?.(this.snapshot)
+    return scopes
+  }
+
   async fetchHandler(path: string, init?: RequestInit) {
     if (this.disposed) throw new Error('OAuth session disposed')
     try {
@@ -255,6 +326,8 @@ async function readSessionData(
     status?: string
     didDoc?: SessionData['didDoc']
   }
+  const tokenInfo = await session.getTokenInfo(false)
+  const oauthScopes = normalizeOAuthScopes(tokenInfo.scope)
   const endpoint = pdsUrl ?? extractPdsEndpoint(data.didDoc)
   const didDoc = endpoint
     ? {
@@ -278,6 +351,7 @@ async function readSessionData(
     emailAuthFactor: data.emailAuthFactor,
     active: data.active,
     status: data.status,
+    oauthScopes,
     service: new URL(session.serverMetadata.issuer).toString(),
     didDoc,
   }

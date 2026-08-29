@@ -5,6 +5,7 @@ const mockPersistedState: Record<string, unknown> = {
   appviewProviders: undefined,
   appviewSelections: {},
   appviewFallbacks: {},
+  appviewReconciliationPolicies: {},
   identityResolutionPolicy: undefined,
 }
 
@@ -18,15 +19,22 @@ jest.mock('#/state/persisted', () => ({
 
 import {
   DEFAULT_APPVIEW_PROVIDER,
+  exportAppViewPolicy,
   getAppViewProviders,
   getAppViewProvidersForCapability,
+  getAppViewProvidersForHandleResolution,
+  getAppViewProvidersForSurface,
+  getAppViewReconciliationPolicy,
   getDefaultAppViewDisplayName,
   getIdentityResolutionPolicy,
   getSelectedAppViewProvider,
+  importAppViewPolicy,
   probeAppViewProvider,
   registerAppViewProvider,
+  resetAppViewPolicy,
   selectAppViewProvider,
   setAppViewProviderCapabilities,
+  setAppViewReconciliationPolicy,
   setIdentityResolutionPolicy,
   validateAppViewProvider,
 } from '../providers'
@@ -36,6 +44,7 @@ describe('AppView provider validation and health probing', () => {
     mockPersistedState.appviewProviders = undefined
     mockPersistedState.appviewSelections = {}
     mockPersistedState.appviewFallbacks = {}
+    mockPersistedState.appviewReconciliationPolicies = {}
     mockPersistedState.identityResolutionPolicy = undefined
   })
 
@@ -223,6 +232,35 @@ describe('AppView provider validation and health probing', () => {
     })
   })
 
+  it('uses public-read providers for anonymous handle navigation without granting identity capability', () => {
+    mockPersistedState.appviewProviders = [
+      {
+        ...DEFAULT_APPVIEW_PROVIDER,
+        capabilities: ['public-read'],
+      },
+    ]
+
+    expect(getAppViewProvidersForCapability('identity-resolution')).toEqual([])
+    expect(
+      getAppViewProvidersForHandleResolution().map(provider => provider.id),
+    ).toEqual([DEFAULT_APPVIEW_PROVIDER.id])
+  })
+
+  it('inherits public-read providers for anonymous profile surfaces only', () => {
+    mockPersistedState.appviewProviders = [
+      {
+        ...DEFAULT_APPVIEW_PROVIDER,
+        capabilities: ['public-read'],
+      },
+    ]
+
+    expect(
+      getAppViewProvidersForSurface('profiles').map(provider => provider.id),
+    ).toEqual([DEFAULT_APPVIEW_PROVIDER.id])
+    expect(getAppViewProvidersForSurface('notifications')).toEqual([])
+    expect(getAppViewProvidersForSurface('communities')).toEqual([])
+  })
+
   it('persists an explicit identity reconciliation policy', async () => {
     const alternate = {
       ...DEFAULT_APPVIEW_PROVIDER,
@@ -286,5 +324,113 @@ describe('AppView provider validation and health probing', () => {
       ),
     ).toEqual([DEFAULT_APPVIEW_PROVIDER.id])
     expect(getIdentityResolutionPolicy()).toEqual({mode: 'require-agreement'})
+  })
+
+  it('stores reconciliation choices per surface and imports only known providers', async () => {
+    const alternate = {
+      ...DEFAULT_APPVIEW_PROVIDER,
+      id: 'alternate-appview',
+      displayName: 'Alternate AppView',
+      serviceDid:
+        'did:web:alternate.example' as typeof DEFAULT_APPVIEW_PROVIDER.serviceDid,
+      endpoint: 'https://alternate.example',
+      builtin: false,
+      capabilities: ['public-read', 'profiles', 'threads'] as const,
+    }
+    mockPersistedState.appviewProviders = [DEFAULT_APPVIEW_PROVIDER, alternate]
+
+    await setAppViewReconciliationPolicy('profiles', {
+      mode: 'prefer-provider',
+      preferredProviderId: alternate.id,
+    })
+    await setAppViewReconciliationPolicy('threads', {
+      mode: 'merge',
+    })
+    expect(getAppViewReconciliationPolicy('profiles')).toEqual({
+      mode: 'prefer-provider',
+      preferredProviderId: alternate.id,
+    })
+    expect(getAppViewReconciliationPolicy('threads')).toEqual({
+      mode: 'merge',
+    })
+    expect(
+      getAppViewProvidersForSurface('profiles').map(provider => provider.id),
+    ).toEqual([DEFAULT_APPVIEW_PROVIDER.id, alternate.id])
+
+    const exported = JSON.parse(exportAppViewPolicy()) as {
+      providers: Array<Record<string, unknown>>
+      [key: string]: unknown
+    }
+    expect(exported.providers).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: alternate.id,
+          capabilities: ['public-read', 'profiles', 'threads'],
+        }),
+      ]),
+    )
+    expect(exported.providers[0]).not.toHaveProperty('endpoint')
+
+    await importAppViewPolicy(
+      JSON.stringify({
+        ...exported,
+        providers: [
+          ...exported.providers,
+          {
+            id: 'unregistered-provider',
+            enabled: true,
+            capabilities: ['profiles'],
+            endpoint: 'https://must-not-be-imported.example',
+          },
+        ],
+        selections: {[DID]: alternate.id, other: 'unregistered-provider'},
+      }),
+    )
+    expect(getSelectedAppViewProvider(DID).id).toBe(alternate.id)
+    expect(
+      getAppViewProviders().some(
+        provider => provider.id === 'unregistered-provider',
+      ),
+    ).toBe(false)
+    expect(getAppViewReconciliationPolicy('profiles')).toEqual({
+      mode: 'prefer-provider',
+      preferredProviderId: alternate.id,
+    })
+  })
+
+  it('resets optional provider capabilities without deleting registered endpoints', async () => {
+    const alternate = {
+      ...DEFAULT_APPVIEW_PROVIDER,
+      id: 'alternate-appview',
+      displayName: 'Alternate AppView',
+      serviceDid:
+        'did:web:alternate.example' as typeof DEFAULT_APPVIEW_PROVIDER.serviceDid,
+      endpoint: 'https://alternate.example',
+      builtin: false,
+    }
+    mockPersistedState.appviewProviders = [DEFAULT_APPVIEW_PROVIDER, alternate]
+    await setAppViewReconciliationPolicy('search', {mode: 'merge'})
+    await setAppViewProviderCapabilities(alternate.id, [
+      'public-read',
+      'search',
+    ])
+
+    await resetAppViewPolicy()
+
+    expect(getAppViewProviders()).toHaveLength(2)
+    expect(
+      getAppViewProviders().every(provider => Boolean(provider.capabilities)),
+    ).toBe(true)
+    expect(
+      getAppViewProviders().every(provider =>
+        provider.capabilities?.includes('public-read'),
+      ),
+    ).toBe(true)
+    expect(
+      getAppViewProvidersForSurface('search').map(provider => provider.id),
+    ).toEqual([DEFAULT_APPVIEW_PROVIDER.id, alternate.id])
+    expect(getAppViewReconciliationPolicy('search')).toEqual({
+      mode: 'require-agreement',
+    })
   })
 })

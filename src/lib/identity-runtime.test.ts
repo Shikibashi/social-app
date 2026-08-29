@@ -1,4 +1,5 @@
 import {
+  getKnownAccountDidForHandle,
   IdentityCache,
   IdentityResolutionDisagreementError,
   IdentityRuntimeCoordinator,
@@ -8,6 +9,22 @@ import {
   validateIdentityEndpoint,
 } from './identity-runtime'
 describe('identity runtime', () => {
+  it('uses the authenticated account DID only for its own handle', () => {
+    const account = {
+      did: 'did:plc:3ijrhre2q5e4tt2f4ph2sneo',
+      handle: 'edriffles.us',
+    }
+    expect(getKnownAccountDidForHandle('edriffles.us', account)).toBe(
+      account.did,
+    )
+    expect(getKnownAccountDidForHandle('@EDRIFFLES.US', account)).toBe(
+      account.did,
+    )
+    expect(getKnownAccountDidForHandle('someone.example', account)).toBe(
+      undefined,
+    )
+  })
+
   it('verifies handle bidirectionally and records provenance', async () => {
     const r = await resolveIdentity('alice.example', [
       {

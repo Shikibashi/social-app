@@ -68,6 +68,10 @@ export type SessionApiContext = {
    * and `SignupQueued` branches synchronously on the fresh `accessJwt`.
    */
   refreshSession: () => Promise<SessionAccount | undefined>
+  /** Starts an explicit consent flow for one missing OAuth feature grant. */
+  upgradeOAuthFeature: (
+    feature: import('./oauth-scopes').OAuthFeature,
+  ) => Promise<void>
   switchAppViewProvider: (
     providerId: string,
     persist?: boolean,

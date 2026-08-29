@@ -20,7 +20,8 @@ import {
   type CommonNavigatorParams,
   type NavigationProp,
 } from '#/lib/routes/types'
-import {usePdsClient, useSessionApi} from '#/state/session'
+import {usePdsClient, useSession, useSessionApi} from '#/state/session'
+import {hasOAuthFeature} from '#/state/session/oauth-scopes'
 import {atoms as a, useBreakpoints, useTheme} from '#/alf'
 import {Button, ButtonText} from '#/components/Button'
 import * as Layout from '#/components/Layout'
@@ -100,6 +101,7 @@ function postCollectionsForSpace(space: string): readonly NsidString[] {
 
 export function CommunityBoardScreen({route}: Props) {
   const client = usePdsClient()
+  const {currentAccount} = useSession()
   const {refreshSession} = useSessionApi()
   const navigation = useNavigation<NavigationProp>()
   const queryClient = useQueryClient()
@@ -125,6 +127,9 @@ export function CommunityBoardScreen({route}: Props) {
   const [membershipStates, setMembershipStates] = useState<
     Record<string, string>
   >({})
+  const spacesAuthorizationRequired =
+    currentAccount?.authType === 'oauth' &&
+    !hasOAuthFeature(currentAccount.oauthScopes, 'spaces')
 
   const colors: ForumColors = {
     canvas: t.palette.contrast_0,
@@ -220,7 +225,11 @@ export function CommunityBoardScreen({route}: Props) {
 
   const notesQuery = useQuery({
     queryKey: ['radlib-community-board', client.did, space],
-    enabled: !!client.did && !!space && SPACES_ALPHA_ENABLED,
+    enabled:
+      !!client.did &&
+      !!space &&
+      SPACES_ALPHA_ENABLED &&
+      !spacesAuthorizationRequired,
     queryFn: async () => {
       const session = await createSpaceCredentialSession(client, space)
       const reader = {
@@ -408,6 +417,11 @@ export function CommunityBoardScreen({route}: Props) {
   const postMutation = useMutation({
     mutationFn: async () => {
       if (!space.trim()) throw new Error('Community space is unavailable')
+      if (spacesAuthorizationRequired) {
+        throw new Error(
+          'Authorize the Spaces feature before posting in this community',
+        )
+      }
       const selectedThread = threadList.find(
         thread => thread.key === selectedTopicKey,
       )
@@ -569,12 +583,20 @@ export function CommunityBoardScreen({route}: Props) {
   }
 
   function openTopicComposer() {
+    if (spacesAuthorizationRequired) {
+      navigation.navigate('ServicesSettings')
+      return
+    }
     setSelectedTopicKey(undefined)
     setActiveTab('threads')
     setComposerMode('topic')
   }
 
   function openReplyComposer() {
+    if (spacesAuthorizationRequired) {
+      navigation.navigate('ServicesSettings')
+      return
+    }
     if (!selectedThread) return
     setComposerMode('reply')
   }
@@ -1200,7 +1222,28 @@ export function CommunityBoardScreen({route}: Props) {
                   colors={colors}
                 />
 
-                {notesQuery.data && !notesQuery.data.complete ? (
+                {spacesAuthorizationRequired ? (
+                  <View style={{gap: 8}}>
+                    <StatusNotice
+                      colors={colors}
+                      tone="warning"
+                      message="This OAuth session does not have the Spaces permission required to read or post community topics. Open Services to authorize Spaces; your existing posting and profile permissions remain unchanged."
+                    />
+                    <Button
+                      label="Open OAuth permission settings for Spaces"
+                      size="small"
+                      color="secondary"
+                      variant="outline"
+                      shape="rectangular"
+                      onPress={() => navigation.navigate('ServicesSettings')}>
+                      <ButtonText>Open Services</ButtonText>
+                    </Button>
+                  </View>
+                ) : null}
+
+                {!spacesAuthorizationRequired &&
+                notesQuery.data &&
+                !notesQuery.data.complete ? (
                   <StatusNotice
                     colors={colors}
                     tone="warning"
@@ -1208,7 +1251,7 @@ export function CommunityBoardScreen({route}: Props) {
                   />
                 ) : null}
 
-                {notesQuery.isError ? (
+                {!spacesAuthorizationRequired && notesQuery.isError ? (
                   <StatusNotice
                     colors={colors}
                     tone="error"
@@ -1224,7 +1267,7 @@ export function CommunityBoardScreen({route}: Props) {
                     padding: 14,
                     gap: 8,
                   }}>
-                  {notesQuery.isPending ? (
+                  {spacesAuthorizationRequired ? null : notesQuery.isPending ? (
                     <Text style={{color: colors.secondary}}>
                       Loading topics from this community…
                     </Text>

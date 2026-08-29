@@ -245,6 +245,9 @@ importers:
       '@atproto/common-web':
         specifier: 0.5.10
         version: 0.5.10
+      '@atproto/crypto':
+        specifier: 0.5.4
+        version: 0.5.4
       '@atproto/lex':
         specifier: 0.3.8
         version: 0.3.8

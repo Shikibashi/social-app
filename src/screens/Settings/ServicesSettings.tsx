@@ -1,23 +1,47 @@
 import {useEffect, useState} from 'react'
 import {Alert, TextInput, View} from 'react-native'
+import * as Clipboard from 'expo-clipboard'
 import {msg} from '@lingui/core/macro'
 import {useLingui} from '@lingui/react'
 import {Trans} from '@lingui/react/macro'
 import {type NativeStackScreenProps} from '@react-navigation/native-stack'
 
 import {type IdentityResolutionPolicy} from '#/lib/identity-runtime'
+import {
+  PROVIDER_SURFACES,
+  type ProviderReconciliationMode,
+  type ProviderReconciliationPolicy,
+  type ProviderSurface,
+} from '#/lib/provider-composition'
 import {type CommonNavigatorParams} from '#/lib/routes/types'
 import {useSession, useSessionApi} from '#/state/session'
 import {
+  hasOAuthFeature,
+  OAUTH_FEATURES,
+  type OAuthFeature,
+} from '#/state/session/oauth-scopes'
+import {
+  getRegisteredPlcResolvers,
+  PRIMARY_PLC_RESOLVER,
+  registerPlcResolver,
+  setPlcResolverEnabled,
+} from '#/state/session/plc-resolvers'
+import {
   type AppViewProvider,
   type AppViewProviderCapability,
+  exportAppViewPolicy,
   getAppViewProviders,
   getAppViewProvidersForCapability,
+  getAppViewProvidersForSurface,
+  getAppViewReconciliationPolicy,
   getIdentityResolutionPolicy,
   getSelectedAppViewProvider,
+  importAppViewPolicy,
   probeAppViewProvider,
   registerAppViewProvider,
+  resetAppViewPolicy,
   setAppViewProviderCapabilities,
+  setAppViewReconciliationPolicy,
   setIdentityResolutionPolicy as persistIdentityResolutionPolicy,
 } from '#/state/session/providers'
 import * as SettingsList from '#/screens/Settings/components/SettingsList'
@@ -27,11 +51,45 @@ import * as Layout from '#/components/Layout'
 
 type Props = NativeStackScreenProps<CommonNavigatorParams, 'ServicesSettings'>
 
+const CONFIGURABLE_PROVIDER_SURFACES = PROVIDER_SURFACES.filter(
+  (surface): surface is Exclude<ProviderSurface, 'identity-resolution'> =>
+    surface !== 'identity-resolution',
+)
+
+const OAUTH_FEATURE_LABELS: Record<OAuthFeature, string> = {
+  posting: 'Posting and interactions',
+  'profile-editing': 'Profile editing',
+  'social-graph': 'Social graph',
+  appview: 'Authenticated AppView reads',
+  chat: 'Chat',
+  spaces: 'Spaces',
+  media: 'Media uploads',
+  notifications: 'Notifications',
+}
+
+function providerSurfaceLabel(surface: ProviderSurface): string {
+  return surface
+    .split('-')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ')
+}
+
+function readReconciliationPolicies(): Partial<
+  Record<ProviderSurface, ProviderReconciliationPolicy>
+> {
+  return Object.fromEntries(
+    PROVIDER_SURFACES.map(surface => [
+      surface,
+      getAppViewReconciliationPolicy(surface),
+    ]),
+  )
+}
+
 export function ServicesSettingsScreen({}: Props) {
   const {currentAccount} = useSession()
   const {_} = useLingui()
   const t = useTheme()
-  const {switchAppViewProvider} = useSessionApi()
+  const {switchAppViewProvider, upgradeOAuthFeature} = useSessionApi()
   const [providers, setProviders] = useState<AppViewProvider[]>(() =>
     getAppViewProviders(),
   )
@@ -47,13 +105,44 @@ export function ServicesSettingsScreen({}: Props) {
   const [providerDid, setProviderDid] = useState('')
   const [providerFragment, setProviderFragment] = useState('bsky_appview')
   const [isRegistering, setIsRegistering] = useState(false)
+  const [reconciliationPolicies, setReconciliationPolicies] = useState(
+    readReconciliationPolicies,
+  )
+  const [plcResolvers, setPlcResolvers] = useState(getRegisteredPlcResolvers)
+  const [resolverName, setResolverName] = useState('')
+  const [resolverEndpoint, setResolverEndpoint] = useState('')
+  const [resolverOperatorId, setResolverOperatorId] = useState('')
+  const [isRegisteringResolver, setIsRegisteringResolver] = useState(false)
+  const [pendingOAuthFeature, setPendingOAuthFeature] = useState<
+    OAuthFeature | undefined
+  >()
 
   useEffect(() => {
     setProviders(getAppViewProviders())
     setIdentityPolicy(getIdentityResolutionPolicy())
+    setReconciliationPolicies(readReconciliationPolicies())
+    setPlcResolvers(getRegisteredPlcResolvers())
     if (currentAccount)
       setSelected(getSelectedAppViewProvider(currentAccount.did).id)
   }, [currentAccount])
+
+  async function upgradeFeature(feature: OAuthFeature) {
+    setPendingOAuthFeature(feature)
+    try {
+      await upgradeOAuthFeature(feature)
+      Alert.alert(
+        'Permission updated',
+        `${OAUTH_FEATURE_LABELS[feature]} is now available to this client.`,
+      )
+    } catch (error) {
+      Alert.alert(
+        'Permission not updated',
+        error instanceof Error ? error.message : String(error),
+      )
+    } finally {
+      setPendingOAuthFeature(undefined)
+    }
+  }
 
   async function saveIdentityPolicy(policy: IdentityResolutionPolicy) {
     try {
@@ -124,6 +213,214 @@ export function ServicesSettingsScreen({}: Props) {
     } catch (error) {
       Alert.alert(
         'Identity provider not changed',
+        error instanceof Error ? error.message : String(error),
+      )
+    }
+  }
+
+  async function toggleProviderSurface(
+    provider: AppViewProvider,
+    surface: Exclude<ProviderSurface, 'identity-resolution'>,
+  ) {
+    const capabilities: AppViewProviderCapability[] = provider.capabilities ?? [
+      'public-read',
+    ]
+    const nextCapabilities = capabilities.includes(surface)
+      ? capabilities.filter(capability => capability !== surface)
+      : [...capabilities, surface]
+    try {
+      await setAppViewProviderCapabilities(provider.id, nextCapabilities)
+      setProviders(getAppViewProviders())
+    } catch (error) {
+      Alert.alert(
+        'Provider capability not changed',
+        error instanceof Error ? error.message : String(error),
+      )
+    }
+  }
+
+  function chooseProviderSurfaces(provider: AppViewProvider) {
+    Alert.alert(
+      `${provider.displayName} read surfaces`,
+      'Each surface is an independent local capability declaration. Removing a surface stops this provider from receiving that class of read request.',
+      CONFIGURABLE_PROVIDER_SURFACES.map(surface => ({
+        text: `${provider.capabilities?.includes(surface) ? 'Remove' : 'Allow'} ${providerSurfaceLabel(surface)}`,
+        onPress: () => void toggleProviderSurface(provider, surface),
+      })),
+    )
+  }
+
+  async function saveSurfacePolicy(
+    surface: ProviderSurface,
+    policy: ProviderReconciliationPolicy,
+  ) {
+    try {
+      await setAppViewReconciliationPolicy(surface, policy)
+      setReconciliationPolicies(previous => ({...previous, [surface]: policy}))
+    } catch (error) {
+      Alert.alert(
+        'Reconciliation policy not saved',
+        error instanceof Error ? error.message : String(error),
+      )
+    }
+  }
+
+  function chooseSurfacePolicy(surface: ProviderSurface) {
+    const current = reconciliationPolicies[surface] ?? {
+      mode: 'require-agreement' as const,
+    }
+    const providers = getAppViewProvidersForSurface(surface)
+    const chooseMode = (mode: ProviderReconciliationMode) =>
+      void saveSurfacePolicy(surface, {mode})
+    Alert.alert(
+      `${providerSurfaceLabel(surface)} reconciliation`,
+      `Current policy: ${current.mode}. Provider disagreement remains visible to the client and is not silently replaced.`,
+      [
+        {
+          text: 'Require agreement',
+          onPress: () => chooseMode('require-agreement'),
+        },
+        {
+          text: 'Use first verified result',
+          onPress: () => chooseMode('first-verified'),
+        },
+        {
+          text: 'Merge attributable results',
+          onPress: () => chooseMode('merge'),
+        },
+        {
+          text: 'Prefer one provider',
+          onPress: () =>
+            Alert.alert(
+              'Preferred provider',
+              'This is an explicit local preference, not a claim that the provider is independently authoritative.',
+              [
+                ...providers.map(provider => ({
+                  text: provider.displayName,
+                  onPress: () =>
+                    void saveSurfacePolicy(surface, {
+                      mode: 'prefer-provider',
+                      preferredProviderId: provider.id,
+                    }),
+                })),
+                {text: 'Cancel', style: 'cancel' as const},
+              ],
+            ),
+        },
+        {text: 'Cancel', style: 'cancel'},
+      ],
+    )
+  }
+
+  function chooseAnySurfacePolicy() {
+    Alert.alert(
+      'Provider reconciliation policies',
+      'Choose the read surface whose disagreements should be reconciled.',
+      CONFIGURABLE_PROVIDER_SURFACES.map(surface => ({
+        text: `${providerSurfaceLabel(surface)} · ${reconciliationPolicies[surface]?.mode ?? 'require-agreement'}`,
+        onPress: () => chooseSurfacePolicy(surface),
+      })),
+    )
+  }
+
+  async function copyProviderPolicy() {
+    await Clipboard.setStringAsync(exportAppViewPolicy())
+    Alert.alert(
+      'Provider policy copied',
+      'The export contains provider IDs, capabilities, and local reconciliation choices, but no endpoints, tokens, or service-auth material.',
+    )
+  }
+
+  async function importProviderPolicyFromClipboard() {
+    try {
+      await importAppViewPolicy(await Clipboard.getStringAsync())
+      setProviders(getAppViewProviders())
+      setIdentityPolicy(getIdentityResolutionPolicy())
+      setReconciliationPolicies(readReconciliationPolicies())
+      Alert.alert(
+        'Provider policy imported',
+        'Only already-registered providers were changed. Imports cannot add a host or credential.',
+      )
+    } catch (error) {
+      Alert.alert(
+        'Provider policy rejected',
+        error instanceof Error ? error.message : String(error),
+      )
+    }
+  }
+
+  function resetProviderPolicyWithConfirmation() {
+    Alert.alert(
+      'Reset provider policy?',
+      'This revokes optional provider surface capabilities and clears selections and reconciliation choices. Registered endpoints remain available for a later explicit re-enable.',
+      [
+        {text: 'Cancel', style: 'cancel'},
+        {
+          text: 'Reset',
+          style: 'destructive',
+          onPress: () =>
+            void resetAppViewPolicy().then(() => {
+              setProviders(getAppViewProviders())
+              setIdentityPolicy(getIdentityResolutionPolicy())
+              setReconciliationPolicies(readReconciliationPolicies())
+            }),
+        },
+      ],
+    )
+  }
+
+  async function addPlcResolver() {
+    if (
+      !resolverName.trim() ||
+      !resolverEndpoint.trim() ||
+      !resolverOperatorId.trim()
+    ) {
+      Alert.alert(
+        'Resolver details required',
+        'Enter a name, public HTTPS endpoint, and declared operator ID before adding a resolver.',
+      )
+      return
+    }
+    const endpoint = resolverEndpoint.trim().replace(/\/$/, '')
+    const id = `custom-${endpoint
+      .replace(/[^a-z0-9]+/gi, '-')
+      .replace(/^-|-$/g, '')
+      .toLowerCase()}`
+    setIsRegisteringResolver(true)
+    try {
+      const resolver = await registerPlcResolver({
+        id: id || `custom-resolver-${Date.now()}`,
+        displayName: resolverName.trim(),
+        endpoint,
+        operatorId: resolverOperatorId.trim(),
+        builtin: false,
+        enabled: true,
+      })
+      setPlcResolvers(getRegisteredPlcResolvers())
+      setResolverName('')
+      setResolverEndpoint('')
+      setResolverOperatorId('')
+      Alert.alert(
+        'PLC resolver added',
+        `${resolver.displayName} will be queried alongside ${PRIMARY_PLC_RESOLVER.displayName}. Its history must verify cryptographically before it can be selected.`,
+      )
+    } catch (error) {
+      Alert.alert(
+        'PLC resolver not added',
+        error instanceof Error ? error.message : String(error),
+      )
+    } finally {
+      setIsRegisteringResolver(false)
+    }
+  }
+
+  async function togglePlcResolver(resolverId: string, enabled: boolean) {
+    try {
+      await setPlcResolverEnabled(resolverId, enabled)
+      setPlcResolvers(getRegisteredPlcResolvers())
+    } catch (error) {
+      Alert.alert(
+        'PLC resolver not changed',
         error instanceof Error ? error.message : String(error),
       )
     }
@@ -251,6 +548,47 @@ export function ServicesSettingsScreen({}: Props) {
               </SettingsList.BadgeText>
             </SettingsList.Item>
           )}
+          {currentAccount?.authType === 'oauth' && (
+            <>
+              <SettingsList.Divider />
+              <SettingsList.Item>
+                <View style={[a.flex_1, a.gap_sm]}>
+                  <SettingsList.ItemText style={[{paddingHorizontal: 0}]}>
+                    OAuth permission upgrades
+                  </SettingsList.ItemText>
+                  <SettingsList.ItemText
+                    style={[
+                      {paddingHorizontal: 0},
+                      a.text_sm,
+                      t.atoms.text_contrast_medium,
+                    ]}>
+                    New sessions request only the feature groups needed for
+                    ordinary use. Each missing capability opens a separate
+                    consent upgrade; existing posting, likes, profile editing,
+                    chat, and Spaces grants are retained.
+                  </SettingsList.ItemText>
+                </View>
+              </SettingsList.Item>
+              {OAUTH_FEATURES.map(feature =>
+                hasOAuthFeature(currentAccount.oauthScopes, feature) ? null : (
+                  <SettingsList.PressableItem
+                    key={`oauth-upgrade-${feature}`}
+                    label={`Authorize ${OAUTH_FEATURE_LABELS[feature]}`}
+                    onPress={() => void upgradeFeature(feature)}
+                    disabled={pendingOAuthFeature !== undefined}>
+                    <SettingsList.ItemText>
+                      {OAUTH_FEATURE_LABELS[feature]}
+                    </SettingsList.ItemText>
+                    <SettingsList.BadgeText>
+                      {pendingOAuthFeature === feature
+                        ? 'Opening consent…'
+                        : 'Additional permission required'}
+                    </SettingsList.BadgeText>
+                  </SettingsList.PressableItem>
+                ),
+              )}
+            </>
+          )}
           {providers.map(provider => (
             <SettingsList.PressableItem
               key={provider.id}
@@ -277,9 +615,10 @@ export function ServicesSettingsScreen({}: Props) {
                   a.text_sm,
                   t.atoms.text_contrast_medium,
                 ]}>
-                Providers start with public-read only. Allow identity resolution
-                separately; this sends only public resolver requests and remains
-                revocable on this device.
+                Providers start with public-read only. Public profile links can
+                use an anonymous handle lookup from those providers; allowing
+                identity resolution separately opts a provider into broader
+                identity claims and remains revocable on this device.
               </SettingsList.ItemText>
             </View>
           </SettingsList.Item>
@@ -312,6 +651,186 @@ export function ServicesSettingsScreen({}: Props) {
               {identityPolicyLabel}
             </SettingsList.BadgeText>
           </SettingsList.PressableItem>
+          <SettingsList.Item>
+            <View style={[a.flex_1, a.gap_sm]}>
+              <SettingsList.ItemText style={[{paddingHorizontal: 0}]}>
+                Polycentric provider composition
+              </SettingsList.ItemText>
+              <SettingsList.ItemText
+                style={[
+                  {paddingHorizontal: 0},
+                  a.text_sm,
+                  t.atoms.text_contrast_medium,
+                ]}>
+                Profiles, threads, feeds, search, notifications, labels, media,
+                and communities can each use their own provider set. The client
+                retains provider provenance and applies the local reconciliation
+                policy instead of treating the bundled AppView as sovereign.
+              </SettingsList.ItemText>
+            </View>
+          </SettingsList.Item>
+          {providers.map(provider => (
+            <SettingsList.PressableItem
+              key={`surfaces-${provider.id}`}
+              label={`Configure read surfaces for ${provider.displayName}`}
+              onPress={() => chooseProviderSurfaces(provider)}>
+              <SettingsList.ItemText>
+                {provider.displayName} surface permissions
+              </SettingsList.ItemText>
+              <SettingsList.BadgeText>
+                {`${(provider.capabilities ?? []).filter(capability => capability !== 'public-read').length} optional surfaces enabled`}
+              </SettingsList.BadgeText>
+            </SettingsList.PressableItem>
+          ))}
+          <SettingsList.PressableItem
+            label="Choose provider reconciliation policy"
+            onPress={chooseAnySurfacePolicy}>
+            <SettingsList.ItemText>
+              Reconciliation policies
+            </SettingsList.ItemText>
+            <SettingsList.BadgeText>
+              {`${Object.keys(reconciliationPolicies).length} surfaces configured`}
+            </SettingsList.BadgeText>
+          </SettingsList.PressableItem>
+          <SettingsList.PressableItem
+            label="Export provider policy"
+            onPress={() => void copyProviderPolicy()}>
+            <SettingsList.ItemText>
+              Export provider policy
+            </SettingsList.ItemText>
+            <SettingsList.BadgeText>
+              Clipboard; no credentials
+            </SettingsList.BadgeText>
+          </SettingsList.PressableItem>
+          <SettingsList.PressableItem
+            label="Import provider policy from clipboard"
+            onPress={() => void importProviderPolicyFromClipboard()}>
+            <SettingsList.ItemText>
+              Import provider policy
+            </SettingsList.ItemText>
+            <SettingsList.BadgeText>
+              Existing provider IDs only
+            </SettingsList.BadgeText>
+          </SettingsList.PressableItem>
+          <SettingsList.PressableItem
+            label="Reset provider policy"
+            onPress={resetProviderPolicyWithConfirmation}
+            destructive>
+            <SettingsList.ItemText>Reset provider policy</SettingsList.ItemText>
+            <SettingsList.BadgeText>
+              Revoke optional surfaces
+            </SettingsList.BadgeText>
+          </SettingsList.PressableItem>
+          <SettingsList.Divider />
+          <SettingsList.Item>
+            <View style={[a.flex_1, a.gap_sm]}>
+              <SettingsList.ItemText style={[{paddingHorizontal: 0}]}>
+                PLC resolver plurality
+              </SettingsList.ItemText>
+              <SettingsList.ItemText
+                style={[
+                  {paddingHorizontal: 0},
+                  a.text_sm,
+                  t.atoms.text_contrast_medium,
+                ]}>
+                {`Histories are verified against signed PLC operations before selection. ${PRIMARY_PLC_RESOLVER.displayName} remains the compatibility resolver; a resolver URL or operator label alone does not prove independent control.`}
+              </SettingsList.ItemText>
+            </View>
+          </SettingsList.Item>
+          <SettingsList.Item>
+            <SettingsList.ItemText>Primary resolver</SettingsList.ItemText>
+            <SettingsList.BadgeText>
+              {PRIMARY_PLC_RESOLVER.endpoint}
+            </SettingsList.BadgeText>
+          </SettingsList.Item>
+          {plcResolvers.map(resolver => (
+            <SettingsList.PressableItem
+              key={`plc-resolver-${resolver.id}`}
+              label={`${resolver.enabled ? 'Disable' : 'Enable'} PLC resolver ${resolver.displayName}`}
+              onPress={() =>
+                void togglePlcResolver(resolver.id, !resolver.enabled)
+              }>
+              <SettingsList.ItemText>
+                {resolver.displayName}
+              </SettingsList.ItemText>
+              <SettingsList.BadgeText>
+                {`${resolver.enabled ? 'Enabled' : 'Disabled'} · ${resolver.operatorId}`}
+              </SettingsList.BadgeText>
+            </SettingsList.PressableItem>
+          ))}
+          <SettingsList.Item>
+            <View style={[a.flex_1, a.gap_sm]}>
+              <SettingsList.ItemText style={[{paddingHorizontal: 0}]}>
+                Add a PLC mirror or resolver declaration
+              </SettingsList.ItemText>
+              <TextInput
+                accessibilityLabel="PLC resolver name"
+                accessibilityHint="Enter a display name for this public PLC resolver."
+                placeholder="Resolver name"
+                value={resolverName}
+                onChangeText={setResolverName}
+                style={[
+                  a.px_md,
+                  a.py_sm,
+                  a.rounded_sm,
+                  t.atoms.bg_contrast_25,
+                  t.atoms.text,
+                ]}
+              />
+              <TextInput
+                accessibilityLabel="PLC resolver HTTPS endpoint"
+                accessibilityHint="Enter a public HTTPS origin for the resolver."
+                placeholder="https://resolver.example"
+                autoCapitalize="none"
+                autoCorrect={false}
+                keyboardType="url"
+                value={resolverEndpoint}
+                onChangeText={setResolverEndpoint}
+                style={[
+                  a.px_md,
+                  a.py_sm,
+                  a.rounded_sm,
+                  t.atoms.bg_contrast_25,
+                  t.atoms.text,
+                ]}
+              />
+              <TextInput
+                accessibilityLabel="PLC resolver operator ID"
+                accessibilityHint="Enter the operator identity declared by this resolver."
+                placeholder="Declared operator ID"
+                autoCapitalize="none"
+                autoCorrect={false}
+                value={resolverOperatorId}
+                onChangeText={setResolverOperatorId}
+                style={[
+                  a.px_md,
+                  a.py_sm,
+                  a.rounded_sm,
+                  t.atoms.bg_contrast_25,
+                  t.atoms.text,
+                ]}
+              />
+              <Button
+                label="Register PLC resolver"
+                onPress={() => void addPlcResolver()}
+                disabled={isRegisteringResolver}>
+                {({pressed}) => (
+                  <ButtonText
+                    style={[
+                      {
+                        color: pressed
+                          ? t.palette.primary_300
+                          : t.palette.primary_500,
+                      },
+                    ]}>
+                    {isRegisteringResolver
+                      ? 'Checking resolver…'
+                      : 'Register PLC resolver'}
+                  </ButtonText>
+                )}
+              </Button>
+            </View>
+          </SettingsList.Item>
           <SettingsList.Divider />
           <SettingsList.Item>
             <View style={[a.flex_1, a.gap_sm]}>

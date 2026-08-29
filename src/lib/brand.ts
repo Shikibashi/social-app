@@ -25,6 +25,21 @@ export function resolvePublicWebOrigin(value: string | undefined): string {
   }
 }
 
+/**
+ * Keep a hosted production shell bound to its real public origin even when a
+ * stale local build variable was accidentally carried into the bundle. Local
+ * development origins remain configurable; only the canonical web deployment
+ * gets this runtime correction.
+ */
+export function resolveRuntimePublicWebOrigin(
+  configuredOrigin: string,
+  runtimeOrigin: string | undefined,
+): string {
+  return runtimeOrigin === DEFAULT_PUBLIC_WEB_ORIGIN
+    ? DEFAULT_PUBLIC_WEB_ORIGIN
+    : configuredOrigin
+}
+
 export const PRODUCT_NAME = resolveProductName(
   process.env.EXPO_PUBLIC_BRAND_NAME,
 )
@@ -32,3 +47,12 @@ export const PRODUCT_NAME = resolveProductName(
 export const PUBLIC_WEB_ORIGIN = resolvePublicWebOrigin(
   process.env.EXPO_PUBLIC_PUBLIC_WEB_ORIGIN,
 )
+
+export function getRuntimePublicWebOrigin(): string {
+  return resolveRuntimePublicWebOrigin(
+    PUBLIC_WEB_ORIGIN,
+    typeof window === 'undefined' || !window.location
+      ? undefined
+      : window.location.origin,
+  )
+}

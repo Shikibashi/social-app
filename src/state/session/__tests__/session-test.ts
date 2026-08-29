@@ -11,6 +11,15 @@ jest.mock('jwt-decode', () => ({
   },
 }))
 
+// Keep reducer snapshots independent from the developer's local deployment
+// configuration. The production account/PDS host is tested by the deployment
+// contract; this suite is testing reducer transitions and bundle identity.
+jest.mock('#/lib/constants', () => ({
+  ...jest.requireActual('#/lib/constants'),
+  DEFAULT_SERVICE: 'https://account-entryway.test',
+  PUBLIC_ACCOUNT_SERVICE: 'https://account-entryway.test',
+}))
+
 jest.mock('../../birthdate')
 jest.mock('#/lib/notifications/notifications', () => ({
   unregisterPushToken(_clients: unknown[]) {
@@ -66,7 +75,7 @@ describe('session', () => {
         "accounts": [],
         "currentBundleState": {
           "bundle": {
-            "service": "https://social.edriffles.us/",
+            "service": "https://account-entryway.test/",
           },
           "did": undefined,
         },
@@ -155,7 +164,7 @@ describe('session', () => {
         ],
         "currentBundleState": {
           "bundle": {
-            "service": "https://social.edriffles.us/",
+            "service": "https://account-entryway.test/",
           },
           "did": undefined,
         },
@@ -493,7 +502,7 @@ describe('session', () => {
         ],
         "currentBundleState": {
           "bundle": {
-            "service": "https://social.edriffles.us/",
+            "service": "https://account-entryway.test/",
           },
           "did": undefined,
         },
@@ -555,7 +564,7 @@ describe('session', () => {
         ],
         "currentBundleState": {
           "bundle": {
-            "service": "https://social.edriffles.us/",
+            "service": "https://account-entryway.test/",
           },
           "did": undefined,
         },
@@ -648,7 +657,7 @@ describe('session', () => {
         "accounts": [],
         "currentBundleState": {
           "bundle": {
-            "service": "https://social.edriffles.us/",
+            "service": "https://account-entryway.test/",
           },
           "did": undefined,
         },
@@ -828,7 +837,7 @@ describe('session', () => {
         ],
         "currentBundleState": {
           "bundle": {
-            "service": "https://social.edriffles.us/",
+            "service": "https://account-entryway.test/",
           },
           "did": undefined,
         },
@@ -1520,7 +1529,7 @@ describe('session', () => {
         ],
         "currentBundleState": {
           "bundle": {
-            "service": "https://social.edriffles.us/",
+            "service": "https://account-entryway.test/",
           },
           "did": undefined,
         },
@@ -1677,7 +1686,7 @@ describe('session', () => {
         ],
         "currentBundleState": {
           "bundle": {
-            "service": "https://social.edriffles.us/",
+            "service": "https://account-entryway.test/",
           },
           "did": undefined,
         },

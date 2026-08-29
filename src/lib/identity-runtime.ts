@@ -50,6 +50,24 @@ export type IdentityClaimsResult = {
   selected?: IdentityClaim
 }
 
+/**
+ * The authenticated session already binds the current handle to its DID. Use
+ * that binding for the owner's own profile instead of requiring an optional
+ * public identity resolver capability just to open the Profile navigation
+ * target. Other handles continue through the configured resolver policy.
+ */
+export function getKnownAccountDidForHandle(
+  input: string | undefined,
+  account: {did: string; handle?: string} | undefined,
+): string | undefined {
+  if (!input || !account?.handle) return undefined
+  const normalize = (value: string) =>
+    value.trim().replace(/^@/, '').toLowerCase()
+  return normalize(input) === normalize(account.handle)
+    ? account.did
+    : undefined
+}
+
 export type ResolverProvider = {
   id: string
   resolveHandle: (handle: string) => Promise<{did: string}>

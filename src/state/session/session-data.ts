@@ -11,6 +11,7 @@ export type SessionData = {
   handle: string
   accessJwt?: string
   refreshJwt?: string
+  oauthScopes?: string[]
   email?: string
   emailConfirmed?: boolean
   emailAuthFactor?: boolean
@@ -71,6 +72,9 @@ export function sessionDataToSessionAccount(
     emailAuthFactor: session.emailAuthFactor || false,
     refreshJwt: session.refreshJwt,
     accessJwt: session.accessJwt,
+    ...(session.oauthScopes?.length
+      ? {oauthScopes: [...new Set(session.oauthScopes)]}
+      : {}),
     signupQueued: isSignupQueued(session.accessJwt),
     active: session.active,
     status: session.status,
@@ -94,8 +98,11 @@ export function sessionAccountToSessionData(
     ...(account.authType ? {authType: account.authType} : {}),
     accessJwt: account.accessJwt ?? '',
     refreshJwt: account.refreshJwt ?? '',
+    ...(account.oauthScopes?.length
+      ? {oauthScopes: [...new Set(account.oauthScopes)]}
+      : {}),
     did: account.did,
-    handle: account.handle as `${string}.${string}`,
+    handle: account.handle,
     email: account.email,
     emailAuthFactor: account.emailAuthFactor,
     emailConfirmed: account.emailConfirmed,

@@ -27,6 +27,7 @@ import {
   type PersonalizationState,
   resetFeedPreferences,
   resetLearnedPersonalization,
+  resetPortablePolicy,
   savePersonalization,
 } from '#/lib/personalization'
 import {type CommonNavigatorParams} from '#/lib/routes/types'
@@ -291,6 +292,24 @@ export function PersonalizationSettingsScreen({}: Props) {
   async function resetExplicit() {
     if (!currentAccount) return
     const next = await resetFeedPreferences(currentAccount.did)
+    setState(next)
+  }
+
+  async function resetAttention() {
+    if (!currentAccount) return
+    const next = await resetPortablePolicy(currentAccount.did, 'attention')
+    setState(next)
+  }
+
+  async function resetModeration() {
+    if (!currentAccount) return
+    const next = await resetPortablePolicy(currentAccount.did, 'moderation')
+    setState(next)
+  }
+
+  async function resetAllPortablePolicy() {
+    if (!currentAccount) return
+    const next = await resetPortablePolicy(currentAccount.did, 'all')
     setState(next)
   }
 
@@ -975,13 +994,46 @@ export function PersonalizationSettingsScreen({}: Props) {
               Reset feed preferences
             </SettingsList.ItemText>
           </SettingsList.PressableItem>
+          <SettingsList.PressableItem
+            label="Reset attention policy"
+            onPress={() => void resetAttention()}>
+            <SettingsList.ItemText>
+              Reset attention policy
+            </SettingsList.ItemText>
+            <SettingsList.BadgeText>
+              Keep moderation choices
+            </SettingsList.BadgeText>
+          </SettingsList.PressableItem>
+          <SettingsList.PressableItem
+            label="Reset moderation policy"
+            onPress={() => void resetModeration()}>
+            <SettingsList.ItemText>
+              Reset moderation policy
+            </SettingsList.ItemText>
+            <SettingsList.BadgeText>
+              Keep attention choices
+            </SettingsList.BadgeText>
+          </SettingsList.PressableItem>
+          <SettingsList.PressableItem
+            label="Reset all portable policy state"
+            onPress={() => void resetAllPortablePolicy()}
+            destructive>
+            <SettingsList.ItemText>
+              Reset all portable policy state
+            </SettingsList.ItemText>
+            <SettingsList.BadgeText>
+              Attention, moderation, and provider choices
+            </SettingsList.BadgeText>
+          </SettingsList.PressableItem>
           <SettingsList.Item>
             <SettingsList.ItemText>Portable profile</SettingsList.ItemText>
           </SettingsList.Item>
           <SettingsList.PressableItem
-            label="Export settings"
+            label="Export attention and moderation policy"
             onPress={() => void copyExport('settings')}>
-            <SettingsList.ItemText>Export settings</SettingsList.ItemText>
+            <SettingsList.ItemText>
+              Export attention and moderation policy
+            </SettingsList.ItemText>
           </SettingsList.PressableItem>
           <SettingsList.PressableItem
             label="Export personalization"
@@ -991,9 +1043,11 @@ export function PersonalizationSettingsScreen({}: Props) {
             </SettingsList.ItemText>
           </SettingsList.PressableItem>
           <SettingsList.PressableItem
-            label="Import from clipboard"
+            label="Import attention and moderation policy from clipboard"
             onPress={() => void importFromClipboard()}>
-            <SettingsList.ItemText>Import from clipboard</SettingsList.ItemText>
+            <SettingsList.ItemText>
+              Import attention and moderation policy
+            </SettingsList.ItemText>
           </SettingsList.PressableItem>
           <SettingsList.Divider />
           <SettingsList.Item>

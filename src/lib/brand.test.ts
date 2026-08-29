@@ -3,6 +3,7 @@ import {
   PUBLIC_WEB_ORIGIN,
   resolveProductName,
   resolvePublicWebOrigin,
+  resolveRuntimePublicWebOrigin,
 } from './brand'
 
 describe('public product identity', () => {
@@ -26,5 +27,20 @@ describe('public product identity', () => {
       'http://127.0.0.1:19006',
     )
     expect(PUBLIC_WEB_ORIGIN).toBeTruthy()
+  })
+
+  it('binds a hosted shell to the canonical runtime origin', () => {
+    expect(
+      resolveRuntimePublicWebOrigin(
+        'http://127.0.0.1:19006',
+        'https://social.edriffles.us',
+      ),
+    ).toBe('https://social.edriffles.us')
+    expect(
+      resolveRuntimePublicWebOrigin(
+        'https://preview.example.test',
+        'https://preview.example.test',
+      ),
+    ).toBe('https://preview.example.test')
   })
 })

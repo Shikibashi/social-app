@@ -113,12 +113,29 @@ export async function fetchAccountPost({
     return undefined
   }
 
-  return fetchPostRecord({
+  const authoritativePost = await fetchPostRecord({
     pdsClient,
     appviewClient,
     actor,
     atUri,
   })
+  if (!authoritativePost) return undefined
+
+  /*
+   * The PDS record is authoritative for the post's CID, URI, and content, but
+   * it does not materialize AppView-only decoration such as quote/like/repost
+   * counts. Reuse a same-CID AppView view for those decorations so an owner
+   * opening a post (or its quotes view) does not lose engagement state during
+   * the PDS-first read. A different CID is stale AppView evidence and is
+   * discarded rather than merged into the newer record.
+   */
+  const decoratedPost = await getSameCidAppviewPost(
+    appviewClient,
+    authoritativePost,
+  )
+  return decoratedPost
+    ? mergeAccountPostView(decoratedPost, authoritativePost)
+    : authoritativePost
 }
 
 /**
@@ -282,5 +299,36 @@ function postRecordToView(
     author,
     record: record.value,
     indexedAt: record.value.createdAt,
+  }
+}
+
+async function getSameCidAppviewPost(
+  client: Client,
+  authoritativePost: app.bsky.feed.defs.PostView,
+): Promise<app.bsky.feed.defs.PostView | undefined> {
+  try {
+    const data = await client.call(app.bsky.feed.getPosts, {
+      uris: [authoritativePost.uri],
+    })
+    const post = data.posts[0]
+    return post?.cid === authoritativePost.cid ? post : undefined
+  } catch {
+    return undefined
+  }
+}
+
+/**
+ * Keep the account PDS authoritative while retaining compatible AppView
+ * decoration and relationship state for an otherwise identical post view.
+ */
+export function mergeAccountPostView(
+  decoratedPost: app.bsky.feed.defs.PostView,
+  authoritativePost: app.bsky.feed.defs.PostView,
+): app.bsky.feed.defs.PostView {
+  return {
+    ...decoratedPost,
+    cid: authoritativePost.cid,
+    uri: authoritativePost.uri,
+    record: authoritativePost.record,
   }
 }

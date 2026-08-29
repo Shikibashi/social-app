@@ -10,8 +10,17 @@ import {
   preferencesQueryKey,
   usePreferencesQuery,
 } from '#/state/queries/preferences'
+import {
+  composeAppViewProviderRead,
+  requireComposedProviderValue,
+} from '#/state/queries/provider-composition'
 import {createQueryKey} from '#/state/queries/util'
-import {useAppviewClient, usePdsClient, useSession} from '#/state/session'
+import {
+  useAppviewClient,
+  useAppviewProviderClientFactory,
+  usePdsClient,
+  useSession,
+} from '#/state/session'
 import {getSelectedAppViewProvider} from '#/state/session/providers'
 import {app} from '#/lexicons'
 
@@ -37,7 +46,7 @@ export function useLabelerInfoQuery({
   did?: string
   enabled?: boolean
 }) {
-  const client = useAppviewClient()
+  const providerClientFactory = useAppviewProviderClientFactory()
   const {currentAccount} = useSession()
   const provider = getSelectedAppViewProvider(currentAccount?.did ?? '')
   return useQuery({
@@ -45,10 +54,17 @@ export function useLabelerInfoQuery({
     queryKey: labelerInfoQueryKey(did as string),
     queryFn: async () => {
       try {
-        const res = await client.call(app.bsky.labeler.getServices, {
-          dids: [did! as DidString],
-          detailed: true,
-        })
+        const res = requireComposedProviderValue(
+          await composeAppViewProviderRead(
+            'labels',
+            providerClient =>
+              providerClient.call(app.bsky.labeler.getServices, {
+                dids: [did! as DidString],
+                detailed: true,
+              }),
+            {clientForProvider: providerClientFactory},
+          ),
+        )
         return res.views[0] as app.bsky.labeler.defs.LabelerViewDetailed
       } catch (error) {
         throw serviceBoundaryError(
@@ -65,7 +81,7 @@ export function useLabelerInfoQuery({
 }
 
 export function useLabelersInfoQuery({dids}: {dids: string[]}) {
-  const client = useAppviewClient()
+  const providerClientFactory = useAppviewProviderClientFactory()
   const {currentAccount} = useSession()
   const provider = getSelectedAppViewProvider(currentAccount?.did ?? '')
   return useQuery({
@@ -73,9 +89,16 @@ export function useLabelersInfoQuery({dids}: {dids: string[]}) {
     queryKey: labelersInfoQueryKey(dids),
     queryFn: async () => {
       try {
-        const res = await client.call(app.bsky.labeler.getServices, {
-          dids: dids as DidString[],
-        })
+        const res = requireComposedProviderValue(
+          await composeAppViewProviderRead(
+            'labels',
+            providerClient =>
+              providerClient.call(app.bsky.labeler.getServices, {
+                dids: dids as DidString[],
+              }),
+            {clientForProvider: providerClientFactory},
+          ),
+        )
         return res.views as app.bsky.labeler.defs.LabelerView[]
       } catch (error) {
         throw serviceBoundaryError(
@@ -92,7 +115,7 @@ export function useLabelersInfoQuery({dids}: {dids: string[]}) {
 }
 
 export function useLabelersDetailedInfoQuery({dids}: {dids: string[]}) {
-  const client = useAppviewClient()
+  const providerClientFactory = useAppviewProviderClientFactory()
   const {currentAccount} = useSession()
   const provider = getSelectedAppViewProvider(currentAccount?.did ?? '')
   return useQuery({
@@ -102,10 +125,17 @@ export function useLabelersDetailedInfoQuery({dids}: {dids: string[]}) {
     staleTime: STALE.MINUTES.ONE,
     queryFn: async () => {
       try {
-        const res = await client.call(app.bsky.labeler.getServices, {
-          dids: dids as DidString[],
-          detailed: true,
-        })
+        const res = requireComposedProviderValue(
+          await composeAppViewProviderRead(
+            'labels',
+            providerClient =>
+              providerClient.call(app.bsky.labeler.getServices, {
+                dids: dids as DidString[],
+                detailed: true,
+              }),
+            {clientForProvider: providerClientFactory},
+          ),
+        )
         return res.views as app.bsky.labeler.defs.LabelerViewDetailed[]
       } catch (error) {
         throw serviceBoundaryError(

@@ -1,6 +1,11 @@
 import {useCallback} from 'react'
 import {type Client} from '@atproto/lex'
-import {AtUri, type AtUriString, type HandleString} from '@atproto/syntax'
+import {
+  type AtIdentifierString,
+  AtUri,
+  type AtUriString,
+  type HandleString,
+} from '@atproto/syntax'
 import {deleteLike, deletePost, deleteRepost, like, repost} from '@bsky/sdk'
 import {
   type QueryClient,
@@ -11,13 +16,19 @@ import {
 
 import {fetchAccountPost} from '#/lib/api/account-posts'
 import {useToggleMutationQueue} from '#/lib/hooks/useToggleMutationQueue'
+import {getKnownAccountDidForHandle} from '#/lib/identity-runtime'
 import {updatePostShadow} from '#/state/cache/post-shadow'
 import {type Shadow} from '#/state/cache/types'
 import {RQKEY_ROOT as POST_FEED_RQKEY_ROOT} from '#/state/queries/post-feed'
+import {
+  composeAppViewProviderRead,
+  requireComposedProviderValue,
+} from '#/state/queries/provider-composition'
 import {hasDirectViewerBlock} from '#/state/queries/public-visibility'
 import {hasViewerBlockBoundary} from '#/state/queries/usePostThread/blocked'
 import {
   useAppviewClient,
+  useAppviewProviderClientFactory,
   useMaybePdsClient,
   usePdsClient,
   usePublicAppviewClient,
@@ -61,6 +72,7 @@ export function usePostQuery(
   opts: {allowPublicFallback?: boolean} = {},
 ) {
   const client = useAppviewClient()
+  const providerClientFactory = useAppviewProviderClientFactory()
   const publicClient = usePublicAppviewClient()
   const pdsClient = useMaybePdsClient()
   const {currentAccount} = useSession()
@@ -82,7 +94,7 @@ export function usePostQuery(
             pdsClient,
             appviewClient: client,
             actor: currentAccount.did,
-            uri,
+            uri: resolveKnownAccountUri(uri, currentAccount),
           })
         } catch (error) {
           primaryError =
@@ -92,7 +104,12 @@ export function usePostQuery(
 
       if (!post) {
         try {
-          post = await fetchPost(client, uri)
+          const composed = await composeAppViewProviderRead(
+            'threads',
+            providerClient => fetchPost(providerClient, uri),
+            {clientForProvider: providerClientFactory},
+          )
+          post = requireComposedProviderValue(composed)
         } catch (error) {
           primaryError ??=
             error instanceof Error ? error : new Error(String(error))
@@ -144,6 +161,22 @@ export function usePostQuery(
 }
 
 /**
+ * The authenticated session already binds its own handle to a DID. Preserve
+ * that local authority for owner-post reads so a public identity provider is
+ * not required merely to open the account owner's post detail or quotes.
+ */
+function resolveKnownAccountUri(
+  uri: string,
+  account: {did: string; handle?: string},
+): string {
+  const atUri = new AtUri(uri)
+  const knownDid = getKnownAccountDidForHandle(atUri.host, account)
+  if (!knownDid) return uri
+  atUri.host = knownDid as AtIdentifierString
+  return atUri.toString()
+}
+
+/**
  * Read one post by AT-URI, resolving a handle authority first when the URI
  * carries one.
  *
@@ -179,13 +212,18 @@ export function precachePost(
 
 export function useGetPost() {
   const queryClient = useQueryClient()
-  const client = useAppviewClient()
+  const providerClientFactory = useAppviewProviderClientFactory()
   return useCallback(
     async ({uri}: {uri: string}) => {
       return queryClient.fetchQuery({
         queryKey: RQKEY(uri || ''),
         async queryFn() {
-          const post = await fetchPost(client, uri)
+          const composed = await composeAppViewProviderRead(
+            'threads',
+            providerClient => fetchPost(providerClient, uri),
+            {clientForProvider: providerClientFactory},
+          )
+          const post = requireComposedProviderValue(composed)
           if (post) {
             return post
           }
@@ -194,27 +232,33 @@ export function useGetPost() {
         },
       })
     },
-    [queryClient, client],
+    [queryClient, providerClientFactory],
   )
 }
 
 export function useGetPosts() {
   const queryClient = useQueryClient()
-  const client = useAppviewClient()
+  const providerClientFactory = useAppviewProviderClientFactory()
   return useCallback(
     async ({uris}: {uris: string[]}) => {
       return queryClient.fetchQuery({
         queryKey: RQKEY(uris.join(',') || ''),
         async queryFn() {
-          const data = await client.call(app.bsky.feed.getPosts, {
-            uris: uris as AtUriString[],
-          })
+          const composed = await composeAppViewProviderRead(
+            'threads',
+            providerClient =>
+              providerClient.call(app.bsky.feed.getPosts, {
+                uris: uris as AtUriString[],
+              }),
+            {clientForProvider: providerClientFactory},
+          )
+          const data = requireComposedProviderValue(composed)
           // See the note on `fetchPost` about the view shapes.
           return data.posts
         },
       })
     },
-    [queryClient, client],
+    [queryClient, providerClientFactory],
   )
 }
 

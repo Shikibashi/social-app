@@ -1,7 +1,6 @@
 import {useCallback, useEffect, useMemo, useRef} from 'react'
 import {type Client} from '@atproto/lex'
 import {AtUri, type AtUriString} from '@atproto/syntax'
-import {moderateFeedGenerator} from '#/lib/moderation'
 import {RichText} from '@bsky/sdk/richtext'
 import {t} from '@lingui/core/macro'
 import {
@@ -15,14 +14,20 @@ import {
 } from '@tanstack/react-query'
 
 import {DISCOVER_FEED_URI, DISCOVER_SAVED_FEED} from '#/lib/constants'
+import {moderateFeedGenerator} from '#/lib/moderation'
 import {sanitizeDisplayName} from '#/lib/strings/display-names'
 import {sanitizeHandle} from '#/lib/strings/handles'
 import {GCTIME, STALE} from '#/state/queries'
 import {RQKEY as listQueryKey} from '#/state/queries/list'
 import {usePreferencesQuery} from '#/state/queries/preferences'
+import {
+  composeAppViewProviderRead,
+  requireComposedProviderValue,
+} from '#/state/queries/provider-composition'
 import {createQueryKey} from '#/state/queries/util'
 import {
   useAppviewClient,
+  useAppviewProviderClientFactory,
   usePublicAppviewClient,
   useSession,
 } from '#/state/session'
@@ -190,7 +195,8 @@ export function getAvatarTypeFromUri(uri: string) {
 
 export function useFeedSourceInfoQuery({uri}: {uri: string}) {
   const type = getFeedTypeFromUri(uri)
-  const {client, publicClient} = useFeedReadClients()
+  const {client} = useFeedReadClients()
+  const providerClientFactory = useAppviewProviderClientFactory()
 
   return useQuery({
     staleTime: STALE.INFINITY,
@@ -199,16 +205,15 @@ export function useFeedSourceInfoQuery({uri}: {uri: string}) {
       let view: FeedSourceInfo
 
       if (type === 'feed') {
-        const data = await callSameProviderPublicFallback(
-          () =>
-            client.call(app.bsky.feed.getFeedGenerator, {
+        const composed = await composeAppViewProviderRead(
+          'feeds',
+          providerClient =>
+            providerClient.call(app.bsky.feed.getFeedGenerator, {
               feed: uri as AtUriString,
             }),
-          () =>
-            publicClient.call(app.bsky.feed.getFeedGenerator, {
-              feed: uri as AtUriString,
-            }),
+          {clientForProvider: providerClientFactory},
         )
+        const data = requireComposedProviderValue(composed)
         view = hydrateFeedGenerator(data.view)
       } else {
         const data = await client.call(app.bsky.graph.getList, {
@@ -284,7 +289,8 @@ export function createGetPopularFeedsQueryKey(
 }
 
 export function useGetPopularFeedsQuery(options?: GetPopularFeedsOptions) {
-  const {hasSession, client, publicClient} = useFeedReadClients()
+  const {hasSession, publicClient} = useFeedReadClients()
+  const providerClientFactory = useAppviewProviderClientFactory()
   const limit = options?.limit || 10
   const {data: preferences} = usePreferencesQuery()
   const queryClient = useQueryClient()
@@ -305,17 +311,16 @@ export function useGetPopularFeedsQuery(options?: GetPopularFeedsOptions) {
     enabled: Boolean(moderationOpts) && options?.enabled !== false,
     queryKey: createGetPopularFeedsQueryKey(options),
     queryFn: async ({pageParam}) => {
-      let data = await callSameProviderPublicFallback(
-        () =>
-          client.call(app.bsky.unspecced.getPopularFeedGenerators, {
-            limit,
-            cursor: pageParam,
-          }),
-        () =>
-          publicClient.call(app.bsky.unspecced.getPopularFeedGenerators, {
-            limit,
-            cursor: pageParam,
-          }),
+      let data = requireComposedProviderValue(
+        await composeAppViewProviderRead(
+          'feeds',
+          providerClient =>
+            providerClient.call(app.bsky.unspecced.getPopularFeedGenerators, {
+              limit,
+              cursor: pageParam,
+            }),
+          {clientForProvider: providerClientFactory},
+        ),
       )
       data = await addDeploymentFeedFallback(data, publicClient, pageParam)
 
@@ -395,22 +400,21 @@ export function useGetPopularFeedsQuery(options?: GetPopularFeedsOptions) {
 }
 
 export function useSearchPopularFeedsMutation() {
-  const {client, publicClient} = useFeedReadClients()
+  const providerClientFactory = useAppviewProviderClientFactory()
   const moderationOpts = useModerationOpts()
 
   return useMutation({
     mutationFn: async (query: string) => {
-      const data = await callSameProviderPublicFallback(
-        () =>
-          client.call(app.bsky.unspecced.getPopularFeedGenerators, {
-            limit: 10,
-            query: query,
-          }),
-        () =>
-          publicClient.call(app.bsky.unspecced.getPopularFeedGenerators, {
-            limit: 10,
-            query: query,
-          }),
+      const data = requireComposedProviderValue(
+        await composeAppViewProviderRead(
+          'feeds',
+          providerClient =>
+            providerClient.call(app.bsky.unspecced.getPopularFeedGenerators, {
+              limit: 10,
+              query: query,
+            }),
+          {clientForProvider: providerClientFactory},
+        ),
       )
 
       if (moderationOpts) {
@@ -438,7 +442,7 @@ export function usePopularFeedsSearch({
   query: string
   enabled?: boolean
 }) {
-  const client = useAppviewClient()
+  const providerClientFactory = useAppviewProviderClientFactory()
   const moderationOpts = useModerationOpts()
   const enabledInner = enabled ?? Boolean(moderationOpts)
 
@@ -446,13 +450,17 @@ export function usePopularFeedsSearch({
     enabled: enabledInner,
     queryKey: createPopularFeedsSearchQueryKey(query),
     queryFn: async ({pageParam}) => {
-      const data = await client.call(
-        app.bsky.unspecced.getPopularFeedGenerators,
-        {
-          limit: 15,
-          query: query,
-          cursor: pageParam,
-        },
+      const data = requireComposedProviderValue(
+        await composeAppViewProviderRead(
+          'feeds',
+          providerClient =>
+            providerClient.call(app.bsky.unspecced.getPopularFeedGenerators, {
+              limit: 15,
+              query: query,
+              cursor: pageParam,
+            }),
+          {clientForProvider: providerClientFactory},
+        ),
       )
 
       return data

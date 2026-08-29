@@ -1,6 +1,7 @@
 import {type DidDocument, getPdsEndpoint} from '@atproto/common-web'
 
 import {logger} from '#/logger'
+import {getPlcResolvers, resolvePlcIdentity} from './plc-resolvers'
 
 const RESOLUTION_TIMEOUT = 10_000
 
@@ -17,6 +18,29 @@ export async function resolvePdsEndpointForDid(
 ): Promise<string | undefined> {
   let url: string
   if (did.startsWith('did:plc:')) {
+    /*
+     * Keep the primary endpoint as the compatibility path when no user has
+     * configured another operator. Once a read replica is configured, query
+     * the primary and the replica together and only use a cryptographically
+     * verified document. A resolver disagreement is deliberately surfaced as
+     * unavailable rather than hidden by choosing the first response.
+     */
+    if (getPlcResolvers().length > 0) {
+      const result = await resolvePlcIdentity(did)
+      const services = result.selected?.services
+      const pds = services
+        ? Object.values(services).find(
+            service => service.type === 'AtprotoPersonalDataServer',
+          )?.endpoint
+        : undefined
+      if (pds) return pds
+      logger.debug('session: PLC resolver quorum did not select a PDS', {
+        did,
+        status: result.status,
+        distinctDocumentKeys: result.distinctDocumentKeys.length,
+      })
+      return undefined
+    }
     url = `https://plc.directory/${did}`
   } else if (did.startsWith('did:web:')) {
     const domain = did.slice('did:web:'.length)

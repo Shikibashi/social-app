@@ -25,6 +25,7 @@ import {
 import {
   type OAuthProviderSession,
   OAuthSessionAdapter,
+  reauthorizeOAuthFeature,
   restoreOAuthSession,
   signInWithOAuth,
 } from './oauth-session'
@@ -47,6 +48,7 @@ export type SessionTransport = Agent & {
   readonly session: SessionData
   readonly service?: string
   refresh: () => Promise<SessionData>
+  getGrantedScopes?: () => Promise<string[]>
   signOut?: () => Promise<void>
   logout: () => Promise<void>
   kill?: () => void
@@ -64,6 +66,12 @@ function deriveServiceUrl(session: SessionTransport | null): URL {
 export type SessionBundle = {
   session: SessionTransport
   appviewClient: Client
+  /**
+   * Build an endpoint-scoped AppView client for a provider selected by a
+   * capability surface. The factory is explicit so composition never reuses
+   * one provider's auth headers for another provider.
+   */
+  appviewClientForProvider: (provider: AppViewProvider) => Client
   pdsClient: Client
   chatClient: Client
   /** The persisted account PDS route, retained when AppView changes. */
@@ -126,6 +134,7 @@ export function buildBundle(
   return {
     session,
     appviewClient: buildAppviewClient(agent, provider),
+    appviewClientForProvider: candidate => buildAppviewClient(agent, candidate),
     pdsClient: buildPdsClient(agent),
     chatClient: buildChatClient(agent),
     pdsUrl: storedPdsUrl,
@@ -233,6 +242,8 @@ export function makeSessionHooks({
 export type PublicSessionBundle = {
   session: null
   appviewClient: Client
+  /** Public provider clients carry no account authority. */
+  appviewClientForProvider: (provider: AppViewProvider) => Client
   pdsClient: Client
   chatClient: Client
   readonly service: URL
@@ -257,6 +268,8 @@ export function createPublicSessionBundle(): PublicSessionBundle {
   return {
     session: null,
     appviewClient: getPublicAppviewClient(),
+    appviewClientForProvider: provider =>
+      getPublicAppviewClient(provider.endpoint),
     pdsClient: getUnauthenticatedThrowingClient(),
     chatClient: getUnauthenticatedThrowingClient(),
     service: new URL(PUBLIC_ACCOUNT_SERVICE),
@@ -461,6 +474,46 @@ export async function createSessionBundleAndLogin(
   )
   hooks.arm()
   return {account, bundle}
+}
+
+/**
+ * Start a feature-scoped OAuth reauthorization and build a replacement bundle.
+ * The returned session is still subject to the normal DID/PDS discovery and
+ * session preparation path; no token or refresh material leaves the OAuth SDK.
+ */
+export async function createSessionBundleAndOAuthUpgrade(
+  account: SessionAccount,
+  feature: import('./oauth-scopes').OAuthFeature,
+  onSessionChange: OnSessionChange,
+): Promise<{account: SessionAccount; bundle: SessionBundle}> {
+  if (account.authType !== 'oauth') {
+    throw new Error('OAuth permission upgrades require an OAuth session')
+  }
+  let bundle!: SessionBundle
+  let accountDid = account.did
+  const hooks = makeSessionHooks({
+    onSessionChange,
+    getBundle: () => bundle,
+    getDid: () => accountDid,
+  })
+  const currentScopes = account.oauthScopes
+  const session = await reauthorizeOAuthFeature(
+    account.did,
+    feature,
+    hooks,
+    currentScopes,
+  )
+  bundle = buildBundle(session, account.pdsUrl)
+  registerBundleKillSwitch(bundle, hooks.kill)
+  const earlyAccount = sessionDataToSessionAccountOrThrow(session)
+  accountDid = earlyAccount.did
+  const gates = features.refresh({strategy: 'prefer-fresh-gates'})
+  configureModerationForAccount(bundle, earlyAccount)
+  const nextAccount = await finishPreparation(bundle, gates, () =>
+    sessionDataToSessionAccountOrThrow(session),
+  )
+  hooks.arm()
+  return {account: nextAccount, bundle}
 }
 
 /**

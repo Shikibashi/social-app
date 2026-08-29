@@ -1,6 +1,5 @@
 import {useCallback, useMemo, useRef} from 'react'
 import {AtUri} from '@atproto/syntax'
-import {moderatePost} from '#/lib/moderation'
 import {
   type InfiniteData,
   type QueryClient,
@@ -8,9 +7,14 @@ import {
   useInfiniteQuery,
 } from '@tanstack/react-query'
 
+import {moderatePost} from '#/lib/moderation'
 import {useModerationOpts} from '#/state/preferences/moderation-opts'
+import {
+  composeAppViewProviderRead,
+  requireComposedProviderValue,
+} from '#/state/queries/provider-composition'
 import {stripNonLocalBlockVisibility} from '#/state/queries/public-visibility'
-import {useAppviewClient} from '#/state/session'
+import {useAppviewProviderClientFactory} from '#/state/session'
 import {type SearchFilters} from '#/screens/Search/searchParams'
 import {app} from '#/lexicons'
 import {
@@ -46,7 +50,7 @@ export function useSearchPostsV2Query({
   enabled?: boolean
   filters?: SearchFilters
 }) {
-  const client = useAppviewClient()
+  const providerClientFactory = useAppviewProviderClientFactory()
   const moderationOpts = useModerationOpts()
   const selectArgs = useMemo(
     () => ({
@@ -88,18 +92,25 @@ export function useSearchPostsV2Query({
         filters,
       ) as app.bsky.feed.searchPostsV2.$Params
       const finalQuery = appendFromMe(q, filters?.from === 'me')
-      return await client.call(app.bsky.feed.searchPostsV2, {
-        ...builtFilters,
-        query: finalQuery,
-        limit: 25,
-        cursor: pageParam,
-        /*
-         * v2 calls the recency sort 'recent'; the rest of the app still uses
-         * the v1 'latest' label.
-         */
-        sort: sort === 'latest' ? 'recent' : sort,
-        allTime: true,
-      })
+      return requireComposedProviderValue(
+        await composeAppViewProviderRead(
+          'search',
+          providerClient =>
+            providerClient.call(app.bsky.feed.searchPostsV2, {
+              ...builtFilters,
+              query: finalQuery,
+              limit: 25,
+              cursor: pageParam,
+              /*
+               * v2 calls the recency sort 'recent'; the rest of the app still
+               * uses the v1 'latest' label.
+               */
+              sort: sort === 'latest' ? 'recent' : sort,
+              allTime: true,
+            }),
+          {clientForProvider: providerClientFactory},
+        ),
+      )
     },
     initialPageParam: undefined,
     getNextPageParam: lastPage => lastPage.cursor,

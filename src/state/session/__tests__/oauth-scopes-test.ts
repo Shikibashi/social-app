@@ -1,7 +1,17 @@
 import {describe, expect, it} from '@jest/globals'
 
 import {
+  getMissingOAuthScopes,
+  getRuntimeOAuthClientMetadata,
+  hasOAuthFeature,
+  mergeOAuthScopes,
+  OAUTH_BASE_SCOPES,
   OAUTH_CLIENT_METADATA,
+  OAUTH_FEATURE_SCOPES,
+  OAUTH_FEATURES,
+  OAUTH_MEDIA_SCOPES,
+  OAUTH_NOTIFICATION_SCOPES,
+  OAUTH_POSTING_SCOPES,
   OAUTH_SCOPE,
   OAUTH_SIGNUP_PROMPT,
   OAUTH_SPACE_SCOPES,
@@ -17,17 +27,17 @@ type StaticOAuthClientMetadata = {
 }
 
 describe('OAuth permission contract', () => {
-  it('includes the transition permissions needed for account, AppView, and chat RPCs', () => {
+  it('keeps transitional permissions out of new authorization requests', () => {
     expect(OAUTH_TRANSITION_SCOPES).toEqual([
       'transition:generic',
       'transition:chat.bsky',
     ])
-    expect(OAUTH_SCOPE).toBe(
-      `atproto ${OAUTH_TRANSITION_SCOPES.join(' ')} ${OAUTH_SPACE_SCOPES.join(' ')}`,
-    )
+    expect(OAUTH_SCOPE).toBe(OAUTH_BASE_SCOPES.join(' '))
+    expect(OAUTH_SCOPE).not.toContain('transition:generic')
+    expect(OAUTH_SCOPE).not.toContain(OAUTH_SPACE_SCOPES[0])
   })
 
-  it('advertises the exact Spaces permissions needed by the client', () => {
+  it('keeps Spaces, media, chat, and notification grants feature-scoped', () => {
     expect(OAUTH_SPACE_SCOPES).toEqual([
       'space:us.edriffles.radlib.account?authority=*&action=read',
       'space:us.edriffles.radlib.account?authority=*&manage=update',
@@ -38,9 +48,36 @@ describe('OAuth permission contract', () => {
       'space:us.edriffles.radlib.community?authority=*&manage=update',
       'space:us.edriffles.radlib.community?authority=*&collection=us.edriffles.radlib.private.post&action=create&action=update&action=delete',
     ])
-    expect(OAUTH_SCOPE).toBe(
-      `atproto ${OAUTH_TRANSITION_SCOPES.join(' ')} ${OAUTH_SPACE_SCOPES.join(' ')}`,
-    )
+    expect(OAUTH_FEATURES).toEqual([
+      'posting',
+      'profile-editing',
+      'social-graph',
+      'appview',
+      'chat',
+      'spaces',
+      'media',
+      'notifications',
+    ])
+    expect(OAUTH_MEDIA_SCOPES).toEqual(['blob:*/*'])
+    expect(OAUTH_NOTIFICATION_SCOPES[0]).toContain('aud=')
+    expect(OAUTH_FEATURE_SCOPES.chat[0]).toContain('aud=')
+    expect(OAUTH_SCOPE).not.toContain(OAUTH_SPACE_SCOPES[0])
+  })
+
+  it('computes upgrades without dropping an existing grant', () => {
+    const granted = ['atproto', ...OAUTH_POSTING_SCOPES]
+    expect(hasOAuthFeature(granted, 'posting')).toBe(true)
+    expect(getMissingOAuthScopes(granted, 'spaces')).toEqual(OAUTH_SPACE_SCOPES)
+    expect(
+      mergeOAuthScopes(granted, OAUTH_SPACE_SCOPES).filter(
+        scope => scope === OAUTH_POSTING_SCOPES[0],
+      ),
+    ).toEqual([OAUTH_POSTING_SCOPES[0]])
+    expect(
+      getMissingOAuthScopes(['transition:generic'], 'profile-editing'),
+    ).toEqual([])
+    expect(hasOAuthFeature(['transition:chat.bsky'], 'chat')).toBe(true)
+    expect(hasOAuthFeature(['transition:generic'], 'chat')).toBe(false)
   })
 
   it('keeps OAuth-native account creation explicit', () => {
@@ -83,5 +120,19 @@ describe('OAuth permission contract', () => {
     expect(normalizeOriginBoundFields(OAUTH_CLIENT_METADATA)).toEqual(
       normalizeOriginBoundFields(staticMetadata),
     )
+  })
+
+  it('repairs a stale local origin when the bundle runs on the hosted origin', () => {
+    const runtimeMetadata = getRuntimeOAuthClientMetadata()
+
+    expect(runtimeMetadata.client_id).toBe(
+      `${runtimeMetadata.client_uri}/oauth-client-metadata.json`,
+    )
+    expect(runtimeMetadata.redirect_uris[0]).toBe(
+      `${runtimeMetadata.client_uri}/oauth/callback`,
+    )
+    expect(runtimeMetadata.client_uri).toBe('https://social.edriffles.us')
+    expect(runtimeMetadata.client_id).not.toContain('127.0.0.1')
+    expect(runtimeMetadata.client_id).not.toContain('localhost')
   })
 })

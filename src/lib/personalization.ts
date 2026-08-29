@@ -2,9 +2,9 @@ import {isDidString} from '@atproto/lex'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 
 import {
+  type ContentFilterPolicy,
   defaultContentFilterPolicy,
   isContextualContentFilterPolicy,
-  type ContentFilterPolicy,
   validateContentFilterPolicy,
 } from '#/lib/feed-sovereignty/content-filter'
 import {
@@ -13,6 +13,12 @@ import {
   type RadlibCurationConfig,
   validateRadlibCurationConfig,
 } from '#/lib/feed-sovereignty/radlib-curation'
+import {
+  PROVIDER_RECONCILIATION_MODES,
+  PROVIDER_SURFACES,
+  type ProviderReconciliationPolicy,
+  type ProviderSurface,
+} from '#/lib/provider-composition'
 import {emitPersonalizationChanged} from '#/state/events'
 
 export const PERSONALIZATION_FORMAT = 'org.radical-liberal.personalization'
@@ -78,7 +84,15 @@ export type ServiceConfiguration = {
   feedProviders: string[]
   searchProvider?: string
   labelers: string[]
+  /** Provider capability declarations are portable identifiers, not endpoints. */
+  providerCapabilities?: Record<string, string[]>
+  reconciliationPolicies?: Partial<
+    Record<ProviderSurface, ProviderReconciliationPolicy>
+  >
 }
+
+export type PortablePolicyResetScope =
+  'attention' | 'moderation' | 'providers' | 'reconciliation' | 'all'
 
 export type PersonalizationState = {
   format: typeof PERSONALIZATION_FORMAT
@@ -488,6 +502,105 @@ export function resetExplicitState(
   }
 }
 
+/** Reset attention choices while preserving the account's moderation policy. */
+export function resetAttentionPolicy(
+  state: PersonalizationState,
+): PersonalizationState {
+  validatePersonalizationState(state)
+  const defaults = freshDefaultExplicitPreferences()
+  return {
+    ...state,
+    explicit: {
+      ...defaults,
+      contentFilterPolicy: state.explicit.contentFilterPolicy,
+      radlibCuration: state.explicit.radlibCuration,
+    },
+    updatedAt: new Date().toISOString(),
+  }
+}
+
+/** Reset moderation choices while preserving attention and ranking choices. */
+export function resetModerationPolicy(
+  state: PersonalizationState,
+): PersonalizationState {
+  validatePersonalizationState(state)
+  const defaults = freshDefaultExplicitPreferences()
+  return {
+    ...state,
+    explicit: {
+      ...state.explicit,
+      contentFilterPolicy: defaults.contentFilterPolicy,
+      radlibCuration: defaults.radlibCuration,
+    },
+    updatedAt: new Date().toISOString(),
+  }
+}
+
+/** Reset portable provider and reconciliation choices without deleting hosts. */
+export function resetProviderPolicy(
+  state: PersonalizationState,
+  scope: 'providers' | 'reconciliation' = 'providers',
+): PersonalizationState {
+  validatePersonalizationState(state)
+  const services = {...state.services}
+  if (scope === 'providers') {
+    services.providerCapabilities = undefined
+    services.appView = undefined
+    services.feedProviders = []
+    services.searchProvider = undefined
+    services.labelers = []
+  }
+  services.reconciliationPolicies = undefined
+  return {
+    ...state,
+    services: {
+      ...defaultServiceConfiguration,
+      ...(scope === 'providers'
+        ? {}
+        : {
+            appView: services.appView,
+            feedProviders: services.feedProviders,
+            searchProvider: services.searchProvider,
+            labelers: services.labelers,
+            providerCapabilities: services.providerCapabilities,
+          }),
+    },
+    updatedAt: new Date().toISOString(),
+  }
+}
+
+/** Apply one explicit, auditable reset rather than deleting unrelated account state. */
+export function resetPortablePolicyState(
+  state: PersonalizationState,
+  scope: PortablePolicyResetScope = 'all',
+): PersonalizationState {
+  let next = state
+  if (scope === 'attention' || scope === 'all') {
+    next = resetAttentionPolicy(next)
+  }
+  if (scope === 'moderation' || scope === 'all') {
+    next = resetModerationPolicy(next)
+  }
+  if (scope === 'providers' || scope === 'all') {
+    next = resetProviderPolicy(next, 'providers')
+  } else if (scope === 'reconciliation') {
+    next = resetProviderPolicy(next, 'reconciliation')
+  }
+  return next
+}
+
+export async function resetPortablePolicy(
+  accountDid: string,
+  scope: PortablePolicyResetScope = 'all',
+): Promise<PersonalizationState> {
+  const next = resetPortablePolicyState(
+    await loadPersonalization(accountDid),
+    scope,
+  )
+  await savePersonalization(next)
+  return next
+}
+
 function migrateImplicitDefaults(
   state: PersonalizationState,
 ): PersonalizationState {
@@ -500,7 +613,8 @@ function migrateImplicitDefaults(
   if (isContextualContentFilterPolicy(explicit.contentFilterPolicy)) {
     explicit = {
       ...explicit,
-      contentFilterPolicy: freshDefaultExplicitPreferences().contentFilterPolicy,
+      contentFilterPolicy:
+        freshDefaultExplicitPreferences().contentFilterPolicy,
     }
     changed = true
   }
@@ -810,6 +924,8 @@ function validateServices(
     'feedProviders',
     'searchProvider',
     'labelers',
+    'providerCapabilities',
+    'reconciliationPolicies',
   ])
   validateStringArray(value.feedProviders, 'feedProviders')
   validateStringArray(value.labelers, 'labelers')
@@ -829,6 +945,56 @@ function validateServices(
     if (typeof value.searchProvider !== 'string')
       throw new Error('Invalid search provider identifier')
     rejectCredentialValue(value.searchProvider, 'searchProvider')
+  }
+  if (value.providerCapabilities !== undefined) {
+    validateProviderCapabilities(value.providerCapabilities)
+  }
+  if (value.reconciliationPolicies !== undefined) {
+    validateReconciliationPolicies(value.reconciliationPolicies)
+  }
+}
+
+function validateProviderCapabilities(value: unknown): void {
+  if (!isPlainObject(value) || Object.keys(value).length > MAX_MAP_ITEMS) {
+    throw new Error('Invalid provider capability map')
+  }
+  for (const [providerId, capabilities] of Object.entries(value)) {
+    if (!providerId || providerId.length > MAX_STRING_LENGTH) {
+      throw new Error('Invalid provider capability identifier')
+    }
+    validateStringArray(capabilities, `providerCapabilities.${providerId}`)
+    for (const capability of capabilities as string[]) {
+      rejectCredentialValue(capability, `providerCapabilities.${providerId}`)
+    }
+  }
+}
+
+function validateReconciliationPolicies(value: unknown): void {
+  if (!isPlainObject(value) || Object.keys(value).length > MAX_MAP_ITEMS) {
+    throw new Error('Invalid provider reconciliation policy map')
+  }
+  for (const [surface, policy] of Object.entries(value)) {
+    if (
+      !(PROVIDER_SURFACES as readonly string[]).includes(surface) ||
+      !isPlainObject(policy) ||
+      typeof policy.mode !== 'string' ||
+      !(PROVIDER_RECONCILIATION_MODES as readonly string[]).includes(
+        policy.mode,
+      )
+    ) {
+      throw new Error('Invalid provider reconciliation policy')
+    }
+    if (
+      policy.preferredProviderId !== undefined &&
+      (typeof policy.preferredProviderId !== 'string' ||
+        !policy.preferredProviderId ||
+        policy.preferredProviderId.length > MAX_STRING_LENGTH)
+    ) {
+      throw new Error('Invalid provider reconciliation preference')
+    }
+    if (policy.mode === 'prefer-provider' && !policy.preferredProviderId) {
+      throw new Error('Provider reconciliation preference is missing')
+    }
   }
 }
 function validateStringArray(value: unknown, field: string): void {

@@ -1,5 +1,7 @@
 import {useEffect, useState} from 'react'
+import * as Clipboard from 'expo-clipboard'
 import {Trans} from '@lingui/react/macro'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 import {jwtDecode} from 'jwt-decode'
 
 import {
@@ -7,6 +9,11 @@ import {
   capabilityLabel,
   type IdentityOverview,
 } from '#/lib/identity-sovereignty-ui'
+import {
+  createIndexedDbRotationKeyStore,
+  createUserHeldRotationKey,
+  type UserHeldRotationKey,
+} from '#/lib/plc-key-custody'
 import {useRadlibMigrationStatusQuery} from '#/state/queries/radlib-migration'
 import {useSession, useSessionApi} from '#/state/session'
 import {resolvePdsEndpointForDid} from '#/state/session/pds-resolution'
@@ -15,8 +22,35 @@ import {isSessionExpired} from '#/state/session/session-data'
 import * as SettingsList from '#/screens/Settings/components/SettingsList'
 import * as Layout from '#/components/Layout'
 import * as Prompt from '#/components/Prompt'
+import {IS_WEB} from '#/env'
 
 type AccessTokenClaims = {exp?: number}
+
+const ROTATION_KEY_METADATA_PREFIX = 'radlib-plc-rotation-handle:'
+
+function rotationKeyMetadataKey(did: string): string {
+  return `${ROTATION_KEY_METADATA_PREFIX}${did}`
+}
+
+function isRotationKeyHandle(
+  value: unknown,
+  did: string,
+): value is UserHeldRotationKey {
+  if (!value || typeof value !== 'object') return false
+  const handle = value as Partial<UserHeldRotationKey>
+  return (
+    handle.version === 1 &&
+    handle.did === did &&
+    typeof handle.keyId === 'string' &&
+    typeof handle.didKey === 'string' &&
+    handle.algorithm === 'ES256' &&
+    handle.custody === 'non-exportable-webcrypto' &&
+    typeof handle.createdAt === 'string' &&
+    !!handle.publicJwk &&
+    typeof handle.publicJwk === 'object' &&
+    handle.publicJwk.d === undefined
+  )
+}
 
 function accessExpiry(accessJwt?: string) {
   if (!accessJwt) return undefined
@@ -37,6 +71,39 @@ export function IdentitySovereigntySettingsScreen() {
   const migration = migrationQuery.data
   const [resolvedPds, setResolvedPds] = useState<string | undefined>()
   const [resolvingPds, setResolvingPds] = useState(false)
+  const [rotationKey, setRotationKey] = useState<UserHeldRotationKey>()
+  const [rotationKeyStatus, setRotationKeyStatus] = useState<
+    {did: string; message: string} | undefined
+  >()
+  const [creatingRotationKey, setCreatingRotationKey] = useState(false)
+
+  const canUseBrowserRotationKey =
+    IS_WEB && currentAccount?.did.startsWith('did:plc:') === true
+  const activeRotationKey =
+    rotationKey?.did === currentAccount?.did ? rotationKey : undefined
+  const activeRotationKeyStatus =
+    rotationKeyStatus && rotationKeyStatus.did === currentAccount?.did
+      ? rotationKeyStatus.message
+      : undefined
+
+  useEffect(() => {
+    const did = currentAccount?.did
+    if (!did || !canUseBrowserRotationKey) return
+    let cancelled = false
+    void AsyncStorage.getItem(rotationKeyMetadataKey(did)).then(value => {
+      if (cancelled || !value) return
+      try {
+        const parsed: unknown = JSON.parse(value)
+        if (isRotationKeyHandle(parsed, did)) setRotationKey(parsed)
+      } catch {
+        // Ignore corrupt public metadata; the private key never leaves the
+        // browser key store and a new handle can be prepared explicitly.
+      }
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [canUseBrowserRotationKey, currentAccount?.did])
 
   useEffect(() => {
     let cancelled = false
@@ -55,6 +122,48 @@ export function IdentitySovereigntySettingsScreen() {
       cancelled = true
     }
   }, [currentAccount?.did])
+
+  async function prepareRotationKey() {
+    const did = currentAccount?.did
+    if (!did) return
+    if (!canUseBrowserRotationKey) {
+      setRotationKeyStatus({
+        did,
+        message: IS_WEB
+          ? 'User-held PLC custody currently supports did:plc identities only.'
+          : 'Native secure-key custody must be supplied by the platform adapter.',
+      })
+      return
+    }
+    setCreatingRotationKey(true)
+    setRotationKeyStatus(undefined)
+    try {
+      const store = createIndexedDbRotationKeyStore(did)
+      const handle = await createUserHeldRotationKey(did, store)
+      setRotationKey(handle)
+      await AsyncStorage.setItem(
+        rotationKeyMetadataKey(did),
+        JSON.stringify(handle),
+      )
+      const copied = await Clipboard.setStringAsync(handle.didKey).catch(
+        () => false,
+      )
+      setRotationKeyStatus({
+        did,
+        message: `${copied ? 'Public did:key copied.' : 'Key prepared; clipboard access was unavailable.'} The private key remains non-exportable on this device; an already-authorized PLC rotation key or recovery process must authorize it before it can rotate identity.`,
+      })
+    } catch (error) {
+      setRotationKeyStatus({
+        did,
+        message:
+          error instanceof Error
+            ? error.message
+            : 'Could not prepare user-held PLC custody.',
+      })
+    } finally {
+      setCreatingRotationKey(false)
+    }
+  }
 
   const appview = (() => {
     try {
@@ -86,7 +195,13 @@ export function IdentitySovereigntySettingsScreen() {
           ? 'unavailable'
           : 'not-configured'),
     recoveryState: currentAccount
-      ? 'PDS recovery capability not exposed by this client'
+      ? canUseBrowserRotationKey
+        ? activeRotationKey
+          ? 'user-held PLC key prepared; authorization still required'
+          : 'user-held PLC custody available on this web device'
+        : IS_WEB
+          ? 'secure custody supports did:plc identities only'
+          : 'native secure-key adapter required'
       : 'unavailable while signed out',
     lockdown: false,
   }
@@ -177,6 +292,47 @@ export function IdentitySovereigntySettingsScreen() {
               {overview.recoveryState}
             </SettingsList.BadgeText>
           </SettingsList.Item>
+          <SettingsList.Item>
+            <SettingsList.ItemText>
+              User-held PLC rotation custody
+            </SettingsList.ItemText>
+            <SettingsList.BadgeText>
+              {canUseBrowserRotationKey
+                ? activeRotationKey
+                  ? activeRotationKey.didKey
+                  : 'Available on this web device'
+                : currentAccount
+                  ? IS_WEB
+                    ? 'did:plc required'
+                    : 'Platform adapter required'
+                  : 'Unavailable while signed out'}
+            </SettingsList.BadgeText>
+          </SettingsList.Item>
+          {canUseBrowserRotationKey && (
+            <SettingsList.PressableItem
+              label="Prepare a user-held PLC rotation key"
+              onPress={() => void prepareRotationKey()}
+              disabled={creatingRotationKey}>
+              <SettingsList.ItemText>
+                {activeRotationKey
+                  ? 'Prepare another user-held key'
+                  : 'Prepare user-held rotation key'}
+              </SettingsList.ItemText>
+              <SettingsList.BadgeText>
+                {creatingRotationKey
+                  ? 'Generating non-exportable key…'
+                  : 'Copies public did:key only'}
+              </SettingsList.BadgeText>
+            </SettingsList.PressableItem>
+          )}
+          {activeRotationKeyStatus && (
+            <SettingsList.Item>
+              <SettingsList.ItemText>PLC custody status</SettingsList.ItemText>
+              <SettingsList.BadgeText>
+                {activeRotationKeyStatus}
+              </SettingsList.BadgeText>
+            </SettingsList.Item>
+          )}
           <SettingsList.Item>
             <SettingsList.ItemText>Lockdown</SettingsList.ItemText>
             <SettingsList.BadgeText>
