@@ -272,6 +272,7 @@ export function usePostLikeMutationQueue(
   const {currentAccount} = useSession()
   const postUri = post.uri
   const postCid = post.cid
+  const currentAccountDid = currentAccount?.did
   const initialLikeUri = post.viewer?.like
   const likeMutation = usePostLikeMutation(feedDescriptor, logContext, post)
   const unlikeMutation = usePostUnlikeMutation(feedDescriptor, logContext, post)
@@ -300,9 +301,14 @@ export function usePostLikeMutationQueue(
     },
     onSuccess(finalLikeUri) {
       // finalize
-      updatePostShadow(queryClient, postUri, {
-        likeUri: finalLikeUri,
-      })
+      updatePostShadow(
+        queryClient,
+        postUri,
+        {
+          likeUri: finalLikeUri,
+        },
+        currentAccountDid,
+      )
       if (currentAccount?.did) {
         void queryClient.invalidateQueries({
           queryKey: [POST_FEED_RQKEY_ROOT, `likes|${currentAccount.did}`],
@@ -313,19 +319,29 @@ export function usePostLikeMutationQueue(
 
   const queueLike = useCallback(() => {
     // optimistically update
-    updatePostShadow(queryClient, postUri, {
-      likeUri: 'pending',
-    })
+    updatePostShadow(
+      queryClient,
+      postUri,
+      {
+        likeUri: 'pending',
+      },
+      currentAccountDid,
+    )
     return queueToggle(true)
-  }, [queryClient, postUri, queueToggle])
+  }, [currentAccountDid, queryClient, postUri, queueToggle])
 
   const queueUnlike = useCallback(() => {
     // optimistically update
-    updatePostShadow(queryClient, postUri, {
-      likeUri: undefined,
-    })
+    updatePostShadow(
+      queryClient,
+      postUri,
+      {
+        likeUri: undefined,
+      },
+      currentAccountDid,
+    )
     return queueToggle(false)
-  }, [queryClient, postUri, queueToggle])
+  }, [currentAccountDid, queryClient, postUri, queueToggle])
 
   return [queueLike, queueUnlike] as const
 }

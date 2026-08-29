@@ -104,7 +104,8 @@ export function PostFeedItem({
   rootPost: app.bsky.feed.defs.PostView
   onShowLess?: (interaction: app.bsky.feed.defs.Interaction) => void
 }): React.ReactNode {
-  const postShadowed = usePostShadow(post)
+  const {currentAccount} = useSession()
+  const postShadowed = usePostShadow(post, currentAccount?.did)
   const richText = useMemo(
     () =>
       new RichTextAPI({

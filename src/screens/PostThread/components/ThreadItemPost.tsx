@@ -68,7 +68,8 @@ export function ThreadItemPost({
   onPostSuccess,
   threadgateRecord,
 }: ThreadItemPostProps) {
-  const postShadow = usePostShadow(item.value.post)
+  const {currentAccount} = useSession()
+  const postShadow = usePostShadow(item.value.post, currentAccount?.did)
 
   if (postShadow === POST_TOMBSTONE) {
     return <ThreadItemPostDeleted item={item} overrides={overrides} />

@@ -73,7 +73,8 @@ export function ThreadItemAnchor({
   threadgateRecord?: app.bsky.feed.threadgate.Main
   postSource?: PostSource
 }) {
-  const postShadow = usePostShadow(item.value.post)
+  const {currentAccount} = useSession()
+  const postShadow = usePostShadow(item.value.post, currentAccount?.did)
   const threadRootUri = item.value.post.record.reply?.root?.uri || item.uri
   const isRoot = threadRootUri === item.uri
 

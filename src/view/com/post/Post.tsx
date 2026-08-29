@@ -1,12 +1,12 @@
 import {useCallback, useMemo, useState} from 'react'
 import {type StyleProp, StyleSheet, View, type ViewStyle} from 'react-native'
 import {AtUri} from '@atproto/syntax'
-import {moderatePost, type ModerationDecision} from '#/lib/moderation'
 import {RichText as RichTextAPI} from '@bsky/sdk/richtext'
 import {useQueryClient} from '@tanstack/react-query'
 
 import {MAX_POST_LINES} from '#/lib/constants'
 import {useOpenComposer} from '#/lib/hooks/useOpenComposer'
+import {moderatePost, type ModerationDecision} from '#/lib/moderation'
 import {makeProfileLink} from '#/lib/routes/links'
 import {countLines} from '#/lib/strings/helpers'
 import {
@@ -17,6 +17,7 @@ import {
 import {useModerationOpts} from '#/state/preferences/moderation-opts'
 import {unstableCacheProfileView} from '#/state/queries/profile'
 import {stripNonLocalBlockVisibility} from '#/state/queries/public-visibility'
+import {useSession} from '#/state/session'
 import {Link} from '#/view/com/util/Link'
 import {PostMeta} from '#/view/com/util/PostMeta'
 import {PreviewableUserAvatar} from '#/view/com/util/UserAvatar'
@@ -51,6 +52,7 @@ export function Post({
   style?: StyleProp<ViewStyle>
   onBeforePress?: () => void
 }) {
+  const {currentAccount} = useSession()
   const moderationOpts = useModerationOpts()
   const visiblePost = useMemo(() => stripNonLocalBlockVisibility(post), [post])
   const record = useMemo<app.bsky.feed.post.Main | undefined>(
@@ -60,7 +62,7 @@ export function Post({
         : undefined,
     [visiblePost],
   )
-  const postShadowed = usePostShadow(visiblePost)
+  const postShadowed = usePostShadow(visiblePost, currentAccount?.did)
   const richText = useMemo(
     () =>
       record

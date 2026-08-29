@@ -67,7 +67,8 @@ export function ThreadItemTreePost({
   onPostSuccess?: (data: OnPostSuccessData) => void
   threadgateRecord?: app.bsky.feed.threadgate.Main
 }) {
-  const postShadow = usePostShadow(item.value.post)
+  const {currentAccount} = useSession()
+  const postShadow = usePostShadow(item.value.post, currentAccount?.did)
 
   if (postShadow === POST_TOMBSTONE) {
     return <ThreadItemTreePostDeleted item={item} />

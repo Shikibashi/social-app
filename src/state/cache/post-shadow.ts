@@ -13,6 +13,10 @@ import {findAllPostsInQueryData as findAllPostsInSearchQueryData} from '#/state/
 import {findAllPostsInQueryData as findAllPostsInThreadV2QueryData} from '#/state/queries/usePostThread/queryCache'
 import {app} from '#/lexicons'
 import * as bsky from '#/types/bsky'
+import {
+  getAccountScopedLikeShadow,
+  setAccountScopedLikeShadow,
+} from './post-interaction-shadow'
 import {findDirectPostsInQueryCache} from './post-shadow-cache'
 import {castAsShadow, type Shadow} from './types'
 export type {Shadow} from './types'
@@ -40,33 +44,55 @@ const shadows: WeakMap<
   Partial<PostShadow>
 > = new WeakMap()
 
+function getStoredPostShadow(
+  post: app.bsky.feed.defs.PostView,
+  accountDid?: string,
+): Partial<PostShadow> | undefined {
+  const objectShadow = shadows.get(post)
+  const accountLikeShadow = accountDid
+    ? getAccountScopedLikeShadow(accountDid, post.uri)
+    : undefined
+
+  if (!objectShadow) return accountLikeShadow
+  if (!accountLikeShadow) return objectShadow
+  return {...objectShadow, ...accountLikeShadow}
+}
+
 /**
  * Use with caution! This function returns the raw shadow data for a post.
  * Prefer using `usePostShadow`.
  */
-export function dangerousGetPostShadow(post: app.bsky.feed.defs.PostView) {
-  return shadows.get(post)
+export function dangerousGetPostShadow(
+  post: app.bsky.feed.defs.PostView,
+  accountDid?: string,
+) {
+  return getStoredPostShadow(post, accountDid)
 }
 
 export function usePostShadow(
   post: app.bsky.feed.defs.PostView,
+  accountDid?: string,
 ): Shadow<app.bsky.feed.defs.PostView> | typeof POST_TOMBSTONE {
-  const [shadow, setShadow] = useState(() => shadows.get(post))
+  const [shadow, setShadow] = useState(() =>
+    getStoredPostShadow(post, accountDid),
+  )
   const [prevPost, setPrevPost] = useState(post)
-  if (post !== prevPost) {
+  const [prevAccountDid, setPrevAccountDid] = useState(accountDid)
+  if (post !== prevPost || accountDid !== prevAccountDid) {
     setPrevPost(post)
-    setShadow(shadows.get(post))
+    setPrevAccountDid(accountDid)
+    setShadow(getStoredPostShadow(post, accountDid))
   }
 
   useEffect(() => {
     function onUpdate() {
-      setShadow(shadows.get(post))
+      setShadow(getStoredPostShadow(post, accountDid))
     }
     emitter.addListener(post.uri, onUpdate)
     return () => {
       emitter.removeListener(post.uri, onUpdate)
     }
-  }, [post, setShadow])
+  }, [post, accountDid, setShadow])
 
   return useMemo(() => {
     if (shadow) {
@@ -172,10 +198,24 @@ export function updatePostShadow(
   queryClient: QueryClient,
   uri: string,
   value: Partial<PostShadow>,
+  accountDid?: string,
 ) {
+  if (accountDid && 'likeUri' in value) {
+    setAccountScopedLikeShadow(accountDid, uri, value.likeUri)
+  }
+
   const cachedPosts = findPostsInCache(queryClient, uri)
   for (let post of cachedPosts) {
-    shadows.set(post, {...shadows.get(post), ...value})
+    const nextShadow = {...shadows.get(post), ...value}
+    /*
+     * Like state is account-scoped. Do not leave an unscoped copy on the
+     * object, because that object can outlive the account that authored the
+     * interaction. The account-scoped entry above is what renders it.
+     */
+    if (accountDid && 'likeUri' in value) {
+      delete nextShadow.likeUri
+    }
+    shadows.set(post, nextShadow)
   }
   batchedUpdates(() => {
     emitter.emit(uri)

@@ -24,7 +24,6 @@ import {Image, type ImageStyle} from 'expo-image'
 import {LinearGradient} from 'expo-linear-gradient'
 import {createVideoPlayer, type VideoPlayer, VideoView} from 'expo-video'
 import {AtUri} from '@atproto/syntax'
-import {type ModerationDecision} from '#/lib/moderation'
 import {RichText as RichTextAPI} from '@bsky/sdk/richtext'
 import {Trans, useLingui} from '@lingui/react/macro'
 import {
@@ -48,6 +47,7 @@ import {
   createPlaybackTelemetry,
   type PlaybackTelemetry,
 } from '#/lib/media/video/playbackTelemetry'
+import {type ModerationDecision} from '#/lib/moderation'
 import {
   type CommonNavigatorParams,
   type NavigationProp,
@@ -489,7 +489,8 @@ let VideoItem = ({
   reqId: string | undefined
 }): React.ReactNode => {
   const ax = useAnalytics()
-  const postShadow = usePostShadow(post)
+  const {currentAccount} = useSession()
+  const postShadow = usePostShadow(post, currentAccount?.did)
   const {width, height} = useSafeAreaFrame()
   const {sendInteraction, feedDescriptor} = useFeedFeedbackContext()
   const hasTrackedView = useRef(false)
