@@ -156,7 +156,7 @@ function FeedgenErrorMessage({
   }, [removePromptControl])
 
   const onPressChangeProvider = useCallback(() => {
-    navigation.navigate('ServicesSettings')
+    navigation.navigate('ServicesSettings', {section: 'providers'})
   }, [navigation])
 
   const onRemoveFeed = useCallback(async () => {

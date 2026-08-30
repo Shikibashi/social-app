@@ -248,7 +248,9 @@ export function CustomFeedScreenInner({
                   : 'Local ranking preferences stay on this device'
         }
         onChangeRanking={() => navigation.navigate('PersonalizationSettings')}
-        onChangeProvider={() => navigation.navigate('ServicesSettings')}
+        onChangeProvider={() =>
+          navigation.navigate('ServicesSettings', {section: 'providers'})
+        }
       />
       <FeedFeedbackProvider value={feedFeedback}>
         <PostFeed

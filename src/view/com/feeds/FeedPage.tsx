@@ -267,7 +267,9 @@ export function FeedPage({
                 : 'PersonalizationSettings',
             )
           }
-          onChangeProvider={() => navigation.navigate('ServicesSettings')}
+          onChangeProvider={() =>
+            navigation.navigate('ServicesSettings', {section: 'providers'})
+          }
         />
         <FeedFeedbackProvider value={feedFeedback}>
           <PostFeed

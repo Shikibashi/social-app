@@ -19,6 +19,14 @@ export type SearchParams = {
   tab?: 'user' | 'profile' | 'feed' | 'latest'
 } & SearchFilterParams
 
+export type ServicesSettingsSection =
+  | 'overview'
+  | 'authorization'
+  | 'providers'
+  | 'policies'
+  | 'identity'
+  | 'resolvers'
+
 export type CommonNavigatorParams = {
   NotFound: undefined
   Lists: undefined
@@ -66,7 +74,7 @@ export type CommonNavigatorParams = {
   AppearanceSettings: undefined
   BetaFeaturesSettings: undefined
   AccountSettings: undefined
-  ServicesSettings: undefined
+  ServicesSettings: {section?: ServicesSettingsSection}
   PersonalizationSettings: undefined
   IdentitySovereigntySettings: undefined
   ProtectedAccessSettings: undefined

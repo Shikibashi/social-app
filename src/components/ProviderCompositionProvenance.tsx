@@ -117,7 +117,14 @@ export function ProviderCompositionProvenance({
               accessibilityHint={_(
                 msg`Open Services to choose which providers can answer this surface`,
               )}
-              onPress={() => navigation.navigate('ServicesSettings')}
+              onPress={() =>
+                navigation.navigate('ServicesSettings', {
+                  section:
+                    composition.surface === 'identity-resolution'
+                      ? 'identity'
+                      : 'providers',
+                })
+              }
               style={({pressed}) => [
                 styles.action,
                 {borderColor: t.palette.contrast_200},

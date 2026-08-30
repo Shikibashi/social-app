@@ -16,7 +16,10 @@ import {
   type ProviderSurface,
   RUNTIME_COMPOSED_PROVIDER_SURFACES,
 } from '#/lib/provider-composition'
-import {type CommonNavigatorParams} from '#/lib/routes/types'
+import {
+  type CommonNavigatorParams,
+  type ServicesSettingsSection,
+} from '#/lib/routes/types'
 import {useSession, useSessionApi} from '#/state/session'
 import {
   getOAuthFeatureGrants,
@@ -88,13 +91,7 @@ function readReconciliationPolicies(): Partial<
   )
 }
 
-type ServicesSection =
-  | 'overview'
-  | 'authorization'
-  | 'providers'
-  | 'policies'
-  | 'identity'
-  | 'resolvers'
+type ServicesSection = ServicesSettingsSection
 
 const SERVICES_SECTIONS: Array<{
   id: ServicesSection
@@ -175,7 +172,7 @@ const SERVICES_INSPECTOR_COPY: Record<
   },
 }
 
-export function ServicesSettingsScreen({}: Props) {
+export function ServicesSettingsScreen({route}: Props) {
   const {currentAccount} = useSession()
   const {_} = useLingui()
   const t = useTheme()
@@ -207,8 +204,9 @@ export function ServicesSettingsScreen({}: Props) {
   const [pendingOAuthFeature, setPendingOAuthFeature] = useState<
     OAuthFeature | undefined
   >()
-  const [activeSection, setActiveSection] =
-    useState<ServicesSection>('overview')
+  const [activeSection, setActiveSection] = useState<ServicesSection>(
+    () => route.params?.section ?? 'overview',
+  )
 
   useEffect(() => {
     setProviders(getAppViewProviders())
@@ -218,6 +216,10 @@ export function ServicesSettingsScreen({}: Props) {
     if (currentAccount)
       setSelected(getSelectedAppViewProvider(currentAccount.did).id)
   }, [currentAccount])
+
+  useEffect(() => {
+    setActiveSection(route.params?.section ?? 'overview')
+  }, [route.params?.section])
 
   async function upgradeFeature(feature: OAuthFeature) {
     setPendingOAuthFeature(feature)

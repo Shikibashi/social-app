@@ -618,7 +618,7 @@ export function CommunityBoardScreen({route}: Props) {
 
   function openTopicComposer() {
     if (spacesAuthorizationRequired) {
-      navigation.navigate('ServicesSettings')
+      navigation.navigate('ServicesSettings', {section: 'providers'})
       return
     }
     setSelectedTopicKey(undefined)
@@ -628,7 +628,7 @@ export function CommunityBoardScreen({route}: Props) {
 
   function openReplyComposer() {
     if (spacesAuthorizationRequired) {
-      navigation.navigate('ServicesSettings')
+      navigation.navigate('ServicesSettings', {section: 'providers'})
       return
     }
     if (!selectedThread) return
@@ -1281,7 +1281,11 @@ export function CommunityBoardScreen({route}: Props) {
                       color="secondary"
                       variant="outline"
                       shape="rectangular"
-                      onPress={() => navigation.navigate('ServicesSettings')}>
+                      onPress={() =>
+                        navigation.navigate('ServicesSettings', {
+                          section: 'providers',
+                        })
+                      }>
                       <ButtonText>Open Services</ButtonText>
                     </Button>
                   </View>
