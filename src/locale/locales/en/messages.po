@@ -13,16 +13,6 @@ msgstr ""
 "Language-Team: \n"
 "Plural-Forms: \n"
 
-#: src/components/AuthorizationProvenance.tsx:233
-msgid ""
-"\n"
-"        Explains why this permission is needed and how to change it\n"
-"      "
-msgstr ""
-"\n"
-"        Explains why this permission is needed and how to change it\n"
-"      "
-
 #. Accessibility label for a category (e.g. Art, Video Games, Sports, etc.) that shows suggested accounts for the user to follow. The tab is currently selected.
 #: src/components/InterestTabs.tsx:333
 msgid "\"{interestsDisplayName}\" category (active)"
@@ -76,6 +66,14 @@ msgstr "(no text)"
 #: src/components/dms/replyPreview.ts:104
 msgid "(quoted post)"
 msgstr "(quoted post)"
+
+#: src/components/FeedProvenanceCard.tsx:190
+msgid "(version {version})"
+msgstr "(version {version})"
+
+#: src/components/FeedProvenanceCard.tsx:188
+msgid "(version not declared)"
+msgstr "(version not declared)"
 
 #. placeholder {0}: labels.length
 #: src/components/moderation/LabelsOnMe.tsx:57
@@ -1119,6 +1117,7 @@ msgstr ""
 msgid "Accessibility Settings"
 msgstr ""
 
+#: src/components/AuthorizationProvenance.tsx:330
 #: src/Navigation.tsx:420
 #: src/screens/Settings/AccountSettings.tsx:53
 #: src/screens/Settings/Settings.tsx:181
@@ -1166,7 +1165,12 @@ msgstr ""
 msgid "Account options"
 msgstr ""
 
+#: src/state/session/oauth-scopes.ts:217
+msgid "account PDS"
+msgstr "account PDS"
+
 #: src/components/MediaDeliveryProvenance.tsx:81
+#: src/state/session/oauth-scopes.ts:286
 msgid "Account PDS"
 msgstr "Account PDS"
 
@@ -1174,9 +1178,26 @@ msgstr "Account PDS"
 msgid "Account PDS and selected read providers"
 msgstr "Account PDS and selected read providers"
 
+#: src/state/session/oauth-scopes.ts:296
+msgid "Account PDS blob resource"
+msgstr "Account PDS blob resource"
+
+#: src/state/session/oauth-scopes.ts:275
+msgid "Account PDS blob store"
+msgstr "Account PDS blob store"
+
 #: src/components/MediaDeliveryProvenance.tsx:51
 msgid "Account PDS profile record"
 msgstr "Account PDS profile record"
+
+#: src/state/session/oauth-scopes.ts:265
+msgid "Account PDS repository"
+msgstr "Account PDS repository"
+
+#. placeholder {0}: account.pdsUrl ?? _(msg`Not advertised by this session`)
+#: src/components/AuthorizationProvenance.tsx:352
+msgid "Account PDS: {0}"
+msgstr "Account PDS: {0}"
 
 #: src/screens/Settings/Settings.tsx:725
 msgid "Account removed from quick access"
@@ -1430,8 +1451,8 @@ msgstr ""
 msgid "Adding members to list..."
 msgstr ""
 
-#: src/components/AuthorizationProvenance.tsx:232
-#: src/components/AuthorizationProvenance.tsx:245
+#: src/components/AuthorizationProvenance.tsx:217
+#: src/components/AuthorizationProvenance.tsx:230
 msgid "Additional authorization required"
 msgstr "Additional authorization required"
 
@@ -1483,6 +1504,10 @@ msgstr ""
 #: src/components/ProviderCompositionProvenance.tsx:236
 msgid "agreement"
 msgstr "agreement"
+
+#: src/components/FeedProvenanceCard.tsx:86
+msgid "Algorithm"
+msgstr "Algorithm"
 
 #: src/components/dialogs/EmailDialog/screens/Update.tsx:220
 msgid "alice@example.com"
@@ -1942,6 +1967,18 @@ msgstr "Approve protected access"
 msgid "AppView changed"
 msgstr "AppView changed"
 
+#: src/components/FeedProvenanceCard.tsx:94
+msgid "AppView provider DID"
+msgstr "AppView provider DID"
+
+#: src/components/FeedProvenanceCard.tsx:90
+msgid "AppView provider(s)"
+msgstr "AppView provider(s)"
+
+#: src/state/session/oauth-scopes.ts:269
+msgid "AppView RPC service"
+msgstr "AppView RPC service"
+
 #: src/screens/Settings/ServicesSettings.tsx:1488
 msgid "AppView service DID"
 msgstr "AppView service DID"
@@ -2077,10 +2114,18 @@ msgstr "AT URI copied to clipboard"
 msgid "ATProto service fragment for this AppView"
 msgstr "ATProto service fragment for this AppView"
 
+#: src/components/AuthorizationProvenance.tsx:140
+msgid "Audience"
+msgstr "Audience"
+
 #: src/screens/Settings/AppIconSettings/useAppIconSets.ts:48
 msgctxt "Name of app icon variant"
 msgid "Aurora"
 msgstr ""
+
+#: src/state/session/oauth-scopes.ts:198
+msgid "Authenticated AppView reads"
+msgstr "Authenticated AppView reads"
 
 #. Filter search results by a specific post author
 #: src/screens/Search/components/AdvancedSearchDialog/index.tsx:408
@@ -2098,15 +2143,20 @@ msgstr "Author repository and thread read providers"
 msgid "Author's curation"
 msgstr "Author's curation"
 
+#: src/components/AuthorizationProvenance.tsx:129
 #: src/components/MediaDeliveryProvenance.tsx:81
 msgid "Authority"
 msgstr "Authority"
 
-#: src/components/AuthorizationProvenance.tsx:261
+#: src/components/AuthorizationProvenance.tsx:248
 msgid "Authorization did not finish:"
 msgstr "Authorization did not finish:"
 
-#: src/components/AuthorizationProvenance.tsx:269
+#: src/components/AuthorizationProvenance.tsx:162
+msgid "Authorize {featureName}"
+msgstr "Authorize {featureName}"
+
+#: src/components/AuthorizationProvenance.tsx:258
 msgid "Authorize {name}"
 msgstr "Authorize {name}"
 
@@ -2114,7 +2164,8 @@ msgstr "Authorize {name}"
 msgid "Authorize this app with your hosting provider"
 msgstr "Authorize this app with your hosting provider"
 
-#: src/components/AuthorizationProvenance.tsx:277
+#: src/components/AuthorizationProvenance.tsx:173
+#: src/components/AuthorizationProvenance.tsx:268
 msgid "Authorize this feature"
 msgstr "Authorize this feature"
 
@@ -2689,6 +2740,10 @@ msgstr ""
 msgid "Change hosting provider"
 msgstr "Change hosting provider"
 
+#: src/components/FeedProvenanceCard.tsx:154
+msgid "Change local ranking"
+msgstr "Change local ranking"
+
 #: src/components/moderation/ReportDialog/index.tsx:523
 msgid "Change moderation service"
 msgstr ""
@@ -2702,10 +2757,16 @@ msgstr ""
 msgid "Change password dialog"
 msgstr ""
 
+#: src/components/FeedProvenanceCard.tsx:175
 #: src/view/com/posts/PostFeedErrorMessage.tsx:214
 msgid "Change provider"
 msgstr "Change provider"
 
+#: src/components/FeedProvenanceCard.tsx:161
+msgid "Change ranking"
+msgstr "Change ranking"
+
+#: src/components/FeedProvenanceCard.tsx:168
 #: src/components/ProviderCompositionProvenance.tsx:141
 #: src/components/ProviderCompositionProvenance.tsx:160
 msgid "Change read provider"
@@ -2758,6 +2819,7 @@ msgstr ""
 
 #: src/lib/hooks/useNotificationHandler.ts:133
 #: src/Navigation.tsx:587
+#: src/state/session/oauth-scopes.ts:200
 #: src/view/shell/bottom-bar/BottomBar.tsx:237
 #: src/view/shell/desktop/LeftNav.tsx:728
 #: src/view/shell/Drawer.tsx:529
@@ -2824,6 +2886,18 @@ msgstr ""
 #: src/screens/Messages/Inbox.tsx:95
 msgid "Chat requests"
 msgstr ""
+
+#: src/state/session/oauth-scopes.ts:271
+msgid "Chat RPC service"
+msgstr "Chat RPC service"
+
+#: src/state/session/oauth-scopes.ts:223
+msgid "chat service"
+msgstr "chat service"
+
+#: src/state/session/oauth-scopes.ts:290
+msgid "Chat service"
+msgstr "Chat service"
 
 #: src/components/dms/ConvoMenu.tsx:82
 #: src/Navigation.tsx:602
@@ -3833,6 +3907,10 @@ msgstr ""
 msgid "Create user list"
 msgstr ""
 
+#: src/state/session/oauth-scopes.ts:238
+msgid "Create, update, and delete posts, likes, and reposts."
+msgstr "Create, update, and delete posts, likes, and reposts."
+
 #. placeholder {0}: i18n.date(appPassword.createdAt, { year: 'numeric', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit', })
 #. placeholder {0}: i18n.date(createdAt, { dateStyle: 'long', timeStyle: 'short', })
 #. placeholder {0}: i18n.date(createdAt, { month: 'long', day: 'numeric', year: 'numeric', })
@@ -4138,6 +4216,10 @@ msgstr "Dialog: Set search filters"
 msgid "DID"
 msgstr "DID"
 
+#: src/state/session/oauth-scopes.ts:267
+msgid "DID document and handle services"
+msgstr "DID document and handle services"
+
 #: src/screens/Settings/ServicesSettings.tsx:1490
 msgid "DID that identifies this AppView"
 msgstr "DID that identifies this AppView"
@@ -4299,6 +4381,7 @@ msgstr ""
 msgid "Display name"
 msgstr ""
 
+#: src/components/FeedProvenanceCard.tsx:118
 #: src/components/IdentityResolutionProvenance.tsx:165
 msgid "distinct operator IDs declared; independent control not proven"
 msgstr "distinct operator IDs declared; independent control not proven"
@@ -5024,6 +5107,10 @@ msgstr ""
 msgid "Expires in {0} at {1}"
 msgstr ""
 
+#: src/components/AuthorizationProvenance.tsx:219
+msgid "Explains why this permission is needed and how to change it"
+msgstr "Explains why this permission is needed and how to change it"
+
 #: src/lib/moderation/useGlobalLabelStrings.ts:47
 #: src/lib/moderation/useGlobalLabelStrings.ts:51
 msgid "Explicit or potentially disturbing media."
@@ -5424,9 +5511,17 @@ msgstr ""
 msgid "False information about elections"
 msgstr ""
 
-#: src/components/AuthorizationProvenance.tsx:254
+#: src/components/AuthorizationProvenance.tsx:241
 msgid "Feature"
 msgstr "Feature"
+
+#: src/components/AuthorizationProvenance.tsx:358
+msgid "Feature authority"
+msgstr "Feature authority"
+
+#: src/components/AuthorizationProvenance.tsx:372
+msgid "Feature upgrades are supported individually. The current session integration revokes the OAuth session as a whole; it does not claim to revoke one feature independently."
+msgstr "Feature upgrades are supported individually. The current session integration revokes the OAuth session as a whole; it does not claim to revoke one feature independently."
 
 #: src/Navigation.tsx:307
 msgid "Feed"
@@ -5468,9 +5563,21 @@ msgstr ""
 msgid "Feed owner"
 msgstr "Feed owner"
 
+#: src/components/FeedProvenanceCard.tsx:129
+msgid "Feed owner DID"
+msgstr "Feed owner DID"
+
+#: src/components/FeedProvenanceCard.tsx:63
+msgid "Feed provenance details are hidden until expanded"
+msgstr "Feed provenance details are hidden until expanded"
+
 #: src/components/Post/PostProvenance.tsx:107
 msgid "Feed provider"
 msgstr "Feed provider"
+
+#: src/components/FeedProvenanceCard.tsx:124
+msgid "Feed provider DID"
+msgstr "Feed provider DID"
 
 #: src/components/Post/PostProvenance.tsx:172
 msgid "Feed record"
@@ -5495,6 +5602,10 @@ msgstr ""
 #: src/view/com/feeds/MissingFeed.tsx:74
 msgid "Feed unavailable"
 msgstr ""
+
+#: src/components/FeedProvenanceCard.tsx:134
+msgid "Feed URI"
+msgstr "Feed URI"
 
 #: src/view/shell/desktop/RightNav.tsx:109
 #: src/view/shell/desktop/RightNav.tsx:110
@@ -6178,6 +6289,11 @@ msgstr ""
 msgid "Grant access"
 msgstr "Grant access"
 
+#: src/components/AuthorizationProvenance.tsx:148
+#: src/state/session/oauth-scopes.ts:307
+msgid "Granted by the authorization server"
+msgstr "Granted by the authorization server"
+
 #: src/lib/moderation/useGlobalLabelStrings.ts:46
 #: src/lib/moderation/useGlobalLabelStrings.ts:50
 #: src/view/com/composer/labels/LabelsBtn.tsx:197
@@ -6342,6 +6458,10 @@ msgstr ""
 msgid "head {0}"
 msgstr "head {0}"
 
+#: src/components/FeedProvenanceCard.tsx:147
+msgid "Health"
+msgstr "Health"
+
 #: src/components/contacts/screens/PhoneInput.tsx:290
 msgid "Held by Plumbline for 7 days to prevent abuse, then deleted"
 msgstr "Held by Plumbline for 7 days to prevent abuse, then deleted"
@@ -6406,6 +6526,16 @@ msgstr "Hide {surfaceLabel} source details"
 #: src/components/dialogs/Embed.tsx:125
 msgid "Hide customization options"
 msgstr ""
+
+#: src/components/AuthorizationProvenance.tsx:305
+#: src/components/AuthorizationProvenance.tsx:322
+msgid "Hide delegated authority"
+msgstr "Hide delegated authority"
+
+#: src/components/FeedProvenanceCard.tsx:60
+#: src/components/FeedProvenanceCard.tsx:78
+msgid "Hide feed details"
+msgstr "Hide feed details"
 
 #: src/components/dms/SystemMessageGroup.tsx:57
 msgid "Hide group chat updates"
@@ -6639,9 +6769,17 @@ msgstr "Identity and recovery"
 msgid "Identity claims"
 msgstr "Identity claims"
 
+#: src/state/session/oauth-scopes.ts:196
+msgid "Identity recovery and rotation"
+msgstr "Identity recovery and rotation"
+
 #: src/components/IdentityResolutionProvenance.tsx:67
 msgid "Identity resolution"
 msgstr "Identity resolution"
+
+#: src/state/session/oauth-scopes.ts:219
+msgid "identity service"
+msgstr "identity service"
 
 #: src/Navigation.tsx:444
 msgid "Identity sovereignty"
@@ -6882,9 +7020,14 @@ msgstr ""
 msgid "Inspect {surfaceLabel} sources"
 msgstr "Inspect {surfaceLabel} sources"
 
-#: src/components/AuthorizationProvenance.tsx:282
+#: src/components/AuthorizationProvenance.tsx:273
 msgid "Inspect authorization settings"
 msgstr "Inspect authorization settings"
+
+#: src/components/AuthorizationProvenance.tsx:306
+#: src/components/AuthorizationProvenance.tsx:323
+msgid "Inspect delegated authority"
+msgstr "Inspect delegated authority"
 
 #: src/screens/Moderation/index.tsx:333
 #: src/screens/Moderation/index.tsx:350
@@ -7355,6 +7498,10 @@ msgstr "Left group chat."
 msgid "left to go."
 msgstr ""
 
+#: src/state/session/oauth-scopes.ts:309
+msgid "Legacy compatibility grant"
+msgstr "Legacy compatibility grant"
+
 #: src/components/StarterPack/ProfileStarterPacks.tsx:357
 msgid "Let me choose"
 msgstr ""
@@ -7711,6 +7858,10 @@ msgstr ""
 msgid "Make sure this is where you intend to go!"
 msgstr ""
 
+#: src/state/session/oauth-scopes.ts:242
+msgid "Manage follows, blocks, mutes, lists, and starter packs."
+msgstr "Manage follows, blocks, mutes, lists, and starter packs."
+
 #: src/screens/Settings/ContentAndMediaSettings.tsx:62
 #: src/screens/Settings/ContentAndMediaSettings.tsx:65
 msgid "Manage saved feeds"
@@ -7723,6 +7874,10 @@ msgstr ""
 #: src/components/dialogs/MutedWords.tsx:113
 msgid "Manage your muted words and tags"
 msgstr ""
+
+#: src/components/FeedProvenanceCard.tsx:138
+msgid "Manifest"
+msgstr "Manifest"
 
 #: src/screens/Login/components/HostingProviderDialog.tsx:173
 #: src/screens/Login/components/HostingProviderDialog.tsx:174
@@ -7781,6 +7936,10 @@ msgstr "Me"
 msgid "Media"
 msgstr ""
 
+#: src/state/session/oauth-scopes.ts:227
+msgid "media service"
+msgstr "media service"
+
 #. Example: "Media stored on John's iPhone"
 #. placeholder {0}: draft.draft.deviceName
 #: src/view/com/composer/drafts/DraftItem.tsx:120
@@ -7794,6 +7953,10 @@ msgstr ""
 #: src/view/com/composer/labels/LabelsBtn.tsx:206
 msgid "Media that may be disturbing or inappropriate for some audiences."
 msgstr ""
+
+#: src/state/session/oauth-scopes.ts:204
+msgid "Media uploads"
+msgstr "Media uploads"
 
 #: src/components/moderation/BlockDialog.tsx:302
 msgid "Member removed from group chat."
@@ -8573,6 +8736,10 @@ msgstr "No presentation change"
 msgid "No provider answered"
 msgstr "No provider answered"
 
+#: src/components/FeedProvenanceCard.tsx:238
+msgid "No provider result"
+msgstr "No provider result"
+
 #: src/view/com/post-thread/PostQuotes.tsx:113
 msgid "No quotes yet"
 msgstr ""
@@ -8690,6 +8857,7 @@ msgstr ""
 msgid "Non-standard OTA channel"
 msgstr "Non-standard OTA channel"
 
+#: src/components/AuthorizationProvenance.tsx:83
 #: src/screens/Settings/NotificationSettings/ActivityNotificationSettings.tsx:220
 msgid "None"
 msgstr "None"
@@ -8707,6 +8875,10 @@ msgstr "None; no provider result was promoted"
 msgid "None; the current identity policy did not select a claim"
 msgstr "None; the current identity policy did not select a claim"
 
+#: src/components/AuthorizationProvenance.tsx:352
+msgid "Not advertised by this session"
+msgstr "Not advertised by this session"
+
 #: src/features/inviteFriends/InviteScannerScreen.web.tsx:31
 msgid "Not available on this platform"
 msgstr "Not available on this platform"
@@ -8716,6 +8888,13 @@ msgstr "Not available on this platform"
 msgid "Not available on this platform."
 msgstr ""
 
+#: src/components/FeedProvenanceCard.tsx:41
+#: src/components/FeedProvenanceCard.tsx:49
+#: src/components/FeedProvenanceCard.tsx:220
+msgid "Not declared"
+msgstr "Not declared"
+
+#: src/components/FeedProvenanceCard.tsx:120
 #: src/components/IdentityResolutionProvenance.tsx:167
 msgid "not established"
 msgstr "not established"
@@ -8771,6 +8950,18 @@ msgstr ""
 msgid "Nothing saved yet"
 msgstr ""
 
+#: src/state/session/oauth-scopes.ts:277
+msgid "Notification RPC service"
+msgstr "Notification RPC service"
+
+#: src/state/session/oauth-scopes.ts:229
+msgid "notification service"
+msgstr "notification service"
+
+#: src/state/session/oauth-scopes.ts:292
+msgid "Notification service"
+msgstr "Notification service"
+
 #: src/components/dialogs/NotificationSettingsDialog.tsx:72
 #: src/Navigation.tsx:531
 #: src/Navigation.tsx:618
@@ -8791,6 +8982,7 @@ msgstr ""
 #: src/screens/Settings/NotificationSettings/index.tsx:125
 #: src/screens/Settings/Settings.tsx:233
 #: src/screens/Settings/Settings.tsx:236
+#: src/state/session/oauth-scopes.ts:206
 #: src/view/com/notifications/NotificationFeed.tsx:189
 #: src/view/screens/Notifications.tsx:128
 #: src/view/shell/bottom-bar/BottomBar.tsx:274
@@ -8811,6 +9003,19 @@ msgstr ""
 #: src/components/contacts/phone-number.ts:43
 msgid "Number should be a mobile number"
 msgstr ""
+
+#. placeholder {0}: account.service
+#: src/components/AuthorizationProvenance.tsx:347
+msgid "OAuth service recorded by this session: {0}"
+msgstr "OAuth service recorded by this session: {0}"
+
+#: src/components/AuthorizationProvenance.tsx:344
+msgid "OAuth session"
+msgstr "OAuth session"
+
+#: src/components/FeedProvenanceCard.tsx:141
+msgid "Objective"
+msgstr "Objective"
 
 #: src/lib/moderation/useLabelBehaviorDescription.ts:15
 #: src/screens/Settings/AccountSettings.tsx:160
@@ -9105,7 +9310,7 @@ msgstr "Open QR code scanner"
 msgid "Open service workbench"
 msgstr "Open service workbench"
 
-#: src/components/AuthorizationProvenance.tsx:289
+#: src/components/AuthorizationProvenance.tsx:280
 #: src/view/shell/desktop/RightNav.tsx:185
 msgid "Open Services"
 msgstr "Open Services"
@@ -9118,6 +9323,14 @@ msgstr "Open Services to choose which providers can answer this surface"
 #: src/components/BotAccountAlert.tsx:71
 msgid "Open settings"
 msgstr "Open settings"
+
+#: src/components/FeedProvenanceCard.tsx:170
+msgid "Open settings for explicit read provider choices"
+msgstr "Open settings for explicit read provider choices"
+
+#: src/components/FeedProvenanceCard.tsx:156
+msgid "Open settings for local ranking choices"
+msgstr "Open settings for local ranking choices"
 
 #: src/components/PostControls/ShareMenu/index.tsx:94
 msgid "Open share menu"
@@ -9159,11 +9372,16 @@ msgstr "Open the mobile app"
 msgid "Open this group chat"
 msgstr "Open this group chat"
 
-#: src/components/AuthorizationProvenance.tsx:269
+#: src/components/AuthorizationProvenance.tsx:161
+msgid "Opening consent for {featureName}"
+msgstr "Opening consent for {featureName}"
+
+#: src/components/AuthorizationProvenance.tsx:257
 msgid "Opening consent for {name}"
 msgstr "Opening consent for {name}"
 
-#: src/components/AuthorizationProvenance.tsx:277
+#: src/components/AuthorizationProvenance.tsx:172
+#: src/components/AuthorizationProvenance.tsx:267
 msgid "Opening consent…"
 msgstr "Opening consent…"
 
@@ -9296,12 +9514,15 @@ msgid "Opens your private PDS feed"
 msgstr "Opens your private PDS feed"
 
 #. placeholder {0}: observation.provider.operatorId
+#. placeholder {0}: provider.operatorId
 #. placeholder {0}: resolver.operatorId
+#: src/components/FeedProvenanceCard.tsx:101
 #: src/components/IdentityResolutionProvenance.tsx:183
 #: src/components/ProviderCompositionProvenance.tsx:196
 msgid "operator {0}"
 msgstr "operator {0}"
 
+#: src/components/FeedProvenanceCard.tsx:115
 #: src/components/IdentityResolutionProvenance.tsx:162
 #: src/components/Post/PostProvenance.tsx:152
 #: src/components/ProviderCompositionProvenance.tsx:108
@@ -9403,6 +9624,10 @@ msgstr "Owner must lock the group before leaving."
 #: src/view/screens/NotFound.tsx:41
 msgid "Page not found"
 msgstr ""
+
+#: src/components/FeedProvenanceCard.tsx:234
+msgid "Partial provider response"
+msgstr "Partial provider response"
 
 #: src/components/ProviderCompositionProvenance.tsx:240
 msgid "partial; at least one provider did not answer"
@@ -9527,6 +9752,14 @@ msgstr ""
 #: src/screens/Settings/components/ProtectedAccountToggle.tsx:62
 msgid "Permissioned account space: available on this PDS. Public posts and your public profile remain separate."
 msgstr "Permissioned account space: available on this PDS. Public posts and your public profile remain separate."
+
+#: src/state/session/oauth-scopes.ts:294
+msgid "Permissioned Spaces authority"
+msgstr "Permissioned Spaces authority"
+
+#: src/state/session/oauth-scopes.ts:273
+msgid "Permissioned Spaces service and records"
+msgstr "Permissioned Spaces service and records"
 
 #: src/components/StarterPack/Wizard/WizardListCard.tsx:58
 msgid "Person toggle"
@@ -9997,6 +10230,10 @@ msgctxt "toast"
 msgid "Post unpinned"
 msgstr ""
 
+#: src/state/session/oauth-scopes.ts:190
+msgid "Posting and interactions"
+msgstr "Posting and interactions"
+
 #: src/components/activity-notifications/SubscribeProfileDialog.tsx:254
 #: src/components/activity-notifications/SubscribeProfileDialog.tsx:266
 #: src/screens/ProfileList/index.tsx:164
@@ -10072,6 +10309,7 @@ msgstr ""
 msgid "Primary language"
 msgstr ""
 
+#: src/components/FeedProvenanceCard.tsx:144
 #: src/view/shell/desktop/RightNav.tsx:118
 #: src/view/shell/desktop/RightNav.tsx:119
 msgid "Privacy"
@@ -10156,6 +10394,10 @@ msgstr ""
 msgid "Profile banner placeholder"
 msgstr "Profile banner placeholder"
 
+#: src/state/session/oauth-scopes.ts:192
+msgid "Profile editing"
+msgstr "Profile editing"
+
 #: src/components/MediaDeliveryProvenance.tsx:50
 msgid "Profile media"
 msgstr "Profile media"
@@ -10220,13 +10462,26 @@ msgstr "Protocol method"
 msgid "Provider added"
 msgstr "Provider added"
 
+#: src/components/FeedProvenanceCard.tsx:230
+msgid "Provider agreement"
+msgstr "Provider agreement"
+
+#: src/components/FeedProvenanceCard.tsx:107
 #: src/components/Post/PostProvenance.tsx:145
 msgid "Provider composition"
 msgstr "Provider composition"
 
+#: src/components/FeedProvenanceCard.tsx:205
+msgid "Provider degraded"
+msgstr "Provider degraded"
+
 #: src/screens/Settings/ServicesSettings.tsx:995
 msgid "Provider details required"
 msgstr "Provider details required"
+
+#: src/components/FeedProvenanceCard.tsx:232
+msgid "Provider disagreement"
+msgstr "Provider disagreement"
 
 #: src/screens/Settings/ServicesSettings.tsx:1469
 msgid "Provider HTTPS endpoint"
@@ -10272,6 +10527,19 @@ msgstr "Provider Terms of Service"
 #: src/screens/Settings/ServicesSettings.tsx:970
 msgid "Provider unavailable"
 msgstr "Provider unavailable"
+
+#: src/components/FeedProvenanceCard.tsx:201
+msgid "Provider unavailable; showing your selected fallback"
+msgstr "Provider unavailable; showing your selected fallback"
+
+#. placeholder {0}: providerContext.algorithm
+#: src/components/FeedProvenanceCard.tsx:308
+msgid "Provider-supplied {0}"
+msgstr "Provider-supplied {0}"
+
+#: src/components/FeedProvenanceCard.tsx:236
+msgid "Providers unavailable"
+msgstr "Providers unavailable"
 
 #: src/view/com/composer/threadgate/ThreadgateBtn.tsx:161
 #: src/view/com/composer/threadgate/ThreadgateBtn.tsx:162
@@ -10422,6 +10690,22 @@ msgstr ""
 msgctxt "english-only-resource"
 msgid "Read about how to use advanced search filters"
 msgstr "Read about how to use advanced search filters"
+
+#: src/state/session/oauth-scopes.ts:254
+msgid "Read account notifications through the notification service."
+msgstr "Read account notifications through the notification service."
+
+#: src/state/session/oauth-scopes.ts:246
+msgid "Read account-scoped views through the selected AppView service."
+msgstr "Read account-scoped views through the selected AppView service."
+
+#: src/state/session/oauth-scopes.ts:250
+msgid "Read and manage the account’s permissioned Spaces records."
+msgstr "Read and manage the account’s permissioned Spaces records."
+
+#: src/state/session/oauth-scopes.ts:248
+msgid "Read and send direct or group messages through the chat service."
+msgstr "Read and send direct or group messages through the chat service."
 
 #: src/components/dialogs/nuxs/InitialVerificationAnnouncement.tsx:162
 #: src/components/dialogs/nuxs/InitialVerificationAnnouncement.tsx:173
@@ -11064,6 +11348,10 @@ msgstr "Reposts will be shown in feeds"
 msgid "Request access to group chat"
 msgstr "Request access to group chat"
 
+#: src/state/session/oauth-scopes.ts:244
+msgid "Request and submit PLC identity updates, including rotation-key registration."
+msgstr "Request and submit PLC identity updates, including rotation-key registration."
+
 #: src/screens/Messages/JoinRequests.tsx:169
 msgid "Request approved."
 msgstr "Request approved."
@@ -11089,6 +11377,10 @@ msgstr "Request to join"
 #: src/components/dms/ChatInvite/Root.tsx:133
 msgid "Requested"
 msgstr "Requested"
+
+#: src/components/AuthorizationProvenance.tsx:144
+msgid "Requested by Plumbline"
+msgstr "Requested by Plumbline"
 
 #: src/screens/Settings/ProtectedAccessSettings.tsx:149
 msgid "Requester DID"
@@ -11279,6 +11571,14 @@ msgstr "Review accounts"
 #: src/screens/Settings/PrivacyAndSecuritySettings.tsx:168
 msgid "Review the hosting provider's privacy policy."
 msgstr "Review the hosting provider's privacy policy."
+
+#: src/components/AuthorizationProvenance.tsx:377
+msgid "Revoke this OAuth session"
+msgstr "Revoke this OAuth session"
+
+#: src/components/AuthorizationProvenance.tsx:383
+msgid "Revoke whole session"
+msgstr "Revoke whole session"
 
 #: src/components/IdentityResolutionProvenance.tsx:283
 msgid "revoked"
@@ -11815,6 +12115,14 @@ msgstr ""
 msgid "Select your preferred notification channels"
 msgstr ""
 
+#: src/state/session/oauth-scopes.ts:221
+msgid "selected AppView service"
+msgstr "selected AppView service"
+
+#: src/state/session/oauth-scopes.ts:288
+msgid "Selected AppView service"
+msgstr "Selected AppView service"
+
 #: src/components/IdentityResolutionProvenance.tsx:76
 #: src/components/IdentityResolutionProvenance.tsx:84
 msgid "Selected claim"
@@ -11922,6 +12230,14 @@ msgstr "Service DID"
 #: src/screens/Settings/ServicesSettings.tsx:1510
 msgid "Service fragment"
 msgstr "Service fragment"
+
+#: src/components/FeedProvenanceCard.tsx:207
+msgid "Service health unknown"
+msgstr "Service health unknown"
+
+#: src/components/FeedProvenanceCard.tsx:199
+msgid "Service healthy"
+msgstr "Service healthy"
 
 #: src/Navigation.tsx:428
 #: src/screens/Settings/ServicesSettings.tsx:1098
@@ -12226,6 +12542,11 @@ msgstr ""
 msgid "Show customization options"
 msgstr ""
 
+#: src/components/FeedProvenanceCard.tsx:60
+#: src/components/FeedProvenanceCard.tsx:78
+msgid "Show feed details"
+msgstr "Show feed details"
+
 #: src/components/dms/SystemMessageGroup.tsx:57
 msgid "Show group chat updates"
 msgstr "Show group chat updates"
@@ -12342,6 +12663,10 @@ msgstr ""
 msgid "Show when you’re live"
 msgstr ""
 
+#: src/components/FeedProvenanceCard.tsx:203
+msgid "Showing stale data"
+msgstr "Showing stale data"
+
 #: src/screens/PostThread/components/ThreadItemAnchor.tsx:609
 msgid "Shows information about when this post was created"
 msgstr ""
@@ -12354,6 +12679,10 @@ msgstr ""
 #: src/components/moderation/PostHider.tsx:91
 msgid "Shows the content"
 msgstr ""
+
+#: src/components/AuthorizationProvenance.tsx:309
+msgid "Shows the OAuth permissions, service authority, and revocation boundary for this session"
+msgstr "Shows the OAuth permissions, service authority, and revocation boundary for this session"
 
 #: src/view/shell/desktop/RightNav.tsx:256
 msgid "Shows the provider, rule, and control for this surface"
@@ -12510,6 +12839,10 @@ msgstr ""
 msgid "So many thoughts, you should post one"
 msgstr ""
 
+#: src/state/session/oauth-scopes.ts:194
+msgid "Social graph"
+msgstr "Social graph"
+
 #: src/components/WelcomeModal.tsx:147
 msgid "Social media you control."
 msgstr ""
@@ -12659,6 +12992,14 @@ msgstr "Source unavailable; local rules remain active"
 msgid "Source: <0>{sourceName}</0>"
 msgstr ""
 
+#: src/state/session/oauth-scopes.ts:202
+msgid "Spaces"
+msgstr "Spaces"
+
+#: src/state/session/oauth-scopes.ts:225
+msgid "Spaces authority"
+msgstr "Spaces authority"
+
 #: src/components/moderation/ReportDialog/utils/useReportOptions.ts:40
 msgid "Spam"
 msgstr ""
@@ -12774,6 +13115,11 @@ msgstr ""
 #: src/screens/Signup/index.tsx:181
 msgid "Step {0} of {1}"
 msgstr ""
+
+#: src/components/AuthorizationProvenance.tsx:153
+#: src/state/session/oauth-scopes.ts:311
+msgid "Still missing"
+msgstr "Still missing"
 
 #: src/screens/Settings/Settings.tsx:446
 msgid "Storage cleared, you need to restart the app now."
@@ -13705,7 +14051,7 @@ msgstr "This moderation service does not support that report reason. Please choo
 msgid "This moderation service is unavailable. See below for more details. If this issue persists, contact us."
 msgstr ""
 
-#: src/components/AuthorizationProvenance.tsx:248
+#: src/components/AuthorizationProvenance.tsx:234
 msgid "This part of Plumbline uses a separate {name} permission. No request has been sent to the {resource} for this feature."
 msgstr "This part of Plumbline uses a separate {name} permission. No request has been sent to the {resource} for this feature."
 
@@ -14190,6 +14536,10 @@ msgstr "Unblock account?"
 msgid "Unblock Account?"
 msgstr ""
 
+#: src/state/session/oauth-scopes.ts:298
+msgid "Unclassified resource"
+msgstr "Unclassified resource"
+
 #: src/features/liveEvents/components/DiscoverFeedLiveEventFeedsAndTrendingBanner.tsx:50
 #: src/features/liveEvents/components/DiscoverFeedLiveEventFeedsAndTrendingBanner.tsx:56
 #: src/features/liveEvents/components/SidebarLiveEventFeedsBanner.tsx:40
@@ -14425,6 +14775,10 @@ msgstr "Update in Lists"
 msgid "Update invite link"
 msgstr "Update invite link"
 
+#: src/state/session/oauth-scopes.ts:240
+msgid "Update the account profile record."
+msgstr "Update the account profile record."
+
 #: src/screens/Settings/components/ChangeHandleDialog.tsx:576
 #: src/screens/Settings/components/ChangeHandleDialog.tsx:605
 msgid "Update to {domain}"
@@ -14456,6 +14810,10 @@ msgstr ""
 #: src/screens/Settings/components/ChangeHandleDialog.tsx:511
 msgid "Upload a text file to:"
 msgstr ""
+
+#: src/state/session/oauth-scopes.ts:252
+msgid "Upload blobs to the account’s hosting service for profile or post media."
+msgstr "Upload blobs to the account’s hosting service for profile or post media."
 
 #: src/view/com/util/UserAvatar.tsx:494
 #: src/view/com/util/UserAvatar.tsx:497

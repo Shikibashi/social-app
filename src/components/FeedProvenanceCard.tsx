@@ -1,11 +1,10 @@
 import {useEffect, useState} from 'react'
 import {Pressable, View} from 'react-native'
+import {type I18n} from '@lingui/core'
+import {msg} from '@lingui/core/macro'
+import {useLingui} from '@lingui/react'
 
-import {
-  type FeedProvenance,
-  healthLabel,
-  parseFeedProviderContext,
-} from '#/lib/attention-ui'
+import {type FeedProvenance, parseFeedProviderContext} from '#/lib/attention-ui'
 import {type ProviderCompositionResult} from '#/lib/provider-composition'
 import {listenAppViewProviderChanged} from '#/state/events'
 import {useSession} from '#/state/session'
@@ -28,27 +27,26 @@ export function FeedProvenanceCard({
   onChangeRanking?: () => void
   onChangeProvider?: () => void
 }) {
+  const {_, i18n} = useLingui()
   const t = useTheme()
   const [showDetails, setShowDetails] = useState(false)
-  const algorithmVersionLabel =
-    provenance.algorithmVersion === 'not declared'
-      ? '(version not declared)'
-      : /^\d+(?:\.\d+)*$/.test(provenance.algorithmVersion)
-        ? `v${provenance.algorithmVersion}`
-        : `(version ${provenance.algorithmVersion})`
+  const algorithmVersionLabel = feedAlgorithmVersionLabel(
+    provenance.algorithmVersion,
+    i18n,
+  )
   const rule =
     [provenance.algorithmName, provenance.objective]
       .map(value => value.trim())
       .filter(Boolean)
-      .join(' · ') || 'Not declared'
-  const state = feedStateLabel(provenance)
+      .join(' · ') || _(msg`Not declared`)
+  const state = feedStateLabel(provenance, i18n)
 
   return (
     <Layout.Content contentContainerStyle={{paddingVertical: 2}}>
       <PlumblineAuthoritySummary
         testID="feed-provenance-summary"
         title={provenance.feedName}
-        source={provenance.provider || 'Not declared'}
+        source={provenance.provider || _(msg`Not declared`)}
         rule={rule}
         state={state}
       />
@@ -59,9 +57,11 @@ export function FeedProvenanceCard({
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={
-          showDetails ? 'Hide feed details' : 'Show feed details'
+          showDetails ? _(msg`Hide feed details`) : _(msg`Show feed details`)
         }
-        accessibilityHint="Feed provenance details are hidden until expanded"
+        accessibilityHint={_(
+          msg`Feed provenance details are hidden until expanded`,
+        )}
         accessibilityState={{expanded: showDetails}}
         onPress={() => setShowDetails(value => !value)}
         style={({pressed}) => [
@@ -75,7 +75,7 @@ export function FeedProvenanceCard({
           pressed && {opacity: 0.65},
         ]}>
         <Text style={{fontWeight: '600'}}>
-          {showDetails ? 'Hide feed details' : 'Show feed details'}
+          {showDetails ? _(msg`Hide feed details`) : _(msg`Show feed details`)}
         </Text>
       </Pressable>
 
@@ -83,64 +83,97 @@ export function FeedProvenanceCard({
         <View style={{gap: 3, paddingTop: 4}}>
           <Text accessibilityRole="header">{provenance.feedName}</Text>
           <Text>
-            Algorithm: {provenance.algorithmName} {algorithmVersionLabel}
+            {_(msg`Algorithm`)}: {provenance.algorithmName}{' '}
+            {algorithmVersionLabel}
           </Text>
-          <Text>AppView provider(s): {provenance.provider}</Text>
+          <Text>
+            {_(msg`AppView provider(s)`)}: {provenance.provider}
+          </Text>
           {provenance.providerDid ? (
-            <Text>AppView provider DID: {provenance.providerDid}</Text>
+            <Text>
+              {_(msg`AppView provider DID`)}: {provenance.providerDid}
+            </Text>
           ) : null}
           {provenance.providerProvenance?.map(provider => (
             <Text key={provider.id}>
               {provider.displayName}: {provider.endpoint}
-              {provider.operatorId ? ` · operator ${provider.operatorId}` : ''}
+              {provider.operatorId
+                ? ` · ${i18n._(msg`operator ${provider.operatorId}`)}`
+                : ''}
             </Text>
           ))}
           {provenance.providerCompositionStatus ? (
             <Text>
-              Provider composition: {provenance.providerCompositionStatus}
+              {_(msg`Provider composition`)}:{' '}
+              {providerCompositionStatusLabel(
+                provenance.providerCompositionStatus,
+                i18n,
+              )}
             </Text>
           ) : null}
           <Text>
-            Operator independence:{' '}
+            {_(msg`Operator independence`)}:{' '}
             {provenance.providerIndependence === 'declared-distinct'
-              ? 'distinct operator IDs declared; independent control not proven'
-              : 'not established'}
+              ? _(
+                  msg`distinct operator IDs declared; independent control not proven`,
+                )
+              : _(msg`not established`)}
           </Text>
           {provenance.feedProviderDid ? (
-            <Text>Feed provider DID: {provenance.feedProviderDid}</Text>
+            <Text>
+              {_(msg`Feed provider DID`)}: {provenance.feedProviderDid}
+            </Text>
           ) : null}
           {provenance.feedOwnerDid ? (
-            <Text>Feed owner DID: {provenance.feedOwnerDid}</Text>
+            <Text>
+              {_(msg`Feed owner DID`)}: {provenance.feedOwnerDid}
+            </Text>
           ) : null}
           {provenance.feedUri ? (
-            <Text>Feed URI: {provenance.feedUri}</Text>
+            <Text>
+              {_(msg`Feed URI`)}: {provenance.feedUri}
+            </Text>
           ) : null}
-          <Text>Manifest: {provenance.manifestStatus}</Text>
-          <Text>Objective: {provenance.objective}</Text>
-          <Text>Privacy: {provenance.privacy}</Text>
+          <Text>
+            {_(msg`Manifest`)}: {provenance.manifestStatus}
+          </Text>
+          <Text>
+            {_(msg`Objective`)}: {provenance.objective}
+          </Text>
+          <Text>
+            {_(msg`Privacy`)}: {provenance.privacy}
+          </Text>
           <Text accessibilityLiveRegion="polite">
-            Health: {healthLabel(provenance.health)}
+            {_(msg`Health`)}: {localizedHealthLabel(provenance.health, i18n)}
           </Text>
           {(onChangeRanking || onChangeProvider) && (
             <View style={{flexDirection: 'row', gap: 12, paddingTop: 6}}>
               {onChangeRanking ? (
                 <Pressable
                   accessibilityRole="button"
-                  accessibilityLabel="Change local ranking"
-                  accessibilityHint="Open settings for local ranking choices"
+                  accessibilityLabel={_(msg`Change local ranking`)}
+                  accessibilityHint={_(
+                    msg`Open settings for local ranking choices`,
+                  )}
                   onPress={onChangeRanking}
                   style={({pressed}) => pressed && {opacity: 0.65}}>
-                  <Text style={{fontWeight: '600'}}>Change ranking</Text>
+                  <Text style={{fontWeight: '600'}}>
+                    {_(msg`Change ranking`)}
+                  </Text>
                 </Pressable>
               ) : null}
               {onChangeProvider ? (
                 <Pressable
                   accessibilityRole="button"
-                  accessibilityLabel="Change read provider"
-                  accessibilityHint="Open settings for explicit read provider choices"
+                  accessibilityLabel={_(msg`Change read provider`)}
+                  accessibilityHint={_(
+                    msg`Open settings for explicit read provider choices`,
+                  )}
                   onPress={onChangeProvider}
                   style={({pressed}) => pressed && {opacity: 0.65}}>
-                  <Text style={{fontWeight: '600'}}>Change provider</Text>
+                  <Text style={{fontWeight: '600'}}>
+                    {_(msg`Change provider`)}
+                  </Text>
                 </Pressable>
               ) : null}
             </View>
@@ -151,28 +184,58 @@ export function FeedProvenanceCard({
   )
 }
 
-function feedStateLabel(provenance: FeedProvenance): string {
-  const health = provenance.health ? healthLabel(provenance.health) : undefined
-  const composition = provenance.providerCompositionStatus
-    ? providerCompositionStatusLabel(provenance.providerCompositionStatus)
+function feedAlgorithmVersionLabel(version: string, i18n: I18n): string {
+  if (version === 'not declared') return i18n._(msg`(version not declared)`)
+  if (/^\d+(?:\.\d+)*$/.test(version)) return `v${version}`
+  return i18n._(msg`(version ${version})`)
+}
+
+function localizedHealthLabel(
+  health: FeedProvenance['health'],
+  i18n: I18n,
+): string {
+  switch (health) {
+    case 'healthy':
+      return i18n._(msg`Service healthy`)
+    case 'circuit-open':
+      return i18n._(msg`Provider unavailable; showing your selected fallback`)
+    case 'stale':
+      return i18n._(msg`Showing stale data`)
+    case 'degraded':
+      return i18n._(msg`Provider degraded`)
+    default:
+      return i18n._(msg`Service health unknown`)
+  }
+}
+
+function feedStateLabel(provenance: FeedProvenance, i18n: I18n): string {
+  const health = provenance.health
+    ? localizedHealthLabel(provenance.health, i18n)
     : undefined
-  return [health, composition].filter(Boolean).join(' · ') || 'Not declared'
+  const composition = provenance.providerCompositionStatus
+    ? providerCompositionStatusLabel(provenance.providerCompositionStatus, i18n)
+    : undefined
+  return (
+    [health, composition].filter(Boolean).join(' · ') ||
+    i18n._(msg`Not declared`)
+  )
 }
 
 function providerCompositionStatusLabel(
   status: NonNullable<FeedProvenance['providerCompositionStatus']>,
+  i18n: I18n,
 ): string {
   switch (status) {
     case 'agreement':
-      return 'Provider agreement'
+      return i18n._(msg`Provider agreement`)
     case 'disagreement':
-      return 'Provider disagreement'
+      return i18n._(msg`Provider disagreement`)
     case 'partial':
-      return 'Partial provider response'
+      return i18n._(msg`Partial provider response`)
     case 'unavailable':
-      return 'Providers unavailable'
+      return i18n._(msg`Providers unavailable`)
     case 'empty':
-      return 'No provider result'
+      return i18n._(msg`No provider result`)
   }
 }
 
@@ -208,6 +271,7 @@ export function ActiveFeedProvenance({
   onChangeProvider?: () => void
 }) {
   const {currentAccount} = useSession()
+  const {i18n} = useLingui()
   const providerContext = parseFeedProviderContext(feedContext)
   const [provider, setProvider] = useState(() =>
     getSelectedAppViewProvider(currentAccount?.did ?? ''),
@@ -241,7 +305,7 @@ export function ActiveFeedProvenance({
       provenance={{
         feedName,
         algorithmName: providerContext?.algorithm
-          ? `Provider-supplied ${providerContext.algorithm}`
+          ? i18n._(msg`Provider-supplied ${providerContext.algorithm}`)
           : algorithmName,
         algorithmVersion: providerContext?.version ?? algorithmVersion,
         provider: actualProviders.map(item => item.displayName).join(', '),

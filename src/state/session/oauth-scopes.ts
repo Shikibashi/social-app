@@ -1,4 +1,6 @@
 import {type OAuthClientMetadataInput} from '@atproto/oauth-client-expo'
+import {type MessageDescriptor} from '@lingui/core'
+import {msg} from '@lingui/core/macro'
 
 import {
   getRuntimePublicWebOrigin,
@@ -172,6 +174,142 @@ export type OAuthFeatureGrantPresentation = OAuthFeatureGrant & {
   authority: OAuthAuthorityKind
   resource: string
   audiences: string[]
+}
+
+/**
+ * Keep the feature ledger's stable identifiers independent from the language
+ * used to present delegated authority in the client. These descriptors are
+ * shared by the authorization inspector and Services workbench; the protocol
+ * scopes and the persisted grant status remain unchanged.
+ */
+export function getOAuthFeatureLabelMessage(
+  feature: OAuthFeature,
+): MessageDescriptor {
+  switch (feature) {
+    case 'posting':
+      return msg`Posting and interactions`
+    case 'profile-editing':
+      return msg`Profile editing`
+    case 'social-graph':
+      return msg`Social graph`
+    case 'identity-recovery':
+      return msg`Identity recovery and rotation`
+    case 'appview':
+      return msg`Authenticated AppView reads`
+    case 'chat':
+      return msg`Chat`
+    case 'spaces':
+      return msg`Spaces`
+    case 'media':
+      return msg`Media uploads`
+    case 'notifications':
+      return msg`Notifications`
+  }
+}
+
+export function getOAuthFeatureResourceLabelMessage(
+  feature: OAuthFeature,
+): MessageDescriptor {
+  switch (feature) {
+    case 'posting':
+    case 'profile-editing':
+    case 'social-graph':
+      return msg`account PDS`
+    case 'identity-recovery':
+      return msg`identity service`
+    case 'appview':
+      return msg`selected AppView service`
+    case 'chat':
+      return msg`chat service`
+    case 'spaces':
+      return msg`Spaces authority`
+    case 'media':
+      return msg`media service`
+    case 'notifications':
+      return msg`notification service`
+  }
+}
+
+export function getOAuthFeaturePurposeMessage(
+  feature: OAuthFeature,
+): MessageDescriptor {
+  switch (feature) {
+    case 'posting':
+      return msg`Create, update, and delete posts, likes, and reposts.`
+    case 'profile-editing':
+      return msg`Update the account profile record.`
+    case 'social-graph':
+      return msg`Manage follows, blocks, mutes, lists, and starter packs.`
+    case 'identity-recovery':
+      return msg`Request and submit PLC identity updates, including rotation-key registration.`
+    case 'appview':
+      return msg`Read account-scoped views through the selected AppView service.`
+    case 'chat':
+      return msg`Read and send direct or group messages through the chat service.`
+    case 'spaces':
+      return msg`Read and manage the account’s permissioned Spaces records.`
+    case 'media':
+      return msg`Upload blobs to the account’s hosting service for profile or post media.`
+    case 'notifications':
+      return msg`Read account notifications through the notification service.`
+  }
+}
+
+export function getOAuthFeatureResourceMessage(
+  feature: OAuthFeature,
+): MessageDescriptor {
+  switch (feature) {
+    case 'posting':
+    case 'profile-editing':
+    case 'social-graph':
+      return msg`Account PDS repository`
+    case 'identity-recovery':
+      return msg`DID document and handle services`
+    case 'appview':
+      return msg`AppView RPC service`
+    case 'chat':
+      return msg`Chat RPC service`
+    case 'spaces':
+      return msg`Permissioned Spaces service and records`
+    case 'media':
+      return msg`Account PDS blob store`
+    case 'notifications':
+      return msg`Notification RPC service`
+  }
+}
+
+export function getOAuthAuthorityLabelMessage(
+  authority: OAuthAuthorityKind,
+): MessageDescriptor {
+  switch (authority) {
+    case 'account-pds':
+      return msg`Account PDS`
+    case 'appview-service':
+      return msg`Selected AppView service`
+    case 'chat-service':
+      return msg`Chat service`
+    case 'notification-service':
+      return msg`Notification service`
+    case 'permissioned-spaces':
+      return msg`Permissioned Spaces authority`
+    case 'blob-resource':
+      return msg`Account PDS blob resource`
+    case 'unknown':
+      return msg`Unclassified resource`
+  }
+}
+
+export function getOAuthGrantStatusMessage(
+  status: OAuthFeatureGrantStatus,
+): MessageDescriptor {
+  switch (status) {
+    case 'granted':
+      return msg`Granted by the authorization server`
+    case 'compatibility':
+      return msg`Legacy compatibility grant`
+    case 'missing':
+      return msg`Still missing`
+  }
 }
 
 const OAUTH_FEATURE_PURPOSES: Record<OAuthFeature, string> = {
