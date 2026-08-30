@@ -2,11 +2,11 @@
 
 {% block head_title %}
 {%- if postView -%}
-  @{{ postView.Author.Handle }} on Edriffles
+  @{{ postView.Author.Handle }} on Plumbline
 {%- elif requiresAuth and profileHandle -%}
-  @{{ profileHandle }} on Edriffles
+  @{{ profileHandle }} on Plumbline
 {%- else -%}
-  Edriffles
+  Plumbline
 {%- endif -%}
 {% endblock %}
 

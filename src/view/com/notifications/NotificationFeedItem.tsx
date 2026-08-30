@@ -374,9 +374,9 @@ let NotificationFeedItem = ({
     }
     icon = <PersonPlusIcon size="xl" style={{color: t.palette.primary_500}} />
   } else if (item.type === 'contact-match') {
-    a11yLabel = l`Your contact ${firstAuthorName} is on Edriffles`
+    a11yLabel = l`Your contact ${firstAuthorName} is on Plumbline`
     notificationContent = (
-      <Trans>Your contact {firstAuthorLink} is on Edriffles</Trans>
+      <Trans>Your contact {firstAuthorLink} is on Plumbline</Trans>
     )
     icon = (
       <ContactsIconFilled size="xl" style={{color: t.palette.primary_500}} />

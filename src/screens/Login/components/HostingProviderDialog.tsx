@@ -181,7 +181,7 @@ function DialogInner({
               {isEmail ? (
                 <Trans>
                   Your hosting provider can’t be detected from an email address,
-                  so the default Edriffles service will be used. Enter your
+                  so the default Plumbline service will be used. Enter your
                   username instead, or set your provider manually.
                 </Trans>
               ) : (

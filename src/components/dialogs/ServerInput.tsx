@@ -141,9 +141,9 @@ function DialogInner({
           <SegmentedControl.Item
             testID="bskyServiceSelectBtn"
             value={BSKY_SERVICE}
-            label={_(msg`Edriffles`)}>
+            label={_(msg`Plumbline`)}>
             <SegmentedControl.ItemText>
-              {_(msg`Edriffles`)}
+              {_(msg`Plumbline`)}
             </SegmentedControl.ItemText>
           </SegmentedControl.Item>
           <SegmentedControl.Item
@@ -162,7 +162,7 @@ function DialogInner({
               <Trans>
                 The AT Protocol is an open network where you can choose your own
                 provider. If you're new here, we recommend sticking with the
-                default Edriffles service.
+                default Plumbline service.
               </Trans>
             </Admonition>
           </View>

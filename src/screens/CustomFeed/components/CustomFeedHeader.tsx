@@ -3,6 +3,7 @@ import {View} from 'react-native'
 import {AtUri} from '@atproto/syntax'
 import {Plural, Trans, useLingui} from '@lingui/react/macro'
 
+import {PRODUCT_NAME} from '#/lib/brand'
 import {TRENDING_HANDLE} from '#/lib/constants'
 import {useHaptics} from '#/lib/haptics'
 import {makeCustomFeedLink, makeProfileLink} from '#/lib/routes/links'
@@ -511,7 +512,7 @@ function DialogInner({
                 numberOfLines={1}
                 onPress={() => control.close()}>
                 {info.creatorHandle === TRENDING_HANDLE
-                  ? l`Edriffles`
+                  ? PRODUCT_NAME
                   : sanitizeHandle(info.creatorHandle, '@')}
               </InlineLinkText>
             </Trans>

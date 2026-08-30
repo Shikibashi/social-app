@@ -16,7 +16,7 @@ export const LOCAL_DEV_SERVICE =
 export const STAGING_SERVICE = 'https://staging.bsky.dev'
 export const BSKY_SERVICE = 'https://bsky.social'
 export const BSKY_SERVICE_DID = 'did:web:bsky.social'
-export const EDRIFFLES_ACCOUNT_SERVICE = 'https://pds.edriffles.us'
+export const EDRIFFLES_ACCOUNT_SERVICE = 'https://plumblines.uk'
 /**
  * Optional account entryway used before login and for handle availability.
  * This is not an AppView read authority; public reads use PUBLIC_APPVIEW_URL.

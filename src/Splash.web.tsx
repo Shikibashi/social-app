@@ -6,7 +6,7 @@
 
 import {useEffect, useRef, useState} from 'react'
 
-import {EdrifflesBrandMark} from '#/view/icons/EdrifflesBrandMark'
+import {PlumblineBrandMark} from '#/view/icons/PlumblineBrandMark'
 import {atoms as a, flattenToCSS} from '#/alf'
 
 const size = 100
@@ -80,7 +80,7 @@ export function Splash({
             // to compensate for the `top: -50px` below
             {transformOrigin: 'center calc(50% - 50px)'},
           ])}>
-          <EdrifflesBrandMark
+          <PlumblineBrandMark
             size={size}
             style={{position: 'relative', top: -50}}
           />

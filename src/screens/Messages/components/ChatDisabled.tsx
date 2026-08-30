@@ -53,7 +53,7 @@ export function ChatDisabled({
           ]}>
           <Trans>
             Our moderators have reviewed reports and decided to disable your
-            access to chats on Edriffles.
+            access to chats on Plumbline.
           </Trans>
         </Text>
         <AppealDialog />

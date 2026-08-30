@@ -11,6 +11,7 @@ import * as Sentry from '@sentry/react-native'
 import {PRODUCT_NAME, PUBLIC_WEB_ORIGIN} from '#/lib/brand'
 import {Provider as HotkeysProvider} from '#/lib/hotkeys'
 import {QueryProvider} from '#/lib/react-query'
+import {cleanError} from '#/lib/strings/errors'
 import {ThemeProvider} from '#/lib/ThemeContext'
 import {Provider as TranslateOnDeviceProvider} from '#/lib/translation'
 import I18nProvider from '#/locale/i18nProvider'
@@ -113,6 +114,7 @@ function WebMetadata() {
 
 function InnerApp() {
   const [isReady, setIsReady] = useState(false)
+  const [oauthCallbackError, setOAuthCallbackError] = useState<string>()
   const {currentAccount} = useSession()
   const {initializeOAuthSession, resumeSession} = useSessionApi()
   const theme = useColorModeTheme()
@@ -126,6 +128,7 @@ function InnerApp() {
       // navigation container necessarily observes the history change. Keep
       // the original location so a successful callback can return to the
       // normal app route instead of leaving the router on NotFound.
+      const wasOAuthCallback = window.location.pathname === '/oauth/callback'
       try {
         const initializedOAuthSession = await initializeOAuthSession()
         if (initializedOAuthSession) {
@@ -143,16 +146,33 @@ function InnerApp() {
           await features.init
         }
       } catch (e) {
-        logger.warn('session: resumeSession failed', {
-          message: e instanceof Error ? e.message : String(e),
-        })
+        const message = e instanceof Error ? e.message : String(e)
+        logger.warn('session: resumeSession failed', {message})
+        if (wasOAuthCallback) {
+          setOAuthCallbackError(
+            cleanError(e) || l`Unable to complete sign in. Please try again.`,
+          )
+          // initCallback removes OAuth parameters before exchanging the code,
+          // but it intentionally leaves the callback pathname in place. Make
+          // a failed callback return to the app shell as well as a successful
+          // callback, instead of leaving the router on a stale auth route.
+          if (window.location.pathname === '/oauth/callback') {
+            window.history.replaceState(window.history.state, '', '/')
+          }
+        }
       } finally {
         setIsReady(true)
       }
     }
     const account = readLastActiveAccount()
     void onLaunch(account)
-  }, [initializeOAuthSession, resumeSession])
+  }, [initializeOAuthSession, resumeSession, l])
+
+  useEffect(() => {
+    if (!oauthCallbackError) return
+    Toast.show(oauthCallbackError, {type: 'error'})
+    setOAuthCallbackError(undefined)
+  }, [oauthCallbackError])
 
   useEffect(() => {
     return listenSessionDropped(() => {

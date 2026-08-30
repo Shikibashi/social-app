@@ -2,15 +2,15 @@
 
 {% block head_title %}
 {%- if feedView -%}
-  {{ feedView.DisplayName }} by @{{ feedView.Creator.Handle }} | Edriffles Feed
+  {{ feedView.DisplayName }} by @{{ feedView.Creator.Handle }} | Plumbline Feed
 {%- else -%}
-  Edriffles
+  Plumbline
 {%- endif -%}
 {% endblock %}
 
 {% block html_head_extra -%}
 {%- if feedView -%}
-  <meta property="og:site_name" content="Edriffles">
+  <meta property="og:site_name" content="Plumbline">
   <meta property="og:type" content="website">
   {%- if requestURI %}
   <meta property="og:url" content="{{ requestURI }}">

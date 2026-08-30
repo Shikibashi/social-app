@@ -2,6 +2,15 @@
 const pkg = require('./package.json')
 
 /**
+ * @param {string} name
+ * @returns {string | undefined}
+ */
+function readEnv(name) {
+  const value = process.env[name]
+  return typeof value === 'string' ? value.trim() : undefined
+}
+
+/**
  * @param {import('@expo/config-types').ExpoConfig} _config
  * @returns {{ expo: import('@expo/config-types').ExpoConfig }}
  */
@@ -34,14 +43,13 @@ module.exports = function (_config) {
   const UPDATES_ENABLED = IS_TESTFLIGHT || IS_PRODUCTION
 
   const USE_SENTRY = Boolean(process.env.SENTRY_AUTH_TOKEN)
-  const PRODUCT_NAME = process.env.EXPO_PUBLIC_BRAND_NAME?.trim() || 'Edriffles'
-  const EXPECTED_PUBLIC_WEB_ORIGIN = 'https://social.edriffles.us'
-  const EXPECTED_ACCOUNT_SERVICE = 'https://pds.edriffles.us'
+  const PRODUCT_NAME = readEnv('EXPO_PUBLIC_BRAND_NAME') || 'Plumbline'
+  const EXPECTED_PUBLIC_WEB_ORIGIN = 'https://plumblines.uk'
+  const EXPECTED_ACCOUNT_SERVICE = 'https://plumblines.uk'
   const PUBLIC_WEB_ORIGIN =
-    process.env.EXPO_PUBLIC_PUBLIC_WEB_ORIGIN?.trim() ||
-    EXPECTED_PUBLIC_WEB_ORIGIN
+    readEnv('EXPO_PUBLIC_PUBLIC_WEB_ORIGIN') || EXPECTED_PUBLIC_WEB_ORIGIN
   const ACCOUNT_SERVICE =
-    process.env.EXPO_PUBLIC_ACCOUNT_SERVICE?.trim() || EXPECTED_ACCOUNT_SERVICE
+    readEnv('EXPO_PUBLIC_ACCOUNT_SERVICE') || EXPECTED_ACCOUNT_SERVICE
 
   if (IS_PRODUCTION && PUBLIC_WEB_ORIGIN !== EXPECTED_PUBLIC_WEB_ORIGIN) {
     throw new Error(
@@ -66,15 +74,15 @@ module.exports = function (_config) {
       version: VERSION,
       name: PRODUCT_NAME,
       slug: 'bluesky',
-      // Keep the existing app deep-link scheme and register the reverse-origin
-      // OAuth callback scheme required by the ATProto Expo client. The private-use
-      // callback must reverse the HTTPS client_id hostname, not the Lexicon NSID.
-      scheme: ['bluesky', 'us.edriffles.social'],
+      // Keep existing app deep links for installed clients and register the
+      // reverse-origin OAuth callback for new builds. The private-use callback
+      // must reverse the HTTPS client_id hostname, not the Lexicon NSID.
+      scheme: ['bluesky', 'us.edriffles.social', 'uk.plumblines'],
       owner: 'blueskysocial',
       runtimeVersion: {
         policy: 'appVersion',
       },
-      icon: './assets/app-icons/ios_icon_default_next.png',
+      icon: './assets/plumbline/plumbline-icon.png',
       userInterfaceStyle: 'automatic',
       primaryColor: '#006AFF',
       ios: {
@@ -238,11 +246,11 @@ module.exports = function (_config) {
         ],
       },
       web: {
-        favicon: './assets/favicon.png',
+        favicon: './assets/plumbline/plumbline-icon.png',
         name: PRODUCT_NAME,
         shortName: PRODUCT_NAME,
         description:
-          'Edriffles Computer Web, an independent social client for the AT Protocol.',
+          'Plumbline, an independent social client for the AT Protocol.',
       },
       updates: {
         url: 'https://updates.bsky.app/manifest',

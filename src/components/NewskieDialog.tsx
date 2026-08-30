@@ -102,18 +102,18 @@ function DialogInner({
     if (isMe) {
       if (profile.joinedViaStarterPack) {
         return _(
-          msg`You joined Edriffles using a starter pack ${timeAgoString} ago`,
+          msg`You joined Plumbline using a starter pack ${timeAgoString} ago`,
         )
       } else {
-        return _(msg`You joined Edriffles ${timeAgoString} ago`)
+        return _(msg`You joined Plumbline ${timeAgoString} ago`)
       }
     } else {
       if (profile.joinedViaStarterPack) {
         return _(
-          msg`${profileName} joined Edriffles using a starter pack ${timeAgoString} ago`,
+          msg`${profileName} joined Plumbline using a starter pack ${timeAgoString} ago`,
         )
       } else {
-        return _(msg`${profileName} joined Edriffles ${timeAgoString} ago`)
+        return _(msg`${profileName} joined Plumbline ${timeAgoString} ago`)
       }
     }
   }

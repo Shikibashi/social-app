@@ -40,11 +40,11 @@ export function StepFindContactsIntro() {
       <OnboardingPosition />
       <ContactsHeroImage />
       <OnboardingTitleText style={[a.mt_sm]}>
-        <Trans>Edriffles is more fun with friends</Trans>
+        <Trans>Plumbline is more fun with friends</Trans>
       </OnboardingTitleText>
       <OnboardingDescriptionText>
         <Trans>
-          Find your friends on Edriffles by verifying your phone number and
+          Find your friends on Plumbline by verifying your phone number and
           matching with your contacts. We protect your information and you
           control what happens next.{' '}
           <InlineLinkText

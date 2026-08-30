@@ -2,23 +2,67 @@ const path = require('path')
 const fs = require('fs')
 
 const projectRoot = path.join(__dirname, '..')
-const expectedPublicWebOrigin = 'https://social.edriffles.us'
-const expectedAccountService = 'https://pds.edriffles.us'
+const expectedPublicWebOrigin = 'https://plumblines.uk'
+const expectedAccountService = 'https://plumblines.uk'
 const isProductionBuild = process.env.EXPO_PUBLIC_ENV === 'production'
+
+/**
+ * @param {string} name
+ * @returns {string | undefined}
+ */
+function readEnv(name) {
+  const value = process.env[name]
+  return typeof value === 'string' ? value.trim() : undefined
+}
+
+/**
+ * @param {string} name
+ * @returns {string | undefined}
+ */
+function readProjectEnvValue(name) {
+  const fromProcess = readEnv(name)
+  if (fromProcess) return fromProcess
+
+  for (const filename of ['.env.local', '.env']) {
+    const file = path.join(projectRoot, filename)
+    if (!fs.existsSync(file)) continue
+    const line = fs
+      .readFileSync(file, 'utf8')
+      .split(/\r?\n/)
+      .find(entry => entry.trim().startsWith(`${name}=`))
+    if (!line) continue
+    const value = line.slice(line.indexOf('=') + 1).trim()
+    if (value) return value
+  }
+
+  return undefined
+}
 
 if (isProductionBuild) {
   const configuredPublicWebOrigin =
-    process.env.EXPO_PUBLIC_PUBLIC_WEB_ORIGIN?.trim() || expectedPublicWebOrigin
+    readEnv('EXPO_PUBLIC_PUBLIC_WEB_ORIGIN') || expectedPublicWebOrigin
   if (configuredPublicWebOrigin !== expectedPublicWebOrigin) {
     throw new Error(
       `Production web builds must use ${expectedPublicWebOrigin} as EXPO_PUBLIC_PUBLIC_WEB_ORIGIN; received ${configuredPublicWebOrigin}`,
     )
   }
   const configuredAccountService =
-    process.env.EXPO_PUBLIC_ACCOUNT_SERVICE?.trim() || expectedAccountService
+    readEnv('EXPO_PUBLIC_ACCOUNT_SERVICE') || expectedAccountService
   if (configuredAccountService !== expectedAccountService) {
     throw new Error(
       `Production web builds must use ${expectedAccountService} as EXPO_PUBLIC_ACCOUNT_SERVICE; received ${configuredAccountService}`,
+    )
+  }
+
+  const configuredDefaultFeedOwner = readProjectEnvValue(
+    'EXPO_PUBLIC_DEFAULT_FEED_OWNER_DID',
+  )
+  const configuredDefaultFeedRkey = readProjectEnvValue(
+    'EXPO_PUBLIC_DEFAULT_FEED_RKEY',
+  )
+  if (!configuredDefaultFeedOwner || !configuredDefaultFeedRkey) {
+    throw new Error(
+      'Production web builds must configure EXPO_PUBLIC_DEFAULT_FEED_OWNER_DID and EXPO_PUBLIC_DEFAULT_FEED_RKEY',
     )
   }
 }
@@ -30,9 +74,11 @@ const templateFile = path.join(
   'scripts.html',
 )
 
-const {entrypoints} = require(
+/** @type {{entrypoints: string[]}} */
+const assetManifest = require(
   path.join(projectRoot, 'web-build/asset-manifest.json'),
 )
+const {entrypoints} = assetManifest
 
 // Expo emits entrypoint URLs without a leading slash. That works after
 // client-side navigation, but a direct request to a nested route such as
@@ -65,6 +111,7 @@ if (fs.existsSync(oauthMetadataSource)) {
   console.log(`Copied ${oauthMetadataSource} to ${oauthMetadataTarget}`)
 
   if (isProductionBuild) {
+    /** @type {{client_id?: string, client_uri?: string, redirect_uris?: string[]}} */
     const metadata = JSON.parse(fs.readFileSync(oauthMetadataTarget, 'utf8'))
     const expectedClientId = `${expectedPublicWebOrigin}/oauth-client-metadata.json`
     const expectedCallback = `${expectedPublicWebOrigin}/oauth/callback`
@@ -91,10 +138,11 @@ if (fs.existsSync(headersSource)) {
   console.log(`Copied ${headersSource} to ${headersTarget}`)
 }
 
-// Expo's exporter does not copy public/ static files. Keep the Edriffles web
+// Expo's exporter does not copy public/ static files. Keep the Plumbline web
 // identity available at stable root URLs for browser tabs, install prompts,
 // and the server-rendered bskyweb shell.
 const publicBrandFiles = [
+  ['public/plumbline-mark.svg', 'web-build/plumbline-mark.svg'],
   ['public/favicon.ico', 'web-build/favicon.ico'],
   ['public/favicon-16.png', 'web-build/favicon-16.png'],
   ['public/favicon-32.png', 'web-build/favicon-32.png'],
@@ -114,17 +162,18 @@ for (const [source, target] of publicBrandFiles) {
   const sourcePath = path.join(projectRoot, source)
   const targetPath = path.join(projectRoot, target)
   if (!fs.existsSync(sourcePath)) {
-    throw new Error(`Missing required Edriffles web asset: ${sourcePath}`)
+    throw new Error(`Missing required Plumbline web asset: ${sourcePath}`)
   }
   fs.copyFileSync(sourcePath, targetPath)
   console.log(`Copied ${sourcePath} to ${targetPath}`)
 }
 
 const serverBrandFiles = [
+  ['public/plumbline-mark.svg', 'bskyweb/static/plumbline-mark.svg'],
   ['public/apple-touch-icon.png', 'bskyweb/static/apple-touch-icon.png'],
   ['public/favicon-32.png', 'bskyweb/static/favicon-32x32.png'],
   ['public/favicon-16.png', 'bskyweb/static/favicon-16x16.png'],
-  ['assets/edriffles/edriffles-emblem.png', 'bskyweb/static/favicon.png'],
+  ['assets/plumbline/plumbline-icon.png', 'bskyweb/static/favicon.png'],
   ['public/safari-pinned-tab.svg', 'bskyweb/static/safari-pinned-tab.svg'],
   ['public/social-card-default.png', 'bskyweb/static/social-card-default.png'],
   [

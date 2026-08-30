@@ -76,7 +76,7 @@ export function FindContactsAnnouncement() {
               source={require('../../../../assets/images/find_friends_illustration.webp')}
               style={[a.w_full, {aspectRatio: 1278 / 661}]}
               alt={_(
-                msg`An illustration depicting user avatars flowing from a contact book into the Edriffles app`,
+                msg`An illustration depicting user avatars flowing from a contact book into the Plumbline app`,
               )}
               useAppleWebpCodec
             />
@@ -106,7 +106,7 @@ export function FindContactsAnnouncement() {
                 {maxWidth: 340},
               ]}>
               <Trans>
-                Edriffles is more fun with friends! Import your contacts to see
+                Plumbline is more fun with friends! Import your contacts to see
                 who’s already here.
               </Trans>
             </Text>

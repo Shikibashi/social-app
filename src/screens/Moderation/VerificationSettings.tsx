@@ -43,7 +43,7 @@ export function Screen() {
           <SettingsList.Item>
             <Admonition type="tip" style={[a.flex_1]}>
               <Trans>
-                Verifications on Edriffles work differently than on other
+                Verifications on Plumbline work differently than on other
                 platforms.{' '}
                 <InlineLinkText
                   overridePresentation

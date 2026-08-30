@@ -1,10 +1,10 @@
 {
-  "client_id": "https://social.edriffles.us/oauth-client-metadata.json",
-  "client_name": "Edriffles",
-  "client_uri": "https://social.edriffles.us",
+  "client_id": "https://plumblines.uk/oauth-client-metadata.json",
+  "client_name": "Plumbline",
+  "client_uri": "https://plumblines.uk",
   "redirect_uris": [
-    "https://social.edriffles.us/oauth/callback",
-    "us.edriffles.social:/oauth/callback"
+    "https://plumblines.uk/oauth/callback",
+    "uk.plumblines:/oauth/callback"
   ],
   "response_types": [
     "code"

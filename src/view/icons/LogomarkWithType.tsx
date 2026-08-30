@@ -1,8 +1,8 @@
 import {Text, View} from 'react-native'
 import Svg, {Path, type PathProps, type SvgProps} from 'react-native-svg'
 
-import {PRODUCT_NAME} from '#/lib/brand'
-import {EdrifflesBrandMark} from '#/view/icons/EdrifflesBrandMark'
+import {PRODUCT_NAME, PRODUCT_WORDMARK} from '#/lib/brand'
+import {PlumblineBrandMark} from '#/view/icons/PlumblineBrandMark'
 import {useTheme} from '#/alf'
 import {IS_WEB} from '#/env'
 
@@ -33,7 +33,7 @@ export function LogomarkWithType({
           },
           rest.style,
         ]}>
-        <EdrifflesBrandMark size={markSize} />
+        <PlumblineBrandMark size={markSize} />
         <Text
           numberOfLines={1}
           style={{
@@ -43,7 +43,7 @@ export function LogomarkWithType({
             fontWeight: '700',
             letterSpacing: 0.25,
           }}>
-          edriffles
+          {PRODUCT_WORDMARK}
         </Text>
       </View>
     )

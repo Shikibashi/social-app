@@ -395,6 +395,15 @@
     },
     {
       "files": [
+        "app.config.js",
+        "scripts/post-web-build.js"
+      ],
+      "rules": {
+        "import/no-nodejs-modules": "off"
+      }
+    },
+    {
+      "files": [
         "**/__tests__/**/*.{js,jsx,ts,tsx}",
         "**/*.test.{js,jsx,ts,tsx}"
       ],

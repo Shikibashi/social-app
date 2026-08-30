@@ -75,7 +75,7 @@ function DeactivateAccountDialogInner({
       <Prompt.DescriptionText>
         <Trans>
           Your profile, posts, feeds, and lists will no longer be visible to
-          other Edriffles users. You can reactivate your account at any time by
+          other Plumbline users. You can reactivate your account at any time by
           logging in.
         </Trans>
       </Prompt.DescriptionText>

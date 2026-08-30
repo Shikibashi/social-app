@@ -1,6 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <path fill="#11132d" d="M32 4a28 28 0 1 0 0 56 28 28 0 0 0 0-56Zm0 5a23 23 0 1 1 0 46 23 23 0 0 1 0-46Z"/>
-  <path fill="#11132d" d="M32 9v46M9 32h46" stroke="#11132d" stroke-width="3"/>
-  <path fill="#5530a3" d="m32 13 5 19-5 19-5-19 5-19Zm-19 19 19-5 19 5-19 5-19-5Z"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <path fill="#000" d="M256 36h42v12h-13v224h1l12 28h-3l20 38-22 111h-74l-22-111 20-38h-3l12-28h1V48h-13V36h42Zm-22 262h44l-3 8h-38l-3-8Zm-12 20h68l-16 30-18 91-18-91-16-30Z"/>
 </svg>

@@ -57,7 +57,7 @@ export function Layout({children}: React.PropsWithChildren<{}>) {
       aria-role="dialog"
       aria-label={dialogLabel}
       accessibilityLabel={dialogLabel}
-      accessibilityHint={_(msg`Customizes your Edriffles experience`)}
+      accessibilityHint={_(msg`Customizes your Plumbline experience`)}
       style={[IS_WEB ? a.fixed : a.absolute, a.inset_0, a.flex_1, t.atoms.bg]}>
       {!gtMobile ? (
         <View

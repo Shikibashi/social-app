@@ -413,7 +413,9 @@ export function ModerationScreenInner({
                 disabled={adultContentUIDisabled}
                 name="adultContent"
                 value={adultContentEnabled}
-                onChange={onToggleAdultContentEnabled}>
+                onChange={selected =>
+                  void onToggleAdultContentEnabled(selected)
+                }>
                 <View style={[a.flex_row, a.align_center, a.gap_sm]}>
                   <Text style={[t.atoms.text_contrast_medium]}>
                     {adultContentEnabled ? (
@@ -432,7 +434,7 @@ export function ModerationScreenInner({
                   <Trans>
                     Adult content can only be enabled via the Web at{' '}
                     <InlineLinkText
-                      label={l`The Edriffles web application`}
+                      label={l`The Plumbline web application`}
                       to=""
                       onPress={evt => {
                         evt.preventDefault()

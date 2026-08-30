@@ -41,7 +41,7 @@ export function AlgoVisibilityOptOut() {
 
       <Text style={[a.leading_snug, t.atoms.text_contrast_high]}>
         <Trans>
-          Edriffles will not show your posts in the Discover feed (except to
+          Plumbline will not show your posts in the Discover feed (except to
           your followers) and will ask other apps not to show your posts in
           their own algorithmic recommendations.
         </Trans>

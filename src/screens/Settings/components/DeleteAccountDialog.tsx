@@ -222,7 +222,7 @@ function DeleteAccountDialogInner({
                 temporarily deactivate
               </SimpleInlineLinkText>{' '}
               your account instead. Your profile, posts, feeds, and lists will
-              no longer be visible to other Edriffles users. You can reactivate
+              no longer be visible to other Plumbline users. You can reactivate
               your account at any time by logging in.
             </Trans>
           </Admonition>

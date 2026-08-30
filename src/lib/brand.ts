@@ -1,5 +1,5 @@
-const DEFAULT_PRODUCT_NAME = 'Edriffles'
-const DEFAULT_PUBLIC_WEB_ORIGIN = 'https://social.edriffles.us'
+const DEFAULT_PRODUCT_NAME = 'Plumbline'
+const DEFAULT_PUBLIC_WEB_ORIGIN = 'https://plumblines.uk'
 
 export function resolveProductName(value: string | undefined): string {
   const name = value?.trim()
@@ -43,6 +43,8 @@ export function resolveRuntimePublicWebOrigin(
 export const PRODUCT_NAME = resolveProductName(
   process.env.EXPO_PUBLIC_BRAND_NAME,
 )
+
+export const PRODUCT_WORDMARK = PRODUCT_NAME.toLowerCase()
 
 export const PUBLIC_WEB_ORIGIN = resolvePublicWebOrigin(
   process.env.EXPO_PUBLIC_PUBLIC_WEB_ORIGIN,

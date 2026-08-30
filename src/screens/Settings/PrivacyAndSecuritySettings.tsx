@@ -153,7 +153,7 @@ export function PrivacyAndSecuritySettingsScreen({}: Props) {
                 <Admonition.Content>
                   <Admonition.Text>
                     <Trans>
-                      Note: Edriffles is part of the Atmosphere, an open public
+                      Note: Plumbline is part of the Atmosphere, an open public
                       network. These settings ask other apps and websites to
                       limit your visibility, but they can choose not to. Your
                       public content may still appear elsewhere.
@@ -162,11 +162,11 @@ export function PrivacyAndSecuritySettingsScreen({}: Props) {
                   <Admonition.Text>
                     <InlineLinkText
                       label={_(
-                        msg`Learn more about what is public on Edriffles.`,
+                        msg`Learn more about what is public on Plumbline.`,
                       )}
                       to="https://blueskyweb.zendesk.com/hc/en-us/articles/15835264007693-Data-Privacy">
                       <Trans>
-                        Learn more about what is public on Edriffles.
+                        Learn more about what is public on Plumbline.
                       </Trans>
                     </InlineLinkText>
                   </Admonition.Text>

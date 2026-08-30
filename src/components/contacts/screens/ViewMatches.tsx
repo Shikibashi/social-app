@@ -321,7 +321,7 @@ export function ViewMatches({
             largeTitle
             subtitleText={
               <Trans>
-                Edriffles is more fun with friends. Do you want to invite some
+                Plumbline is more fun with friends. Do you want to invite some
                 of yours?{' '}
                 <InviteInfo
                   iconStyle={t.atoms.text_contrast_medium}
@@ -572,7 +572,7 @@ function ContactItem({
         </Text>
         {phoneNumber && currentAccount && (
           <Button
-            label={_(msg`Invite ${name} to join Edriffles`)}
+            label={_(msg`Invite ${name} to join Plumbline`)}
             color="secondary"
             size="small"
             onPress={async () => {
@@ -583,7 +583,7 @@ function ContactItem({
                 await SMS.sendSMSAsync(
                   [phoneNumber],
                   _(
-                    msg`I'm on Edriffles as ${currentAccount.handle} - come find me!`,
+                    msg`I'm on Plumbline as ${currentAccount.handle} - come find me!`,
                   ),
                 )
               } catch (err) {

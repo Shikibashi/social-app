@@ -1,7 +1,7 @@
 import {Text} from 'react-native'
 import {type PathProps, type SvgProps} from 'react-native-svg'
 
-import {PRODUCT_NAME} from '#/lib/brand'
+import {PRODUCT_NAME, PRODUCT_WORDMARK} from '#/lib/brand'
 import {usePalette} from '#/lib/hooks/usePalette'
 
 export function Logotype({
@@ -31,7 +31,7 @@ export function Logotype({
         },
         rest.style,
       ]}>
-      edriffles
+      {PRODUCT_WORDMARK}
     </Text>
   )
 }

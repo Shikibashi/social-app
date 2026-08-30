@@ -83,7 +83,7 @@ function DeviceLocationRequestDialogInner({onLocationAcquired}: Props) {
       } else {
         setError(
           _(
-            msg`Unable to access location. You'll need to visit your system settings to enable location services for Edriffles.`,
+            msg`Unable to access location. You'll need to visit your system settings to enable location services for Plumbline.`,
           ),
         )
       }
@@ -108,7 +108,7 @@ function DeviceLocationRequestDialogInner({onLocationAcquired}: Props) {
       <View style={[a.gap_sm, a.pb_xs]}>
         <Text style={[a.text_md, a.leading_snug, t.atoms.text_contrast_medium]}>
           <Trans>
-            Tap below to allow Edriffles to access your GPS location. We will
+            Tap below to allow Plumbline to access your GPS location. We will
             then use that data to more accurately determine the content and
             features available in your region.
           </Trans>

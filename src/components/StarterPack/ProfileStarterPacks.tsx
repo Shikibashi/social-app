@@ -341,7 +341,7 @@ function Empty() {
           </Prompt.TitleText>
           <Prompt.DescriptionText>
             <Trans>
-              Edriffles will choose a set of recommended accounts from people in
+              Plumbline will choose a set of recommended accounts from people in
               your network.
             </Trans>
           </Prompt.DescriptionText>

@@ -894,7 +894,7 @@ const LINKING = {
     // startup, not by React Navigation. Route the transient callback URL to
     // Home while initialization finishes so a successful authorization never
     // renders the generic NotFound screen.
-    const callbackPath = new URL(path, 'https://social.edriffles.us').pathname
+    const callbackPath = new URL(path, 'https://plumblines.uk').pathname
     if (
       IS_WEB &&
       (callbackPath === '/oauth/callback' ||

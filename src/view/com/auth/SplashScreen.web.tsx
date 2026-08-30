@@ -158,19 +158,9 @@ function Footer() {
         t.atoms.border_contrast_medium,
       ]}>
       <InlineLinkText
-        label={_(msg`Visit edriffles.us`)}
-        to="https://edriffles.us">
+        label={_(msg`Visit Plumbline at plumblines.uk`)}
+        to="https://plumblines.uk/">
         <Trans>Website</Trans>
-      </InlineLinkText>
-      <InlineLinkText
-        label={_(msg`Read the edriffles blog`)}
-        to="https://edriffles.us/blog/">
-        <Trans>Blog</Trans>
-      </InlineLinkText>
-      <InlineLinkText
-        label={_(msg`Learn more about edriffles`)}
-        to="https://edriffles.us/about">
-        <Trans>About</Trans>
       </InlineLinkText>
 
       <View style={a.flex_1} />

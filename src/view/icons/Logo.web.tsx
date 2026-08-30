@@ -2,7 +2,7 @@ import {forwardRef} from 'react'
 import {type ImageStyle, type TextProps} from 'react-native'
 import {type PathProps, type SvgProps} from 'react-native-svg'
 
-import {EdrifflesBrandMark} from '#/view/icons/EdrifflesBrandMark'
+import {PlumblineBrandMark} from '#/view/icons/PlumblineBrandMark'
 
 type Props = {
   allowVariants?: boolean
@@ -17,5 +17,5 @@ export const Logo = forwardRef(function LogoImpl(
   const parsedSize = Number.parseInt(String(width), 10)
   const size = Number.isFinite(parsedSize) && parsedSize > 0 ? parsedSize : 32
 
-  return <EdrifflesBrandMark size={size} style={style as ImageStyle} />
+  return <PlumblineBrandMark size={size} style={style as ImageStyle} />
 })

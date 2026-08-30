@@ -129,7 +129,7 @@ function Intro() {
       </Text>
       <Text style={[a.text_md, a.leading_snug, t.atoms.text_contrast_medium]}>
         <Trans>
-          Find your friends on Edriffles by verifying your phone number and
+          Find your friends on Plumbline by verifying your phone number and
           matching with your contacts. We protect your information and you
           control what happens next.{' '}
           <InlineLinkText
@@ -572,7 +572,7 @@ function StatusFooter({syncedAt}: {syncedAt: string}) {
         </Text>
         <Text style={[a.text_sm, a.leading_snug, t.atoms.text_contrast_medium]}>
           <Trans>
-            Edriffles stores your contacts as encoded data. Removing your
+            Plumbline stores your contacts as encoded data. Removing your
             contacts will immediately delete this data.
           </Trans>
         </Text>

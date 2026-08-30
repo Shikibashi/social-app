@@ -138,7 +138,7 @@ export function SignupQueued() {
             </Text>
             <P style={[t.atoms.text_contrast_medium]}>
               <Trans>
-                There's been a rush of new users to Edriffles! We'll activate
+                There's been a rush of new users to Plumbline! We'll activate
                 your account as soon as we can.
               </Trans>
             </P>

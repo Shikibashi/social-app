@@ -288,7 +288,7 @@ function LegalDisclaimer() {
       <Text style={style}>
         &bull;{' '}
         <Trans>
-          Held by Edriffles for 7 days to prevent abuse, then deleted
+          Held by Plumbline for 7 days to prevent abuse, then deleted
         </Trans>
       </Text>
       <Text style={style}>

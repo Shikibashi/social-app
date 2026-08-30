@@ -2,14 +2,14 @@
 
 {% block head_title %}
 {%- if profileView -%}
-  @{{ profileView.Handle }} on Edriffles
+  @{{ profileView.Handle }} on Plumbline
 {%- else -%}
-  Edriffles
+  Plumbline
 {%- endif -%}
 {% endblock %}
 
 {% block html_head_extra -%}
-  <meta property="og:site_name" content="Edriffles">
+  <meta property="og:site_name" content="Plumbline">
   <meta property="og:type" content="profile">
 {%- if requestURI %}
   {% if canonicalURL %}

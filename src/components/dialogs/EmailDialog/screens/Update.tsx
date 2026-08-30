@@ -286,7 +286,7 @@ export function Update(_props: ScreenProps<ScreenID.Update>) {
               <Trans>
                 Please click on the link in the email we just sent you to verify
                 your new email address. This is an important step to allow you
-                to continue enjoying all the features of Edriffles.
+                to continue enjoying all the features of Plumbline.
               </Trans>
             </Text>
           </View>

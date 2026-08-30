@@ -1,5 +1,6 @@
 import {
   PRODUCT_NAME,
+  PRODUCT_WORDMARK,
   PUBLIC_WEB_ORIGIN,
   resolveProductName,
   resolvePublicWebOrigin,
@@ -7,21 +8,20 @@ import {
 } from './brand'
 
 describe('public product identity', () => {
-  it('uses the Edriffles default product name', () => {
-    expect(resolveProductName(undefined)).toBe('Edriffles')
+  it('uses the Plumbline default product name', () => {
+    expect(resolveProductName(undefined)).toBe('Plumbline')
     expect(resolveProductName('  My Social  ')).toBe('My Social')
     expect(PRODUCT_NAME).toBeTruthy()
+    expect(PRODUCT_WORDMARK).toBe(PRODUCT_NAME.toLowerCase())
   })
 
   it('accepts HTTPS deployment origins and rejects unsafe public origins', () => {
-    expect(resolvePublicWebOrigin(undefined)).toBe(
-      'https://social.edriffles.us',
-    )
+    expect(resolvePublicWebOrigin(undefined)).toBe('https://plumblines.uk')
     expect(resolvePublicWebOrigin('https://example.test/app')).toBe(
       'https://example.test',
     )
     expect(resolvePublicWebOrigin('http://example.test')).toBe(
-      'https://social.edriffles.us',
+      'https://plumblines.uk',
     )
     expect(resolvePublicWebOrigin('http://127.0.0.1:19006')).toBe(
       'http://127.0.0.1:19006',
@@ -33,9 +33,9 @@ describe('public product identity', () => {
     expect(
       resolveRuntimePublicWebOrigin(
         'http://127.0.0.1:19006',
-        'https://social.edriffles.us',
+        'https://plumblines.uk',
       ),
-    ).toBe('https://social.edriffles.us')
+    ).toBe('https://plumblines.uk')
     expect(
       resolveRuntimePublicWebOrigin(
         'https://preview.example.test',

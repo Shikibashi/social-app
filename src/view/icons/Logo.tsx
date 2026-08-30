@@ -11,7 +11,7 @@ import Svg, {
 import {Image} from 'expo-image'
 
 import {PRODUCT_NAME} from '#/lib/brand'
-import {EdrifflesBrandMark} from '#/view/icons/EdrifflesBrandMark'
+import {PlumblineBrandMark} from '#/view/icons/PlumblineBrandMark'
 import {useLogoVariant} from '#/view/icons/useLogoVariant'
 import {flatten, useTheme} from '#/alf'
 import {IS_WEB} from '#/env'
@@ -37,7 +37,7 @@ export const Logo = forwardRef(function LogoImpl(props: Props, ref) {
   const logoVariant = useLogoVariant(allowVariants)
 
   if (IS_WEB) {
-    return <EdrifflesBrandMark size={size} style={styles as ImageStyle} />
+    return <PlumblineBrandMark size={size} style={styles as ImageStyle} />
   }
 
   if (logoVariant !== 'default') {
