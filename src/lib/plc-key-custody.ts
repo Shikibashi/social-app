@@ -28,6 +28,37 @@ export type UserHeldRotationKey = {
 
 export type UnsignedPlcOperation = Omit<PlcOperation, 'sig'>
 
+export type PlcCredentialSet = {
+  rotationKeys?: readonly string[]
+}
+
+/**
+ * Put a user-held key first without dropping the PDS recovery key or creating
+ * duplicates. PLC rotation-key order is meaningful: earlier keys have higher
+ * priority, so this function makes that choice explicit at the registration
+ * boundary rather than relying on an object spread in a screen.
+ */
+export function rotationKeysWithUserHeldKey(
+  credentials: PlcCredentialSet,
+  didKey: string,
+): string[] {
+  parseDidKey(didKey)
+  const existingKeys = [
+    ...new Set((credentials.rotationKeys ?? []).filter(key => key !== didKey)),
+  ]
+  if (existingKeys.length >= 5) {
+    throw new Error('PLC rotation key set already has the maximum of five keys')
+  }
+  return [didKey, ...existingKeys]
+}
+
+export function isRotationKeyRegistered(
+  credentials: PlcCredentialSet | undefined,
+  didKey: string,
+): boolean {
+  return credentials?.rotationKeys?.includes(didKey) ?? false
+}
+
 const P256_ORDER = BigInt(
   '0xffffffff00000000ffffffffffffffffbce6faada7179e84f3b9cac2fc632551',
 )

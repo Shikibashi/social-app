@@ -22,6 +22,7 @@ const FEATURE_LABELS: Record<OAuthFeature, string> = {
   posting: 'Posting and interactions',
   'profile-editing': 'Profile editing',
   'social-graph': 'Social graph',
+  'identity-recovery': 'Identity recovery and rotation',
   appview: 'Authenticated AppView reads',
   chat: 'Chat',
   spaces: 'Spaces',

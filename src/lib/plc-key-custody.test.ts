@@ -1,11 +1,14 @@
 jest.unmock('multiformats/cid')
 jest.unmock('crypto')
 
+import {P256Keypair} from '@atproto/crypto'
 import {describe, expect, it} from '@jest/globals'
 
 import {
   createMemoryRotationKeyStore,
   createUserHeldRotationKey,
+  isRotationKeyRegistered,
+  rotationKeysWithUserHeldKey,
   signPlcOperationWithUserHeldKey,
   verifyUserHeldPlcSignature,
 } from './plc-key-custody'
@@ -65,6 +68,39 @@ describe('user-held PLC key custody', () => {
         cryptoApi,
       ),
     ).rejects.toThrow('not an authorized rotation key')
+  })
+
+  it('adds a user-held key without dropping existing PLC recovery keys', async () => {
+    const [userKeypair, pdsKeypair] = await Promise.all([
+      P256Keypair.create(),
+      P256Keypair.create(),
+    ])
+    const userKey = userKeypair.did()
+    const pdsKey = pdsKeypair.did()
+
+    expect(
+      rotationKeysWithUserHeldKey(
+        {rotationKeys: [pdsKey, userKey, pdsKey]},
+        userKey,
+      ),
+    ).toEqual([userKey, pdsKey])
+    expect(
+      isRotationKeyRegistered({rotationKeys: [pdsKey, userKey]}, userKey),
+    ).toBe(true)
+    expect(isRotationKeyRegistered({rotationKeys: [pdsKey]}, userKey)).toBe(
+      false,
+    )
+  })
+
+  it('rejects adding a sixth distinct PLC rotation key', async () => {
+    const keypairs = await Promise.all(
+      Array.from({length: 6}, () => P256Keypair.create()),
+    )
+    const [userKey, ...existingKeys] = keypairs.map(keypair => keypair.did())
+
+    expect(() =>
+      rotationKeysWithUserHeldKey({rotationKeys: existingKeys}, userKey),
+    ).toThrow('maximum of five keys')
   })
 })
 

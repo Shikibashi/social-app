@@ -824,3 +824,89 @@ that its CDN or AppView delivery path is independently authoritative.
 This iteration improves disclosure at an existing boundary. It does not
 claim authenticated write verification, independent PLC operator control, or
 closure of the external Relay/AppView and short-TTL OAuth gates.
+
+## 30. Iteration 23 — make user-held PLC recovery authority registrable
+
+The identity screen could prepare a non-exportable browser key, but key
+generation alone did not give that key any PLC authority. The missing boundary
+was an explicit, user-triggered path from a prepared key to a PDS-signed PLC
+operation that includes the key in the DID document.
+
+### Residual concentration and why it matters
+
+The account PDS still controls the initial PLC operation and the bootstrap
+email authorization. Without a registration path, the user-held key was only
+local custody metadata and could not support later recovery or rotation. This
+was a real concentration of authority, not a presentation problem.
+
+### Ecosystem precedent and chosen change
+
+The implementation follows the protocol's account-recovery and migration
+model: the PDS requests an authorization code, returns recommended DID
+credentials, signs an updated operation, and accepts a signed operation at the
+standard identity endpoint. The client uses the smallest currently supported
+scope for these APIs, `identity:*`, only when the user activates registration.
+See [Account Recovery](https://atproto.com/guides/account-recovery), [Account
+Migration](https://atproto.com/guides/account-migration), and [ATProto
+Permissions](https://atproto.com/specs/permission).
+
+The identity workbench now:
+
+- exposes `identity-recovery` as a separate OAuth feature rather than treating
+  the legacy generic grant as sufficient;
+- requests the PDS email authorization code only after the user asks to
+  register a key;
+- preserves existing PDS rotation keys while adding the user-held key with
+  explicit duplicate and five-key-limit validation;
+- validates the returned PLC operation shape before it reaches the submit
+  boundary; and
+- checks verified resolver claims after submission, showing resolver
+  disagreement or missing evidence instead of inferring registration.
+
+### Authority before versus after
+
+| Boundary | Before iteration 23 | After iteration 23 |
+| --- | --- | --- |
+| Browser key | A non-exportable key could be prepared, but preparation granted no network authority. | The key remains non-exportable and inert until the user explicitly authorizes registration. |
+| Bootstrap registration | Only the account PDS could be used through an implicit broad session boundary. | The PDS still performs the email-authorized bootstrap, but the client asks for the separate `identity:*` grant only for this feature and makes the requested operation visible. |
+| Ongoing identity evidence | Local metadata could be mistaken for recovery readiness. | Registration is reported only from verified PLC resolver claims; unavailable or disagreeing resolvers remain visible. |
+
+This does not claim that the client has completed every migration, recovery,
+lockdown, or native secure-key workflow. It also does not claim operator
+independence for the configured resolvers.
+
+### Interoperability and security tradeoffs
+
+`identity:*` is intentionally high-impact and remains opt-in. It is not added
+to the ordinary login grant, and the identity screen does not persist the
+one-time email code. The PDS remains the authorization and account-state
+boundary for the initial registration; the browser only holds the generated
+private key and submits the standard signed operation. Resolver propagation
+may lag, so the UI separates submitted state from verified directory evidence.
+
+### Implementation evidence
+
+- `src/state/session/oauth-scopes.ts` adds the feature-scoped identity grant
+  and prevents `transition:generic` from satisfying it.
+- `src/screens/Settings/IdentitySovereigntySettings.tsx` wires the opt-in
+  request, credential merge, PDS sign/submit flow, account-switch token
+  clearing, and resolver-evidence status.
+- `src/lib/plc-key-custody.ts` owns key-set preservation, duplicate handling,
+  and the maximum-key invariant.
+- `src/lib/plc-history.ts` validates the signed operation before submission.
+
+### Verification
+
+| Check | Status | Evidence |
+| --- | --- | --- |
+| Focused identity/OAuth/PLC tests | PASS | 6 suites, 51 tests, including scope isolation, PLC history parsing, custody authorization, and the five-key limit |
+| Targeted formatting and lint | PASS | Prettier and Oxlint passed for all changed files |
+| Web TypeScript | PASS | `pnpm run typecheck:web` |
+| Android TypeScript | FAIL | Existing unrelated fixture/type errors in session, provider, post, route, and `Logomark.tsx` checks; no changed identity/OAuth diagnostic |
+| Full repository Oxlint | FAIL | Existing unrelated import-sort, unused-variable, and Spaces diagnostics; no changed identity/OAuth diagnostic |
+| Contract validator | NOT RUN | Run after the source and root decision records are staged |
+| Authenticated browser registration | NOT RUN | No credentialed browser session or disposable identity was available |
+
+The next remaining concentrations are the PDS-controlled bootstrap email,
+the unresolved external PLC operator-independence gate, and the still-open
+Relay/AppView and short-TTL OAuth evidence gates.

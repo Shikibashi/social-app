@@ -14,6 +14,7 @@ import {
   OAUTH_DEFAULT_FEATURES,
   OAUTH_FEATURE_SCOPES,
   OAUTH_FEATURES,
+  OAUTH_IDENTITY_RECOVERY_SCOPES,
   OAUTH_MEDIA_SCOPES,
   OAUTH_NATIVE_REDIRECT_URI,
   OAUTH_NOTIFICATION_SCOPES,
@@ -60,6 +61,7 @@ describe('OAuth permission contract', () => {
     expect(OAUTH_SCOPE).not.toContain(OAUTH_FEATURE_SCOPES.spaces[0])
     expect(OAUTH_SCOPE).not.toContain(OAUTH_FEATURE_SCOPES.media[0])
     expect(OAUTH_SCOPE).not.toContain(OAUTH_FEATURE_SCOPES.notifications[0])
+    expect(OAUTH_SCOPE).not.toContain(OAUTH_IDENTITY_RECOVERY_SCOPES[0])
   })
 
   it('keeps Spaces, media, chat, and notification grants feature-scoped', () => {
@@ -77,6 +79,7 @@ describe('OAuth permission contract', () => {
       'posting',
       'profile-editing',
       'social-graph',
+      'identity-recovery',
       'appview',
       'chat',
       'spaces',
@@ -86,6 +89,7 @@ describe('OAuth permission contract', () => {
     expect(OAUTH_MEDIA_SCOPES).toEqual(['blob:*/*'])
     expect(OAUTH_NOTIFICATION_SCOPES[0]).toContain('aud=')
     expect(OAUTH_FEATURE_SCOPES.chat[0]).toContain('aud=')
+    expect(OAUTH_IDENTITY_RECOVERY_SCOPES).toEqual(['identity:*'])
     expect(OAUTH_SCOPE).not.toContain(OAUTH_SPACE_SCOPES[0])
   })
 
@@ -103,6 +107,12 @@ describe('OAuth permission contract', () => {
     ).toEqual([])
     expect(hasOAuthFeature(['transition:chat.bsky'], 'chat')).toBe(true)
     expect(hasOAuthFeature(['transition:generic'], 'chat')).toBe(false)
+    expect(
+      getMissingOAuthScopes(['transition:generic'], 'identity-recovery'),
+    ).toEqual(OAUTH_IDENTITY_RECOVERY_SCOPES)
+    expect(hasOAuthFeature(['transition:generic'], 'identity-recovery')).toBe(
+      false,
+    )
   })
 
   it('labels legacy compatibility grants and offers a native replacement', () => {
@@ -131,7 +141,7 @@ describe('OAuth permission contract', () => {
       ...OAUTH_POSTING_SCOPES,
       'transition:generic',
     ])
-    expect(grants).toHaveLength(8)
+    expect(grants).toHaveLength(9)
     expect(grants.find(grant => grant.feature === 'posting')).toMatchObject({
       status: 'granted',
       missingScopes: [],

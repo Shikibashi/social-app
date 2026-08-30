@@ -23,6 +23,13 @@ export const OAUTH_PROFILE_SCOPES = [
   'repo:app.bsky.actor.profile?action=create&action=update&action=delete',
 ] as const
 
+/**
+ * PLC recovery and rotation are intentionally opt-in. The protocol currently
+ * exposes `identity:*` as the smallest scope that can request and submit a
+ * PLC operation; do not imply that ordinary repo access includes it.
+ */
+export const OAUTH_IDENTITY_RECOVERY_SCOPES = ['identity:*'] as const
+
 export const OAUTH_SOCIAL_GRAPH_SCOPES = [
   'repo:app.bsky.graph.follow?action=create&action=delete',
   'repo:app.bsky.graph.block?action=create&action=delete',
@@ -84,6 +91,7 @@ export const OAUTH_FEATURES = [
   'posting',
   'profile-editing',
   'social-graph',
+  'identity-recovery',
   'appview',
   'chat',
   'spaces',
@@ -96,6 +104,7 @@ export const OAUTH_FEATURE_SCOPES: Record<OAuthFeature, readonly string[]> = {
   posting: OAUTH_POSTING_SCOPES,
   'profile-editing': OAUTH_PROFILE_SCOPES,
   'social-graph': OAUTH_SOCIAL_GRAPH_SCOPES,
+  'identity-recovery': OAUTH_IDENTITY_RECOVERY_SCOPES,
   appview: OAUTH_APPVIEW_SCOPES,
   chat: OAUTH_CHAT_SCOPES,
   spaces: OAUTH_SPACE_SCOPES,
@@ -169,6 +178,8 @@ const OAUTH_FEATURE_PURPOSES: Record<OAuthFeature, string> = {
   posting: 'Create, update, and delete posts, likes, and reposts.',
   'profile-editing': 'Update the account profile record.',
   'social-graph': 'Manage follows, blocks, mutes, lists, and starter packs.',
+  'identity-recovery':
+    'Request and submit PLC identity updates, including rotation-key registration.',
   appview: 'Read account-scoped views through the selected AppView service.',
   chat: 'Read and send direct or group messages through the chat service.',
   spaces: 'Read and manage the account’s permissioned Spaces records.',
@@ -189,6 +200,10 @@ const OAUTH_FEATURE_AUTHORITIES: Record<
   'social-graph': {
     authority: 'account-pds',
     resource: 'Account PDS repository',
+  },
+  'identity-recovery': {
+    authority: 'account-pds',
+    resource: 'DID document and handle services',
   },
   appview: {authority: 'appview-service', resource: 'AppView RPC service'},
   chat: {authority: 'chat-service', resource: 'Chat RPC service'},
@@ -299,7 +314,8 @@ export function getMissingOAuthScopes(
     if (
       granted.includes('transition:generic') &&
       feature !== 'spaces' &&
-      feature !== 'chat'
+      feature !== 'chat' &&
+      feature !== 'identity-recovery'
     ) {
       return false
     }

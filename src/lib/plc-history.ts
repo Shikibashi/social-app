@@ -163,6 +163,21 @@ export async function operationCid(
   return CID.createV1(cbor.code, digest).toString()
 }
 
+/**
+ * Validate a signed operation returned by a PDS before it reaches the submit
+ * boundary. The PDS remains responsible for authorization and chain state;
+ * this keeps malformed or non-operation responses from being passed through
+ * as if they were a PLC update.
+ */
+export function parsePlcOperation(value: unknown): PlcOperation {
+  const entry = validateOperationShape(value)
+  if (entry.type !== 'plc_operation') {
+    throw new Error('PLC response did not contain an operation')
+  }
+  validateKeys(entry)
+  return entry
+}
+
 export async function didForCreateOperation(
   operation: PlcOperation,
 ): Promise<string> {

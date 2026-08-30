@@ -1,4 +1,5 @@
-import {useEffect, useState} from 'react'
+import {useCallback, useEffect, useState} from 'react'
+import {Alert, TextInput, View} from 'react-native'
 import * as Clipboard from 'expo-clipboard'
 import {Trans} from '@lingui/react/macro'
 import AsyncStorage from '@react-native-async-storage/async-storage'
@@ -10,27 +11,47 @@ import {
   capabilityLabel,
   type IdentityOverview,
 } from '#/lib/identity-sovereignty-ui'
+import {parsePlcOperation} from '#/lib/plc-history'
 import {
   createIndexedDbRotationKeyStore,
   createUserHeldRotationKey,
+  isRotationKeyRegistered,
+  rotationKeysWithUserHeldKey,
+  submitUserHeldPlcOperation,
   type UserHeldRotationKey,
 } from '#/lib/plc-key-custody'
 import {type NavigationProp} from '#/lib/routes/types'
 import {useRadlibMigrationStatusQuery} from '#/state/queries/radlib-migration'
-import {useSession, useSessionApi} from '#/state/session'
+import {usePdsClient, useSession, useSessionApi} from '#/state/session'
+import {useEnsureOAuthFeature} from '#/state/session/oauth-feature-gate'
 import {resolvePdsEndpointForDid} from '#/state/session/pds-resolution'
+import {resolvePlcIdentity} from '#/state/session/plc-resolvers'
 import {getSelectedAppViewProvider} from '#/state/session/providers'
 import {isSessionExpired} from '#/state/session/session-data'
 import {ExportCarDialog} from '#/screens/Settings/components/ExportCarDialog'
 import * as SettingsList from '#/screens/Settings/components/SettingsList'
+import {atoms as a, useTheme} from '#/alf'
+import {Button, ButtonText} from '#/components/Button'
 import {useDialogControl} from '#/components/Dialog'
 import * as Layout from '#/components/Layout'
 import * as Prompt from '#/components/Prompt'
 import {IS_WEB} from '#/env'
+import {com} from '#/lexicons'
 
 type AccessTokenClaims = {exp?: number}
 
 const ROTATION_KEY_METADATA_PREFIX = 'radlib-plc-rotation-handle:'
+
+type RotationKeyRegistrationState = {
+  did: string
+  status:
+    | 'checking'
+    | 'registered'
+    | 'registered-with-disagreement'
+    | 'not-registered'
+    | 'unavailable'
+  message: string
+}
 
 function rotationKeyMetadataKey(did: string): string {
   return `${ROTATION_KEY_METADATA_PREFIX}${did}`
@@ -67,8 +88,11 @@ function accessExpiry(accessJwt?: string) {
 }
 
 export function IdentitySovereigntySettingsScreen() {
+  const t = useTheme()
   const {currentAccount} = useSession()
   const {logoutCurrentAccount, logoutEveryAccount} = useSessionApi()
+  const pdsClient = usePdsClient()
+  const ensureOAuthFeature = useEnsureOAuthFeature()
   const navigation = useNavigation<NavigationProp>()
   const endSessionControl = Prompt.usePromptControl()
   const endAllSessionsControl = Prompt.usePromptControl()
@@ -82,6 +106,17 @@ export function IdentitySovereigntySettingsScreen() {
     {did: string; message: string} | undefined
   >()
   const [creatingRotationKey, setCreatingRotationKey] = useState(false)
+  const [rotationKeyRegistration, setRotationKeyRegistration] = useState<
+    RotationKeyRegistrationState | undefined
+  >()
+  const [plcToken, setPlcToken] = useState('')
+  const [plcTokenRequested, setPlcTokenRequested] = useState(false)
+  const [registeringRotationKey, setRegisteringRotationKey] = useState(false)
+
+  useEffect(() => {
+    setPlcToken('')
+    setPlcTokenRequested(false)
+  }, [currentAccount?.did])
 
   const canUseBrowserRotationKey =
     IS_WEB && currentAccount?.did.startsWith('did:plc:') === true
@@ -110,6 +145,83 @@ export function IdentitySovereigntySettingsScreen() {
       cancelled = true
     }
   }, [canUseBrowserRotationKey, currentAccount?.did])
+
+  const checkRotationKeyRegistration = useCallback(
+    async (handle: UserHeldRotationKey) => {
+      setRotationKeyRegistration({
+        did: handle.did,
+        status: 'checking',
+        message: 'Checking verified PLC resolver claims…',
+      })
+      try {
+        const result = await resolvePlcIdentity(handle.did)
+        const registeredClaims = result.claims.filter(claim =>
+          isRotationKeyRegistered(claim.verification?.document, handle.didKey),
+        )
+        if (registeredClaims.length > 0) {
+          const resolverNames = registeredClaims
+            .map(claim => claim.resolver.displayName)
+            .join(', ')
+          const hasDisagreement = result.status === 'disagreement'
+          setRotationKeyRegistration({
+            did: handle.did,
+            status: hasDisagreement
+              ? 'registered-with-disagreement'
+              : 'registered',
+            message: hasDisagreement
+              ? `Registered in a verified claim from ${resolverNames}; resolver disagreement remains visible.`
+              : `Registered in a verified PLC history from ${resolverNames}.`,
+          })
+        } else if (
+          result.status === 'unavailable' ||
+          result.status === 'empty'
+        ) {
+          setRotationKeyRegistration({
+            did: handle.did,
+            status: 'unavailable',
+            message:
+              'No resolver returned a usable verified PLC history. Registration was not inferred.',
+          })
+        } else {
+          setRotationKeyRegistration({
+            did: handle.did,
+            status: 'not-registered',
+            message:
+              'No verified PLC history currently contains this key. It may still be waiting for directory propagation.',
+          })
+        }
+      } catch (error) {
+        setRotationKeyRegistration({
+          did: handle.did,
+          status: 'unavailable',
+          message:
+            error instanceof Error
+              ? `PLC registration could not be checked: ${error.message}`
+              : 'PLC registration could not be checked.',
+        })
+      }
+    },
+    [],
+  )
+
+  useEffect(() => {
+    if (!activeRotationKey) {
+      setRotationKeyRegistration(undefined)
+      return
+    }
+    let cancelled = false
+    void (async () => {
+      await checkRotationKeyRegistration(activeRotationKey)
+      if (cancelled) setRotationKeyRegistration(undefined)
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [
+    activeRotationKey?.did,
+    activeRotationKey?.didKey,
+    checkRotationKeyRegistration,
+  ])
 
   useEffect(() => {
     let cancelled = false
@@ -168,6 +280,84 @@ export function IdentitySovereigntySettingsScreen() {
       })
     } finally {
       setCreatingRotationKey(false)
+    }
+  }
+
+  async function requestRotationKeyRegistration() {
+    const handle = activeRotationKey
+    if (!handle) return
+    setRegisteringRotationKey(true)
+    setRotationKeyStatus(undefined)
+    try {
+      if (!(await ensureOAuthFeature('identity-recovery'))) return
+      await pdsClient.call(com.atproto.identity.requestPlcOperationSignature)
+      setPlcTokenRequested(true)
+      setRotationKeyStatus({
+        did: handle.did,
+        message:
+          'The account PDS requested an email authorization code. Enter it below; it is used only for this PLC operation and is not stored.',
+      })
+    } catch (error) {
+      setRotationKeyStatus({
+        did: handle.did,
+        message:
+          error instanceof Error
+            ? `Could not request PLC authorization: ${error.message}`
+            : 'Could not request PLC authorization.',
+      })
+    } finally {
+      setRegisteringRotationKey(false)
+    }
+  }
+
+  async function registerRotationKey() {
+    const handle = activeRotationKey
+    const token = plcToken.trim()
+    if (!handle || !token) {
+      Alert.alert(
+        'Authorization code required',
+        'Request the PLC authorization email, then enter its code before registering the key.',
+      )
+      return
+    }
+    setRegisteringRotationKey(true)
+    setRotationKeyStatus(undefined)
+    try {
+      if (!(await ensureOAuthFeature('identity-recovery'))) return
+      const credentials = await pdsClient.call(
+        com.atproto.identity.getRecommendedDidCredentials,
+        {},
+      )
+      const signedResponse = await pdsClient.call(
+        com.atproto.identity.signPlcOperation,
+        {
+          token,
+          services: credentials.services,
+          alsoKnownAs: credentials.alsoKnownAs,
+          rotationKeys: rotationKeysWithUserHeldKey(credentials, handle.didKey),
+          verificationMethods: credentials.verificationMethods,
+        },
+      )
+      const operation = parsePlcOperation(signedResponse.operation)
+      await submitUserHeldPlcOperation(pdsClient, operation)
+      setPlcToken('')
+      setPlcTokenRequested(false)
+      setRotationKeyStatus({
+        did: handle.did,
+        message:
+          'The signed PLC operation was submitted to the account PDS. Checking resolver evidence; propagation may take a moment.',
+      })
+      await checkRotationKeyRegistration(handle)
+    } catch (error) {
+      setRotationKeyStatus({
+        did: handle.did,
+        message:
+          error instanceof Error
+            ? `PLC rotation-key registration failed: ${error.message}`
+            : 'PLC rotation-key registration failed.',
+      })
+    } finally {
+      setRegisteringRotationKey(false)
     }
   }
 
@@ -367,6 +557,112 @@ export function IdentitySovereigntySettingsScreen() {
                 {activeRotationKeyStatus}
               </SettingsList.BadgeText>
             </SettingsList.Item>
+          )}
+          {activeRotationKey && (
+            <>
+              <SettingsList.Item>
+                <View style={[a.flex_1, a.gap_xs]}>
+                  <SettingsList.ItemText>
+                    PLC rotation-key registration
+                  </SettingsList.ItemText>
+                  <SettingsList.ItemText
+                    style={[a.text_sm, {paddingHorizontal: 0}]}>
+                    A prepared key is not a recovery key until it is included in
+                    a verified PLC history. Registration uses the standard PDS
+                    identity APIs and requires a separate identity grant plus
+                    the PDS email authorization code.
+                  </SettingsList.ItemText>
+                </View>
+                <SettingsList.BadgeText>
+                  {rotationKeyRegistration?.status === 'checking'
+                    ? 'Checking'
+                    : rotationKeyRegistration?.status === 'registered'
+                      ? 'Registered'
+                      : rotationKeyRegistration?.status ===
+                          'registered-with-disagreement'
+                        ? 'Registered; disagreement'
+                        : rotationKeyRegistration?.status === 'unavailable'
+                          ? 'Evidence unavailable'
+                          : 'Not registered'}
+                </SettingsList.BadgeText>
+              </SettingsList.Item>
+              {rotationKeyRegistration && (
+                <SettingsList.Item>
+                  <View style={[a.flex_1, a.gap_xs]}>
+                    <SettingsList.ItemText
+                      style={[a.text_sm, {paddingHorizontal: 0}]}>
+                      {rotationKeyRegistration.message}
+                    </SettingsList.ItemText>
+                    <Button
+                      label="Check PLC rotation-key registration"
+                      size="small"
+                      color="secondary"
+                      variant="outline"
+                      shape="rectangular"
+                      disabled={rotationKeyRegistration.status === 'checking'}
+                      onPress={() =>
+                        void checkRotationKeyRegistration(activeRotationKey)
+                      }>
+                      <ButtonText>Check again</ButtonText>
+                    </Button>
+                  </View>
+                </SettingsList.Item>
+              )}
+              {rotationKeyRegistration?.status !== 'registered' &&
+                rotationKeyRegistration?.status !==
+                  'registered-with-disagreement' && (
+                  <SettingsList.PressableItem
+                    label="Request PLC rotation-key authorization"
+                    onPress={() => void requestRotationKeyRegistration()}
+                    disabled={registeringRotationKey}>
+                    <SettingsList.ItemText>
+                      {registeringRotationKey
+                        ? 'Requesting PLC authorization…'
+                        : 'Request PLC rotation-key authorization'}
+                    </SettingsList.ItemText>
+                    <SettingsList.BadgeText>
+                      Feature-scoped identity grant
+                    </SettingsList.BadgeText>
+                  </SettingsList.PressableItem>
+                )}
+              {plcTokenRequested && (
+                <SettingsList.Item>
+                  <View style={[a.flex_1, a.gap_sm]}>
+                    <TextInput
+                      accessibilityLabel="PLC authorization code"
+                      accessibilityHint="Enter the one-time code from the account PDS email"
+                      autoCapitalize="none"
+                      autoCorrect={false}
+                      inputMode="text"
+                      secureTextEntry
+                      placeholder="Enter the one-time code"
+                      value={plcToken}
+                      onChangeText={setPlcToken}
+                      style={[
+                        a.border,
+                        a.p_sm,
+                        t.atoms.bg_contrast_25,
+                        t.atoms.text,
+                      ]}
+                    />
+                    <Button
+                      label="Register user-held PLC rotation key"
+                      size="small"
+                      color="primary"
+                      variant="solid"
+                      shape="rectangular"
+                      disabled={registeringRotationKey || !plcToken.trim()}
+                      onPress={() => void registerRotationKey()}>
+                      <ButtonText>
+                        {registeringRotationKey
+                          ? 'Registering key…'
+                          : 'Register rotation key'}
+                      </ButtonText>
+                    </Button>
+                  </View>
+                </SettingsList.Item>
+              )}
+            </>
           )}
           <SettingsList.Item>
             <SettingsList.ItemText>Lockdown</SettingsList.ItemText>
