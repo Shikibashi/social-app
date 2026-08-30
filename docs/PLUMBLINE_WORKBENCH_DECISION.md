@@ -912,3 +912,73 @@ may lag, so the UI separates submitted state from verified directory evidence.
 The next remaining concentrations are the PDS-controlled bootstrap email,
 the unresolved external PLC operator-independence gate, and the still-open
 Relay/AppView and short-TTL OAuth evidence gates.
+
+## 31. Iteration 24 — align route selection with the Plumbline workbench
+
+The shell's route controls still inherited pill geometry and communicated the
+current location mainly through color and weight. That made the workbench
+look like a generic social client at the exact point where navigation context
+should be inspectable at a glance.
+
+### Residual concentration and why it matters
+
+This was a presentation concentration rather than a provider or identity
+authority concentration: the shared shell's default geometry made the
+application's own navigation state implicit. Users could not reliably see the
+alignment boundary that connected a selected route to the active workspace.
+The missing signal weakened the Plumbline Test questions "what is happening?"
+and "according to whose rule?" without changing the underlying route authority.
+
+### Ecosystem/design precedent and chosen change
+
+The change follows the approved Plumbline `DESIGN.md` geometry and the
+existing ECW workbench model: structural rules carry context, square controls
+remain browser-native, and the interface exposes detail progressively. A
+shared line-and-bob marker now accompanies the selected desktop route. The
+interactive route also exposes selected state through the existing
+accessibility contract, while the marker itself remains decorative. The
+compose control uses the same square web geometry so the shell does not give
+one command a separate visual grammar.
+
+### Authority before versus after
+
+| Boundary | Before iteration 24 | After iteration 24 |
+| --- | --- | --- |
+| Route selection | The selected route was conveyed mostly by inherited pill styling, color, and text weight. | The selected route retains those cues and adds an explicit theme-aware alignment line plus brass bob; selected state is also exposed to assistive technology. |
+| Shell geometry | Desktop navigation and compose used rounded web controls inherited from the upstream client. | Web navigation and compose use Plumbline's square one-pixel control radius; avatar and semantic count shapes remain unchanged. |
+| Branding token | Plumbline brass was repeated in the mark implementation. | `PLUMBLINE_BRASS` is shared by the mark and selection marker, keeping identity color centralized without reusing it for semantic warnings or success. |
+
+### Interoperability and security tradeoffs
+
+The change is web-scoped presentation only. It does not alter route URLs,
+PDS/AppView selection, OAuth grants, social mutations, protocol records, or
+native layout behavior. The marker is `aria-hidden`, pointer-transparent, and
+does not reduce the 48px target. `accessibilityState.selected` remains on the
+interactive route control. No new dependency or network authority was added.
+
+### Implementation evidence
+
+- `src/view/shell/PlumblineSelectionMarker.tsx` owns the shared line-and-bob
+  geometry and uses the theme border plus `PLUMBLINE_BRASS`.
+- `src/view/shell/desktop/LeftNav.tsx` applies the marker, selected state,
+  square web geometry, stable test IDs, and unchanged route links.
+- `src/lib/brand.ts` owns `PLUMBLINE_BRASS`, and
+  `src/view/icons/PlumblineBrandMark.tsx` consumes it for the mark.
+
+### Verification
+
+| Check | Status | Evidence |
+| --- | --- | --- |
+| Touched-file Oxlint | PASS | `pnpm exec oxlint --quiet` on the four changed client files |
+| Touched-file formatting and whitespace | PASS | Prettier check and `git diff --check` |
+| Web TypeScript | PASS | `pnpm run typecheck:web` |
+| Focused brand test | PASS | `pnpm test -- --runInBand src/lib/brand.test.ts` — 3 tests |
+| Production web export | PASS | `EXPO_PUBLIC_ENV=production pnpm run build-web` |
+| Pages delivery | PASS | Production deployment `151da74a`, source `e330ff0` |
+| Canonical browser shell | PASS | `https://plumblines.uk/?deployment=151da74a` in the ChatGPT in-app browser: Plumbline title, provenance, square 1px route controls, Home marker, 48px targets, no alert |
+| Narrow browser shell | NOT RUN | Persistent in-app browser connector does not expose viewport resizing |
+
+This iteration improves shell disclosure without making a presentation
+component an authority. The remaining concentrations are the PDS-controlled
+bootstrap email, the unresolved external PLC operator-independence gate, and
+the still-open Relay/AppView and short-TTL OAuth evidence gates.
