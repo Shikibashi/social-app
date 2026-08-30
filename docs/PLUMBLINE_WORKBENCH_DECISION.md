@@ -230,7 +230,38 @@ claim. Non-owner profiles continue to use the existing public AppView/CDN
 media view until a safe, independently verified PDS endpoint can be derived;
 no account credential is sent to obtain that fallback.
 
-## 14. Remaining concentrations worth attacking next
+## 14. Iteration 8 — make provider substitution reachable from evidence
+
+The provider-composition inspector already made source, disagreement, and
+limitations visible, but it stopped at explanation. This iteration adds a
+progressive `Change read provider` action to the expanded inspector. The
+action routes to the existing Services workbench, where the user can select
+capabilities, reconciliation, and provider configuration. It does not create
+a second provider-settings store or silently change the active provider.
+
+### Implementation and verification evidence
+
+- `src/components/ProviderCompositionProvenance.tsx` adds the accessible
+  action and keeps it inside the expanded evidence view. It uses the existing
+  `ServicesSettings` route and the existing provider-composition policy.
+- Web TypeScript, targeted Oxlint, Prettier, whitespace validation, and the
+  production web export pass. The bundle contains the updated component and
+  retains the existing Plumbline title, icon, and public-origin configuration.
+- Client commit `30e165ef3` was pushed to
+  `fork/codex/spaces-alpha-integration`.
+- Wrangler deployed the exact export at
+  `https://95255e0f.social-edriffles.pages.dev`; the preview and canonical
+  `https://plumblines.uk/` return HTTP 200, the Plumbline title, and
+  `main.12405af4.js`.
+- The credential-free ChatGPT in-app-browser smoke check loaded the canonical
+  shell, populated public feed content, and exposed the existing provenance
+  control. No credentials were read and no mutation was performed.
+
+This is a reachability improvement at the existing policy boundary. It does
+not claim that every surface has an independent provider available, or that
+the canonical public smoke check proves signed-in provider mutation behavior.
+
+## 15. Remaining concentrations worth attacking next
 
 1. Add a compatible, independently attributable media delivery composition contract only if it can preserve PDS blob authority and safe browser delivery; do not treat a CDN URL as a second authoritatively owned record.
 2. Add credentialed multi-provider browser fixtures for revoked grants, migration, block boundaries, and partial service support without using production credentials.
