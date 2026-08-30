@@ -227,6 +227,16 @@ function DesktopWorkbenchInspector({routeName}: {routeName: string}) {
         action: _(msg`Inspect thread providers`),
       }
       break
+    case 'CustomFeed':
+      context = {
+        route: _(msg`Custom feed`),
+        source: _(msg`Feed generator and selected read provider`),
+        rule: _(msg`Generator ordering and local feed policy`),
+        control: _(msg`Inspect, compare, or change the feed provider`),
+        href: '/settings/services',
+        action: _(msg`Inspect feed providers`),
+      }
+      break
     case 'CustomFeedLikedBy':
       context = {
         route: _(msg`Feed liked by`),
