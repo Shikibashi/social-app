@@ -220,6 +220,11 @@ msgstr "{0, plural, other {# people have}} joined Plumbline via this starter pac
 msgid "{0, plural, other {+# more}}"
 msgstr ""
 
+#. placeholder {0}: capabilityLabel( migration ? 'live' : 'unavailable-current-environment', )
+#: src/screens/Settings/IdentitySovereigntySettings.tsx:525
+msgid "{0}"
+msgstr "{0}"
+
 #. placeholder {0}: i18n._(providerSurfaceAuthorityMessage(surface))
 #. placeholder {0}: provider.enabled ? _(msg`Enabled`) : _(msg`Disabled`)
 #. placeholder {0}: resolver.enabled ? _(msg`Enabled`) : _(msg`Disabled`)
@@ -390,6 +395,14 @@ msgstr "{0} reconciliation"
 #: src/screens/Settings/ServicesSettings.tsx:1081
 msgid "{0} registered read provider{1}; {2}"
 msgstr "{0} registered read provider{1}; {2}"
+
+#. placeholder {0}: migration.remainingListblocks
+#. placeholder {1}: migration.convertedToPrivateMute
+#. placeholder {2}: migration.deleted
+#. placeholder {3}: migration.attestationRequired ? ` · ${migration.attestedListCount} attested` : ''
+#: src/screens/Settings/IdentitySovereigntySettings.tsx:536
+msgid "{0} remaining · {1} converted · {2} deleted{3}"
+msgstr "{0} remaining · {1} converted · {2} deleted{3}"
 
 #. placeholder {0}: CONFIGURABLE_PROVIDER_SURFACES.filter(surface => provider.capabilities?.includes(surface)).length
 #: src/screens/Settings/ServicesSettings.tsx:1777
@@ -1119,6 +1132,10 @@ msgstr ""
 msgid "A new form of verification"
 msgstr ""
 
+#: src/screens/Settings/IdentitySovereigntySettings.tsx:633
+msgid "A prepared key is not a recovery key until it is included in a verified PLC history. Registration uses the standard PDS identity APIs and requires a separate identity grant plus the PDS email authorization code."
+msgstr "A prepared key is not a recovery key until it is included in a verified PLC history. Registration uses the standard PDS identity APIs and requires a separate identity grant plus the PDS email authorization code."
+
 #: src/components/dms/MessageItem.tsx:838
 msgid "A reply to a message sent before you joined"
 msgstr "A reply to a message sent before you joined"
@@ -1201,6 +1218,14 @@ msgstr ""
 #: src/view/com/composer/select-language/SuggestedLanguage.tsx:460
 msgid "Accept this language suggestion"
 msgstr ""
+
+#: src/screens/Settings/IdentitySovereigntySettings.tsx:739
+msgid "Access credential expired"
+msgstr "Access credential expired"
+
+#: src/screens/Settings/IdentitySovereigntySettings.tsx:746
+msgid "Access credential expiry"
+msgstr "Access credential expiry"
 
 #: src/components/intents/GroupChatJoinDialog.tsx:117
 msgid "Access requested! The group owner will review your request."
@@ -1354,6 +1379,10 @@ msgstr "Accounts with a scalloped blue check mark <0><1/></0> can verify others.
 #: src/screens/Settings/ServicesSettings.tsx:982
 msgid "Active"
 msgstr "Active"
+
+#: src/screens/Settings/IdentitySovereigntySettings.tsx:740
+msgid "Active on this device"
+msgstr "Active on this device"
 
 #: src/lib/hooks/useNotificationHandler.ts:214
 #: src/screens/Settings/NotificationSettings/ActivityNotificationSettings.tsx:105
@@ -1683,6 +1712,10 @@ msgstr ""
 #: src/screens/Settings/LanguageSettings.tsx:189
 msgid "All languages will be shown in your feeds."
 msgstr ""
+
+#: src/screens/Settings/IdentitySovereigntySettings.tsx:797
+msgid "All locally stored account sessions will be removed from this device. This does not claim to revoke sessions that are active elsewhere."
+msgstr "All locally stored account sessions will be removed from this device. This does not claim to revoke sessions that are active elsewhere."
 
 #: src/screens/Search/components/AdvancedSearchDialog/index.tsx:245
 msgid "All of these words"
@@ -2319,6 +2352,7 @@ msgstr "Author's curation"
 msgid "Authority"
 msgstr "Authority"
 
+#: src/screens/Settings/IdentitySovereigntySettings.tsx:775
 #: src/screens/Settings/ServicesSettings.tsx:1391
 msgid "Authority map"
 msgstr "Authority map"
@@ -2385,6 +2419,10 @@ msgstr "available"
 #: src/screens/Signup/StepHandle/HandleSuggestions/index.tsx:88
 msgid "Available"
 msgstr ""
+
+#: src/screens/Settings/IdentitySovereigntySettings.tsx:589
+msgid "Available on this web device"
+msgstr "Available on this web device"
 
 #: src/components/MediaDeliveryProvenance.tsx:103
 msgid "Avatar CID"
@@ -2902,6 +2940,10 @@ msgstr ""
 msgid "Captions & alt text"
 msgstr ""
 
+#: src/screens/Settings/IdentitySovereigntySettings.tsx:561
+msgid "CAR / JSONL · credentials excluded"
+msgstr "CAR / JSONL · credentials excluded"
+
 #: src/components/images/Gallery/index.tsx:275
 msgid "carousel"
 msgstr "carousel"
@@ -3141,6 +3183,10 @@ msgstr ""
 msgid "Check <0>{currentEmail}</0> for an email with the confirmation code to enter below:"
 msgstr ""
 
+#: src/screens/Settings/IdentitySovereigntySettings.tsx:666
+msgid "Check again"
+msgstr "Check again"
+
 #: src/screens/Settings/ServicesSettings.tsx:1719
 #: src/screens/Settings/ServicesSettings.tsx:1734
 msgid "Check and add provider"
@@ -3154,6 +3200,18 @@ msgstr "Check back later!"
 #: src/screens/SignupQueued.tsx:90
 msgid "Check my status"
 msgstr ""
+
+#: src/screens/Settings/IdentitySovereigntySettings.tsx:657
+msgid "Check PLC rotation-key registration"
+msgstr "Check PLC rotation-key registration"
+
+#: src/screens/Settings/IdentitySovereigntySettings.tsx:638
+msgid "Checking"
+msgstr "Checking"
+
+#: src/screens/Settings/IdentitySovereigntySettings.tsx:404
+msgid "Checking DID document"
+msgstr "Checking DID document"
 
 #: src/screens/Settings/ServicesSettings.tsx:1732
 msgid "Checking provider…"
@@ -3838,6 +3896,10 @@ msgstr ""
 msgid "Copies build version to clipboard"
 msgstr ""
 
+#: src/screens/Settings/IdentitySovereigntySettings.tsx:610
+msgid "Copies public did:key only"
+msgstr "Copies public did:key only"
+
 #: src/features/inviteFriends/InviteFriendsDialogInner.tsx:259
 msgid "Copies the canonical profile URL to the clipboard"
 msgstr "Copies the canonical profile URL to the clipboard"
@@ -4256,6 +4318,10 @@ msgstr "Current policy: {identityPolicyLabel}"
 msgid "Current read provider"
 msgstr "Current read provider"
 
+#: src/screens/Settings/IdentitySovereigntySettings.tsx:735
+msgid "Current session"
+msgstr "Current session"
+
 #: src/screens/Settings/ServicesSettings.tsx:395
 msgid "CURRENT SOURCE"
 msgstr "CURRENT SOURCE"
@@ -4549,6 +4615,7 @@ msgid "Dialog: Set search filters"
 msgstr "Dialog: Set search filters"
 
 #: src/components/IdentityResolutionProvenance.tsx:100
+#: src/screens/Settings/IdentitySovereigntySettings.tsx:469
 msgid "DID"
 msgstr "DID"
 
@@ -4560,6 +4627,11 @@ msgstr "DID and handle claims are composed from the enabled identity providers."
 msgid "DID document and handle services"
 msgstr "DID document and handle services"
 
+#: src/screens/Settings/IdentitySovereigntySettings.tsx:458
+#: src/screens/Settings/IdentitySovereigntySettings.tsx:483
+msgid "DID document resolver"
+msgstr "DID document resolver"
+
 #: src/screens/Settings/ServicesSettings.tsx:1685
 msgid "DID that identifies this AppView"
 msgstr "DID that identifies this AppView"
@@ -4567,6 +4639,10 @@ msgstr "DID that identifies this AppView"
 #: src/screens/Settings/ServicesSettings.tsx:965
 msgid "DID-backed account; {identityPolicyLabel}"
 msgstr "DID-backed account; {identityPolicyLabel}"
+
+#: src/screens/Settings/IdentitySovereigntySettings.tsx:592
+msgid "did:plc required"
+msgstr "did:plc required"
 
 #: src/screens/Settings/AppearanceSettings.tsx:108
 msgid "Dim"
@@ -5219,6 +5295,19 @@ msgstr "Encrypted backup copied"
 msgid "End of feed"
 msgstr ""
 
+#: src/screens/Settings/IdentitySovereigntySettings.tsx:791
+msgid "End session"
+msgstr "End session"
+
+#: src/screens/Settings/IdentitySovereigntySettings.tsx:762
+#: src/screens/Settings/IdentitySovereigntySettings.tsx:765
+msgid "End this session"
+msgstr "End this session"
+
+#: src/screens/Settings/IdentitySovereigntySettings.tsx:788
+msgid "End this session?"
+msgstr "End this session?"
+
 #: src/view/com/composer/videos/SubtitleDialog.tsx:182
 msgid "Ensure you have selected a language for each caption file."
 msgstr "Ensure you have selected a language for each caption file."
@@ -5313,6 +5402,14 @@ msgstr ""
 #: src/screens/Login/LoginForm.tsx:246
 msgid "Enter the identity you use with your hosting provider"
 msgstr "Enter the identity you use with your hosting provider"
+
+#: src/screens/Settings/IdentitySovereigntySettings.tsx:698
+msgid "Enter the one-time code"
+msgstr "Enter the one-time code"
+
+#: src/screens/Settings/IdentitySovereigntySettings.tsx:693
+msgid "Enter the one-time code from the account PDS email"
+msgstr "Enter the one-time code from the account PDS email"
 
 #: src/screens/Settings/ServicesSettings.tsx:2367
 msgid "Enter the operator identity declared by this resolver."
@@ -5436,6 +5533,10 @@ msgstr "Everything look right?"
 msgid "Evidence status"
 msgstr "Evidence status"
 
+#: src/screens/Settings/IdentitySovereigntySettings.tsx:645
+msgid "Evidence unavailable"
+msgstr "Evidence unavailable"
+
 #. Advanced search filter
 #. Advanced search filter
 #. Advanced search filter
@@ -5465,6 +5566,10 @@ msgstr "Exit & backups"
 #: src/components/Post/Embed/VideoEmbed/VideoEmbedInner/web-controls/VideoControls.tsx:419
 msgid "Exit fullscreen"
 msgstr ""
+
+#: src/screens/Settings/IdentitySovereigntySettings.tsx:549
+msgid "Exit utilities"
+msgstr "Exit utilities"
 
 #: src/components/Lightbox/chrome/Footer.tsx:69
 #: src/components/Lightbox/Lightbox.web.tsx:245
@@ -5570,9 +5675,18 @@ msgstr "Export my profile data"
 msgid "Export provider policy"
 msgstr "Export provider policy"
 
+#: src/screens/Settings/IdentitySovereigntySettings.tsx:555
+#: src/screens/Settings/IdentitySovereigntySettings.tsx:558
+msgid "Export repository and chat data"
+msgstr "Export repository and chat data"
+
 #: src/screens/Settings/ServicesSettings.tsx:1059
 msgid "Export repository data and portable policy without exporting credentials."
 msgstr "Export repository data and portable policy without exporting credentials."
+
+#: src/screens/Settings/IdentitySovereigntySettings.tsx:571
+msgid "Export, import, or reset local policy"
+msgstr "Export, import, or reset local policy"
 
 #: src/screens/Settings/ServicesSettings.tsx:318
 msgid "Export, import, or reset provider policy without exporting credentials or adding a host."
@@ -5949,6 +6063,10 @@ msgstr "Feature authority"
 #: src/components/AuthorizationProvenance.tsx:372
 msgid "Feature upgrades are supported individually. The current session integration revokes the OAuth session as a whole; it does not claim to revoke one feature independently."
 msgstr "Feature upgrades are supported individually. The current session integration revokes the OAuth session as a whole; it does not claim to revoke one feature independently."
+
+#: src/screens/Settings/IdentitySovereigntySettings.tsx:684
+msgid "Feature-scoped identity grant"
+msgstr "Feature-scoped identity grant"
 
 #: src/screens/Settings/ServicesSettings.tsx:1086
 msgid "Feature-scoped OAuth upgrades are available for this session."
@@ -6501,6 +6619,10 @@ msgstr "Generate new invite link"
 msgid "Generate new link"
 msgstr "Generate new link"
 
+#: src/screens/Settings/IdentitySovereigntySettings.tsx:609
+msgid "Generating non-exportable key…"
+msgstr "Generating non-exportable key…"
+
 #: src/screens/Profile/components/GermButton.tsx:84
 #: src/screens/Profile/components/GermButton.tsx:226
 msgid "Germ DM"
@@ -6843,6 +6965,7 @@ msgstr ""
 
 #: src/screens/Settings/AccountSettings.tsx:132
 #: src/screens/Settings/AccountSettings.tsx:137
+#: src/screens/Settings/IdentitySovereigntySettings.tsx:473
 msgid "Handle"
 msgstr ""
 
@@ -7226,14 +7349,22 @@ msgstr "I'm on Plumbline as {0} - come find me!"
 msgid "Identity"
 msgstr "Identity"
 
-#: src/screens/Settings/IdentitySovereigntySettings.tsx:411
+#: src/screens/Settings/IdentitySovereigntySettings.tsx:449
 msgid "Identity & recovery"
 msgstr "Identity & recovery"
+
+#: src/screens/Settings/IdentitySovereigntySettings.tsx:467
+msgid "Identity and hosting"
+msgstr "Identity and hosting"
 
 #: src/screens/Settings/Settings.tsx:189
 #: src/screens/Settings/Settings.tsx:192
 msgid "Identity and recovery"
 msgstr "Identity and recovery"
+
+#: src/screens/Settings/IdentitySovereigntySettings.tsx:457
+msgid "Identity authority"
+msgstr "Identity authority"
 
 #: src/components/IdentityResolutionProvenance.tsx:93
 msgid "Identity claims"
@@ -7277,6 +7408,10 @@ msgstr "identity service"
 #: src/Navigation.tsx:444
 msgid "Identity sovereignty"
 msgstr "Identity sovereignty"
+
+#: src/screens/Settings/IdentitySovereigntySettings.tsx:480
+msgid "Identity verification"
+msgstr "Identity verification"
 
 #: src/screens/Settings/ServicesSettings.tsx:321
 msgid "Identity-capable provider declarations and resolver policy"
@@ -7562,6 +7697,11 @@ msgstr "Inspect delegated authority"
 msgid "Inspect label sources in Services"
 msgstr "Inspect label sources in Services"
 
+#: src/screens/Settings/IdentitySovereigntySettings.tsx:509
+#: src/screens/Settings/IdentitySovereigntySettings.tsx:514
+msgid "Inspect or change read providers"
+msgstr "Inspect or change read providers"
+
 #. placeholder {0}: resolver.displayName
 #: src/screens/Settings/ServicesSettings.tsx:2243
 msgid "Inspect PLC resolver {0}"
@@ -7827,6 +7967,10 @@ msgstr ""
 msgid "Keep editing"
 msgstr ""
 
+#: src/screens/Settings/IdentitySovereigntySettings.tsx:551
+msgid "Keep identity; move portable state separately"
+msgstr "Keep identity; move portable state separately"
+
 #: src/components/activity-notifications/SubscribeProfileDialog.tsx:227
 msgid "Keep me posted"
 msgstr ""
@@ -8048,6 +8192,10 @@ msgstr ""
 #: src/state/session/oauth-scopes.ts:309
 msgid "Legacy compatibility grant"
 msgstr "Legacy compatibility grant"
+
+#: src/screens/Settings/IdentitySovereigntySettings.tsx:533
+msgid "Legacy listblocks / private mutes"
+msgstr "Legacy listblocks / private mutes"
 
 #: src/components/StarterPack/ProfileStarterPacks.tsx:357
 msgid "Let me choose"
@@ -8356,6 +8504,10 @@ msgstr "Lock group chat?"
 msgid "Lock this group chat"
 msgstr "Lock this group chat"
 
+#: src/screens/Settings/IdentitySovereigntySettings.tsx:729
+msgid "Lockdown"
+msgstr "Lockdown"
+
 #: src/screens/Messages/ConversationSettings/index.tsx:564
 msgid "Locked"
 msgstr "Locked"
@@ -8631,6 +8783,18 @@ msgctxt "Name of app icon variant"
 msgid "Midnight"
 msgstr ""
 
+#: src/screens/Settings/IdentitySovereigntySettings.tsx:522
+msgid "Migration"
+msgstr "Migration"
+
+#: src/screens/Settings/IdentitySovereigntySettings.tsx:520
+msgid "Migration and exit"
+msgstr "Migration and exit"
+
+#: src/screens/Settings/IdentitySovereigntySettings.tsx:542
+msgid "Migration status"
+msgstr "Migration status"
+
 #: src/components/moderation/ReportDialog/utils/useReportOptions.ts:179
 msgid "Minor harassment or bullying"
 msgstr ""
@@ -8638,6 +8802,10 @@ msgstr ""
 #: src/components/moderation/ReportDialog/utils/useReportOptions.ts:36
 msgid "Misleading"
 msgstr ""
+
+#: src/screens/Settings/IdentitySovereigntySettings.tsx:408
+msgid "Mismatch"
+msgstr "Mismatch"
 
 #: src/components/IdentityResolutionProvenance.tsx:277
 msgid "mismatched"
@@ -8899,6 +9067,10 @@ msgstr ""
 msgid "Name shown for this read provider"
 msgstr "Name shown for this read provider"
 
+#: src/screens/Settings/IdentitySovereigntySettings.tsx:417
+msgid "Native secure-key adapter required"
+msgstr "Native secure-key adapter required"
+
 #: src/lib/interests.ts:66
 msgid "Nature"
 msgstr ""
@@ -9153,6 +9325,10 @@ msgstr "No ads, no invasive tracking, no engagement traps. Plumbline respects yo
 msgid "No app passwords yet"
 msgstr ""
 
+#: src/screens/Settings/IdentitySovereigntySettings.tsx:505
+msgid "No AppView provider selected"
+msgstr "No AppView provider selected"
+
 #: src/screens/Search/components/AdvancedSearchDialog/FromDropdown.tsx:22
 #: src/screens/Search/components/AdvancedSearchDialog/FromDropdown.tsx:30
 msgid "No author filter"
@@ -9206,6 +9382,10 @@ msgstr ""
 #: src/view/com/profile/ProfileFollowers.tsx:216
 msgid "No followers yet"
 msgstr ""
+
+#: src/screens/Settings/IdentitySovereigntySettings.tsx:489
+msgid "No fresh PDS endpoint returned"
+msgstr "No fresh PDS endpoint returned"
 
 #. Empty-state message shown in the GIF picker when a search returns zero results. Placeholder is the user’s search query.
 #: src/features/gifPicker/components/GifPickerPlaceholder.tsx:25
@@ -9497,6 +9677,10 @@ msgstr "not AppView-composed"
 msgid "Not available from the DID-backed session state"
 msgstr "Not available from the DID-backed session state"
 
+#: src/screens/Settings/IdentitySovereigntySettings.tsx:750
+msgid "Not available from this session"
+msgstr "Not available from this session"
+
 #: src/features/inviteFriends/InviteScannerScreen.web.tsx:31
 msgid "Not available on this platform"
 msgstr "Not available on this platform"
@@ -9522,6 +9706,10 @@ msgstr "not established"
 msgid "Not established"
 msgstr "Not established"
 
+#: src/screens/Settings/IdentitySovereigntySettings.tsx:731
+msgid "Not exposed by this client; no lockdown claim is made"
+msgstr "Not exposed by this client; no lockdown claim is made"
+
 #: src/components/KnownFollowers.tsx:253
 msgid "Not followed by anyone you’re following"
 msgstr "Not followed by anyone you’re following"
@@ -9542,6 +9730,10 @@ msgstr "Not now"
 #: src/components/dialogs/nuxs/DraftsAnnouncement.tsx:131
 msgid "Not ready to hit post? Keep your best ideas in Drafts until the timing is just right."
 msgstr ""
+
+#: src/screens/Settings/IdentitySovereigntySettings.tsx:646
+msgid "Not registered"
+msgstr "Not registered"
 
 #: src/screens/Settings/ServicesSettings.tsx:982
 #: src/screens/Settings/ServicesSettings.tsx:1378
@@ -9935,6 +10127,10 @@ msgstr ""
 #: src/screens/Search/components/StarterPackCard.tsx:120
 msgid "Open pack"
 msgstr ""
+
+#: src/screens/Settings/IdentitySovereigntySettings.tsx:565
+msgid "Open portable policy backup"
+msgstr "Open portable policy backup"
 
 #: src/components/PostControls/PostMenu/index.tsx:63
 msgid "Open post options menu"
@@ -10330,6 +10526,10 @@ msgstr ""
 msgid "PDS {0}"
 msgstr "PDS {0}"
 
+#: src/screens/Settings/IdentitySovereigntySettings.tsx:544
+msgid "PDS status unavailable; no migration claim was made"
+msgstr "PDS status unavailable; no migration claim was made"
+
 #: src/screens/ProfileList/index.tsx:164
 #: src/screens/Search/SearchResults.tsx:111
 #: src/screens/Search/SearchResults.tsx:602
@@ -10509,6 +10709,10 @@ msgstr ""
 msgid "Pinned to your feeds"
 msgstr ""
 
+#: src/screens/Settings/IdentitySovereigntySettings.tsx:593
+msgid "Platform adapter required"
+msgstr "Platform adapter required"
+
 #: src/components/Post/Embed/VideoEmbed/VideoEmbedInner/VideoEmbedInnerNative.tsx:184
 #: src/components/Post/Embed/VideoEmbed/VideoEmbedInner/web-controls/VideoControls.tsx:383
 msgid "Play"
@@ -10548,6 +10752,14 @@ msgstr ""
 msgid "Plays the video"
 msgstr ""
 
+#: src/screens/Settings/IdentitySovereigntySettings.tsx:692
+msgid "PLC authorization code"
+msgstr "PLC authorization code"
+
+#: src/screens/Settings/IdentitySovereigntySettings.tsx:617
+msgid "PLC custody status"
+msgstr "PLC custody status"
+
 #: src/screens/Settings/ServicesSettings.tsx:880
 msgid "PLC resolver added"
 msgstr "PLC resolver added"
@@ -10583,6 +10795,10 @@ msgstr "PLC resolver plurality"
 #: src/screens/Settings/ServicesSettings.tsx:287
 msgid "PLC resolvers"
 msgstr "PLC resolvers"
+
+#: src/screens/Settings/IdentitySovereigntySettings.tsx:629
+msgid "PLC rotation-key registration"
+msgstr "PLC rotation-key registration"
 
 #: src/view/com/composer/labels/LabelsBtn.tsx:111
 msgid "Please add any content warning labels that are applicable for the media you are posting."
@@ -10809,6 +11025,10 @@ msgstr "Popular feeds"
 msgid "Porn"
 msgstr ""
 
+#: src/screens/Settings/IdentitySovereigntySettings.tsx:568
+msgid "Portable policy backup"
+msgstr "Portable policy backup"
+
 #: src/view/com/composer/Composer.tsx:2051
 msgctxt "action"
 msgid "Post"
@@ -11008,6 +11228,18 @@ msgstr "Prefer provider not specified"
 msgctxt "toast"
 msgid "Preference saved on this device"
 msgstr "Preference saved on this device"
+
+#: src/screens/Settings/IdentitySovereigntySettings.tsx:599
+msgid "Prepare a user-held PLC rotation key"
+msgstr "Prepare a user-held PLC rotation key"
+
+#: src/screens/Settings/IdentitySovereigntySettings.tsx:604
+msgid "Prepare another user-held key"
+msgstr "Prepare another user-held key"
+
+#: src/screens/Settings/IdentitySovereigntySettings.tsx:605
+msgid "Prepare user-held rotation key"
+msgstr "Prepare user-held rotation key"
 
 #: src/screens/Messages/components/MessageListError.tsx:18
 msgid "Press to attempt reconnection"
@@ -11513,6 +11745,10 @@ msgstr "Read private media"
 msgid "Read private record"
 msgstr "Read private record"
 
+#: src/screens/Settings/IdentitySovereigntySettings.tsx:502
+msgid "Read provider (AppView)"
+msgstr "Read provider (AppView)"
+
 #: src/components/Post/PostProvenance.tsx:114
 msgid "Read provider(s)"
 msgstr "Read provider(s)"
@@ -11607,6 +11843,14 @@ msgstr "Record owner"
 msgid "Record owner DID"
 msgstr "Record owner DID"
 
+#: src/screens/Settings/IdentitySovereigntySettings.tsx:576
+msgid "Recovery"
+msgstr "Recovery"
+
+#: src/screens/Settings/IdentitySovereigntySettings.tsx:574
+msgid "Recovery and rotation"
+msgstr "Recovery and rotation"
+
 #: src/screens/Settings/PermissionedSpacesSettings.tsx:448
 msgid "Refresh communities"
 msgstr "Refresh communities"
@@ -11624,9 +11868,29 @@ msgstr "Register and select replaceable read services."
 msgid "Register PLC resolver"
 msgstr "Register PLC resolver"
 
+#: src/screens/Settings/IdentitySovereigntySettings.tsx:719
+msgid "Register rotation key"
+msgstr "Register rotation key"
+
+#: src/screens/Settings/IdentitySovereigntySettings.tsx:709
+msgid "Register user-held PLC rotation key"
+msgstr "Register user-held PLC rotation key"
+
+#: src/screens/Settings/IdentitySovereigntySettings.tsx:640
+msgid "Registered"
+msgstr "Registered"
+
 #: src/screens/Settings/ServicesSettings.tsx:311
 msgid "Registered AppView descriptors and their declared capabilities"
 msgstr "Registered AppView descriptors and their declared capabilities"
+
+#: src/screens/Settings/IdentitySovereigntySettings.tsx:643
+msgid "Registered; disagreement"
+msgstr "Registered; disagreement"
+
+#: src/screens/Settings/IdentitySovereigntySettings.tsx:718
+msgid "Registering key…"
+msgstr "Registering key…"
 
 #: src/screens/Settings/ServicesSettings.tsx:312
 msgid "Registration identifies a service; it does not prove operator independence or grant private authority."
@@ -12107,6 +12371,10 @@ msgstr ""
 msgid "Repository PDS"
 msgstr "Repository PDS"
 
+#: src/screens/Settings/IdentitySovereigntySettings.tsx:494
+msgid "Repository PDS (from DID document)"
+msgstr "Repository PDS (from DID document)"
+
 #: src/components/PostControls/RepostButton.tsx:71
 #: src/components/PostControls/RepostButton.tsx:162
 #: src/components/PostControls/RepostButton.tsx:173
@@ -12190,6 +12458,11 @@ msgstr "Request approved."
 msgid "Request code"
 msgstr ""
 
+#: src/screens/Settings/IdentitySovereigntySettings.tsx:675
+#: src/screens/Settings/IdentitySovereigntySettings.tsx:681
+msgid "Request PLC rotation-key authorization"
+msgstr "Request PLC rotation-key authorization"
+
 #: src/screens/Settings/ProtectedAccessSettings.tsx:118
 msgid "Request private access"
 msgstr "Request private access"
@@ -12214,6 +12487,10 @@ msgstr "Requested by Plumbline"
 #: src/screens/Settings/ProtectedAccessSettings.tsx:149
 msgid "Requester DID"
 msgstr "Requester DID"
+
+#: src/screens/Settings/IdentitySovereigntySettings.tsx:680
+msgid "Requesting PLC authorization…"
+msgstr "Requesting PLC authorization…"
 
 #. Incoming message requests
 #: src/screens/Messages/components/InboxRequests.tsx:25
@@ -12343,9 +12620,17 @@ msgstr "Resolver details required"
 msgid "Resolver name"
 msgstr "Resolver name"
 
+#: src/screens/Settings/IdentitySovereigntySettings.tsx:487
+msgid "Resolver result"
+msgstr "Resolver result"
+
 #: src/components/IdentityResolutionProvenance.tsx:279
 msgid "resolver unavailable"
 msgstr "resolver unavailable"
+
+#: src/screens/Settings/IdentitySovereigntySettings.tsx:409
+msgid "Resolver unavailable"
+msgstr "Resolver unavailable"
 
 #: src/components/IdentityResolutionProvenance.tsx:227
 msgid "resolver unavailable or incomplete"
@@ -12754,6 +13039,10 @@ msgstr ""
 msgid "Searches for profiles"
 msgstr ""
 
+#: src/screens/Settings/IdentitySovereigntySettings.tsx:416
+msgid "Secure custody supports did:plc identities only"
+msgstr "Secure custody supports did:plc identities only"
+
 #: src/components/dialogs/EmailDialog/screens/Update.tsx:240
 msgid "Security step required"
 msgstr ""
@@ -13136,6 +13425,10 @@ msgstr "Sent at {0}"
 msgid "Sent to our phone number verification provider Plivo"
 msgstr ""
 
+#: src/screens/Settings/IdentitySovereigntySettings.tsx:497
+msgid "separate from identity"
+msgstr "separate from identity"
+
 #: src/components/dialogs/ServerInput.tsx:174
 #: src/screens/Login/components/HostingProviderDialog.tsx:200
 msgid "Server address"
@@ -13169,6 +13462,18 @@ msgstr "Service healthy"
 #: src/view/shell/desktop/RightNav.tsx:212
 msgid "Services"
 msgstr "Services"
+
+#: src/screens/Settings/IdentitySovereigntySettings.tsx:517
+msgid "Services workbench · reversible local choice"
+msgstr "Services workbench · reversible local choice"
+
+#: src/screens/Settings/IdentitySovereigntySettings.tsx:755
+msgid "Session login service"
+msgstr "Session login service"
+
+#: src/screens/Settings/IdentitySovereigntySettings.tsx:727
+msgid "Sessions and delegation"
+msgstr "Sessions and delegation"
 
 #. placeholder {0}: icon.name
 #: src/screens/Settings/AppIconSettings/index.tsx:176
@@ -13694,6 +13999,19 @@ msgstr ""
 msgid "Sign Out"
 msgstr ""
 
+#: src/screens/Settings/IdentitySovereigntySettings.tsx:799
+msgid "Sign out all"
+msgstr "Sign out all"
+
+#: src/screens/Settings/IdentitySovereigntySettings.tsx:768
+#: src/screens/Settings/IdentitySovereigntySettings.tsx:772
+msgid "Sign out all accounts on this device"
+msgstr "Sign out all accounts on this device"
+
+#: src/screens/Settings/IdentitySovereigntySettings.tsx:796
+msgid "Sign out all accounts on this device?"
+msgstr "Sign out all accounts on this device?"
+
 #: src/screens/Settings/Settings.tsx:340
 #: src/view/shell/desktop/LeftNav.tsx:237
 msgid "Sign out?"
@@ -13713,6 +14031,10 @@ msgstr ""
 #: src/screens/Login/ChooseAccountForm.tsx:54
 msgid "Signed in as @{0}"
 msgstr ""
+
+#: src/screens/Settings/IdentitySovereigntySettings.tsx:463
+msgid "signed out"
+msgstr "signed out"
 
 #: src/screens/Search/components/AdvancedSearchDialog/index.tsx:299
 #: src/screens/Search/components/AdvancedSearchDialog/index.tsx:302
@@ -15080,6 +15402,10 @@ msgstr "This records your protected-account policy on a compatible PDS. The publ
 msgid "This removes {0} and clears local selections, fallbacks, and reconciliation preferences that point to it. It does not delete the provider's service or change your account PDS."
 msgstr "This removes {0} and clears local selections, fallbacks, and reconciliation preferences that point to it. It does not delete the provider's service or change your account PDS."
 
+#: src/screens/Settings/IdentitySovereigntySettings.tsx:789
+msgid "This removes the current session from this device. The PDS does not expose a server-wide session inventory here."
+msgstr "This removes the current session from this device. The PDS does not expose a server-wide session inventory here."
+
 #: src/components/PostControls/PostMenu/PostMenuItems.tsx:880
 msgid "This reply will be sorted into a hidden section at the bottom of your thread and will mute notifications for subsequent replies - both for yourself and others."
 msgstr ""
@@ -15480,6 +15806,10 @@ msgstr ""
 msgid "unavailable"
 msgstr "unavailable"
 
+#: src/screens/Settings/IdentitySovereigntySettings.tsx:475
+#: src/screens/Settings/IdentitySovereigntySettings.tsx:497
+#: src/screens/Settings/IdentitySovereigntySettings.tsx:741
+#: src/screens/Settings/IdentitySovereigntySettings.tsx:758
 #: src/screens/Settings/ServicesSettings.tsx:946
 #: src/screens/Settings/ServicesSettings.tsx:972
 #: src/screens/Settings/ServicesSettings.tsx:1041
@@ -15493,6 +15823,11 @@ msgstr ""
 #: src/components/IdentityResolutionProvenance.tsx:112
 msgid "Unavailable resolvers"
 msgstr "Unavailable resolvers"
+
+#: src/screens/Settings/IdentitySovereigntySettings.tsx:418
+#: src/screens/Settings/IdentitySovereigntySettings.tsx:594
+msgid "Unavailable while signed out"
+msgstr "Unavailable while signed out"
 
 #: src/components/dms/MessageItem.tsx:764
 #: src/components/dms/MessagesListBlockedFooter.tsx:85
@@ -16016,6 +16351,18 @@ msgctxt "toast"
 msgid "User list updated"
 msgstr ""
 
+#: src/screens/Settings/IdentitySovereigntySettings.tsx:414
+msgid "User-held PLC custody available on this web device"
+msgstr "User-held PLC custody available on this web device"
+
+#: src/screens/Settings/IdentitySovereigntySettings.tsx:413
+msgid "User-held PLC key prepared; authorization still required"
+msgstr "User-held PLC key prepared; authorization still required"
+
+#: src/screens/Settings/IdentitySovereigntySettings.tsx:583
+msgid "User-held PLC rotation custody"
+msgstr "User-held PLC rotation custody"
+
 #: src/view/shell/desktop/RightNav.tsx:214
 msgid "User-selected capability and reconciliation policy"
 msgstr "User-selected capability and reconciliation policy"
@@ -16074,6 +16421,10 @@ msgstr "Verifications on Plumbline work differently than on other platforms. <0>
 #: src/components/ProviderCompositionProvenance.tsx:337
 msgid "verified"
 msgstr "verified"
+
+#: src/screens/Settings/IdentitySovereigntySettings.tsx:407
+msgid "Verified"
+msgstr "Verified"
 
 #: src/components/verification/VerificationsDialog.tsx:105
 msgid "Verified by:"
@@ -17411,6 +17762,10 @@ msgstr ""
 #: src/screens/Settings/components/ChangeHandleDialog.tsx:563
 msgid "Your current handle <0>{0}</0> will automatically remain reserved for you. You can switch back to it at any time from this account."
 msgstr ""
+
+#: src/screens/Settings/IdentitySovereigntySettings.tsx:459
+msgid "Your DID identifies the account; the PDS hosts the repository and sessions"
+msgstr "Your DID identifies the account; the PDS hosts the repository and sessions"
 
 #: src/screens/Login/ForgotPasswordForm.tsx:51
 #: src/screens/Settings/components/ChangePasswordDialog.tsx:84

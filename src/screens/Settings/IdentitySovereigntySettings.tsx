@@ -1,7 +1,7 @@
 import {useCallback, useEffect, useState} from 'react'
-import {Alert, TextInput, View} from 'react-native'
+import {Alert, StyleSheet, TextInput, View} from 'react-native'
 import * as Clipboard from 'expo-clipboard'
-import {Trans} from '@lingui/react/macro'
+import {Trans, useLingui} from '@lingui/react/macro'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import {useNavigation} from '@react-navigation/native'
 import {jwtDecode} from 'jwt-decode'
@@ -36,6 +36,7 @@ import {useDialogControl} from '#/components/Dialog'
 import * as Layout from '#/components/Layout'
 import {PlumblineAuthoritySummary} from '#/components/PlumblineAuthoritySummary'
 import * as Prompt from '#/components/Prompt'
+import {Text} from '#/components/Typography'
 import {IS_WEB} from '#/env'
 import {com} from '#/lexicons'
 
@@ -88,8 +89,29 @@ function accessExpiry(accessJwt?: string) {
   }
 }
 
+function IdentitySectionHeading({label}: {label: string}) {
+  const t = useTheme()
+  return (
+    <View
+      style={[
+        a.px_xl,
+        a.pt_lg,
+        a.pb_xs,
+        {
+          borderTopColor: t.atoms.border_contrast_low.borderColor,
+          borderTopWidth: StyleSheet.hairlineWidth,
+        },
+      ]}>
+      <Text style={[a.text_sm, a.font_semi_bold, t.atoms.text_contrast_medium]}>
+        {label}
+      </Text>
+    </View>
+  )
+}
+
 export function IdentitySovereigntySettingsScreen() {
   const t = useTheme()
+  const {t: l} = useLingui()
   const {currentAccount} = useSession()
   const {logoutCurrentAccount, logoutEveryAccount} = useSessionApi()
   const pdsClient = usePdsClient()
@@ -378,6 +400,22 @@ export function IdentitySovereigntySettingsScreen() {
         ? 'verified'
         : 'mismatch'
       : 'resolver unavailable'
+  const resolutionStatusLabel = resolvingPds
+    ? l`Checking DID document`
+    : resolvedPds && pds
+      ? resolvedPds.replace(/\/$/, '') === pds.replace(/\/$/, '')
+        ? l`Verified`
+        : l`Mismatch`
+      : l`Resolver unavailable`
+  const recoveryStateLabel = currentAccount
+    ? canUseBrowserRotationKey
+      ? activeRotationKey
+        ? l`User-held PLC key prepared; authorization still required`
+        : l`User-held PLC custody available on this web device`
+      : IS_WEB
+        ? l`Secure custody supports did:plc identities only`
+        : l`Native secure-key adapter required`
+    : l`Unavailable while signed out`
   const overview: IdentityOverview = {
     did: currentAccount?.did ?? 'Unavailable',
     handle: currentAccount?.handle,
@@ -416,167 +454,168 @@ export function IdentitySovereigntySettingsScreen() {
       <Layout.Content>
         <PlumblineAuthoritySummary
           testID="identity-authority-summary"
-          title="Identity authority"
-          source={resolvedPds ?? pds ?? 'DID document resolver'}
-          rule="Your DID identifies the account; the PDS hosts the repository and sessions"
+          title={l`Identity authority`}
+          source={resolvedPds ?? pds ?? l`DID document resolver`}
+          rule={l`Your DID identifies the account; the PDS hosts the repository and sessions`}
           state={
             currentAccount
-              ? `${overview.resolutionStatus}; ${overview.migrationState}`
-              : 'signed out'
+              ? `${resolutionStatusLabel}; ${overview.migrationState}`
+              : l`signed out`
           }
         />
         <SettingsList.Container>
+          <IdentitySectionHeading label={l`Identity and hosting`} />
           <SettingsList.Item>
-            <SettingsList.ItemText>DID</SettingsList.ItemText>
+            <SettingsList.ItemText>{l`DID`}</SettingsList.ItemText>
             <SettingsList.BadgeText>{overview.did}</SettingsList.BadgeText>
           </SettingsList.Item>
           <SettingsList.Item>
-            <SettingsList.ItemText>Handle</SettingsList.ItemText>
+            <SettingsList.ItemText>{l`Handle`}</SettingsList.ItemText>
             <SettingsList.BadgeText>
-              {overview.handle ?? 'Unavailable'}
-            </SettingsList.BadgeText>
-          </SettingsList.Item>
-          <SettingsList.Item>
-            <SettingsList.ItemText>Identity verification</SettingsList.ItemText>
-            <SettingsList.BadgeText>
-              {overview.resolutionStatus} · DID document resolver
-            </SettingsList.BadgeText>
-          </SettingsList.Item>
-          <SettingsList.Item>
-            <SettingsList.ItemText>Resolver result</SettingsList.ItemText>
-            <SettingsList.BadgeText>
-              {resolvedPds ?? 'No fresh PDS endpoint returned'}
+              {overview.handle ?? l`Unavailable`}
             </SettingsList.BadgeText>
           </SettingsList.Item>
           <SettingsList.Item>
             <SettingsList.ItemText>
-              Repository PDS (from DID document)
+              {l`Identity verification`}
             </SettingsList.ItemText>
             <SettingsList.BadgeText>
-              {overview.pds ?? 'Unavailable'} · separate from identity
+              {resolutionStatusLabel} · {l`DID document resolver`}
+            </SettingsList.BadgeText>
+          </SettingsList.Item>
+          <SettingsList.Item>
+            <SettingsList.ItemText>{l`Resolver result`}</SettingsList.ItemText>
+            <SettingsList.BadgeText>
+              {resolvedPds ?? l`No fresh PDS endpoint returned`}
             </SettingsList.BadgeText>
           </SettingsList.Item>
           <SettingsList.Item>
             <SettingsList.ItemText>
-              Read provider (AppView)
+              {l`Repository PDS (from DID document)`}
             </SettingsList.ItemText>
             <SettingsList.BadgeText>
-              {overview.appview ?? 'No AppView provider selected'}
+              {overview.pds ?? l`Unavailable`} · {l`separate from identity`}
+            </SettingsList.BadgeText>
+          </SettingsList.Item>
+          <SettingsList.Item>
+            <SettingsList.ItemText>
+              {l`Read provider (AppView)`}
+            </SettingsList.ItemText>
+            <SettingsList.BadgeText>
+              {overview.appview ?? l`No AppView provider selected`}
             </SettingsList.BadgeText>
           </SettingsList.Item>
           <SettingsList.PressableItem
-            label="Inspect or change read providers"
+            label={l`Inspect or change read providers`}
             onPress={() =>
               navigation.navigate('ServicesSettings', {section: 'providers'})
             }>
             <SettingsList.ItemText>
-              Inspect or change read providers
+              {l`Inspect or change read providers`}
             </SettingsList.ItemText>
             <SettingsList.BadgeText>
-              Services workbench · reversible local choice
+              {l`Services workbench · reversible local choice`}
             </SettingsList.BadgeText>
           </SettingsList.PressableItem>
+          <IdentitySectionHeading label={l`Migration and exit`} />
           <SettingsList.Item>
-            <SettingsList.ItemText>Migration</SettingsList.ItemText>
+            <SettingsList.ItemText>{l`Migration`}</SettingsList.ItemText>
             <SettingsList.BadgeText>
               {overview.migrationState} ·{' '}
-              {capabilityLabel(
+              {l`${capabilityLabel(
                 migration ? 'live' : 'unavailable-current-environment',
-              )}
+              )}`}
             </SettingsList.BadgeText>
           </SettingsList.Item>
           {migration && (
             <SettingsList.Item>
               <SettingsList.ItemText>
-                Legacy listblocks / private mutes
+                {l`Legacy listblocks / private mutes`}
               </SettingsList.ItemText>
               <SettingsList.BadgeText>
-                {migration.remainingListblocks} remaining ·{' '}
-                {migration.convertedToPrivateMute} converted ·{' '}
-                {migration.deleted} deleted
-                {migration.attestationRequired
-                  ? ` · ${migration.attestedListCount} attested`
-                  : ''}
+                {l`${migration.remainingListblocks} remaining · ${migration.convertedToPrivateMute} converted · ${migration.deleted} deleted${migration.attestationRequired ? ` · ${migration.attestedListCount} attested` : ''}`}
               </SettingsList.BadgeText>
             </SettingsList.Item>
           )}
           {migrationQuery.isError && (
             <SettingsList.Item>
-              <SettingsList.ItemText>Migration status</SettingsList.ItemText>
+              <SettingsList.ItemText>{l`Migration status`}</SettingsList.ItemText>
               <SettingsList.BadgeText>
-                PDS status unavailable; no migration claim was made
+                {l`PDS status unavailable; no migration claim was made`}
               </SettingsList.BadgeText>
             </SettingsList.Item>
           )}
-          <SettingsList.Divider />
           <SettingsList.Item>
-            <SettingsList.ItemText>Exit utilities</SettingsList.ItemText>
+            <SettingsList.ItemText>{l`Exit utilities`}</SettingsList.ItemText>
             <SettingsList.BadgeText>
-              Keep identity; move portable state separately
+              {l`Keep identity; move portable state separately`}
             </SettingsList.BadgeText>
           </SettingsList.Item>
           <SettingsList.PressableItem
-            label="Export repository and chat data"
+            label={l`Export repository and chat data`}
             onPress={() => exportCarControl.open()}>
             <SettingsList.ItemText>
-              Export repository and chat data
+              {l`Export repository and chat data`}
             </SettingsList.ItemText>
             <SettingsList.BadgeText>
-              CAR / JSONL · credentials excluded
+              {l`CAR / JSONL · credentials excluded`}
             </SettingsList.BadgeText>
           </SettingsList.PressableItem>
           <SettingsList.PressableItem
-            label="Open portable policy backup"
+            label={l`Open portable policy backup`}
             onPress={() => navigation.navigate('PersonalizationSettings')}>
             <SettingsList.ItemText>
-              Portable policy backup
+              {l`Portable policy backup`}
             </SettingsList.ItemText>
             <SettingsList.BadgeText>
-              Export, import, or reset local policy
+              {l`Export, import, or reset local policy`}
             </SettingsList.BadgeText>
           </SettingsList.PressableItem>
+          <IdentitySectionHeading label={l`Recovery and rotation`} />
           <SettingsList.Item>
-            <SettingsList.ItemText>Recovery</SettingsList.ItemText>
+            <SettingsList.ItemText>{l`Recovery`}</SettingsList.ItemText>
             <SettingsList.BadgeText>
-              {overview.recoveryState}
+              {recoveryStateLabel}
             </SettingsList.BadgeText>
           </SettingsList.Item>
           <SettingsList.Item>
             <SettingsList.ItemText>
-              User-held PLC rotation custody
+              {l`User-held PLC rotation custody`}
             </SettingsList.ItemText>
             <SettingsList.BadgeText>
               {canUseBrowserRotationKey
                 ? activeRotationKey
                   ? activeRotationKey.didKey
-                  : 'Available on this web device'
+                  : l`Available on this web device`
                 : currentAccount
                   ? IS_WEB
-                    ? 'did:plc required'
-                    : 'Platform adapter required'
-                  : 'Unavailable while signed out'}
+                    ? l`did:plc required`
+                    : l`Platform adapter required`
+                  : l`Unavailable while signed out`}
             </SettingsList.BadgeText>
           </SettingsList.Item>
           {canUseBrowserRotationKey && (
             <SettingsList.PressableItem
-              label="Prepare a user-held PLC rotation key"
+              label={l`Prepare a user-held PLC rotation key`}
               onPress={() => void prepareRotationKey()}
               disabled={creatingRotationKey}>
               <SettingsList.ItemText>
                 {activeRotationKey
-                  ? 'Prepare another user-held key'
-                  : 'Prepare user-held rotation key'}
+                  ? l`Prepare another user-held key`
+                  : l`Prepare user-held rotation key`}
               </SettingsList.ItemText>
               <SettingsList.BadgeText>
                 {creatingRotationKey
-                  ? 'Generating non-exportable key…'
-                  : 'Copies public did:key only'}
+                  ? l`Generating non-exportable key…`
+                  : l`Copies public did:key only`}
               </SettingsList.BadgeText>
             </SettingsList.PressableItem>
           )}
           {activeRotationKeyStatus && (
             <SettingsList.Item>
-              <SettingsList.ItemText>PLC custody status</SettingsList.ItemText>
+              <SettingsList.ItemText>
+                {l`PLC custody status`}
+              </SettingsList.ItemText>
               <SettingsList.BadgeText>
                 {activeRotationKeyStatus}
               </SettingsList.BadgeText>
@@ -587,27 +626,24 @@ export function IdentitySovereigntySettingsScreen() {
               <SettingsList.Item>
                 <View style={[a.flex_1, a.gap_xs]}>
                   <SettingsList.ItemText>
-                    PLC rotation-key registration
+                    {l`PLC rotation-key registration`}
                   </SettingsList.ItemText>
                   <SettingsList.ItemText
                     style={[a.text_sm, {paddingHorizontal: 0}]}>
-                    A prepared key is not a recovery key until it is included in
-                    a verified PLC history. Registration uses the standard PDS
-                    identity APIs and requires a separate identity grant plus
-                    the PDS email authorization code.
+                    {l`A prepared key is not a recovery key until it is included in a verified PLC history. Registration uses the standard PDS identity APIs and requires a separate identity grant plus the PDS email authorization code.`}
                   </SettingsList.ItemText>
                 </View>
                 <SettingsList.BadgeText>
                   {rotationKeyRegistration?.status === 'checking'
-                    ? 'Checking'
+                    ? l`Checking`
                     : rotationKeyRegistration?.status === 'registered'
-                      ? 'Registered'
+                      ? l`Registered`
                       : rotationKeyRegistration?.status ===
                           'registered-with-disagreement'
-                        ? 'Registered; disagreement'
+                        ? l`Registered; disagreement`
                         : rotationKeyRegistration?.status === 'unavailable'
-                          ? 'Evidence unavailable'
-                          : 'Not registered'}
+                          ? l`Evidence unavailable`
+                          : l`Not registered`}
                 </SettingsList.BadgeText>
               </SettingsList.Item>
               {rotationKeyRegistration && (
@@ -618,7 +654,7 @@ export function IdentitySovereigntySettingsScreen() {
                       {rotationKeyRegistration.message}
                     </SettingsList.ItemText>
                     <Button
-                      label="Check PLC rotation-key registration"
+                      label={l`Check PLC rotation-key registration`}
                       size="small"
                       color="secondary"
                       variant="outline"
@@ -627,7 +663,7 @@ export function IdentitySovereigntySettingsScreen() {
                       onPress={() =>
                         void checkRotationKeyRegistration(activeRotationKey)
                       }>
-                      <ButtonText>Check again</ButtonText>
+                      <ButtonText>{l`Check again`}</ButtonText>
                     </Button>
                   </View>
                 </SettingsList.Item>
@@ -636,16 +672,16 @@ export function IdentitySovereigntySettingsScreen() {
                 rotationKeyRegistration?.status !==
                   'registered-with-disagreement' && (
                   <SettingsList.PressableItem
-                    label="Request PLC rotation-key authorization"
+                    label={l`Request PLC rotation-key authorization`}
                     onPress={() => void requestRotationKeyRegistration()}
                     disabled={registeringRotationKey}>
                     <SettingsList.ItemText>
                       {registeringRotationKey
-                        ? 'Requesting PLC authorization…'
-                        : 'Request PLC rotation-key authorization'}
+                        ? l`Requesting PLC authorization…`
+                        : l`Request PLC rotation-key authorization`}
                     </SettingsList.ItemText>
                     <SettingsList.BadgeText>
-                      Feature-scoped identity grant
+                      {l`Feature-scoped identity grant`}
                     </SettingsList.BadgeText>
                   </SettingsList.PressableItem>
                 )}
@@ -653,13 +689,13 @@ export function IdentitySovereigntySettingsScreen() {
                 <SettingsList.Item>
                   <View style={[a.flex_1, a.gap_sm]}>
                     <TextInput
-                      accessibilityLabel="PLC authorization code"
-                      accessibilityHint="Enter the one-time code from the account PDS email"
+                      accessibilityLabel={l`PLC authorization code`}
+                      accessibilityHint={l`Enter the one-time code from the account PDS email`}
                       autoCapitalize="none"
                       autoCorrect={false}
                       inputMode="text"
                       secureTextEntry
-                      placeholder="Enter the one-time code"
+                      placeholder={l`Enter the one-time code`}
                       value={plcToken}
                       onChangeText={setPlcToken}
                       style={[
@@ -670,7 +706,7 @@ export function IdentitySovereigntySettingsScreen() {
                       ]}
                     />
                     <Button
-                      label="Register user-held PLC rotation key"
+                      label={l`Register user-held PLC rotation key`}
                       size="small"
                       color="primary"
                       variant="solid"
@@ -679,8 +715,8 @@ export function IdentitySovereigntySettingsScreen() {
                       onPress={() => void registerRotationKey()}>
                       <ButtonText>
                         {registeringRotationKey
-                          ? 'Registering key…'
-                          : 'Register rotation key'}
+                          ? l`Registering key…`
+                          : l`Register rotation key`}
                       </ButtonText>
                     </Button>
                   </View>
@@ -688,55 +724,55 @@ export function IdentitySovereigntySettingsScreen() {
               )}
             </>
           )}
+          <IdentitySectionHeading label={l`Sessions and delegation`} />
           <SettingsList.Item>
-            <SettingsList.ItemText>Lockdown</SettingsList.ItemText>
+            <SettingsList.ItemText>{l`Lockdown`}</SettingsList.ItemText>
             <SettingsList.BadgeText>
-              Not exposed by this client; no lockdown claim is made
+              {l`Not exposed by this client; no lockdown claim is made`}
             </SettingsList.BadgeText>
           </SettingsList.Item>
-          <SettingsList.Divider />
           <SettingsList.Item>
-            <SettingsList.ItemText>Current session</SettingsList.ItemText>
+            <SettingsList.ItemText>{l`Current session`}</SettingsList.ItemText>
             <SettingsList.BadgeText>
               {currentAccount
                 ? isSessionExpired(currentAccount)
-                  ? 'Access credential expired'
-                  : 'Active on this device'
-                : 'Unavailable'}
+                  ? l`Access credential expired`
+                  : l`Active on this device`
+                : l`Unavailable`}
             </SettingsList.BadgeText>
           </SettingsList.Item>
           <SettingsList.Item>
             <SettingsList.ItemText>
-              Access credential expiry
+              {l`Access credential expiry`}
             </SettingsList.ItemText>
             <SettingsList.BadgeText>
               {accessExpiry(currentAccount?.accessJwt) ??
-                'Not available from this session'}
+                l`Not available from this session`}
             </SettingsList.BadgeText>
           </SettingsList.Item>
           <SettingsList.Item>
-            <SettingsList.ItemText>Session login service</SettingsList.ItemText>
+            <SettingsList.ItemText>
+              {l`Session login service`}
+            </SettingsList.ItemText>
             <SettingsList.BadgeText>
-              {currentAccount?.service ?? 'Unavailable'}
+              {currentAccount?.service ?? l`Unavailable`}
             </SettingsList.BadgeText>
           </SettingsList.Item>
           <SettingsList.PressableItem
-            label="End this session"
+            label={l`End this session`}
             destructive
             onPress={() => endSessionControl.open()}>
-            <SettingsList.ItemText>End this session</SettingsList.ItemText>
+            <SettingsList.ItemText>{l`End this session`}</SettingsList.ItemText>
           </SettingsList.PressableItem>
           <SettingsList.PressableItem
-            label="Sign out all accounts on this device"
+            label={l`Sign out all accounts on this device`}
             destructive
             onPress={() => endAllSessionsControl.open()}>
             <SettingsList.ItemText>
-              Sign out all accounts on this device
+              {l`Sign out all accounts on this device`}
             </SettingsList.ItemText>
           </SettingsList.PressableItem>
-          <SettingsList.Item>
-            <SettingsList.ItemText>Authority map</SettingsList.ItemText>
-          </SettingsList.Item>
+          <IdentitySectionHeading label={l`Authority map`} />
           {AUTHORITY_MAP.map(row => (
             <SettingsList.Item key={row.actor}>
               <SettingsList.ItemText>
@@ -749,18 +785,18 @@ export function IdentitySovereigntySettingsScreen() {
       </Layout.Content>
       <Prompt.Basic
         control={endSessionControl}
-        title="End this session?"
-        description="This removes the current session from this device. The PDS does not expose a server-wide session inventory here."
+        title={l`End this session?`}
+        description={l`This removes the current session from this device. The PDS does not expose a server-wide session inventory here.`}
         onConfirm={() => logoutCurrentAccount('Settings')}
-        confirmButtonCta="End session"
+        confirmButtonCta={l`End session`}
         confirmButtonColor="negative"
       />
       <Prompt.Basic
         control={endAllSessionsControl}
-        title="Sign out all accounts on this device?"
-        description="All locally stored account sessions will be removed from this device. This does not claim to revoke sessions that are active elsewhere."
+        title={l`Sign out all accounts on this device?`}
+        description={l`All locally stored account sessions will be removed from this device. This does not claim to revoke sessions that are active elsewhere.`}
         onConfirm={() => logoutEveryAccount('Settings')}
-        confirmButtonCta="Sign out all"
+        confirmButtonCta={l`Sign out all`}
         confirmButtonColor="negative"
       />
       <ExportCarDialog control={exportCarControl} />
