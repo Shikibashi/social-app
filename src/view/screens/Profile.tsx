@@ -13,6 +13,7 @@ import {useRequireEmailVerification} from '#/lib/hooks/useRequireEmailVerificati
 import {useSetTitle} from '#/lib/hooks/useSetTitle'
 import {type IdentityClaimsResult} from '#/lib/identity-runtime'
 import {moderateProfile, type ModerationOpts} from '#/lib/moderation'
+import {ProviderCompositionError} from '#/lib/provider-composition'
 import {
   type CommonNavigatorParams,
   type NativeStackScreenProps,
@@ -26,7 +27,7 @@ import {useProfileShadow} from '#/state/cache/profile-shadow'
 import {listenSoftReset} from '#/state/events'
 import {useModerationOpts} from '#/state/preferences/moderation-opts'
 import {useLabelerInfoQuery} from '#/state/queries/labeler'
-import {useProfileQuery} from '#/state/queries/profile'
+import {type ProfileQueryData, useProfileQuery} from '#/state/queries/profile'
 import {stripNonLocalActorBlockVisibility} from '#/state/queries/public-visibility'
 import {
   useResolveDidEvidenceQuery,
@@ -53,8 +54,8 @@ import {VideoClip_Stroke1_Corner0_Rounded as VideoIcon} from '#/components/icons
 import {IdentityResolutionProvenance} from '#/components/IdentityResolutionProvenance'
 import * as Layout from '#/components/Layout'
 import {ScreenHider} from '#/components/moderation/ScreenHider'
+import {ProviderCompositionProvenance} from '#/components/ProviderCompositionProvenance'
 import {ProfileStarterPacks} from '#/components/StarterPack/ProfileStarterPacks'
-import {type app} from '#/lexicons'
 import {navigate} from '#/Navigation'
 
 interface SectionRef {
@@ -122,11 +123,19 @@ function ProfileScreenInner({route}: Props) {
     )
   }
   if (resolveError || profileError) {
+    const profileComposition =
+      profileError instanceof ProviderCompositionError
+        ? profileError.composition
+        : undefined
     return (
       <SafeAreaView style={[a.flex_1]}>
         {identityResolution ? (
           <IdentityResolutionProvenance result={identityResolution} />
         ) : null}
+        <ProviderCompositionProvenance
+          surfaceLabel={_(msg`Profile`)}
+          composition={profileComposition}
+        />
         <ErrorScreen
           testID="profileErrorScreen"
           title={profileError ? _(msg`Not Found`) : _(msg`Oops!`)}
@@ -169,7 +178,7 @@ function ProfileScreenLoaded({
   moderationOpts,
   hideBackButton,
 }: {
-  profile: app.bsky.actor.defs.ProfileViewDetailed
+  profile: ProfileQueryData
   identityResolution?: IdentityClaimsResult
   moderationOpts: ModerationOpts
   hideBackButton: boolean
@@ -177,6 +186,7 @@ function ProfileScreenLoaded({
 }) {
   const t = useTheme()
   const profile = useProfileShadow(profileUnshadowed)
+  const profileComposition = profileUnshadowed.providerComposition
   const {hasSession, currentAccount} = useSession()
   const {openComposer} = useOpenComposer()
   const navigation = useNavigation<NavigationProp>()
@@ -394,6 +404,10 @@ function ProfileScreenLoaded({
         {identityResolution ? (
           <IdentityResolutionProvenance result={identityResolution} />
         ) : null}
+        <ProviderCompositionProvenance
+          surfaceLabel={_(msg`Profile`)}
+          composition={profileComposition}
+        />
       </ScrollForwarderView>
     )
   }

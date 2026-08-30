@@ -55,6 +55,10 @@ import {
 import {atoms as a, native, platform, useBreakpoints, web} from '#/alf'
 import * as Layout from '#/components/Layout'
 import {ListFooter} from '#/components/Lists'
+import {
+  getProviderCompositionFromError,
+  ProviderCompositionProvenance,
+} from '#/components/ProviderCompositionProvenance'
 import {useAnalytics} from '#/analytics'
 import {IS_NATIVE} from '#/env'
 
@@ -90,6 +94,9 @@ export function PostThread({uri}: {uri: string}) {
     }
     return {hasParents}
   }, [thread.data.items])
+  const providerComposition =
+    thread.data.providerComposition ??
+    getProviderCompositionFromError(thread.state.error)
 
   // Track post:view event when anchor post is viewed
   const seenPostUriRef = useRef<string | null>(null)
@@ -571,6 +578,11 @@ export function PostThread({uri}: {uri: string}) {
           />
         </Layout.Header.Slot>
       </Layout.Header.Outer>
+
+      <ProviderCompositionProvenance
+        surfaceLabel="Thread"
+        composition={providerComposition}
+      />
 
       {thread.state.error ? (
         <ThreadError

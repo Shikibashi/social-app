@@ -27,7 +27,10 @@ import {uploadBlob} from '#/lib/api'
 import {fetchAccountProfile} from '#/lib/api/account-profile'
 import {until} from '#/lib/async/until'
 import {useToggleMutationQueue} from '#/lib/hooks/useToggleMutationQueue'
-import {PROVIDER_COMPOSITION_QUERY_META} from '#/lib/provider-composition'
+import {
+  PROVIDER_COMPOSITION_QUERY_META,
+  type ProviderCompositionResult,
+} from '#/lib/provider-composition'
 import {updateProfileShadow} from '#/state/cache/profile-shadow'
 import {type Shadow} from '#/state/cache/types'
 import {type ImageMeta} from '#/state/gallery'
@@ -79,6 +82,10 @@ export const profilesQueryKey = (handles: string[]) => [
   handles,
 ]
 
+export type ProfileQueryData = app.bsky.actor.defs.ProfileViewDetailed & {
+  providerComposition?: ProviderCompositionResult<app.bsky.actor.defs.ProfileViewDetailed>
+}
+
 export function useProfileQuery({
   did,
   staleTime = STALE.SECONDS.FIFTEEN,
@@ -92,7 +99,7 @@ export function useProfileQuery({
   const {currentAccount} = useSession()
   const ownerAccount = currentAccount?.did === did ? currentAccount : undefined
   const {getUnstableProfile} = useUnstableProfileViewCache()
-  return useQuery<app.bsky.actor.defs.ProfileViewDetailed>({
+  return useQuery<ProfileQueryData>({
     // WARNING
     // this staleTime is load-bearing
     // if you remove it, the UI infinite-loops
@@ -132,11 +139,14 @@ export function useProfileQuery({
           signal,
         },
       )
-      return requireComposedProviderValue(composed)
+      return {
+        ...requireComposedProviderValue(composed),
+        providerComposition: composed,
+      }
     },
     placeholderData: () => {
       if (!did) return
-      return getUnstableProfile(did) as app.bsky.actor.defs.ProfileViewDetailed
+      return getUnstableProfile(did) as ProfileQueryData
     },
     enabled: !!did,
   })
@@ -204,7 +214,10 @@ export function usePrefetchProfileQuery() {
               signal,
             },
           )
-          return requireComposedProviderValue(composed)
+          return {
+            ...requireComposedProviderValue(composed),
+            providerComposition: composed,
+          }
         },
       })
     },

@@ -1,5 +1,5 @@
 import {type ModerationDecision} from '#/lib/moderation'
-
+import {type ProviderCompositionResult} from '#/lib/provider-composition'
 import {type app} from '#/lexicons'
 
 export type ApiThreadItem =
@@ -28,6 +28,7 @@ export type PostThreadParams = Pick<
 export type UsePostThreadQueryResult = {
   hasOtherReplies: boolean
   thread: app.bsky.unspecced.getPostThreadV2.ThreadItem[]
+  providerComposition?: ProviderCompositionResult<app.bsky.unspecced.getPostThreadV2.$OutputBody>
   threadgate?: Omit<app.bsky.feed.defs.ThreadgateView, 'record'> & {
     record: app.bsky.feed.threadgate.Main
   }

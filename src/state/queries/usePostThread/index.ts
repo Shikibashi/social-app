@@ -4,7 +4,10 @@ import {type AtUriString} from '@atproto/syntax'
 import {useQuery, useQueryClient} from '@tanstack/react-query'
 
 import {fetchAccountPost} from '#/lib/api/account-posts'
-import {PROVIDER_COMPOSITION_QUERY_META} from '#/lib/provider-composition'
+import {
+  PROVIDER_COMPOSITION_QUERY_META,
+  type ProviderCompositionResult,
+} from '#/lib/provider-composition'
 import {useModerationOpts} from '#/state/preferences/moderation-opts'
 import {useThreadPreferences} from '#/state/queries/preferences/useThreadPreferences'
 import {
@@ -164,6 +167,9 @@ export function usePostThread({anchor}: {anchor?: string}) {
     queryKey: postThreadQueryKey,
     async queryFn(ctx) {
       let data: app.bsky.unspecced.getPostThreadV2.$OutputBody
+      let providerComposition:
+        | ProviderCompositionResult<app.bsky.unspecced.getPostThreadV2.$OutputBody>
+        | undefined
       let threadClient = client
       let threadPublicClient = publicClient
       try {
@@ -190,6 +196,7 @@ export function usePostThread({anchor}: {anchor?: string}) {
             signal: ctx.signal,
           },
         )
+        providerComposition = composed
         data = requireComposedProviderValue(composed)
         const selectedProviderId = composed.selectedProviderIds[0]
         const selectedProvider = getAppViewProvidersForSurface('threads').find(
@@ -215,6 +222,7 @@ export function usePostThread({anchor}: {anchor?: string}) {
           hasOtherReplies: false,
           thread: [views.postViewToThreadPlaceholder(directPost)],
         }
+        providerComposition = undefined
       }
 
       const missingAnchor = data.thread.some(
@@ -234,6 +242,7 @@ export function usePostThread({anchor}: {anchor?: string}) {
             hasOtherReplies: false,
             thread: [views.postViewToThreadPlaceholder(directPost)],
           }
+          providerComposition = undefined
         }
       }
 
@@ -273,6 +282,7 @@ export function usePostThread({anchor}: {anchor?: string}) {
         thread: hydratedThread,
         threadgate: data.threadgate,
         hasOtherReplies: !!ctx.meta.hasOtherReplies,
+        providerComposition,
       } as UsePostThreadQueryResult
 
       const record = getThreadgateRecord(result.threadgate)
@@ -525,6 +535,7 @@ export function usePostThread({anchor}: {anchor?: string}) {
       data: {
         items,
         threadgate,
+        providerComposition: query.data?.providerComposition,
       },
       actions: {
         /*
