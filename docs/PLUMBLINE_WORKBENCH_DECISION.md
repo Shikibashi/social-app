@@ -764,8 +764,9 @@ locally without putting the selected authority surface in the browser URL.
 | Check | Status | Evidence |
 | --- | --- | --- |
 | Provider composition semantics | PASS | Existing `src/lib/provider-composition.test.ts` coverage retained; no selection or verification logic changed |
-| Targeted formatting/lint/type checks | NOT RUN | Run against the two changed client files before commit |
-| Browser workbench inspection | NOT RUN | Verify the compact provenance summary and URL-preserved Services section after deployment |
+| Targeted formatting/lint/type checks | PASS | Prettier, Oxlint, and `pnpm run typecheck:web` passed for the changed client boundary |
+| Public browser summary | PASS | Canonical `https://plumblines.uk/profile/davidwilliampippy.bsky.social?deployment=fdd04899` rendered Plumbline branding, `Source:`, `Rule:`, and `State:` with no application errors or Lingui ID artifacts |
+| Services workbench content | NOT RUN | The in-app browser was logged out; the `section=providers` deep-link parameter was preserved, but authenticated workbench content was not exercised without a credential |
 
 This iteration improves inspectability and browser addressability without
 claiming provider independence, changing write routing, or closing the
