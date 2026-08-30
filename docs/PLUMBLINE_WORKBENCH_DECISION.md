@@ -446,7 +446,46 @@ pretending they are Plumbline-operated services. It does not change provider
 policy, establish independent operator control, or close the external
 Relay/AppView, short-TTL OAuth, or PLC-operator gates.
 
-## 20. Remaining concentrations worth attacking next
+## 20. Iteration 14 — distinguish the account service from the repository PDS
+
+The Services and Identity workbenches previously used the active account's
+generic `service` value as a fallback for the repository host. For hosted
+OAuth sessions that value can identify the login or account-entryway service,
+not the PDS that stores the user's repository. This iteration aligns both
+workbenches with the session-state contract: login authority and repository
+hosting are separate rows, and an unavailable DID-backed PDS is shown as
+unknown rather than inferred.
+
+### Implementation and verification evidence
+
+- `src/screens/Settings/ServicesSettings.tsx` now labels the generic service
+  as `Account service (login)` and adds a separate `Repository PDS` row sourced
+  only from `currentAccount.pdsUrl`. Missing DID-backed PDS state is rendered
+  as `Not available from the DID-backed session state`.
+- `src/screens/Settings/IdentitySovereigntySettings.tsx` now labels the PDS as
+  `Repository PDS (from DID document)` and the generic service as
+  `Session login service`; it no longer presents the login service as the PDS.
+- Existing `session-data.ts` behavior and session-core coverage continue to
+  prove that `pdsUrl` does not fall back to the login service. Targeted
+  Prettier, Oxlint, and `git diff --check` pass; the focused session and
+  identity suite passes (43 tests).
+- Client commit `fc0898981` was pushed to
+  `fork/codex/spaces-alpha-integration`.
+- The generated web export contains `main.05652ee9.js` and Wrangler deployed
+  it at `https://3096c3e8.social-edriffles.pages.dev`. The credential-free
+  ChatGPT in-app-browser check of the canonical Plumbline deployment verified
+  `Services — Plumbline`, the separate account-service and repository-PDS
+  labels, the explicit unavailable PDS state, `Identity sovereignty —
+  Plumbline`, and the separate identity labels. The home route remained
+  `Following — Plumbline` with no visible error. No credentials were read and
+  no mutation was performed.
+
+This removes a user-facing authority conflation without claiming that the
+client can discover a PDS when the DID-backed session state does not provide
+one. It does not establish independent operators, close the external
+Relay/AppView or short-TTL OAuth gates, or prove authenticated write flows.
+
+## 21. Remaining concentrations worth attacking next
 
 1. Add a compatible, independently attributable media delivery composition contract only if it can preserve PDS blob authority and safe browser delivery; do not treat a CDN URL as a second authoritatively owned record.
 2. Add credentialed multi-provider browser fixtures for revoked grants, migration, block boundaries, and partial service support without using production credentials.
