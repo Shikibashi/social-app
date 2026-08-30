@@ -57,6 +57,8 @@ import {
   usePdsClient,
   useSession,
 } from '#/state/session'
+import {assertOAuthFeatureGranted} from '#/state/session/oauth-authority'
+import {useEnsureOAuthFeature} from '#/state/session/oauth-feature-gate'
 import * as userActionHistory from '#/state/userActionHistory'
 import {useAnalytics} from '#/analytics'
 import {type Metrics, toClout} from '#/analytics/metrics'
@@ -246,6 +248,7 @@ export function useProfileUpdateMutation() {
   const pdsClient = usePdsClient()
   const appviewClient = useAppviewClient()
   const updateProfileVerificationCache = useUpdateProfileVerificationCache()
+  const ensureOAuthFeature = useEnsureOAuthFeature()
   return useMutation<void, Error, ProfileUpdateParams>({
     mutationFn: async ({
       profile,
@@ -254,6 +257,13 @@ export function useProfileUpdateMutation() {
       newUserBanner,
       checkCommitted,
     }) => {
+      assertOAuthFeatureGranted(
+        await ensureOAuthFeature('profile-editing'),
+        'profile-editing',
+      )
+      if (newUserAvatar || newUserBanner) {
+        assertOAuthFeatureGranted(await ensureOAuthFeature('media'), 'media')
+      }
       let newUserAvatarPromise: ReturnType<typeof uploadBlob> | undefined
       if (newUserAvatar) {
         newUserAvatarPromise = uploadBlob(

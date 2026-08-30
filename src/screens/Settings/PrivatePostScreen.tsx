@@ -8,6 +8,8 @@ import {writePrivateTextPost} from '#/lib/permissioned-data'
 import {type CommonNavigatorParams} from '#/lib/routes/types'
 import {useProtectedAccountQuery} from '#/state/queries/protected-account'
 import {usePdsClient} from '#/state/session'
+import {assertOAuthFeatureGranted} from '#/state/session/oauth-authority'
+import {useEnsureOAuthFeature} from '#/state/session/oauth-feature-gate'
 import * as SettingsList from '#/screens/Settings/components/SettingsList'
 import {atoms as a, useTheme} from '#/alf'
 import {Button, ButtonText} from '#/components/Button'
@@ -30,11 +32,13 @@ export function PrivatePostScreen({}: Props) {
   const client = usePdsClient()
   const queryClient = useQueryClient()
   const accountQuery = useProtectedAccountQuery()
+  const ensureOAuthFeature = useEnsureOAuthFeature()
   const [text, setText] = useState('')
   const [status, setStatus] = useState<string>()
 
   const mutation = useMutation({
     mutationFn: async () => {
+      assertOAuthFeatureGranted(await ensureOAuthFeature('spaces'), 'spaces')
       const space =
         accountQuery.data?.visibility === 'protected'
           ? accountQuery.data.space

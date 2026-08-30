@@ -689,3 +689,37 @@ This is a UI/provenance slice, not an action-level permission enforcement
 claim. Posting, likes, profile editing, chat, and Spaces behavior remains on
 the existing compatibility path until the separate caller-level preflight
 batch is implemented and verified.
+
+## 27. Iteration 20 — action-level OAuth preflight
+
+The Authorization inspector exposed feature grants, but the principal write
+surfaces did not yet enforce those grants before optimistic state or network
+mutation. Plumbline now uses the existing OAuth feature ledger and upgrade API
+at the action boundary.
+
+- `oauth-authority.ts` is a pure, testable decision contract; it does not
+  inspect or store credentials.
+- `oauth-feature-gate.ts` requests one missing feature at a time, deduplicates
+  concurrent prompts, and stops the current attempt until the refreshed
+  session is rendered.
+- Posts, likes, reposts, profile edits, media uploads, chat mutations, and
+  Spaces/private-record actions gate before optimistic updates, uploads, or
+  writes. Password sessions and legacy-compatible grants retain their existing
+  behavior.
+- The OAuth client still owns PAR, PKCE, DPoP, refresh, state, and storage;
+  this boundary only prevents a caller from using an insufficient grant.
+
+### Verification
+
+| Check | Status | Evidence |
+| --- | --- | --- |
+| OAuth authority contract | PASS | `src/state/session/__tests__/oauth-authority-test.ts` and `oauth-scopes-test.ts` — 15 tests |
+| Prettier | PASS | All touched TypeScript/TSX files |
+| Oxlint | PASS | All touched TypeScript/TSX files |
+| Web TypeScript | PASS | `pnpm run typecheck:web` |
+| Diff hygiene | PASS | `git diff --check` |
+
+This is a bounded mutation slice rather than a claim that every settings or
+chat-administration RPC has a feature preflight. Credentialed browser writes,
+external Relay/AppView privacy evidence, short-TTL OAuth expiry evidence, and
+independent PLC operator evidence remain separate gates.

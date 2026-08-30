@@ -98,6 +98,7 @@ import {
   usePdsClient,
   useSession,
 } from '#/state/session'
+import {useEnsureOAuthFeature} from '#/state/session/oauth-feature-gate'
 import {useComposerControls} from '#/state/shell/composer'
 import {
   type ComposerOpts,
@@ -279,6 +280,7 @@ export const ComposePost = ({
   const client = useAppviewClient()
   const chatClient = useChatClient()
   const pdsClient = usePdsClient()
+  const ensureOAuthFeature = useEnsureOAuthFeature()
   const queryClient = useQueryClient()
   /*
    * The host the video service-auth token is minted for. This is the same value
@@ -1070,6 +1072,16 @@ export const ComposePost = ({
       return
     }
 
+    const primaryFeature = privatePostMode ? 'spaces' : 'posting'
+    if (!(await ensureOAuthFeature(primaryFeature))) return
+    if (
+      !privatePostMode &&
+      filteredThread.posts.some(post => Boolean(post.embed.media)) &&
+      !(await ensureOAuthFeature('media'))
+    ) {
+      return
+    }
+
     skipEmptyConfirmedRef.current = false
     setError('')
     setIsPublishing(true)
@@ -1379,6 +1391,7 @@ export const ComposePost = ({
     linkQueries,
     privateAccountSpace,
     privatePostMode,
+    ensureOAuthFeature,
   ])
 
   const handleConfirmSkipEmpty = () => {

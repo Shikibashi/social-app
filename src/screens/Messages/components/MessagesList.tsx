@@ -619,18 +619,12 @@ export function MessagesList({
       rt = shortenLinks(rt)
       rt = stripInvalidMentions(rt)
 
-      if (!hasScrolled) {
-        setHasScrolled(true)
-      }
-
       /*
        * Sending your own message should always take you to it, regardless of
        * current scroll position. The effect watching renderItems.length scrolls
        * to the end once the pending message is appended.
        */
-      pendingSendScroll.current = true
-
-      convoState.sendMessage(
+      const sent = await convoState.sendMessage(
         {
           text: rt.text,
           facets: rt.facets,
@@ -640,6 +634,13 @@ export function MessagesList({
         embedView,
         reply,
       )
+
+      if (!sent) return
+
+      if (!hasScrolled) {
+        setHasScrolled(true)
+      }
+      pendingSendScroll.current = true
 
       if (replyTo) {
         ax.metric('chat:message:reply:send', {

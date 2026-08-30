@@ -14,6 +14,8 @@ import {readAllSpaceRecords} from '#/lib/atproto/spaces/fanout'
 import {type CommonNavigatorParams} from '#/lib/routes/types'
 import {useProtectedAccountQuery} from '#/state/queries/protected-account'
 import {usePdsClient} from '#/state/session'
+import {assertOAuthFeatureGranted} from '#/state/session/oauth-authority'
+import {useEnsureOAuthFeature} from '#/state/session/oauth-feature-gate'
 import * as SettingsList from '#/screens/Settings/components/SettingsList'
 import {atoms as a, useTheme} from '#/alf'
 import {Button, ButtonText} from '#/components/Button'
@@ -40,8 +42,11 @@ export function PermissionedSpacesSettingsScreen({}: Props) {
   const client = usePdsClient()
   const queryClient = useQueryClient()
   const accountQuery = useProtectedAccountQuery()
+  const ensureOAuthFeature = useEnsureOAuthFeature()
   const [space, setSpace] = useState('')
-  const [collection, setCollection] = useState('us.edriffles.radlib.private.post')
+  const [collection, setCollection] = useState(
+    'us.edriffles.radlib.private.post',
+  )
   const [lookupRepo, setLookupRepo] = useState('')
   const [lookupCollection, setLookupCollection] = useState(
     'us.edriffles.radlib.private.post',
@@ -85,13 +90,16 @@ export function PermissionedSpacesSettingsScreen({}: Props) {
           },
         )
       }
-      const legacy = await client.call(us.edriffles.radlib.private.listRecords, {
-        space,
-        collection: collection.trim()
-          ? (collection.trim() as NsidString)
-          : undefined,
-        limit: 50,
-      })
+      const legacy = await client.call(
+        us.edriffles.radlib.private.listRecords,
+        {
+          space,
+          collection: collection.trim()
+            ? (collection.trim() as NsidString)
+            : undefined,
+          limit: 50,
+        },
+      )
       return {records: legacy.records, errors: [], complete: true}
     },
   })
@@ -100,12 +108,15 @@ export function PermissionedSpacesSettingsScreen({}: Props) {
     queryKey: ['radlib-private-communities', client.did],
     enabled: !!client.did && SPACES_ALPHA_ENABLED,
     queryFn: async () => {
-      return client.call(us.edriffles.radlib.private.listCommunities, {limit: 50})
+      return client.call(us.edriffles.radlib.private.listCommunities, {
+        limit: 50,
+      })
     },
   })
 
   const membershipMutation = useMutation({
     mutationFn: async (leave: boolean) => {
+      assertOAuthFeatureGranted(await ensureOAuthFeature('spaces'), 'spaces')
       const selectedSpace = communitySpace.trim()
       const authorityDid = parseSpaceAuthority(selectedSpace)
       const controlClient =
@@ -140,6 +151,7 @@ export function PermissionedSpacesSettingsScreen({}: Props) {
 
   async function getRecord() {
     try {
+      assertOAuthFeatureGranted(await ensureOAuthFeature('spaces'), 'spaces')
       requirePrivateTransport()
       let result
       if (SPACES_ALPHA_ENABLED) {
@@ -173,6 +185,7 @@ export function PermissionedSpacesSettingsScreen({}: Props) {
 
   async function getBlob() {
     try {
+      assertOAuthFeatureGranted(await ensureOAuthFeature('spaces'), 'spaces')
       requirePrivateTransport()
       let result
       if (SPACES_ALPHA_ENABLED) {

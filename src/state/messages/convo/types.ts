@@ -9,6 +9,11 @@ export type ConvoParams = {
   /** The chat client, which proxies `chat.bsky.*` to the chat service. */
   chatClient: Client
   events: MessagesEventBus
+  /**
+   * Authorize the chat feature before an explicit mutation. Reads and
+   * background synchronization must not open a consent flow implicitly.
+   */
+  ensureChatAuthorized?: () => Promise<boolean>
   placeholderData?: {
     convo: chat.bsky.convo.defs.ConvoView
   }
@@ -108,7 +113,7 @@ type SendMessage = (
     | $Typed<chat.bsky.embed.joinLink.View>
     | undefined,
   optimisticReplyTo?: $Typed<chat.bsky.convo.defs.MessageView>,
-) => void
+) => Promise<boolean>
 type FetchMessageHistory = () => Promise<void>
 type MarkConvoAccepted = () => void
 type AddReaction = (messageId: string, reaction: string) => Promise<void>

@@ -27,6 +27,8 @@ import {
   type NavigationProp,
 } from '#/lib/routes/types'
 import {usePdsClient, useSession, useSessionApi} from '#/state/session'
+import {assertOAuthFeatureGranted} from '#/state/session/oauth-authority'
+import {useEnsureOAuthFeature} from '#/state/session/oauth-feature-gate'
 import {hasOAuthFeature} from '#/state/session/oauth-scopes'
 import {resolvePdsEndpointForDid} from '#/state/session/pds-resolution'
 import {atoms as a, useBreakpoints, useTheme} from '#/alf'
@@ -143,6 +145,7 @@ export function CommunityBoardScreen({route}: Props) {
   const client = usePdsClient()
   const {currentAccount} = useSession()
   const {refreshSession} = useSessionApi()
+  const ensureOAuthFeature = useEnsureOAuthFeature()
   const navigation = useNavigation<NavigationProp>()
   const queryClient = useQueryClient()
   const {gtMobile} = useBreakpoints()
@@ -285,12 +288,14 @@ export function CommunityBoardScreen({route}: Props) {
   })
 
   const communityMutation = useMutation({
-    mutationFn: () =>
-      client.call(us.edriffles.radlib.private.createCommunity, {
+    mutationFn: async () => {
+      assertOAuthFeatureGranted(await ensureOAuthFeature('spaces'), 'spaces')
+      return client.call(us.edriffles.radlib.private.createCommunity, {
         name: communityName.trim(),
         description: communityDescription.trim() || undefined,
         visibility: communityVisibility,
-      }),
+      })
+    },
     onSuccess: result => {
       setCommunityName('')
       setCommunityDescription('')
@@ -312,6 +317,7 @@ export function CommunityBoardScreen({route}: Props) {
 
   const membershipMutation = useMutation({
     mutationFn: async (leave: boolean) => {
+      assertOAuthFeatureGranted(await ensureOAuthFeature('spaces'), 'spaces')
       const authorityDid = parseSpaceAuthority(space)
       const controlClient =
         authorityDid === client.did
@@ -351,6 +357,7 @@ export function CommunityBoardScreen({route}: Props) {
     mutationFn: async (
       targets: Community[],
     ): Promise<CommunityDeletionResult> => {
+      assertOAuthFeatureGranted(await ensureOAuthFeature('spaces'), 'spaces')
       const deleted: Community[] = []
 
       for (const target of targets) {
@@ -451,11 +458,7 @@ export function CommunityBoardScreen({route}: Props) {
   const postMutation = useMutation({
     mutationFn: async () => {
       if (!space.trim()) throw new Error('Community space is unavailable')
-      if (spacesAuthorizationRequired) {
-        throw new Error(
-          'Authorize the Spaces feature before posting in this community',
-        )
-      }
+      assertOAuthFeatureGranted(await ensureOAuthFeature('spaces'), 'spaces')
       const selectedThread = threadList.find(
         thread => thread.key === selectedTopicKey,
       )

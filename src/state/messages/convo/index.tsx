@@ -28,6 +28,7 @@ import {
 import {RQKEY_ROOT as ListConvosQueryKeyRoot} from '#/state/queries/messages/list-conversations'
 import {RQKEY as createProfileQueryKey} from '#/state/queries/profile'
 import {useChatClient} from '#/state/session'
+import {useEnsureOAuthFeature} from '#/state/session/oauth-feature-gate'
 import {type GroupConvoMember} from '#/components/dms/util'
 import {chat} from '#/lexicons'
 import * as bsky from '#/types/bsky'
@@ -82,6 +83,7 @@ export function ConvoProvider({
 }: Pick<ConvoParams, 'convoId'> & {children: React.ReactNode}) {
   const queryClient = useQueryClient()
   const chatClient = useChatClient()
+  const ensureOAuthFeature = useEnsureOAuthFeature()
   const events = useMessagesEventBus()
   const [convo] = useState(() => {
     const placeholder =
@@ -107,6 +109,10 @@ export function ConvoProvider({
   useEffect(() => {
     convo.updateClient(chatClient)
   }, [convo, chatClient])
+
+  useEffect(() => {
+    convo.updateAuthorizationGate(() => ensureOAuthFeature('chat'))
+  }, [convo, ensureOAuthFeature])
 
   const appState = useAppState()
   const isActive = appState === 'active'

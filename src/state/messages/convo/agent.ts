@@ -99,6 +99,7 @@ export class Convo {
   private chatClient: Client
   private events: MessagesEventBus
   private senderUserDid: DidString
+  private ensureChatAuthorized: () => Promise<boolean>
 
   private status: ConvoStatus = ConvoStatus.Uninitialized
   private error: ConvoError | undefined
@@ -160,6 +161,8 @@ export class Convo {
     this.chatClient = params.chatClient
     this.events = params.events
     this.senderUserDid = params.chatClient.assertDid
+    this.ensureChatAuthorized =
+      params.ensureChatAuthorized ?? (() => Promise.resolve(true))
 
     if (params.placeholderData) {
       this.setupPlaceholderData(params.placeholderData)
@@ -195,6 +198,10 @@ export class Convo {
    */
   updateClient(chatClient: Client) {
     this.chatClient = chatClient
+  }
+
+  updateAuthorizationGate(ensureChatAuthorized: () => Promise<boolean>) {
+    this.ensureChatAuthorized = ensureChatAuthorized
   }
 
   private subscribers: (() => void)[] = []
@@ -1022,7 +1029,7 @@ export class Convo {
 
   private pendingMessageFailure: 'recoverable' | 'unrecoverable' | null = null
 
-  sendMessage(
+  async sendMessage(
     message: chat.bsky.convo.defs.MessageInput,
     optimisticEmbedView?:
       | $Typed<app.bsky.embed.record.View>
@@ -1030,7 +1037,12 @@ export class Convo {
     optimisticReplyTo?: $Typed<chat.bsky.convo.defs.MessageView>,
   ) {
     // Ignore empty messages for now since they have no other purpose atm
-    if (!message.text.trim() && !message.embed) return
+    if (!message.text.trim() && !message.embed) return false
+
+    // Do this before adding the pending message or changing the conversation
+    // state. If OAuth consent is needed, the callback navigates to consent and
+    // this attempt must not leave an optimistic message behind.
+    if (!(await this.ensureChatAuthorized())) return false
 
     logger.debug('send message', {})
 
@@ -1053,6 +1065,8 @@ export class Convo {
     if (!this.isProcessingPendingMessages && !this.pendingMessageFailure) {
       void this.processPendingMessages()
     }
+
+    return true
   }
 
   markConvoAccepted() {
@@ -1293,6 +1307,8 @@ export class Convo {
   async deleteMessage(messageId: string) {
     logger.debug('delete message', {})
 
+    if (!(await this.ensureChatAuthorized())) return
+
     this.deletedMessages.add(messageId)
     this.commit()
 
@@ -1462,6 +1478,8 @@ export class Convo {
    * @param emoji - must be one grapheme
    */
   async addReaction(messageId: string, emoji: string) {
+    if (!(await this.ensureChatAuthorized())) return
+
     const optimisticReaction: chat.bsky.convo.defs.ReactionView = {
       value: emoji,
       sender: {did: this.senderUserDid},
@@ -1547,6 +1565,8 @@ export class Convo {
    * @param emoji - The emoji to remove.
    */
   async removeReaction(messageId: string, emoji: string) {
+    if (!(await this.ensureChatAuthorized())) return
+
     let restore: null | (() => void) = null
     if (this.pastMessages.has(messageId)) {
       const prevMessage = this.pastMessages.get(messageId)

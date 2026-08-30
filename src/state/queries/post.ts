@@ -36,6 +36,8 @@ import {
   useSession,
 } from '#/state/session'
 import {getPublicAppviewClient} from '#/state/session/clients'
+import {assertOAuthFeatureGranted} from '#/state/session/oauth-authority'
+import {useEnsureOAuthFeature} from '#/state/session/oauth-feature-gate'
 import {getAppViewProvidersForSurface} from '#/state/session/providers'
 import * as userActionHistory from '#/state/userActionHistory'
 import {useAnalytics} from '#/analytics'
@@ -322,6 +324,7 @@ export function usePostLikeMutationQueue(
   const initialLikeUri = post.viewer?.like
   const likeMutation = usePostLikeMutation(feedDescriptor, logContext, post)
   const unlikeMutation = usePostUnlikeMutation(feedDescriptor, logContext, post)
+  const ensureOAuthFeature = useEnsureOAuthFeature()
 
   const queueToggle = useToggleMutationQueue({
     initialState: initialLikeUri,
@@ -363,7 +366,8 @@ export function usePostLikeMutationQueue(
     },
   })
 
-  const queueLike = useCallback(() => {
+  const queueLike = useCallback(async () => {
+    if (!(await ensureOAuthFeature('posting'))) return
     // optimistically update
     updatePostShadow(
       queryClient,
@@ -374,9 +378,10 @@ export function usePostLikeMutationQueue(
       currentAccountDid,
     )
     return queueToggle(true)
-  }, [currentAccountDid, queryClient, postUri, queueToggle])
+  }, [currentAccountDid, ensureOAuthFeature, queryClient, postUri, queueToggle])
 
-  const queueUnlike = useCallback(() => {
+  const queueUnlike = useCallback(async () => {
+    if (!(await ensureOAuthFeature('posting'))) return
     // optimistically update
     updatePostShadow(
       queryClient,
@@ -387,7 +392,7 @@ export function usePostLikeMutationQueue(
       currentAccountDid,
     )
     return queueToggle(false)
-  }, [currentAccountDid, queryClient, postUri, queueToggle])
+  }, [currentAccountDid, ensureOAuthFeature, queryClient, postUri, queueToggle])
 
   return [queueLike, queueUnlike] as const
 }
@@ -402,12 +407,14 @@ function usePostLikeMutation(
   const postAuthor = post.author
   const pdsClient = usePdsClient()
   const ax = useAnalytics()
+  const ensureOAuthFeature = useEnsureOAuthFeature()
   return useMutation<
     {uri: AtUriString}, // responds with the uri of the like
     Error,
     {uri: string; cid: string; via?: {uri: string; cid: string}} // the post's uri and cid, and the repost uri/cid if present
   >({
-    mutationFn: ({uri, cid, via}) => {
+    mutationFn: async ({uri, cid, via}) => {
+      assertOAuthFeatureGranted(await ensureOAuthFeature('posting'), 'posting')
       let ownProfile: app.bsky.actor.defs.ProfileViewDetailed | undefined
       if (currentAccount) {
         ownProfile = findProfileQueryData(queryClient, currentAccount.did)
@@ -447,8 +454,10 @@ function usePostUnlikeMutation(
 ) {
   const pdsClient = usePdsClient()
   const ax = useAnalytics()
+  const ensureOAuthFeature = useEnsureOAuthFeature()
   return useMutation<void, Error, {postUri: string; likeUri: string}>({
-    mutationFn: ({postUri, likeUri}) => {
+    mutationFn: async ({postUri, likeUri}) => {
+      assertOAuthFeatureGranted(await ensureOAuthFeature('posting'), 'posting')
       ax.metric('post:unlike', {
         uri: postUri,
         authorDid: post.author.did,
@@ -476,6 +485,7 @@ export function usePostRepostMutationQueue(
     logContext,
     post,
   )
+  const ensureOAuthFeature = useEnsureOAuthFeature()
 
   const queueToggle = useToggleMutationQueue({
     initialState: initialRepostUri,
@@ -505,21 +515,23 @@ export function usePostRepostMutationQueue(
     },
   })
 
-  const queueRepost = useCallback(() => {
+  const queueRepost = useCallback(async () => {
+    if (!(await ensureOAuthFeature('posting'))) return
     // optimistically update
     updatePostShadow(queryClient, postUri, {
       repostUri: 'pending',
     })
     return queueToggle(true)
-  }, [queryClient, postUri, queueToggle])
+  }, [ensureOAuthFeature, queryClient, postUri, queueToggle])
 
-  const queueUnrepost = useCallback(() => {
+  const queueUnrepost = useCallback(async () => {
+    if (!(await ensureOAuthFeature('posting'))) return
     // optimistically update
     updatePostShadow(queryClient, postUri, {
       repostUri: undefined,
     })
     return queueToggle(false)
-  }, [queryClient, postUri, queueToggle])
+  }, [ensureOAuthFeature, queryClient, postUri, queueToggle])
 
   return [queueRepost, queueUnrepost] as const
 }
@@ -531,12 +543,14 @@ function usePostRepostMutation(
 ) {
   const pdsClient = usePdsClient()
   const ax = useAnalytics()
+  const ensureOAuthFeature = useEnsureOAuthFeature()
   return useMutation<
     {uri: AtUriString}, // responds with the uri of the repost
     Error,
     {uri: string; cid: string; via?: {uri: string; cid: string}} // the post's uri and cid, and the repost uri/cid if present
   >({
-    mutationFn: ({uri, cid, via}) => {
+    mutationFn: async ({uri, cid, via}) => {
+      assertOAuthFeatureGranted(await ensureOAuthFeature('posting'), 'posting')
       ax.metric('post:repost', {
         uri,
         authorDid: post.author.did,
@@ -559,8 +573,10 @@ function usePostUnrepostMutation(
 ) {
   const pdsClient = usePdsClient()
   const ax = useAnalytics()
+  const ensureOAuthFeature = useEnsureOAuthFeature()
   return useMutation<void, Error, {postUri: string; repostUri: string}>({
-    mutationFn: ({postUri, repostUri}) => {
+    mutationFn: async ({postUri, repostUri}) => {
+      assertOAuthFeatureGranted(await ensureOAuthFeature('posting'), 'posting')
       ax.metric('post:unrepost', {
         uri: postUri,
         authorDid: post.author.did,
@@ -575,8 +591,10 @@ function usePostUnrepostMutation(
 export function usePostDeleteMutation() {
   const queryClient = useQueryClient()
   const pdsClient = usePdsClient()
+  const ensureOAuthFeature = useEnsureOAuthFeature()
   return useMutation<void, Error, {uri: string}>({
     mutationFn: async ({uri}) => {
+      assertOAuthFeatureGranted(await ensureOAuthFeature('posting'), 'posting')
       await pdsClient.call(deletePost, uri as AtUriString)
     },
     onSuccess(_, variables) {
