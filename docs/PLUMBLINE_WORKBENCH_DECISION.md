@@ -1044,3 +1044,86 @@ not reduce the existing tab target sizes. The native tab bar is unchanged.
 This iteration improves active-surface disclosure without adding a new
 authority. The external Relay/AppView, short-TTL OAuth, and independent-PLC
 operator gates remain separate and unresolved.
+
+## 33. Iteration 26 — make the desktop right rail a contextual inspector
+
+The desktop right rail was still primarily a generic search, feed-shortcut,
+progress, live-event, and trending rail. That composition made the
+Inspector role in the Plumbline workbench implicit: a user could see related
+content, but could not quickly answer which source, rule, and user control
+applied to the current surface.
+
+### Residual authority concentration and why it matters
+
+This was a presentation and explanation concentration, not a new network
+authority. The shell visually privileged discovery and engagement-adjacent
+content over explanation of the selected workspace. That weakened the
+Plumbline Test questions "what is happening?", "who or what caused it?", and
+"what can I change?" even though the underlying Services and provenance
+implementations already supported those distinctions.
+
+### Ecosystem/design precedent and chosen change
+
+The change follows ECW Workbench Mode and the existing Services workbench
+instead of creating a second provider registry or a second policy engine. A
+route-aware `DesktopWorkbenchInspector` now occupies the top of the desktop
+right rail and describes the current surface using four explicit fields:
+route, source, rule, and control. It links to the existing feed or Services
+surface for the corresponding user action. The page-level provenance
+components remain the detailed source of record; this inspector is a
+progressive, compact summary.
+
+The feed shortcut list also now exposes stable test IDs and selected state,
+uses the existing scroll boundary for long lists, and applies Plumbline's
+square web control geometry without changing avatar or semantic shapes.
+
+### Authority before versus after
+
+| Boundary | Before iteration 26 | After iteration 26 |
+| --- | --- | --- |
+| Desktop right rail | Search, shortcuts, progress, events, and trends appeared without a contextual explanation of the workspace. | The inspector identifies the route, source category, governing rule, and available control before the existing secondary content. |
+| Provider disclosure | Detailed provenance existed on some pages, but the shell did not consistently point to the relevant service boundary. | Route-level summaries point to the existing Services or feed controls; detailed page provenance remains authoritative and inspectable. |
+| Feed selection | Feed links had hover/current styling but no stable web test identity or selected accessibility state. | Feed links expose `accessibilityState.selected`, stable `plumbline-feed-*` test IDs, and unchanged browser-native links. |
+| Authority ownership | No new authority was created, but the shell did not make that fact legible. | The inspector is descriptive only; provider selection, policy, identity, and social-record authority remain in their existing modules. |
+
+### Interoperability and security tradeoffs
+
+This is a web-scoped shell and disclosure change. It does not change route
+URLs, PDS or AppView selection, OAuth grants, provider reconciliation,
+records, storage, social mutations, or native layout. The inspector consumes
+the existing pinned-feed and selected-feed state and links to existing
+routes. It does not fetch a privileged provider or silently promote a result.
+The selected feed state is exposed to assistive technology, while the
+decorative geometry remains non-interactive. New English messages were
+extracted and compiled so production does not display Lingui message IDs.
+
+### Implementation evidence
+
+- `src/view/shell/desktop/RightNav.tsx` adds the route-aware
+  `DesktopWorkbenchInspector` and square, bordered workbench presentation.
+- `src/view/shell/desktop/Feeds.tsx` adds selected-state disclosure, stable
+  test IDs, and square web geometry for feed shortcuts and the More feeds
+  control.
+- `src/locale/locales/en/messages.po` records the inspector strings; the
+  generated catalog is compiled by the existing `intl:compile` workflow.
+
+### Verification
+
+| Check | Status | Evidence |
+| --- | --- | --- |
+| Touched-file Oxlint | PASS | `pnpm exec oxlint --quiet src/view/shell/desktop/RightNav.tsx src/view/shell/desktop/Feeds.tsx`; the pre-commit Oxlint hook also passed after correcting the accessibility role and hint. |
+| Formatting and whitespace | PASS | Prettier check and `git diff --check` |
+| Web TypeScript | PASS | `pnpm run typecheck:web` |
+| English catalog extraction/compile | PASS | `pnpm intl:extract` and `pnpm intl:compile`; deployed inspector copy is readable English rather than message IDs |
+| Production web export | PASS | `EXPO_PUBLIC_ENV=production pnpm run build-web`; existing bundle-size warnings remain |
+| Client commits and push | PASS | `3c018fd02` UI implementation and `5f836207a` catalog fix pushed to `fork/codex/spaces-alpha-integration` |
+| Pages delivery | PASS | `https://46c0c74f.social-edriffles.pages.dev`, deployment source recorded as `5f836207a` |
+| Logged-out browser inspection | PASS | Deployment host showed `Create account` and `Sign in`, the inspector, selected Discover tab, no alerts, and the Plumbline title |
+| Canonical Home inspection | PASS | `https://plumblines.uk/`: `Following — Plumbline`, inspector source/rule/control copy, 1px inspector radius, selected tab marker, Plumbline favicon, no alerts |
+| Canonical profile inspection | PASS | `/profile/edriffles.us`: profile inspector, selected Posts tab marker, loaded PDS/CDN media, no alerts |
+| Canonical post inspection | PASS | `/profile/edriffles.us/post/3mu6ho5o4cc2w`: post-thread inspector, reply/repost/like controls present, no alerts |
+| Narrow browser inspection | NOT RUN | Persistent ChatGPT in-app browser connector does not expose viewport resizing |
+
+This iteration makes the existing seams legible without turning the shell
+into a privileged provider. The external Relay/AppView, short-TTL OAuth, and
+independent-PLC operator gates remain separate and unresolved.
