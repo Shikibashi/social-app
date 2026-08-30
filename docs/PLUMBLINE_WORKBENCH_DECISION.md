@@ -1127,3 +1127,88 @@ extracted and compiled so production does not display Lingui message IDs.
 This iteration makes the existing seams legible without turning the shell
 into a privileged provider. The external Relay/AppView, short-TTL OAuth, and
 independent-PLC operator gates remain separate and unresolved.
+
+## 34. Iteration 27 — make the Chat OAuth boundary explicit
+
+The Chat route could previously call the chat service without the separately
+scoped chat grant. When that grant was absent, the user saw a raw RPC error
+(`Missing required scope`) instead of an actionable explanation of the
+delegation boundary. The same gap affected chat status, unread-count,
+conversation-list, request-inbox, and direct-conversation reads.
+
+### Residual authority concentration and why it matters
+
+The problem was an ambient-authority concentration at the client/service
+boundary: route entry and query execution implicitly treated the chat service
+as available even when the user had not delegated the chat capability. That
+made a provider error look like an application failure and gave the service
+an opportunity to be contacted before the user had made an explicit choice.
+
+### Ecosystem precedent and chosen change
+
+The implementation reuses current ATProto OAuth feature-scoped permission
+behavior already present in this client: `requiresOAuthFeatureUpgrade`,
+`useEnsureOAuthFeature`, and the Services authorization provenance surface.
+It does not create a second grant registry or a project-specific permission
+protocol. Chat reads are disabled when the grant is absent, the main Chat and
+request-inbox routes render an explicit authorization panel, and consent is
+started only after the user selects `Authorize this feature`. The routes use
+the existing Workbench presentation mode and link to the existing Services
+authorization section.
+
+### Authority before versus after
+
+| Boundary | Before iteration 27 | After iteration 27 |
+| --- | --- | --- |
+| Chat read access | Query hooks could contact the chat service and surface a raw missing-scope response. | Chat status, unread, conversation, request, and direct-conversation reads are disabled until the chat grant exists. |
+| Permission UX | The missing capability appeared as an implementation error with no clear next action. | The user sees the feature, why more authority is needed, an explicit authorization action, and a Services inspection path. |
+| Provider authority | The route implicitly assumed the chat provider was available for the session. | The provider is contacted only after the relevant user delegation is present; existing password-session and legacy compatibility behavior remain intact. |
+| Exit and revocation | Existing Services controls remained available, but the route did not explain the missing grant. | The route points to the existing authorization workbench, without adding hidden fallback or automatic consent. |
+
+### Interoperability and security tradeoffs
+
+This is a client-side authorization boundary. It preserves the existing
+ATProto OAuth scope, PAR/PKCE/DPoP flow, password-session compatibility, and
+legacy `transition:chat.bsky` compatibility. It does not broaden grants,
+weaken service authentication, change records, or claim that Chat mutations
+work without a granted chat capability. The tradeoff is that a user must
+authorize Chat before using it; that is intentional progressive delegation.
+The panel uses the existing English catalog and does not expose tokens or
+credential material.
+
+### Implementation evidence
+
+- `src/components/AuthorizationProvenance.tsx` exports the reusable
+  `OAuthFeatureAccessPrompt` for explicit feature-scoped authorization.
+- `src/state/queries/messages/get-status.ts` and
+  `src/state/queries/messages/get-unread-counts.ts` gate global Chat reads.
+- `src/state/queries/messages/list-conversations.tsx`,
+  `src/state/queries/messages/list-conversation-requests.tsx`, and
+  `src/state/queries/messages/conversation.ts` gate list and direct-conversation
+  reads while preserving caller enablement.
+- `src/screens/Messages/ChatList.tsx` and `src/screens/Messages/Inbox.tsx`
+  render the explicit panel, suppress unavailable controls, and expose the
+  Chat routes as Workbench surfaces.
+- `src/locale/locales/en/messages.po` contains the extracted English strings;
+  the existing compile workflow generated the runtime catalog.
+
+### Verification
+
+| Check | Status | Evidence |
+| --- | --- | --- |
+| Touched-file Oxlint | PASS | `pnpm exec oxlint --quiet` over all eight touched TypeScript/TSX files |
+| English catalog extraction/compile | PASS | `pnpm intl:extract && pnpm intl:compile` |
+| Web TypeScript | PASS | `pnpm typecheck:web` |
+| OAuth authority tests | PASS | `pnpm test -- src/state/session/__tests__/oauth-authority-test.ts src/state/session/__tests__/oauth-scopes-test.ts`; 15 tests |
+| Production web export | PASS | `EXPO_PUBLIC_ENV=production pnpm build-web`; existing bundle-size warnings remain |
+| Client commit and push | PASS | `9d1f6c6fc` pushed to `fork/codex/spaces-alpha-integration` |
+| Pages deployment | PASS | `https://49ede667.social-edriffles.pages.dev` uploaded to `social-edriffles` |
+| Logged-out deployment shell | PASS | `/?audit=chat-oauth-9d1f6c6fc` showed Sign in/Create account, Plumbline title, and no alert |
+| Logged-out deployment Chat route | PASS | `/messages?audit=chat-oauth-9d1f6c6fc` showed the logged-out shell without a missing-scope error |
+| Canonical signed-in Chat route | PASS | `https://plumblines.uk/messages?audit=chat-oauth-9d1f6c6fc` showed Additional authorization required, Authorize this feature, and Open Services; no raw scope error |
+| Canonical signed-in request inbox | PASS | `https://plumblines.uk/messages/inbox?audit=chat-oauth-9d1f6c6fc` showed the same explicit boundary; no raw scope error |
+| Repository-wide lint | FAIL (baseline) | Existing unrelated import-sort, type, and suppression-manifest diagnostics remain outside this slice |
+
+This iteration removes the ambient Chat read assumption without creating a
+new sovereign intermediary. The external Relay/AppView, short-TTL OAuth, and
+independent-PLC operator gates remain separate and unresolved.
