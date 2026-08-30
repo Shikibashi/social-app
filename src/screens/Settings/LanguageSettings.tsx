@@ -90,7 +90,7 @@ export function LanguageSettingsScreen({}: Props) {
   }, [recentLanguages, contentLanguages, langPrefs.primaryLanguage])
 
   return (
-    <Layout.Screen testID="PreferencesLanguagesScreen">
+    <Layout.Screen testID="PreferencesLanguagesScreen" ecwMode="workbench">
       <Layout.Header.Outer>
         <Layout.Header.BackButton />
         <Layout.Header.Content>

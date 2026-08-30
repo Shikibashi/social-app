@@ -23,7 +23,7 @@ export function NotificationsActivityListScreen({
   const {_} = useLingui()
 
   return (
-    <Layout.Screen testID="NotificationsActivityListScreen">
+    <Layout.Screen testID="NotificationsActivityListScreen" ecwMode="workbench">
       <Layout.Header.Outer>
         <Layout.Header.BackButton />
         <Layout.Header.Content>

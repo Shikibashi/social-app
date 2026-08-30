@@ -37,7 +37,7 @@ export function AccessibilitySettingsScreen({}: Props) {
   const setLargeAltBadgeEnabled = useSetLargeAltBadgeEnabled()
 
   return (
-    <Layout.Screen>
+    <Layout.Screen ecwMode="workbench">
       <Layout.Header.Outer>
         <Layout.Header.BackButton />
         <Layout.Header.Content>

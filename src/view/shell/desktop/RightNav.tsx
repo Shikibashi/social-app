@@ -153,6 +153,53 @@ type WorkbenchInspectorContext = {
   action: string
 }
 
+const WORKBENCH_ROUTE_LABELS: Record<string, string> = {
+  ProfileSearch: 'Profile search',
+  ModerationModlists: 'Moderation lists',
+  ModerationMutedAccounts: 'Muted accounts',
+  ModerationBlockedAccounts: 'Blocked accounts',
+  ModerationInteractionSettings: 'Post interaction settings',
+  ModerationVerificationSettings: 'Verification settings',
+  AutomationLabelSettings: 'Automation labels',
+  NotificationsActivityList: 'Notification activity',
+  NotificationSettings: 'Notification settings',
+  ActivityNotificationSettings: 'Activity notification settings',
+  LegacyNotificationSettings: 'Notification settings',
+  PreferencesFollowingFeed: 'Following feed preferences',
+  PreferencesThreads: 'Thread preferences',
+  PreferencesExternalEmbeds: 'External media preferences',
+  ContentAndMediaSettings: 'Content and media',
+  InterestsSettings: 'Interests',
+  AccountSettings: 'Account',
+  AppPasswords: 'Authorization',
+  PrivacyAndSecuritySettings: 'Privacy and security',
+  ActivityPrivacySettings: 'Activity privacy',
+  ProtectedAccessSettings: 'Protected access',
+  PermissionedSpacesSettings: 'Private spaces and communities',
+  PrivateFeed: 'Private feed',
+  PrivatePost: 'Private post',
+  AppearanceSettings: 'Appearance',
+  AccessibilitySettings: 'Accessibility',
+  LanguageSettings: 'Language',
+  AppIconSettings: 'Application icon',
+  AboutSettings: 'About Plumbline',
+  BetaFeaturesSettings: 'Beta features',
+  FindContactsSettings: 'Contacts',
+  FindContactsFlow: 'Contacts',
+  Hashtag: 'Hashtag',
+  Topic: 'Topic',
+  VideoFeed: 'Video feed',
+  Log: 'Diagnostics',
+  Debug: 'Diagnostics',
+  DebugMod: 'Moderation diagnostics',
+  Support: 'Support',
+  PrivacyPolicy: 'Privacy policy',
+  TermsOfService: 'Terms of service',
+  CommunityGuidelines: 'Community guidelines',
+  CopyrightPolicy: 'Copyright policy',
+  NotFound: 'Page not found',
+}
+
 function DesktopWorkbenchInspector({routeName}: {routeName: string}) {
   const {_} = useLingui()
   const t = useTheme()
@@ -226,6 +273,16 @@ function DesktopWorkbenchInspector({routeName}: {routeName: string}) {
         control: _(msg`Compare providers or inspect the labeler record`),
         href: '/settings/services',
         action: _(msg`Inspect engagement providers`),
+      }
+      break
+    case 'ProfileSearch':
+      context = {
+        route: 'Profile search',
+        source: 'Profile record and selected search provider',
+        rule: 'Search results are provider claims filtered by your local policy',
+        control: 'Compare search providers or inspect the profile record',
+        href: '/settings/services',
+        action: 'Inspect search providers',
       }
       break
     case 'ProfileList':
@@ -302,6 +359,12 @@ function DesktopWorkbenchInspector({routeName}: {routeName: string}) {
       break
     case 'Moderation':
     case 'ModerationInbox':
+    case 'ModerationModlists':
+    case 'ModerationMutedAccounts':
+    case 'ModerationBlockedAccounts':
+    case 'ModerationInteractionSettings':
+    case 'ModerationVerificationSettings':
+    case 'AutomationLabelSettings':
       context = {
         route: _(msg`Moderation & Reach`),
         source: _(msg`Labelers and attributable assertions`),
@@ -392,6 +455,10 @@ function DesktopWorkbenchInspector({routeName}: {routeName: string}) {
       }
       break
     case 'Notifications':
+    case 'NotificationsActivityList':
+    case 'NotificationSettings':
+    case 'ActivityNotificationSettings':
+    case 'LegacyNotificationSettings':
       context = {
         route: _(msg`Notifications`),
         source: _(msg`Notification service`),
@@ -415,12 +482,12 @@ function DesktopWorkbenchInspector({routeName}: {routeName: string}) {
       break
     default:
       context = {
-        route: routeName,
-        source: _(msg`Current surface providers`),
-        rule: _(msg`Configured local policy`),
-        control: _(msg`Inspect the service boundary`),
+        route: WORKBENCH_ROUTE_LABELS[routeName] || 'Current surface',
+        source: 'Current surface providers',
+        rule: 'Configured local policy',
+        control: 'Inspect the service boundary',
         href: '/settings/services',
-        action: _(msg`Inspect Services`),
+        action: 'Inspect Services',
       }
   }
 

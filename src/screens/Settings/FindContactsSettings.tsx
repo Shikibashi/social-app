@@ -71,7 +71,7 @@ export function FindContactsSettingsScreen({}: Props) {
   }, [data, isFocused])
 
   return (
-    <Layout.Screen>
+    <Layout.Screen ecwMode="workbench">
       <Layout.Header.Outer>
         <Layout.Header.BackButton />
         <Layout.Header.Content>

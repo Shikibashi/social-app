@@ -1,8 +1,8 @@
 import {useCallback, useMemo} from 'react'
 import {type ListRenderItemInfo, Text as RNText, View} from 'react-native'
-import {type ModerationOpts} from '#/lib/moderation'
 import {Trans, useLingui} from '@lingui/react/macro'
 
+import {type ModerationOpts} from '#/lib/moderation'
 import {createSanitizedDisplayName} from '#/lib/moderation/create-sanitized-display-name'
 import {
   type AllNavigatorParams,
@@ -85,7 +85,7 @@ export function ActivityNotificationSettingsScreen({}: Props) {
   }, [isFetchingNextPage, hasNextPage, isSubscriptionsError, fetchNextPage])
 
   return (
-    <Layout.Screen>
+    <Layout.Screen ecwMode="workbench">
       <Layout.Header.Outer>
         <Layout.Header.BackButton />
         <Layout.Header.Content>

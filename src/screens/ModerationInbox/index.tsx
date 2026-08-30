@@ -13,7 +13,7 @@ export function ModerationInboxScreen() {
   }
 
   return (
-    <Layout.Screen testID="moderationInboxScreen">
+    <Layout.Screen testID="moderationInboxScreen" ecwMode="workbench">
       <Layout.Header.Outer>
         <Layout.Header.BackButton />
         <Layout.Header.Content>

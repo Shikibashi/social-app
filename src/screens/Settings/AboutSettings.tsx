@@ -77,7 +77,7 @@ export function AboutSettingsScreen({}: Props) {
     })
 
   return (
-    <Layout.Screen>
+    <Layout.Screen ecwMode="workbench">
       <Layout.Header.Outer>
         <Layout.Header.BackButton />
         <Layout.Header.Content>

@@ -108,7 +108,7 @@ export function BetaFeaturesSettingsScreen({}: Props) {
   const canSubmitFeedback = !isPending && isBetaUser && betaFeatures.length > 0
 
   return (
-    <Layout.Screen>
+    <Layout.Screen ecwMode="workbench">
       <Layout.Header.Outer>
         <Layout.Header.BackButton />
         <Layout.Header.Content>

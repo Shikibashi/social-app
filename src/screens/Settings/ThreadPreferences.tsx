@@ -25,17 +25,11 @@ type Props = NativeStackScreenProps<CommonNavigatorParams, 'PreferencesThreads'>
 export function ThreadPreferencesScreen({}: Props) {
   const t = useTheme()
   const {_} = useLingui()
-  const {
-    sort,
-    setSort,
-    view,
-    setView,
-    curationView,
-    setCurationView,
-  } = useThreadPreferences({save: true})
+  const {sort, setSort, view, setView, curationView, setCurationView} =
+    useThreadPreferences({save: true})
 
   return (
-    <Layout.Screen testID="threadPreferencesScreen">
+    <Layout.Screen testID="threadPreferencesScreen" ecwMode="workbench">
       <Layout.Header.Outer>
         <Layout.Header.BackButton />
         <Layout.Header.Content>
@@ -109,17 +103,13 @@ export function ThreadPreferencesScreen({}: Props) {
                   setCurationView(values[0] as ThreadCurationViewOption)
                 }>
                 <View style={[a.gap_sm, a.flex_1]}>
-                  <Toggle.Item
-                    name="all"
-                    label={_(msg`Everyone's replies`)}>
+                  <Toggle.Item name="all" label={_(msg`Everyone's replies`)}>
                     <Toggle.Radio />
                     <Toggle.LabelText>
                       <Trans>Everyone's replies</Trans>
                     </Toggle.LabelText>
                   </Toggle.Item>
-                  <Toggle.Item
-                    name="author"
-                    label={_(msg`Author's curation`)}>
+                  <Toggle.Item name="author" label={_(msg`Author's curation`)}>
                     <Toggle.Radio />
                     <Toggle.LabelText>
                       <Trans>Author's curation</Trans>
