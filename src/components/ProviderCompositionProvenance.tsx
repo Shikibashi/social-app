@@ -40,7 +40,7 @@ export function ProviderCompositionProvenance({
           ),
         ),
       ].join(', ')
-    : _(msg`No provider answered`)
+    : 'No provider answered'
   const status = compositionStatusLabel(composition.status)
   const rule = reconciliationLabel(composition)
 
@@ -57,7 +57,7 @@ export function ProviderCompositionProvenance({
             {color: t.atoms.text_contrast_medium.color},
           ]}
           numberOfLines={2}>
-          <Text style={styles.label}>{_(msg`Source`)}: </Text>
+          <Text style={styles.label}>Source: </Text>
           {sourceNames}
         </Text>
         <Text
@@ -66,10 +66,10 @@ export function ProviderCompositionProvenance({
             {color: t.atoms.text_contrast_medium.color},
           ]}
           numberOfLines={2}>
-          <Text style={styles.label}>{_(msg`Rule`)}: </Text>
+          <Text style={styles.label}>Rule: </Text>
           {rule}
           {' · '}
-          <Text style={styles.label}>{_(msg`State`)}: </Text>
+          <Text style={styles.label}>State: </Text>
           {status}
         </Text>
       </View>
