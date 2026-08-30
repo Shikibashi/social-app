@@ -6,6 +6,7 @@ import {
   healthLabel,
   parseFeedProviderContext,
 } from '#/lib/attention-ui'
+import {type ProviderCompositionResult} from '#/lib/provider-composition'
 import {listenAppViewProviderChanged} from '#/state/events'
 import {useSession} from '#/state/session'
 import {
@@ -15,6 +16,7 @@ import {
 import {useTheme} from '#/alf'
 import * as Layout from '#/components/Layout'
 import {PlumblineAuthoritySummary} from '#/components/PlumblineAuthoritySummary'
+import {ProviderCompositionProvenance} from '#/components/ProviderCompositionProvenance'
 import {Text} from '#/components/Typography'
 
 export function FeedProvenanceCard({
@@ -49,6 +51,10 @@ export function FeedProvenanceCard({
         source={provenance.provider || 'Not declared'}
         rule={rule}
         state={state}
+      />
+      <ProviderCompositionProvenance
+        surfaceLabel={provenance.feedName}
+        composition={provenance.providerComposition}
       />
       <Pressable
         accessibilityRole="button"
@@ -182,6 +188,7 @@ export function ActiveFeedProvenance({
   providerProvenance,
   providerCompositionStatus,
   providerIndependence,
+  providerComposition,
   onChangeRanking,
   onChangeProvider,
 }: {
@@ -196,6 +203,7 @@ export function ActiveFeedProvenance({
   providerProvenance?: FeedProvenance['providerProvenance']
   providerCompositionStatus?: FeedProvenance['providerCompositionStatus']
   providerIndependence?: FeedProvenance['providerIndependence']
+  providerComposition?: ProviderCompositionResult<unknown>
   onChangeRanking?: () => void
   onChangeProvider?: () => void
 }) {
@@ -247,6 +255,7 @@ export function ActiveFeedProvenance({
         providerProvenance: actualProviders,
         providerCompositionStatus,
         providerIndependence,
+        providerComposition,
       }}
       onChangeRanking={onChangeRanking}
       onChangeProvider={onChangeProvider}

@@ -65,6 +65,7 @@ export type FeedSourceFeedInfo = {
   acceptsInteractions?: boolean
   likeUri: string | undefined
   contentMode: app.bsky.feed.defs.GeneratorView['contentMode']
+  providerComposition?: ProviderCompositionResult<unknown>
 }
 
 export type FeedSourceListInfo = {
@@ -84,6 +85,7 @@ export type FeedSourceListInfo = {
   creatorDid: string
   creatorHandle: string
   contentMode: undefined
+  providerComposition?: ProviderCompositionResult<unknown>
 }
 
 export type FeedSourceInfo = FeedSourceFeedInfo | FeedSourceListInfo
@@ -107,6 +109,7 @@ const feedSourceNSIDs = {
 
 export function hydrateFeedGenerator(
   view: app.bsky.feed.defs.GeneratorView,
+  providerComposition?: ProviderCompositionResult<unknown>,
 ): FeedSourceInfo {
   const urip = new AtUri(view.uri)
   const collection =
@@ -145,11 +148,13 @@ export function hydrateFeedGenerator(
     acceptsInteractions: view.acceptsInteractions,
     likeUri: view.viewer?.like,
     contentMode: view.contentMode,
+    providerComposition,
   }
 }
 
 export function hydrateList(
   view: app.bsky.graph.defs.ListView,
+  providerComposition?: ProviderCompositionResult<unknown>,
 ): FeedSourceInfo {
   const urip = new AtUri(view.uri)
   const collection =
@@ -185,6 +190,7 @@ export function hydrateList(
       ? sanitizeDisplayName(view.name)
       : t`User List by ${sanitizeHandle(view.creator.handle, '@')}`,
     contentMode: undefined,
+    providerComposition,
   }
 }
 
@@ -226,7 +232,7 @@ export function useFeedSourceInfoQuery({uri}: {uri: string}) {
           },
         )
         const data = requireComposedProviderValue(composed)
-        view = hydrateFeedGenerator(data.view)
+        view = hydrateFeedGenerator(data.view, composed)
       } else {
         const composed = await composeAppViewProviderRead(
           'feeds',
@@ -246,7 +252,7 @@ export function useFeedSourceInfoQuery({uri}: {uri: string}) {
           },
         )
         const data = requireComposedProviderValue(composed)
-        view = hydrateList(data.list)
+        view = hydrateList(data.list, composed)
       }
 
       return view

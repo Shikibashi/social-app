@@ -38,6 +38,7 @@ import {
 } from '#/lib/moderation'
 import {
   PROVIDER_COMPOSITION_QUERY_META,
+  type ProviderCompositionResult,
   type ProviderCompositionStatus,
   type ProviderDescriptor,
   type ProviderIndependence,
@@ -132,6 +133,7 @@ export interface FeedPostSlice {
   providerProvenance?: FeedProviderProvenance[]
   providerCompositionStatus?: ProviderCompositionStatus
   providerIndependence?: ProviderIndependence
+  providerComposition?: ProviderCompositionResult<unknown>
 }
 
 export interface FeedPageUnselected {
@@ -142,6 +144,7 @@ export interface FeedPageUnselected {
   providerProvenance?: FeedProviderProvenance[]
   providerCompositionStatus?: ProviderCompositionStatus
   providerIndependence?: ProviderIndependence
+  providerComposition?: ProviderCompositionResult<unknown>
 }
 
 export interface FeedPage {
@@ -153,6 +156,7 @@ export interface FeedPage {
   providerProvenance?: FeedProviderProvenance[]
   providerCompositionStatus?: ProviderCompositionStatus
   providerIndependence?: ProviderIndependence
+  providerComposition?: ProviderCompositionResult<unknown>
 }
 
 /**
@@ -287,6 +291,7 @@ export function usePostFeedQuery(
         providerProvenance: res.providerProvenance,
         providerCompositionStatus: res.providerCompositionStatus,
         providerIndependence: res.providerIndependence,
+        providerComposition: res.providerComposition,
       }
     },
     initialPageParam: undefined,
@@ -351,6 +356,7 @@ export function usePostFeedQuery(
               providerProvenance: page.providerProvenance,
               providerCompositionStatus: page.providerCompositionStatus,
               providerIndependence: page.providerIndependence,
+              providerComposition: page.providerComposition,
               slices: tuner
                 .tune(page.feed)
                 .map(slice => {
@@ -408,6 +414,7 @@ export function usePostFeedQuery(
                     providerProvenance: page.providerProvenance,
                     providerCompositionStatus: page.providerCompositionStatus,
                     providerIndependence: page.providerIndependence,
+                    providerComposition: page.providerComposition,
                     items: items.map((item, i) => {
                       const feedPostSliceItem: FeedPostSliceItem = {
                         _reactKey: `${slice._reactKey}-${i}-${item.post.uri}`,

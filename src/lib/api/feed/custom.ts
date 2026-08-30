@@ -229,6 +229,7 @@ export class ComposedCustomFeedAPI implements FeedAPI {
       providerProvenance: selectedProviders,
       providerCompositionStatus: composition.status,
       providerIndependence: composition.independence,
+      providerComposition: composition,
     }
   }
 }

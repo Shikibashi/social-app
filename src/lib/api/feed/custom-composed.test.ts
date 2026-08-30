@@ -71,11 +71,20 @@ describe('ComposedCustomFeedAPI', () => {
             serviceDid: 'did:web:a.example',
           }),
         ],
+        providerComposition: expect.objectContaining({
+          surface: 'feeds',
+          status: 'agreement',
+          observations: expect.arrayContaining([
+            expect.objectContaining({
+              provider: expect.objectContaining({id: 'provider-a'}),
+            }),
+          ]),
+        }),
       }),
     )
   })
 
-  it('uses an explicit first-verified policy through a provider outage', async () => {
+  it('uses an explicit preferred-provider policy through a provider outage', async () => {
     const clients = new Map([
       ['provider-a', fakeClient(new Error('Failed to fetch'))],
       ['provider-b', fakeClient(feedResponse('available'))],
@@ -83,7 +92,7 @@ describe('ComposedCustomFeedAPI', () => {
     const api = new ComposedCustomFeedAPI({
       providers,
       clientForProvider: provider => clients.get(provider.id)!,
-      policy: {mode: 'first-verified'},
+      policy: {mode: 'prefer-provider', preferredProviderId: 'provider-b'},
       access: 'account-scoped',
       feedParams: {feed: feedUri},
     })
@@ -92,6 +101,16 @@ describe('ComposedCustomFeedAPI', () => {
       expect.objectContaining({
         providerCompositionStatus: 'partial',
         providerProvenance: [expect.objectContaining({id: 'provider-b'})],
+        providerComposition: expect.objectContaining({
+          surface: 'feeds',
+          status: 'partial',
+          observations: expect.arrayContaining([
+            expect.objectContaining({
+              provider: expect.objectContaining({id: 'provider-a'}),
+              status: 'unavailable',
+            }),
+          ]),
+        }),
       }),
     )
   })

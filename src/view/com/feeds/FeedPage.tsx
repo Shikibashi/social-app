@@ -17,6 +17,7 @@ import {isBlueskyOwnedFeed} from '#/lib/api/feed/utils'
 import {DISCOVER_FEED_URI, VIDEO_FEED_URIS} from '#/lib/constants'
 import {useOpenComposer} from '#/lib/hooks/useOpenComposer'
 import {
+  type ProviderCompositionResult,
   type ProviderCompositionStatus,
   type ProviderIndependence,
 } from '#/lib/provider-composition'
@@ -94,6 +95,8 @@ export function FeedPage({
     useState<ProviderCompositionStatus>()
   const [feedProviderIndependence, setFeedProviderIndependence] =
     useState<ProviderIndependence>()
+  const [feedProviderComposition, setFeedProviderComposition] =
+    useState<ProviderCompositionResult<unknown>>()
   const headerOffset = useHeaderOffset()
   const feedFeedback = useFeedFeedback(feedInfo, hasSession)
   const scrollElRef = useRef<ListMethods>(null)
@@ -150,6 +153,7 @@ export function FeedPage({
     setFeedProviderProvenance(undefined)
     setFeedProviderCompositionStatus(undefined)
     setFeedProviderIndependence(undefined)
+    setFeedProviderComposition(undefined)
   }, [feed])
 
   const onFeedContext = useCallback(
@@ -158,11 +162,13 @@ export function FeedPage({
       providerProvenance?: FeedProviderProvenance[],
       providerCompositionStatus?: ProviderCompositionStatus,
       providerIndependence?: ProviderIndependence,
+      providerComposition?: ProviderCompositionResult<unknown>,
     ) => {
       setFeedContext(nextFeedContext)
       setFeedProviderProvenance(providerProvenance)
       setFeedProviderCompositionStatus(providerCompositionStatus)
       setFeedProviderIndependence(providerIndependence)
+      setFeedProviderComposition(providerComposition)
     },
     [],
   )
@@ -243,6 +249,9 @@ export function FeedPage({
           providerProvenance={feedProviderProvenance}
           providerCompositionStatus={feedProviderCompositionStatus}
           providerIndependence={feedProviderIndependence}
+          providerComposition={
+            feedProviderComposition ?? feedInfo.providerComposition
+          }
           privacy={
             balancedEnabled
               ? 'Candidate posts are supplied by the selected provider; Balanced ordering and preferences stay on this device'

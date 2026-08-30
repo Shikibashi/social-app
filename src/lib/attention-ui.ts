@@ -1,5 +1,6 @@
 import {type FeedProviderProvenance} from '#/lib/api/feed/types'
 import {
+  type ProviderCompositionResult,
   type ProviderCompositionStatus,
   type ProviderIndependence,
 } from '#/lib/provider-composition'
@@ -20,6 +21,7 @@ export type FeedProvenance = {
   providerProvenance?: FeedProviderProvenance[]
   providerCompositionStatus?: ProviderCompositionStatus
   providerIndependence?: ProviderIndependence
+  providerComposition?: ProviderCompositionResult<unknown>
 }
 
 export type FeedProviderContext = {

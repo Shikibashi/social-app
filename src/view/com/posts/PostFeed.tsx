@@ -49,6 +49,7 @@ import {
   defaultLearnedProfile,
 } from '#/lib/personalization'
 import {
+  type ProviderCompositionResult,
   type ProviderCompositionStatus,
   type ProviderIndependence,
 } from '#/lib/provider-composition'
@@ -290,6 +291,7 @@ let PostFeed = ({
     providerProvenance?: FeedProviderProvenance[],
     providerCompositionStatus?: ProviderCompositionStatus,
     providerIndependence?: ProviderIndependence,
+    providerComposition?: ProviderCompositionResult<unknown>,
   ) => void
   ref?: React.Ref<PostFeedRef>
 }): React.ReactNode => {
@@ -366,6 +368,9 @@ let PostFeed = ({
   const activeProviderCompositionStatus =
     data?.pages[0]?.providerCompositionStatus
   const activeProviderIndependence = data?.pages[0]?.providerIndependence
+  const activeProviderComposition = data?.pages.find(
+    page => page.providerComposition,
+  )?.providerComposition
 
   useEffect(() => {
     onFeedContext?.(
@@ -373,11 +378,13 @@ let PostFeed = ({
       activeProviderProvenance,
       activeProviderCompositionStatus,
       activeProviderIndependence,
+      activeProviderComposition,
     )
   }, [
     activeFeedContext,
     activeProviderCompositionStatus,
     activeProviderIndependence,
+    activeProviderComposition,
     activeProviderProvenance,
     onFeedContext,
   ])

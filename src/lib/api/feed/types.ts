@@ -1,4 +1,5 @@
 import {
+  type ProviderCompositionResult,
   type ProviderCompositionStatus,
   type ProviderIndependence,
 } from '#/lib/provider-composition'
@@ -22,6 +23,8 @@ export interface FeedAPIResponse {
   providerCompositionStatus?: ProviderCompositionStatus
   /** Declared operator identity is not proof of independent control. */
   providerIndependence?: ProviderIndependence
+  /** Complete provider observations remain available for progressive inspection. */
+  providerComposition?: ProviderCompositionResult<unknown>
 }
 
 export interface FeedAPI {
