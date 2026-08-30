@@ -904,8 +904,10 @@ may lag, so the UI separates submitted state from verified directory evidence.
 | Web TypeScript | PASS | `pnpm run typecheck:web` |
 | Android TypeScript | FAIL | Existing unrelated fixture/type errors in session, provider, post, route, and `Logomark.tsx` checks; no changed identity/OAuth diagnostic |
 | Full repository Oxlint | FAIL | Existing unrelated import-sort, unused-variable, and Spaces diagnostics; no changed identity/OAuth diagnostic |
-| Contract validator | NOT RUN | Run after the source and root decision records are staged |
+| Contract validator | PASS | `python3 scripts/validate_contract.py` — 144 files, 29 blocking rows, 6 feed cases |
 | Authenticated browser registration | NOT RUN | No credentialed browser session or disposable identity was available |
+| Production-shaped web export | PASS | `pnpm run build-web`; compiled with existing bundle-size warnings and generated the deployed `web-build` export |
+| Deployed browser UI | PASS | Wrangler deployment `https://4f0f137f.social-edriffles.pages.dev`; canonical `https://plumblines.uk/?deployment=4f0f137f` rendered `Following — Plumbline`, posts, four provenance summaries, Plumbline icon links, and no page alerts; `/settings/identity-sovereignty` rendered the current identity/PDS workbench with no alerts |
 
 The next remaining concentrations are the PDS-controlled bootstrap email,
 the unresolved external PLC operator-independence gate, and the still-open
