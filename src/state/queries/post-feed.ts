@@ -10,7 +10,7 @@ import {
 } from '@tanstack/react-query'
 
 import {AuthorFeedAPI} from '#/lib/api/feed/author'
-import {CustomFeedAPI} from '#/lib/api/feed/custom'
+import {ComposedCustomFeedAPI} from '#/lib/api/feed/custom'
 import {DemoFeedAPI} from '#/lib/api/feed/demo'
 import {FollowingFeedAPI} from '#/lib/api/feed/following'
 import {HomeFeedAPI} from '#/lib/api/feed/home'
@@ -18,7 +18,12 @@ import {LikesFeedAPI} from '#/lib/api/feed/likes'
 import {ListFeedAPI} from '#/lib/api/feed/list'
 import {MergeFeedAPI} from '#/lib/api/feed/merge'
 import {PostListFeedAPI} from '#/lib/api/feed/posts'
-import {type FeedAPI, type ReasonFeedSource} from '#/lib/api/feed/types'
+import {shouldRetryPostFeedError} from '#/lib/api/feed/retry'
+import {
+  type FeedAPI,
+  type FeedProviderProvenance,
+  type ReasonFeedSource,
+} from '#/lib/api/feed/types'
 import {aggregateUserInterests} from '#/lib/api/feed/utils'
 import {
   type FeedPostNumbering,
@@ -31,15 +36,26 @@ import {
   type ModerationDecision,
   type ModerationPrefs,
 } from '#/lib/moderation'
+import {
+  type ProviderCompositionStatus,
+  type ProviderDescriptor,
+  type ProviderIndependence,
+} from '#/lib/provider-composition'
 import {logger} from '#/logger'
 import {STALE} from '#/state/queries'
 import {DEFAULT_LOGGED_OUT_PREFERENCES} from '#/state/queries/preferences/const'
 import {
   useAppviewClient,
+  useAppviewProviderClientFactory,
   useMaybePdsClient,
   usePublicAppviewClient,
   useSession,
 } from '#/state/session'
+import {getPublicAppviewClient} from '#/state/session/clients'
+import {
+  getAppViewProvidersForSurface,
+  getAppViewReconciliationPolicy,
+} from '#/state/session/providers'
 import * as userActionHistory from '#/state/userActionHistory'
 import {KnownError} from '#/view/com/posts/PostFeedErrorMessage'
 import {app} from '#/lexicons'
@@ -119,6 +135,9 @@ export interface FeedPageUnselected {
   cursor: string | undefined
   feed: app.bsky.feed.defs.FeedViewPost[]
   fetchedAt: number
+  providerProvenance?: FeedProviderProvenance[]
+  providerCompositionStatus?: ProviderCompositionStatus
+  providerIndependence?: ProviderIndependence
 }
 
 export interface FeedPage {
@@ -127,6 +146,9 @@ export interface FeedPage {
   cursor: string | undefined
   slices: FeedPostSlice[]
   fetchedAt: number
+  providerProvenance?: FeedProviderProvenance[]
+  providerCompositionStatus?: ProviderCompositionStatus
+  providerIndependence?: ProviderIndependence
 }
 
 /**
@@ -162,6 +184,7 @@ export function usePostFeedQuery(
   const accountClient = useMaybePdsClient()
   const client = useAppviewClient()
   const publicClient = usePublicAppviewClient()
+  const appviewProviderClientFactory = useAppviewProviderClientFactory()
   const lastRun = useRef<{
     data: InfiniteData<FeedPageUnselected>
     args: typeof selectArgs
@@ -196,8 +219,17 @@ export function usePostFeedQuery(
   >({
     enabled,
     staleTime: STALE.INFINITY,
+    retry: (failureCount, error) =>
+      failureCount < 2 && shouldRetryPostFeedError(error),
+    retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 5000),
     queryKey: RQKEY(feedDesc, params),
-    async queryFn({pageParam}: {pageParam: RQPageParam}) {
+    async queryFn({
+      pageParam,
+      signal,
+    }: {
+      pageParam: RQPageParam
+      signal: AbortSignal
+    }) {
       logger.debug('usePostFeedQuery', {feedDesc, cursor: pageParam?.cursor})
       const {api, cursor} = pageParam
         ? pageParam
@@ -213,11 +245,20 @@ export function usePostFeedQuery(
               userInterests,
               // Not in the query key. Reacting to it switching isn't important:
               enableFollowingToDiscoverFallback,
+              clientForProvider: (provider, access) =>
+                access === 'account-scoped'
+                  ? appviewProviderClientFactory(
+                      provider as Parameters<
+                        typeof appviewProviderClientFactory
+                      >[0],
+                    )
+                  : getPublicAppviewClient(provider.endpoint),
+              access: hasSession ? 'account-scoped' : 'public',
             }),
             cursor: undefined,
           }
 
-      const res = await api.fetch({cursor, limit: fetchLimit})
+      const res = await api.fetch({cursor, limit: fetchLimit, signal})
 
       /*
        * If this is a public view, we need to check if posts fail moderation.
@@ -238,6 +279,9 @@ export function usePostFeedQuery(
         cursor: res.cursor,
         feed: res.feed,
         fetchedAt: Date.now(),
+        providerProvenance: res.providerProvenance,
+        providerCompositionStatus: res.providerCompositionStatus,
+        providerIndependence: res.providerIndependence,
       }
     },
     initialPageParam: undefined,
@@ -299,6 +343,9 @@ export function usePostFeedQuery(
               tuner,
               cursor: page.cursor,
               fetchedAt: page.fetchedAt,
+              providerProvenance: page.providerProvenance,
+              providerCompositionStatus: page.providerCompositionStatus,
+              providerIndependence: page.providerIndependence,
               slices: tuner
                 .tune(page.feed)
                 .map(slice => {
@@ -467,6 +514,8 @@ function createApi({
   accountClient,
   publicClient,
   enableFollowingToDiscoverFallback,
+  clientForProvider,
+  access,
 }: {
   feedDesc: FeedDescriptor
   feedParams: FeedParams
@@ -476,6 +525,12 @@ function createApi({
   accountClient?: Client | null
   publicClient?: Client
   enableFollowingToDiscoverFallback: boolean
+  clientForProvider: (
+    provider: ProviderDescriptor,
+    access: 'public' | 'account-scoped',
+    signal?: AbortSignal,
+  ) => Client | Promise<Client>
+  access: 'public' | 'account-scoped'
 }) {
   if (feedDesc === 'following') {
     if (feedParams.mergeFeedEnabled) {
@@ -513,8 +568,12 @@ function createApi({
     })
   } else if (feedDesc.startsWith('feedgen')) {
     const [__, feed] = feedDesc.split('|')
-    return new CustomFeedAPI({
-      client,
+    const providers = getAppViewProvidersForSurface('feeds')
+    return new ComposedCustomFeedAPI({
+      providers,
+      clientForProvider,
+      policy: getAppViewReconciliationPolicy('feeds'),
+      access,
       feedParams: {feed: feed as AtUriString},
       userInterests,
     })

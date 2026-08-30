@@ -85,7 +85,7 @@ function Inner({
               },
             ]}
             alt={_(
-              msg`An illustration showing that Edriffles selects trusted verifiers, and trusted verifiers in turn verify individual user accounts.`,
+              msg`An illustration showing that Plumbline selects trusted verifiers, and trusted verifiers in turn verify individual user accounts.`,
             )}
             useAppleWebpCodec
           />
@@ -103,7 +103,7 @@ function Inner({
                 <VerifierCheck width={14} />
               </RNText>{' '}
               can verify others. These trusted verifiers are selected by
-              Edriffles.
+              Plumbline.
             </Trans>
           </Text>
         </View>
@@ -120,7 +120,7 @@ function Inner({
             to={urls.website.blog.initialVerificationAnnouncement}
             label={_(
               msg({
-                message: `Learn more about verification on Edriffles`,
+                message: `Learn more about verification on Plumbline`,
                 context: `english-only-resource`,
               }),
             )}

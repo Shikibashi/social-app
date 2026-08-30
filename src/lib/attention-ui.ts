@@ -1,3 +1,9 @@
+import {type FeedProviderProvenance} from '#/lib/api/feed/types'
+import {
+  type ProviderCompositionStatus,
+  type ProviderIndependence,
+} from '#/lib/provider-composition'
+
 export type FeedProvenance = {
   feedName: string
   algorithmName: string
@@ -11,6 +17,9 @@ export type FeedProvenance = {
   objective: string
   privacy: string
   health?: 'healthy' | 'degraded' | 'circuit-open' | 'stale'
+  providerProvenance?: FeedProviderProvenance[]
+  providerCompositionStatus?: ProviderCompositionStatus
+  providerIndependence?: ProviderIndependence
 }
 
 export type FeedProviderContext = {

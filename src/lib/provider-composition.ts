@@ -18,7 +18,96 @@ export const PROVIDER_SURFACES = [
   'communities',
 ] as const
 
+/** Keep provider fan-out bounded even when a user registers many services. */
+export const DEFAULT_MAX_CONCURRENT_PROVIDERS = 3
+
 export type ProviderSurface = (typeof PROVIDER_SURFACES)[number]
+
+export type ProviderSurfaceSupport = 'runtime-composed' | 'boundary-owned'
+
+export type ProviderSurfaceDetails = {
+  support: ProviderSurfaceSupport
+  /** The authority boundary that owns this surface today. */
+  authority: string
+  /** Short text suitable for a service/workbench inspector. */
+  description: string
+}
+
+/**
+ * The registry is deliberately broader than the currently composed AppView
+ * reads. Keeping the distinction here prevents a capability declaration from
+ * being mistaken for a working runtime route.
+ */
+export const PROVIDER_SURFACE_DETAILS = {
+  'identity-resolution': {
+    support: 'runtime-composed',
+    authority: 'Configured identity-capable resolver providers',
+    description:
+      'DID and handle claims are composed from the enabled identity providers.',
+  },
+  profiles: {
+    support: 'runtime-composed',
+    authority: 'Selected AppView providers',
+    description:
+      'Profile reads retain provider observations and use the local reconciliation policy.',
+  },
+  threads: {
+    support: 'runtime-composed',
+    authority: 'Selected AppView providers',
+    description:
+      'Post and thread reads retain provider observations and use the local reconciliation policy.',
+  },
+  feeds: {
+    support: 'runtime-composed',
+    authority: 'Selected feed/AppView providers',
+    description:
+      'Feed metadata and custom-feed reads retain provider provenance and outage state.',
+  },
+  search: {
+    support: 'runtime-composed',
+    authority: 'Selected AppView providers',
+    description:
+      'Search reads retain provider observations instead of silently choosing a winner.',
+  },
+  notifications: {
+    support: 'runtime-composed',
+    authority: 'Selected authenticated AppView providers',
+    description:
+      'Account-scoped notification reads require an explicit authenticated provider boundary.',
+  },
+  labels: {
+    support: 'runtime-composed',
+    authority: 'Selected labeler/AppView providers',
+    description:
+      'Label assertions remain attributable to their issuer and provider source.',
+  },
+  media: {
+    support: 'boundary-owned',
+    authority: 'Account PDS blob and media delivery boundary',
+    description:
+      'Uploads remain on the account PDS; blob previews/CDN delivery are not AppView-composed.',
+  },
+  communities: {
+    support: 'boundary-owned',
+    authority: 'Spaces transport and Radlib community control plane',
+    description:
+      'Membership and community records use the declared Spaces/Radlib transport, not AppView fan-out.',
+  },
+} as const satisfies Record<ProviderSurface, ProviderSurfaceDetails>
+
+export const RUNTIME_COMPOSED_PROVIDER_SURFACES = PROVIDER_SURFACES.filter(
+  surface => PROVIDER_SURFACE_DETAILS[surface].support === 'runtime-composed',
+)
+
+export const BOUNDARY_OWNED_PROVIDER_SURFACES = PROVIDER_SURFACES.filter(
+  surface => PROVIDER_SURFACE_DETAILS[surface].support === 'boundary-owned',
+)
+
+export function isRuntimeComposedProviderSurface(
+  surface: ProviderSurface,
+): boolean {
+  return PROVIDER_SURFACE_DETAILS[surface].support === 'runtime-composed'
+}
 
 export const PROVIDER_RECONCILIATION_MODES = [
   'require-agreement',
@@ -39,6 +128,8 @@ export type ProviderDescriptor = {
   id: string
   displayName: string
   endpoint: string
+  /** Optional service identity for UI provenance; it is not proof of control. */
+  serviceDid?: string
   /** Operator identity is an assertion, not cryptographic proof of independence. */
   operatorId?: string
 }
@@ -51,17 +142,26 @@ export type ProviderQueryResult<T> = {
   stale?: boolean
 }
 
+export type ProviderQuery<T> = (
+  provider: ProviderDescriptor,
+  signal?: AbortSignal,
+) => Promise<ProviderQueryResult<T>>
+
 export type ProviderObservation<T> = {
   provider: ProviderDescriptor
   retrievedAt?: string
   value?: T
   error?: string
+  /** A caller-provided transport classification; never inferred from identity. */
+  retryable?: boolean
   status: 'ok' | 'unavailable' | 'invalid' | 'stale'
   verification: 'verified' | 'unverified' | 'invalid'
 }
 
 export type ProviderCompositionStatus =
   'agreement' | 'disagreement' | 'partial' | 'unavailable' | 'empty'
+
+export type ProviderIndependence = 'declared-distinct' | 'not-established'
 
 export type ProviderCompositionResult<T> = {
   surface: ProviderSurface
@@ -75,7 +175,32 @@ export type ProviderCompositionResult<T> = {
   distinctResultKeys: string[]
   /** Only counts explicitly declared operator IDs; it does not prove independence. */
   declaredOperatorIds: string[]
-  independence: 'declared-distinct' | 'not-established'
+  independence: ProviderIndependence
+}
+
+/**
+ * Raised when an explicit reconciliation policy refuses to promote the
+ * available provider observations to a value. Keeping the complete result on
+ * the error lets a UI explain which provider failed or disagreed without
+ * silently substituting another service.
+ */
+export class ProviderCompositionError<T> extends Error {
+  constructor(public readonly composition: ProviderCompositionResult<T>) {
+    const failures = composition.observations
+      .filter(observation => observation.error)
+      .map(
+        observation =>
+          `${observation.provider.displayName}: ${observation.error}`,
+      )
+    const detail = failures.length ? `; ${failures.join('; ')}` : ''
+    super(
+      `No reconciled ${composition.surface} result; status=${composition.status}; providers=${composition.observations
+        .map(observation => observation.provider.id)
+        .join(',')}${detail}`,
+    )
+    this.name = 'ProviderCompositionError'
+    Object.setPrototypeOf(this, new.target.prototype)
+  }
 }
 
 export type ComposeProviderOptions<T> = {
@@ -88,6 +213,12 @@ export type ComposeProviderOptions<T> = {
     value: T,
     provider: ProviderDescriptor,
   ) => boolean | Promise<boolean>
+  /** Classify transport failures without making the generic seam HTTP-aware. */
+  isRetryableError?: (error: unknown) => boolean
+  /** Optional cancellation propagated to each provider query. */
+  signal?: AbortSignal
+  /** Maximum number of provider queries allowed to run at once. */
+  maxConcurrentProviders?: number
   claimKey?: (value: T) => string
   /**
    * Explicitly reconcile multiple values for `merge` mode. Without this
@@ -102,14 +233,17 @@ export type ComposeProviderOptions<T> = {
 
 export async function composeProviderResults<T>(
   providers: readonly ProviderDescriptor[],
-  query: (provider: ProviderDescriptor) => Promise<ProviderQueryResult<T>>,
+  query: ProviderQuery<T>,
   options: ComposeProviderOptions<T>,
 ): Promise<ProviderCompositionResult<T>> {
   const policy = options.policy ?? {mode: 'require-agreement'}
-  const observations: ProviderObservation<T>[] = await Promise.all(
-    providers.map(async (provider): Promise<ProviderObservation<T>> => {
+  const observations = await mapWithConcurrency(
+    providers,
+    normalizeConcurrency(options.maxConcurrentProviders),
+    async (provider): Promise<ProviderObservation<T>> => {
+      throwIfAborted(options.signal)
       try {
-        const result = await query(provider)
+        const result = await query(provider, options.signal)
         const retrievedAt = result.retrievedAt
         const stale =
           result.stale === true ||
@@ -148,14 +282,16 @@ export async function composeProviderResults<T>(
             result.verification === 'verified' ? 'verified' : 'unverified',
         }
       } catch (error) {
+        if (options.signal?.aborted) throw error
         return {
           provider,
           status: 'unavailable' as const,
           verification: 'invalid' as const,
           error: safeErrorMessage(error),
+          retryable: options.isRetryableError?.(error),
         }
       }
-    }),
+    },
   )
 
   const usable = observations.filter(
@@ -244,6 +380,42 @@ function isOlderThan(value: string, now: number, maxAgeMs: number): boolean {
 
 function safeErrorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error)
+}
+
+function normalizeConcurrency(value: number | undefined): number {
+  if (!Number.isFinite(value) || value === undefined || value < 1) {
+    return DEFAULT_MAX_CONCURRENT_PROVIDERS
+  }
+  return Math.min(8, Math.floor(value))
+}
+
+async function mapWithConcurrency<T, R>(
+  values: readonly T[],
+  maxConcurrent: number,
+  map: (value: T) => Promise<R>,
+): Promise<R[]> {
+  const results = new Array<R>(values.length)
+  let nextIndex = 0
+  const worker = async (): Promise<void> => {
+    while (true) {
+      const index = nextIndex++
+      if (index >= values.length) return
+      results[index] = await map(values[index])
+    }
+  }
+  await Promise.all(
+    Array.from({length: Math.min(maxConcurrent, values.length)}, () =>
+      worker(),
+    ),
+  )
+  return results
+}
+
+function throwIfAborted(signal?: AbortSignal): void {
+  if (!signal?.aborted) return
+  const error = new Error('Provider read aborted')
+  error.name = 'AbortError'
+  throw error
 }
 
 function stableProviderValue(value: unknown): string {

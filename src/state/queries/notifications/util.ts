@@ -41,6 +41,7 @@ export async function fetchPage({
   moderationOpts,
   fetchAdditionalData,
   reasons,
+  signal,
 }: {
   client: Client
   cursor: string | undefined
@@ -49,15 +50,20 @@ export async function fetchPage({
   moderationOpts: ModerationOpts | undefined
   fetchAdditionalData: boolean
   reasons: string[]
+  signal?: AbortSignal
 }): Promise<{
   page: FeedPage
   indexedAt: string | undefined
 }> {
-  const data = await client.call(app.bsky.notification.listNotifications, {
-    limit,
-    cursor,
-    reasons,
-  })
+  const data = await client.call(
+    app.bsky.notification.listNotifications,
+    {
+      limit,
+      cursor,
+      reasons,
+    },
+    {signal},
+  )
 
   const indexedAt = data.notifications[0]?.indexedAt
 
@@ -72,7 +78,7 @@ export async function fetchPage({
   // we fetch subjects of notifications (usually posts) now instead of lazily
   // in the UI to avoid relayouts
   if (fetchAdditionalData) {
-    const subjects = await fetchSubjects(client, notifsGrouped)
+    const subjects = await fetchSubjects(client, notifsGrouped, signal)
     for (const notif of notifsGrouped) {
       if (notif.subjectUri) {
         if (
@@ -212,6 +218,7 @@ export function groupNotifications(notifs: Notification[]): FeedNotification[] {
 async function fetchSubjects(
   client: Client,
   groupedNotifs: FeedNotification[],
+  signal?: AbortSignal,
 ): Promise<{
   posts: Map<string, app.bsky.feed.defs.PostView>
   starterPacks: Map<string, app.bsky.graph.defs.StarterPackViewBasic>
@@ -235,13 +242,15 @@ async function fetchSubjects(
   const packUriChunks = chunk(Array.from(packUris) as AtUriString[], 25)
   const postsChunks = await Promise.all(
     postUriChunks.map(uris =>
-      client.call(app.bsky.feed.getPosts, {uris}).then(data => data.posts),
+      client
+        .call(app.bsky.feed.getPosts, {uris}, {signal})
+        .then(data => data.posts),
     ),
   )
   const packsChunks = await Promise.all(
     packUriChunks.map(uris =>
       client
-        .call(app.bsky.graph.getStarterPacks, {uris})
+        .call(app.bsky.graph.getStarterPacks, {uris}, {signal})
         .then(data => data.starterPacks),
     ),
   )

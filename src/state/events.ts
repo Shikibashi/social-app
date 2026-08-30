@@ -76,3 +76,17 @@ export function listenAppViewProviderChanged(
   emitter.on('appview-provider-changed', fn)
   return () => emitter.off('appview-provider-changed', fn)
 }
+
+/**
+ * A provider capability or reconciliation-policy change invalidates every
+ * cached read for the current account, even when the selected endpoint did
+ * not change. The event intentionally carries no provider identity: the
+ * changed policy is local user state, not a claim made by a provider.
+ */
+export function emitAppViewProviderPolicyChanged() {
+  emitter.emit('appview-provider-policy-changed')
+}
+export function listenAppViewProviderPolicyChanged(fn: () => void): UnlistenFn {
+  emitter.on('appview-provider-policy-changed', fn)
+  return () => emitter.off('appview-provider-policy-changed', fn)
+}

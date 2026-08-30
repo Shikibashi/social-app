@@ -1,11 +1,15 @@
 import {useState} from 'react'
 import {View} from 'react-native'
-import {type ModerationCause} from '#/lib/moderation'
 import {msg} from '@lingui/core/macro'
 import {useLingui} from '@lingui/react'
 import {Trans} from '@lingui/react/macro'
 
 import {useGetTimeAgo} from '#/lib/hooks/useTimeAgo'
+import {
+  getModerationPolicyTrace,
+  type ModerationBehavior,
+  type ModerationCause,
+} from '#/lib/moderation'
 import {useModerationCauseDescription} from '#/lib/moderation/useModerationCauseDescription'
 import {makeProfileLink} from '#/lib/routes/links'
 import {listUriToHref} from '#/lib/strings/url-helpers'
@@ -52,6 +56,63 @@ function ModerationDetailsDialogInner({
   const timeDiff = useGetTimeAgo({future: true})
   const [isAppealing, setIsAppealing] = useState(false)
   const {gtPhone} = useBreakpoints()
+  const labelTrace =
+    modcause?.type === 'label' ? getModerationPolicyTrace(modcause) : undefined
+  const clientActions: string[] = []
+
+  if (labelTrace) {
+    const behavior: ModerationBehavior = labelTrace.clientBehavior
+    if (behavior.profileList === 'blur') {
+      clientActions.push(_(msg`Blur the profile in lists`))
+    } else if (behavior.profileList === 'alert') {
+      clientActions.push(_(msg`Show a warning for the profile in lists`))
+    } else if (behavior.profileList === 'inform') {
+      clientActions.push(
+        _(msg`Show an information notice for the profile in lists`),
+      )
+    }
+    if (behavior.profileView === 'blur') {
+      clientActions.push(_(msg`Blur the profile view`))
+    } else if (behavior.profileView === 'alert') {
+      clientActions.push(_(msg`Show a warning for the profile view`))
+    } else if (behavior.profileView === 'inform') {
+      clientActions.push(
+        _(msg`Show an information notice for the profile view`),
+      )
+    }
+    if (behavior.avatar === 'blur') {
+      clientActions.push(_(msg`Blur the avatar`))
+    } else if (behavior.avatar === 'alert') {
+      clientActions.push(_(msg`Show a warning for the avatar`))
+    }
+    if (behavior.banner === 'blur') {
+      clientActions.push(_(msg`Blur the banner`))
+    }
+    if (behavior.displayName === 'blur') {
+      clientActions.push(_(msg`Blur the display name`))
+    }
+    if (behavior.contentList === 'blur') {
+      clientActions.push(_(msg`Blur the content in lists`))
+    } else if (behavior.contentList === 'alert') {
+      clientActions.push(_(msg`Show a warning for the content in lists`))
+    } else if (behavior.contentList === 'inform') {
+      clientActions.push(
+        _(msg`Show an information notice for the content in lists`),
+      )
+    }
+    if (behavior.contentView === 'blur') {
+      clientActions.push(_(msg`Blur the content view`))
+    } else if (behavior.contentView === 'alert') {
+      clientActions.push(_(msg`Show a warning for the content view`))
+    } else if (behavior.contentView === 'inform') {
+      clientActions.push(
+        _(msg`Show an information notice for the content view`),
+      )
+    }
+    if (behavior.contentMedia === 'blur') {
+      clientActions.push(_(msg`Blur the content media`))
+    }
+  }
 
   /*
    * Appeal eligibility: only for label causes on content belonging to the
@@ -249,56 +310,98 @@ function ModerationDetailsDialogInner({
               borderBottomRightRadius: a.rounded_md.borderRadius,
             },
           ]}>
-          {modcause.source.type === 'user' ? (
-            <Text style={[t.atoms.text, a.text_md, a.leading_snug]}>
-              <Trans>This label was applied by the author.</Trans>
+          <View style={[a.gap_xs]}>
+            <Text
+              style={[a.text_xs, a.font_semi_bold, t.atoms.text_contrast_low]}>
+              <Trans>Source</Trans>
             </Text>
-          ) : (
-            <>
-              <View
-                style={[
-                  a.flex_row,
-                  a.justify_between,
-                  a.gap_xl,
-                  {paddingBottom: 1},
-                ]}>
-                <Text
-                  style={[
-                    a.flex_1,
-                    a.leading_snug,
-                    t.atoms.text_contrast_medium,
-                  ]}
-                  numberOfLines={1}>
+            {modcause.source.type === 'user' ? (
+              <Text style={[t.atoms.text, a.text_md, a.leading_snug]}>
+                <Trans>The author of this post</Trans>
+              </Text>
+            ) : (
+              <InlineLinkText
+                label={sourceName}
+                to={makeProfileLink({
+                  did: modcause.label.src,
+                  handle: '',
+                })}
+                onPress={() => control.close()}>
+                {sourceName}
+              </InlineLinkText>
+            )}
+            <Text style={[a.text_xs, t.atoms.text_contrast_low]}>
+              {modcause.label.src}
+            </Text>
+          </View>
+
+          <View style={[a.gap_xs, a.mt_md]}>
+            <Text
+              style={[a.text_xs, a.font_semi_bold, t.atoms.text_contrast_low]}>
+              <Trans>Assertion</Trans>
+            </Text>
+            <Text style={[t.atoms.text, a.text_md, a.leading_snug]}>
+              {desc.name}
+            </Text>
+            <Text
+              style={[a.text_sm, a.leading_snug, t.atoms.text_contrast_medium]}>
+              {desc.description}
+            </Text>
+            <Text style={[a.text_xs, t.atoms.text_contrast_low]}>
+              {modcause.label.val} · {modcause.target}
+            </Text>
+          </View>
+
+          <View style={[a.gap_xs, a.mt_md]}>
+            <Text
+              style={[a.text_xs, a.font_semi_bold, t.atoms.text_contrast_low]}>
+              <Trans>Your rule</Trans>
+            </Text>
+            <Text style={[t.atoms.text, a.text_md, a.leading_snug]}>
+              {labelTrace?.userOverridable ? (
+                labelTrace.userRule === 'ignore' ? (
                   <Trans>
-                    Source:{' '}
-                    <InlineLinkText
-                      label={sourceName}
-                      to={makeProfileLink({
-                        did: modcause.label.src,
-                        handle: '',
-                      })}
-                      onPress={() => control.close()}>
-                      {sourceName}
-                    </InlineLinkText>
+                    Show this content without a moderation treatment
                   </Trans>
-                </Text>
-                {modcause.label.exp && (
-                  <View>
-                    <Text
-                      style={[
-                        a.leading_snug,
-                        a.text_sm,
-                        a.italic,
-                        t.atoms.text_contrast_medium,
-                      ]}>
-                      <Trans>
-                        Expires in {timeDiff(Date.now(), modcause.label.exp)}
-                      </Trans>
-                    </Text>
-                  </View>
-                )}
-              </View>
-            </>
+                ) : labelTrace.userRule === 'warn' ? (
+                  <Trans>Show this content with a warning</Trans>
+                ) : (
+                  <Trans>Hide this content</Trans>
+                )
+              ) : (
+                <Trans>
+                  Required by the label definition; not user-overridable here
+                </Trans>
+              )}
+            </Text>
+          </View>
+
+          <View style={[a.gap_xs, a.mt_md]}>
+            <Text
+              style={[a.text_xs, a.font_semi_bold, t.atoms.text_contrast_low]}>
+              <Trans>Plumbline action</Trans>
+            </Text>
+            <Text style={[t.atoms.text, a.text_md, a.leading_snug]}>
+              {clientActions.length > 0 ? (
+                clientActions.join(', ')
+              ) : (
+                <Trans>No presentation change</Trans>
+              )}
+            </Text>
+          </View>
+
+          {modcause.label.exp && (
+            <Text
+              style={[
+                a.text_sm,
+                a.italic,
+                t.atoms.text_contrast_medium,
+                a.mt_md,
+              ]}>
+              <Trans>
+                Expires in {timeDiff(Date.now(), modcause.label.exp)}
+              </Trans>
+            </Text>
           )}
         </View>
       )}

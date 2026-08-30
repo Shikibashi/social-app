@@ -1,9 +1,12 @@
 import {describe, expect, it} from '@jest/globals'
 
 import {
+  BOUNDARY_OWNED_PROVIDER_SURFACES,
   composeProviderResults,
+  PROVIDER_SURFACE_DETAILS,
   PROVIDER_SURFACES,
   type ProviderDescriptor,
+  RUNTIME_COMPOSED_PROVIDER_SURFACES,
 } from './provider-composition'
 
 const providers: ProviderDescriptor[] = [
@@ -93,6 +96,27 @@ const credentialedIntegrationFixtures: Array<{
 ]
 
 describe('provider result composition', () => {
+  it('distinguishes runtime composition from boundary-owned declarations', () => {
+    expect(RUNTIME_COMPOSED_PROVIDER_SURFACES).toEqual([
+      'identity-resolution',
+      'profiles',
+      'threads',
+      'feeds',
+      'search',
+      'notifications',
+      'labels',
+    ])
+    expect(BOUNDARY_OWNED_PROVIDER_SURFACES).toEqual(['media', 'communities'])
+    expect(PROVIDER_SURFACE_DETAILS.media).toMatchObject({
+      support: 'boundary-owned',
+      authority: 'Account PDS blob and media delivery boundary',
+    })
+    expect(PROVIDER_SURFACE_DETAILS.communities).toMatchObject({
+      support: 'boundary-owned',
+      authority: 'Spaces transport and Radlib community control plane',
+    })
+  })
+
   it('composes every declared surface through one attributable contract', async () => {
     for (const surface of PROVIDER_SURFACES) {
       const result = await composeProviderResults(
@@ -164,6 +188,53 @@ describe('provider result composition', () => {
     expect(result.status).toBe('partial')
     expect(result.selected).toEqual({answer: 'a'})
     expect(result.observations[1].status).toBe('unavailable')
+  })
+
+  it('bounds provider fan-out concurrency', async () => {
+    const fanoutProviders = Array.from({length: 4}, (_, index) => ({
+      ...providers[0],
+      id: `provider-${index}`,
+    }))
+    let active = 0
+    let maxActive = 0
+
+    const result = await composeProviderResults(
+      fanoutProviders,
+      async provider => {
+        active += 1
+        maxActive = Math.max(maxActive, active)
+        await new Promise(resolve => setTimeout(resolve, 5))
+        active -= 1
+        return {value: {provider: provider.id}}
+      },
+      {
+        surface: 'feeds',
+        maxConcurrentProviders: 2,
+        policy: {mode: 'merge'},
+      },
+    )
+
+    expect(maxActive).toBeLessThanOrEqual(2)
+    expect(result.observations).toHaveLength(4)
+    expect(result.selectedValues).toHaveLength(4)
+  })
+
+  it('fails before invoking providers when the read is already aborted', async () => {
+    const controller = new AbortController()
+    controller.abort()
+    let invoked = false
+
+    await expect(
+      composeProviderResults(
+        providers,
+        () => {
+          invoked = true
+          return {value: 'unexpected'}
+        },
+        {surface: 'profiles', signal: controller.signal},
+      ),
+    ).rejects.toMatchObject({name: 'AbortError'})
+    expect(invoked).toBe(false)
   })
 
   it('only merges results when the user explicitly selects merge policy', async () => {

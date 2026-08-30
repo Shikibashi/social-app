@@ -14,7 +14,9 @@ const IS_BETA_USER_HEADER = 'X-Bsky-Is-Beta-User'
  *
  * AppView service identity and endpoint are supplied by the explicit provider
  * model. Record helpers force `service: null`, so they still target the account
- * host. Authenticated reads use endpoint-scoped service-auth tokens.
+ * host. Authenticated reads use the account PDS's standard service-proxy path;
+ * the PDS performs the endpoint-scoped service-auth minting after checking the
+ * OAuth grant.
  *
  * The class-wide `Client.appLabelers` static is deliberately NOT suppressed
  * here: this client is the only producer of `atproto-accept-labelers` on an
@@ -23,50 +25,27 @@ const IS_BETA_USER_HEADER = 'X-Bsky-Is-Beta-User'
  * instance, and that function filters out any DIDs already configured as
  * globally redacted authorities so they are not also listed unredacted.
  *
- * Each authenticated AppView request receives a short-lived, endpoint-scoped
- * service-auth JWT minted by the account PDS. The PDS access token is used only
- * for that PDS-side minting call and is never sent to the AppView endpoint.
+ * Keeping the proxy hop at the account PDS is intentional. The reference PDS
+ * checks OAuth `rpc` permissions against the full `did#serviceId` reference,
+ * then mints the interoperable service-auth JWT for the selected service. This
+ * avoids asking a client-side direct fetch to reproduce PDS proxy semantics and
+ * keeps the user's OAuth access token at the resource server.
  */
 export function buildAppviewClient(
   agent: Agent,
   provider: AppViewProvider = DEFAULT_APPVIEW_PROVIDER,
 ): Client {
+  const serviceRef = `${provider.serviceDid}#${provider.serviceFragment}`
+  const headers = new Headers()
+  headers.set('atproto-proxy', serviceRef)
+  const isBetaUser = agent.did ? getCachedIsBetaUser(agent.did) : undefined
+  if (isBetaUser !== undefined) {
+    headers.set(IS_BETA_USER_HEADER, String(isBetaUser))
+  }
   const appviewAgent: Agent = {
     did: agent.did,
     async fetchHandler(path, init) {
-      const nsid = path.startsWith('/xrpc/')
-        ? path.slice('/xrpc/'.length).split('?')[0]
-        : ''
-      if (!nsid) throw new Error('AppView requests must be XRPC paths')
-      const authUrl = `/xrpc/com.atproto.server.getServiceAuth?aud=${encodeURIComponent(provider.serviceDid)}&lxm=${encodeURIComponent(nsid)}`
-      const authResponse = await agent.fetchHandler(authUrl as `/${string}`, {
-        method: 'GET',
-      })
-      if (!authResponse.ok)
-        throw new Error(
-          `Account PDS could not authorize ${provider.displayName} (${provider.serviceDid}); HTTP ${authResponse.status}`,
-        )
-      const authBody = (await authResponse.json()) as {token?: string}
-      if (!authBody.token)
-        throw new Error('Service-auth issuance returned no token')
-      const headers = new Headers(init?.headers)
-      headers.set('authorization', `Bearer ${authBody.token}`)
-      headers.set(
-        'atproto-proxy',
-        `${provider.serviceDid}#${provider.serviceFragment}`,
-      )
-      const isBetaUser = appviewAgent.did
-        ? getCachedIsBetaUser(appviewAgent.did)
-        : undefined
-      if (isBetaUser !== undefined) {
-        headers.set(IS_BETA_USER_HEADER, String(isBetaUser))
-      }
-      const response = await fetch(new URL(path, provider.endpoint), {
-        ...init,
-        headers,
-        redirect: 'error',
-        signal: AbortSignal.timeout(15_000),
-      })
+      const response = await agent.fetchHandler(path, init)
       if (response.status === 401) {
         throw serviceBoundaryError(
           {
@@ -80,7 +59,7 @@ export function buildAppviewClient(
       return response
     },
   }
-  return createLexClient(appviewAgent)
+  return createLexClient(appviewAgent, {headers})
 }
 
 /**

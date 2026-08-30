@@ -10,6 +10,7 @@ import {
   OAUTH_FEATURE_SCOPES,
   OAUTH_FEATURES,
   OAUTH_MEDIA_SCOPES,
+  OAUTH_NATIVE_REDIRECT_URI,
   OAUTH_NOTIFICATION_SCOPES,
   OAUTH_POSTING_SCOPES,
   OAUTH_SCOPE,
@@ -84,6 +85,19 @@ describe('OAuth permission contract', () => {
     expect(OAUTH_SIGNUP_PROMPT).toBe('create')
   })
 
+  it('uses the client-id hostname reverse-DNS scheme for native callbacks', () => {
+    const clientIdUrl = new URL(OAUTH_CLIENT_METADATA.client_id)
+    const reverseDnsScheme = clientIdUrl.hostname.split('.').reverse().join('.')
+
+    expect(OAUTH_NATIVE_REDIRECT_URI).toBe(
+      `${reverseDnsScheme}:/oauth/callback`,
+    )
+    expect(OAUTH_CLIENT_METADATA.redirect_uris).toContain(
+      OAUTH_NATIVE_REDIRECT_URI,
+    )
+    expect(OAUTH_NATIVE_REDIRECT_URI).not.toContain('us.edriffles.social')
+  })
+
   it('keeps origin-bound metadata fields self-consistent', () => {
     const staticMetadata =
       require('../../../../public/oauth-client-metadata.json') as StaticOAuthClientMetadata
@@ -100,7 +114,7 @@ describe('OAuth permission contract', () => {
     expect(staticMetadata.redirect_uris[0]).toBe(
       `${staticMetadata.client_uri}/oauth/callback`,
     )
-    expect(staticMetadata.client_uri).toBe('https://social.edriffles.us')
+    expect(staticMetadata.client_uri).toBe('https://plumblines.uk')
     expect(staticMetadata.scope).toBe(OAUTH_SCOPE)
 
     const normalizeOriginBoundFields = (metadata: typeof staticMetadata) => ({
@@ -131,7 +145,7 @@ describe('OAuth permission contract', () => {
     expect(runtimeMetadata.redirect_uris[0]).toBe(
       `${runtimeMetadata.client_uri}/oauth/callback`,
     )
-    expect(runtimeMetadata.client_uri).toBe('https://social.edriffles.us')
+    expect(runtimeMetadata.client_uri).toBe('https://plumblines.uk')
     expect(runtimeMetadata.client_id).not.toContain('127.0.0.1')
     expect(runtimeMetadata.client_id).not.toContain('localhost')
   })

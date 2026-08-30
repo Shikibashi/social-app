@@ -18,6 +18,7 @@ import {
 } from '#/lib/persisted-query-storage'
 import {
   listenAppViewProviderChanged,
+  listenAppViewProviderPolicyChanged,
   listenNetworkConfirmed,
   listenNetworkLost,
 } from '#/state/events'
@@ -198,16 +199,26 @@ function QueryProviderInner({
     } satisfies Omit<PersistQueryClientOptions, 'queryClient'>
   }, [currentDid, providerEpoch])
   useEffect(() => {
-    return listenAppViewProviderChanged(changedDid => {
+    const clearProviderScopedCache = () => {
+      queryClient.clear()
+      void clearPersistedQueryStorage(currentDid ?? 'logged-out')
+      setProviderEpoch(epoch => epoch + 1)
+    }
+    const unlistenProviderChanged = listenAppViewProviderChanged(changedDid => {
       if (changedDid === currentDid) {
         // A provider switch is a service boundary. Remove in-memory data as
         // well as the persisted cache so the previous provider cannot appear
         // to be the current provider after the switch.
-        queryClient.clear()
-        void clearPersistedQueryStorage(currentDid ?? 'logged-out')
-        setProviderEpoch(epoch => epoch + 1)
+        clearProviderScopedCache()
       }
     })
+    const unlistenPolicyChanged = listenAppViewProviderPolicyChanged(
+      clearProviderScopedCache,
+    )
+    return () => {
+      unlistenProviderChanged()
+      unlistenPolicyChanged()
+    }
   }, [currentDid, queryClient])
   useEffect(() => {
     if (IS_WEB) {

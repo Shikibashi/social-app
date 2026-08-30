@@ -171,7 +171,7 @@ export function Provider({children}: React.PropsWithChildren<{}>) {
           const {page, indexedAt: lastIndexed} = requireComposedProviderValue(
             await composeAppViewProviderRead(
               'notifications',
-              providerClient =>
+              (providerClient, _provider, context) =>
                 fetchPage({
                   client: providerClient,
                   cursor: undefined,
@@ -183,8 +183,10 @@ export function Provider({children}: React.PropsWithChildren<{}>) {
                   // only fetch subjects when the page is going to be used
                   // in the notifications query, otherwise skip it
                   fetchAdditionalData: !!invalidate,
+                  signal: context.signal,
                 }),
               {
+                access: 'account-scoped',
                 clientForProvider: providerClientFactory,
                 claimKey: notificationPageClaimKey,
               },

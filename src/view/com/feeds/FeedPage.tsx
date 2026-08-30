@@ -12,9 +12,14 @@ import {useLingui} from '@lingui/react'
 import {type NavigationProp, useNavigation} from '@react-navigation/native'
 import {useQueryClient} from '@tanstack/react-query'
 
+import {type FeedProviderProvenance} from '#/lib/api/feed/types'
 import {isBlueskyOwnedFeed} from '#/lib/api/feed/utils'
 import {DISCOVER_FEED_URI, VIDEO_FEED_URIS} from '#/lib/constants'
 import {useOpenComposer} from '#/lib/hooks/useOpenComposer'
+import {
+  type ProviderCompositionStatus,
+  type ProviderIndependence,
+} from '#/lib/provider-composition'
 import {getRootNavigation, getTabState, TabState} from '#/lib/routes/helpers'
 import {type AllNavigatorParams} from '#/lib/routes/types'
 import {listenSoftReset} from '#/state/events'
@@ -83,6 +88,12 @@ export function FeedPage({
   const {openComposer} = useOpenComposer()
   const [isScrolledDown, setIsScrolledDown] = useState(false)
   const [feedContext, setFeedContext] = useState<string>()
+  const [feedProviderProvenance, setFeedProviderProvenance] =
+    useState<FeedProviderProvenance[]>()
+  const [feedProviderCompositionStatus, setFeedProviderCompositionStatus] =
+    useState<ProviderCompositionStatus>()
+  const [feedProviderIndependence, setFeedProviderIndependence] =
+    useState<ProviderIndependence>()
   const headerOffset = useHeaderOffset()
   const feedFeedback = useFeedFeedback(feedInfo, hasSession)
   const scrollElRef = useRef<ListMethods>(null)
@@ -136,7 +147,25 @@ export function FeedPage({
 
   useEffect(() => {
     setFeedContext(undefined)
+    setFeedProviderProvenance(undefined)
+    setFeedProviderCompositionStatus(undefined)
+    setFeedProviderIndependence(undefined)
   }, [feed])
+
+  const onFeedContext = useCallback(
+    (
+      nextFeedContext: string | undefined,
+      providerProvenance?: FeedProviderProvenance[],
+      providerCompositionStatus?: ProviderCompositionStatus,
+      providerIndependence?: ProviderIndependence,
+    ) => {
+      setFeedContext(nextFeedContext)
+      setFeedProviderProvenance(providerProvenance)
+      setFeedProviderCompositionStatus(providerCompositionStatus)
+      setFeedProviderIndependence(providerIndependence)
+    },
+    [],
+  )
 
   const onPressCompose = useCallback(() => {
     openComposer({logContext: 'Fab'})
@@ -211,6 +240,9 @@ export function FeedPage({
           feedOwnerDid={feedInfo.creatorDid}
           feedUri={feedInfo.uri}
           feedContext={feedContext}
+          providerProvenance={feedProviderProvenance}
+          providerCompositionStatus={feedProviderCompositionStatus}
+          providerIndependence={feedProviderIndependence}
           privacy={
             balancedEnabled
               ? 'Candidate posts are supplied by the selected provider; Balanced ordering and preferences stay on this device'
@@ -255,7 +287,7 @@ export function FeedPage({
             localFeedPreferences={localFeedPreferences}
             radlibCuration={localFeedPreferences.radlibCuration}
             contentFilterPolicy={localFeedPreferences.contentFilterPolicy}
-            onFeedContext={setFeedContext}
+            onFeedContext={onFeedContext}
             headerOffset={headerOffset}
             savedFeedConfig={savedFeedConfig}
             isVideoFeed={isVideoFeed}

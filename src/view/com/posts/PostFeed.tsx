@@ -22,6 +22,7 @@ import {type RichText as RichTextType} from '@bsky/sdk/richtext'
 import {useLingui} from '@lingui/react/macro'
 import {useQueryClient} from '@tanstack/react-query'
 
+import {type FeedProviderProvenance} from '#/lib/api/feed/types'
 import {type BalancedCandidate, rankBalancedCandidates} from '#/lib/balanced'
 import {DISCOVER_FEED_URI, KNOWN_SHUTDOWN_FEEDS} from '#/lib/constants'
 import {getFeedCandidateText} from '#/lib/feed-sovereignty/candidate-text'
@@ -47,6 +48,10 @@ import {
   defaultExplicitPreferences,
   defaultLearnedProfile,
 } from '#/lib/personalization'
+import {
+  type ProviderCompositionStatus,
+  type ProviderIndependence,
+} from '#/lib/provider-composition'
 import {isNetworkError} from '#/lib/strings/errors'
 import {logger} from '#/logger'
 import {usePostAuthorShadowFilter} from '#/state/cache/profile-shadow'
@@ -280,7 +285,12 @@ let PostFeed = ({
   contentFilterPolicy?: ContentFilterPolicy
   /** Show the inline post composer prompt when this feed is rendered in Home. */
   showComposerPrompt?: boolean
-  onFeedContext?: (feedContext: string | undefined) => void
+  onFeedContext?: (
+    feedContext: string | undefined,
+    providerProvenance?: FeedProviderProvenance[],
+    providerCompositionStatus?: ProviderCompositionStatus,
+    providerIndependence?: ProviderIndependence,
+  ) => void
   ref?: React.Ref<PostFeedRef>
 }): React.ReactNode => {
   const ax = useAnalytics()
@@ -350,10 +360,27 @@ let PostFeed = ({
         .find((context): context is string => Boolean(context)),
     [data],
   )
+  const activeProviderProvenance = data?.pages.find(
+    page => page.providerProvenance?.length,
+  )?.providerProvenance
+  const activeProviderCompositionStatus =
+    data?.pages[0]?.providerCompositionStatus
+  const activeProviderIndependence = data?.pages[0]?.providerIndependence
 
   useEffect(() => {
-    onFeedContext?.(activeFeedContext)
-  }, [activeFeedContext, onFeedContext])
+    onFeedContext?.(
+      activeFeedContext,
+      activeProviderProvenance,
+      activeProviderCompositionStatus,
+      activeProviderIndependence,
+    )
+  }, [
+    activeFeedContext,
+    activeProviderCompositionStatus,
+    activeProviderIndependence,
+    activeProviderProvenance,
+    onFeedContext,
+  ])
 
   useEffect(() => {
     if (lastFetchedAt) {

@@ -8,14 +8,32 @@ import {PUBLIC_APPVIEW} from '#/lib/constants'
 import {validateFeedBatch} from '#/lib/feed-provider-security'
 import {createLexClient} from '#/lib/lexClient'
 import {
+  composeProviderResults,
+  ProviderCompositionError,
+  type ProviderDescriptor,
+  type ProviderReconciliationPolicy,
+} from '#/lib/provider-composition'
+import {isNetworkError, isRetryableHttpStatus} from '#/lib/strings/errors'
+import {getErrorStatus} from '#/lib/xrpc-error'
+import {
   getAppLanguageAsContentLanguage,
   getContentLanguages,
 } from '#/state/preferences/languages'
 import {app} from '#/lexicons'
-import {type FeedAPI, type FeedAPIResponse} from './types'
+import {
+  type FeedAPI,
+  type FeedAPIResponse,
+  type FeedProviderProvenance,
+} from './types'
 import {createBskyTopicsHeader, isBlueskyOwnedFeed} from './utils'
 
 type GetCustomFeedParams = XrpcRequestParams<typeof app.bsky.feed.getFeed.main>
+
+type ValidatedCustomFeedBatch = {
+  feed: app.bsky.feed.defs.FeedViewPost[]
+  cursor?: string
+  feedContext?: string
+}
 
 export class CustomFeedAPI implements FeedAPI {
   client: Client
@@ -102,6 +120,191 @@ export class CustomFeedAPI implements FeedAPI {
       })),
     }
   }
+}
+
+/**
+ * A custom-feed reader whose provider fan-out is explicit and policy-bound.
+ *
+ * The selected provider is not inferred from request order. With the default
+ * require-agreement policy, one provider may answer normally, while multiple
+ * providers must agree on the candidate batch. A user-selected
+ * first-verified/preferred policy can continue through an outage, and merge is
+ * available only as an explicit policy choice. Every selected provider is
+ * returned as provenance for the feed UI.
+ */
+export class ComposedCustomFeedAPI implements FeedAPI {
+  private readonly providers: readonly ProviderDescriptor[]
+  private readonly clientForProvider: (
+    provider: ProviderDescriptor,
+    access: 'public' | 'account-scoped',
+    signal?: AbortSignal,
+  ) => Client | Promise<Client>
+  private readonly policy: ProviderReconciliationPolicy
+  private readonly access: 'public' | 'account-scoped'
+  private readonly params: GetCustomFeedParams
+  private readonly userInterests?: string
+
+  constructor({
+    providers,
+    clientForProvider,
+    policy,
+    access,
+    feedParams,
+    userInterests,
+  }: {
+    providers: readonly ProviderDescriptor[]
+    clientForProvider: (
+      provider: ProviderDescriptor,
+      access: 'public' | 'account-scoped',
+      signal?: AbortSignal,
+    ) => Client | Promise<Client>
+    policy: ProviderReconciliationPolicy
+    access: 'public' | 'account-scoped'
+    feedParams: GetCustomFeedParams
+    userInterests?: string
+  }) {
+    this.providers = providers
+    this.clientForProvider = clientForProvider
+    this.policy = policy
+    this.access = access
+    this.params = feedParams
+    this.userInterests = userInterests
+  }
+
+  async peekLatest(): Promise<app.bsky.feed.defs.FeedViewPost> {
+    const data = await this.fetch({cursor: undefined, limit: 1})
+    return data.feed[0]
+  }
+
+  async fetch({
+    cursor,
+    limit,
+    signal,
+  }: {
+    cursor: string | undefined
+    limit: number
+    signal?: AbortSignal
+  }): Promise<FeedAPIResponse> {
+    const composition = await composeProviderResults(
+      this.providers,
+      async (provider, providerSignal) => ({
+        value: await fetchComposedFeedBatch(
+          await this.clientForProvider(provider, this.access, providerSignal),
+          this.params,
+          this.userInterests,
+          cursor,
+          limit,
+          providerSignal,
+        ),
+        verification: 'unverified' as const,
+        retrievedAt: new Date().toISOString(),
+      }),
+      {
+        surface: 'feeds',
+        policy: this.policy,
+        claimKey: feedBatchClaimKey,
+        merge: mergeFeedBatches,
+        isRetryableError: isRetryableFeedError,
+        maxConcurrentProviders: 2,
+        signal,
+      },
+    )
+
+    if (!composition.selected) {
+      throw new ProviderCompositionError(composition)
+    }
+
+    const selectedProviders = composition.selectedProviderIds.flatMap(id => {
+      const provider = this.providers.find(item => item.id === id)
+      return provider ? [toFeedProviderProvenance(provider)] : []
+    })
+    const selected = composition.selected
+    return {
+      cursor: selected.feed.length ? selected.cursor : undefined,
+      feedContext: selected.feedContext,
+      feed: selected.feed.map(item => ({
+        ...item,
+        feedContext: selected.feedContext,
+      })),
+      providerProvenance: selectedProviders,
+      providerCompositionStatus: composition.status,
+      providerIndependence: composition.independence,
+    }
+  }
+}
+
+async function fetchComposedFeedBatch(
+  client: Client,
+  params: GetCustomFeedParams,
+  userInterests: string | undefined,
+  cursor: string | undefined,
+  limit: number,
+  signal?: AbortSignal,
+): Promise<ValidatedCustomFeedBatch> {
+  const contentLangs = getContentLanguages().join(',')
+  const data = await client.call(
+    app.bsky.feed.getFeed,
+    {
+      ...params,
+      cursor,
+      limit,
+    },
+    {
+      headers: {
+        ...(isBlueskyOwnedFeed(params.feed)
+          ? createBskyTopicsHeader(userInterests)
+          : {}),
+        'Accept-Language': contentLangs,
+      },
+      signal,
+    },
+  )
+  return validateFeedBatch<(typeof data.feed)[number]>(data, limit)
+}
+
+function feedBatchClaimKey(batch: ValidatedCustomFeedBatch): string {
+  return batch.feed.map(item => `${item.post.uri}:${item.post.cid}`).join('|')
+}
+
+function mergeFeedBatches(
+  values: readonly ValidatedCustomFeedBatch[],
+  _providers: readonly ProviderDescriptor[],
+): ValidatedCustomFeedBatch | undefined {
+  if (!values.length) return undefined
+  const seen = new Set<string>()
+  const feed = values
+    .flatMap(value => value.feed)
+    .filter(item => {
+      if (seen.has(item.post.uri)) return false
+      seen.add(item.post.uri)
+      return true
+    })
+  const cursors = new Set(values.map(value => value.cursor))
+  return {
+    feed,
+    cursor: cursors.size === 1 ? values[0].cursor : undefined,
+    // A merged batch has no single provider context that can safely be sent
+    // back as an interaction token, so feedback remains unadorned.
+    feedContext: undefined,
+  }
+}
+
+function toFeedProviderProvenance(
+  provider: ProviderDescriptor,
+): FeedProviderProvenance {
+  return {
+    id: provider.id,
+    displayName: provider.displayName,
+    endpoint: provider.endpoint,
+    serviceDid: provider.serviceDid,
+    operatorId: provider.operatorId,
+  }
+}
+
+function isRetryableFeedError(error: unknown): boolean {
+  return (
+    isRetryableHttpStatus(getErrorStatus(error) ?? 0) || isNetworkError(error)
+  )
 }
 
 let loggedOutAppviewClient: Client | undefined

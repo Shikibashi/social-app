@@ -115,6 +115,14 @@ export const OAUTH_BASE_SCOPES = [
 /** The complete scope advertised in metadata and sent on first authorization. */
 export const OAUTH_SCOPE = OAUTH_BASE_SCOPES.join(' ')
 
+/**
+ * Native OAuth callbacks must use a private-use scheme derived from the
+ * client_id hostname in reverse-DNS order. Keep this next to the metadata so
+ * the advertised callback and the native client cannot drift apart during a
+ * domain migration.
+ */
+export const OAUTH_NATIVE_REDIRECT_URI = 'uk.plumblines:/oauth/callback'
+
 export function getOAuthFeatureScopes(
   feature: OAuthFeature,
 ): readonly string[] {
@@ -184,7 +192,7 @@ function buildOAuthClientMetadata(publicWebOrigin: string) {
     client_uri: publicWebOrigin,
     redirect_uris: [
       `${publicWebOrigin}/oauth/callback`,
-      'us.edriffles.social:/oauth/callback',
+      OAUTH_NATIVE_REDIRECT_URI,
     ],
     response_types: ['code'],
     grant_types: ['authorization_code', 'refresh_token'],

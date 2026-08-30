@@ -34,6 +34,8 @@ import {
   usePublicAppviewClient,
   useSession,
 } from '#/state/session'
+import {getPublicAppviewClient} from '#/state/session/clients'
+import {getAppViewProvidersForSurface} from '#/state/session/providers'
 import * as userActionHistory from '#/state/userActionHistory'
 import {useAnalytics} from '#/analytics'
 import {type Metrics, toClout} from '#/analytics/metrics'
@@ -79,11 +81,12 @@ export function usePostQuery(
   const allowPublicFallback = opts.allowPublicFallback === true
   return useQuery<app.bsky.feed.defs.PostView>({
     queryKey: RQKEY(uri || '', allowPublicFallback),
-    queryFn: async () => {
+    queryFn: async ({signal}) => {
       if (!uri) throw new Error('[unreachable] No URI provided')
 
       let post: app.bsky.feed.defs.PostView | undefined
       let primaryError: Error | undefined
+      let resolvedPublicClient = publicClient
 
       // The signed-in actor's PDS is the authoritative source for its own
       // post records. Read it before the eventually consistent AppView so a
@@ -106,10 +109,23 @@ export function usePostQuery(
         try {
           const composed = await composeAppViewProviderRead(
             'threads',
-            providerClient => fetchPost(providerClient, uri),
-            {clientForProvider: providerClientFactory},
+            (providerClient, _provider, context) =>
+              fetchPost(providerClient, uri, context.signal),
+            {
+              access: 'account-scoped',
+              clientForProvider: providerClientFactory,
+              signal,
+            },
           )
           post = requireComposedProviderValue(composed)
+          const selectedProvider = getAppViewProvidersForSurface(
+            'threads',
+          ).find(provider => provider.id === composed.selectedProviderIds[0])
+          if (selectedProvider) {
+            resolvedPublicClient = getPublicAppviewClient(
+              selectedProvider.endpoint,
+            )
+          }
         } catch (error) {
           primaryError ??=
             error instanceof Error ? error : new Error(String(error))
@@ -126,7 +142,7 @@ export function usePostQuery(
           throw new Error('No data')
         }
         try {
-          post = await fetchPost(publicClient, uri)
+          post = await fetchPost(resolvedPublicClient, uri, signal)
         } catch {
           if (primaryError) throw primaryError
           throw new Error('No data')
@@ -143,7 +159,11 @@ export function usePostQuery(
       if (allowPublicFallback && (!post || needsPublicRead)) {
         if (!post || !hasDirectViewerBlock(post.author)) {
           try {
-            const publicPost = await fetchPost(publicClient, uri)
+            const publicPost = await fetchPost(
+              resolvedPublicClient,
+              uri,
+              signal,
+            )
             if (publicPost) post = publicPost
           } catch {
             // Keep the authenticated post when the public retry is unavailable.
@@ -186,19 +206,28 @@ function resolveKnownAccountUri(
 async function fetchPost(
   client: Client,
   uri: string,
+  signal?: AbortSignal,
 ): Promise<app.bsky.feed.defs.PostView | undefined> {
   const urip = new AtUri(uri)
 
   if (!urip.host.startsWith('did:')) {
-    const data = await client.call(com.atproto.identity.resolveHandle, {
-      handle: urip.host as HandleString,
-    })
+    const data = await client.call(
+      com.atproto.identity.resolveHandle,
+      {
+        handle: urip.host as HandleString,
+      },
+      {signal},
+    )
     urip.host = data.did
   }
 
-  const data = await client.call(app.bsky.feed.getPosts, {
-    uris: [urip.toString()],
-  })
+  const data = await client.call(
+    app.bsky.feed.getPosts,
+    {
+      uris: [urip.toString()],
+    },
+    {signal},
+  )
   return data.posts[0]
 }
 
@@ -217,11 +246,16 @@ export function useGetPost() {
     async ({uri}: {uri: string}) => {
       return queryClient.fetchQuery({
         queryKey: RQKEY(uri || ''),
-        async queryFn() {
+        async queryFn({signal}) {
           const composed = await composeAppViewProviderRead(
             'threads',
-            providerClient => fetchPost(providerClient, uri),
-            {clientForProvider: providerClientFactory},
+            (providerClient, _provider, context) =>
+              fetchPost(providerClient, uri, context.signal),
+            {
+              access: 'account-scoped',
+              clientForProvider: providerClientFactory,
+              signal,
+            },
           )
           const post = requireComposedProviderValue(composed)
           if (post) {
@@ -243,14 +277,22 @@ export function useGetPosts() {
     async ({uris}: {uris: string[]}) => {
       return queryClient.fetchQuery({
         queryKey: RQKEY(uris.join(',') || ''),
-        async queryFn() {
+        async queryFn({signal}) {
           const composed = await composeAppViewProviderRead(
             'threads',
-            providerClient =>
-              providerClient.call(app.bsky.feed.getPosts, {
-                uris: uris as AtUriString[],
-              }),
-            {clientForProvider: providerClientFactory},
+            (providerClient, _provider, context) =>
+              providerClient.call(
+                app.bsky.feed.getPosts,
+                {
+                  uris: uris as AtUriString[],
+                },
+                {signal: context.signal},
+              ),
+            {
+              access: 'account-scoped',
+              clientForProvider: providerClientFactory,
+              signal,
+            },
           )
           const data = requireComposedProviderValue(composed)
           // See the note on `fetchPost` about the view shapes.

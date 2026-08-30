@@ -16,6 +16,7 @@ import {
   getRuntimeOAuthClientMetadata,
   mergeOAuthScopes,
   normalizeOAuthScopes,
+  OAUTH_NATIVE_REDIRECT_URI,
   OAUTH_SCOPE,
   OAUTH_SIGNUP_PROMPT,
   type OAuthFeature,
@@ -23,10 +24,11 @@ import {
 import {sessionAccountToSessionData, type SessionData} from './session-data'
 import {type SessionAccount} from './types'
 
+export {OAUTH_NATIVE_REDIRECT_URI} from './oauth-scopes'
+
 type OAuthRedirectUri = `https://${string}` | `${string}.${string}:/${string}`
 
 export const OAUTH_WEB_REDIRECT_URI = `${getRuntimePublicWebOrigin()}/oauth/callback`
-export const OAUTH_NATIVE_REDIRECT_URI = 'us.edriffles.social:/oauth/callback'
 
 export type OAuthSessionHooks = {
   onUpdated?: (data: SessionData) => void
@@ -247,7 +249,17 @@ export class OAuthSessionAdapter {
     if (this.disposed) throw new Error('OAuth session disposed')
     try {
       const session = await this.ensureCurrent()
-      return await session.fetchHandler(toPathname(path), init)
+      /*
+       * Preserve absolute request URLs. `routeSessionToPds` uses an absolute
+       * URL to pin account requests to the repository PDS while keeping token
+       * storage, DPoP, and refresh inside the official OAuth session. The
+       * upstream OAuth client intentionally accepts both relative and
+       * absolute paths and resolves them with `new URL(path, tokenSet.aud)`.
+       * Stripping the origin here silently sent a pinned request to the token
+       * audience instead, which is especially harmful during PDS migration
+       * and cold-start session restore.
+       */
+      return await session.fetchHandler(path, init)
     } catch (error) {
       if (isTerminalOAuthError(error)) {
         this.disposed = true
@@ -365,15 +377,6 @@ function extractPdsEndpoint(didDoc: SessionData['didDoc']) {
   return typeof service?.serviceEndpoint === 'string'
     ? service.serviceEndpoint
     : undefined
-}
-
-function toPathname(path: string) {
-  try {
-    const url = new URL(path)
-    return `${url.pathname}${url.search}`
-  } catch {
-    return path
-  }
 }
 
 function isTerminalOAuthError(error: unknown) {

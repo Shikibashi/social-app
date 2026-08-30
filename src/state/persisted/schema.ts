@@ -1,6 +1,7 @@
 import {isDidString} from '@atproto/lex'
 import {z} from 'zod'
 
+import {getDefaultAppViewDisplayName} from '#/lib/appview-provider-label'
 import {deviceLanguageCodes, deviceLocales} from '#/locale/deviceLocales'
 import {findSupportedAppLanguage} from '#/locale/helpers'
 import {logger} from '#/logger'
@@ -228,21 +229,26 @@ const configuredProjectAppViewEndpoint =
   (__DEV__ ? 'http://localhost:2584' : 'https://appview.invalid')
 const configuredProjectAppViewHealthPath =
   process.env.EXPO_PUBLIC_APPVIEW_HEALTH_PATH || '/xrpc/_health'
+const configuredProjectAppViewOperatorId = (
+  process.env.EXPO_PUBLIC_APPVIEW_OPERATOR_ID as string | undefined
+)?.trim()
 export const defaults: Schema = {
   appviewProviders: [
     {
       id: 'project-appview',
-      displayName:
-        process.env.EXPO_PUBLIC_APPVIEW_DISPLAY_NAME || 'Project AppView',
+      displayName: getDefaultAppViewDisplayName(
+        configuredProjectAppViewEndpoint,
+        process.env.EXPO_PUBLIC_APPVIEW_DISPLAY_NAME,
+      ),
       serviceDid: configuredProjectAppViewDid,
       serviceFragment:
         process.env.EXPO_PUBLIC_APPVIEW_SERVICE_FRAGMENT || 'bsky_appview',
       endpoint: configuredProjectAppViewEndpoint,
       healthPath: configuredProjectAppViewHealthPath,
       builtin: true,
-      operatorId:
-        process.env.EXPO_PUBLIC_APPVIEW_OPERATOR_ID ||
-        'project-appview-operator',
+      ...(configuredProjectAppViewOperatorId
+        ? {operatorId: configuredProjectAppViewOperatorId}
+        : {}),
       enabled: configuredProjectAppViewEndpoint !== 'https://appview.invalid',
       capabilities: [
         'public-read',

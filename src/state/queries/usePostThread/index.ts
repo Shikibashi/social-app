@@ -7,6 +7,10 @@ import {fetchAccountPost} from '#/lib/api/account-posts'
 import {useModerationOpts} from '#/state/preferences/moderation-opts'
 import {useThreadPreferences} from '#/state/queries/preferences/useThreadPreferences'
 import {
+  composeAppViewProviderRead,
+  requireComposedProviderValue,
+} from '#/state/queries/provider-composition'
+import {
   filterPublicPostsForViewer,
   hasDirectViewerBlock,
 } from '#/state/queries/public-visibility'
@@ -37,10 +41,13 @@ import {getThreadgateRecord} from '#/state/queries/usePostThread/utils'
 import * as views from '#/state/queries/usePostThread/views'
 import {
   useAppviewClient,
+  useAppviewProviderClientFactory,
   useMaybePdsClient,
   usePublicAppviewClient,
   useSession,
 } from '#/state/session'
+import {getPublicAppviewClient} from '#/state/session/clients'
+import {getAppViewProvidersForSurface} from '#/state/session/providers'
 import {useMergeThreadgateHiddenReplies} from '#/state/threadgate-hidden-replies'
 import {useBreakpoints} from '#/alf'
 import {IS_WEB} from '#/env'
@@ -57,15 +64,18 @@ async function fetchThreadPostsWithPublicFallback(
   client: Client,
   publicClient: Client,
   uris: AtUriString[],
+  signal?: AbortSignal,
 ): Promise<app.bsky.feed.defs.PostView[]> {
   let primary: app.bsky.feed.getPosts.$OutputBody
   try {
-    primary = await client.call(app.bsky.feed.getPosts, {uris})
+    primary = await client.call(app.bsky.feed.getPosts, {uris}, {signal})
   } catch (error) {
     try {
-      const publicData = await publicClient.call(app.bsky.feed.getPosts, {
-        uris,
-      })
+      const publicData = await publicClient.call(
+        app.bsky.feed.getPosts,
+        {uris},
+        {signal},
+      )
       return filterPublicPostsForViewer(client, publicData.posts)
     } catch {
       throw error
@@ -79,9 +89,11 @@ async function fetchThreadPostsWithPublicFallback(
   if (!needsPublicRead) return primary.posts
 
   try {
-    const publicData = await publicClient.call(app.bsky.feed.getPosts, {
-      uris,
-    })
+    const publicData = await publicClient.call(
+      app.bsky.feed.getPosts,
+      {uris},
+      {signal},
+    )
     const publicPosts = await filterPublicPostsForViewer(
       client,
       publicData.posts,
@@ -113,6 +125,7 @@ export function usePostThread({anchor}: {anchor?: string}) {
   const qc = useQueryClient()
   const client = useAppviewClient()
   const publicClient = usePublicAppviewClient()
+  const providerClientFactory = useAppviewProviderClientFactory()
   const pdsClient = useMaybePdsClient()
   const {currentAccount, hasSession} = useSession()
   const {gtPhone} = useBreakpoints()
@@ -149,14 +162,45 @@ export function usePostThread({anchor}: {anchor?: string}) {
     queryKey: postThreadQueryKey,
     async queryFn(ctx) {
       let data: app.bsky.unspecced.getPostThreadV2.$OutputBody
+      let threadClient = client
+      let threadPublicClient = publicClient
       try {
-        data = await client.call(app.bsky.unspecced.getPostThreadV2, {
-          anchor: anchor! as AtUriString,
-          branchingFactor: view === 'linear' ? LINEAR_VIEW_BF : TREE_VIEW_BF,
-          below,
-          sort: sort,
-        })
+        const providerClients = new Map<string, Client>()
+        const composed = await composeAppViewProviderRead(
+          'threads',
+          async (providerClient, provider, context) => {
+            providerClients.set(provider.id, providerClient)
+            return providerClient.call(
+              app.bsky.unspecced.getPostThreadV2,
+              {
+                anchor: anchor! as AtUriString,
+                branchingFactor:
+                  view === 'linear' ? LINEAR_VIEW_BF : TREE_VIEW_BF,
+                below,
+                sort: sort,
+              },
+              {signal: context.signal},
+            )
+          },
+          {
+            access: 'account-scoped',
+            clientForProvider: providerClientFactory,
+            signal: ctx.signal,
+          },
+        )
+        data = requireComposedProviderValue(composed)
+        const selectedProviderId = composed.selectedProviderIds[0]
+        const selectedProvider = getAppViewProvidersForSurface('threads').find(
+          provider => provider.id === selectedProviderId,
+        )
+        threadClient =
+          (selectedProviderId && providerClients.get(selectedProviderId)) ||
+          client
+        threadPublicClient = selectedProvider
+          ? getPublicAppviewClient(selectedProvider.endpoint)
+          : publicClient
       } catch (error) {
+        if (ctx.signal.aborted) throw error
         if (!pdsClient || !currentAccount?.did) throw error
         const directPost = await fetchAccountPost({
           pdsClient,
@@ -193,7 +237,13 @@ export function usePostThread({anchor}: {anchor?: string}) {
 
       const hydratedThread = await hydrateBlockedThreadItems(
         data.thread || [],
-        uris => fetchThreadPostsWithPublicFallback(client, publicClient, uris),
+        uris =>
+          fetchThreadPostsWithPublicFallback(
+            threadClient,
+            threadPublicClient,
+            uris,
+            ctx.signal,
+          ),
       )
 
       /*
@@ -284,14 +334,44 @@ export function usePostThread({anchor}: {anchor?: string}) {
   const additionalItemsQuery = useQuery({
     enabled: additionalQueryEnabled,
     queryKey: postThreadOtherQueryKey,
-    async queryFn() {
-      const data = await client.call(app.bsky.unspecced.getPostThreadOtherV2, {
-        anchor: anchor! as AtUriString,
-      })
+    async queryFn({signal}) {
+      const providerClients = new Map<string, Client>()
+      const composed = await composeAppViewProviderRead(
+        'threads',
+        async (providerClient, provider, context) => {
+          providerClients.set(provider.id, providerClient)
+          return providerClient.call(
+            app.bsky.unspecced.getPostThreadOtherV2,
+            {anchor: anchor! as AtUriString},
+            {signal: context.signal},
+          )
+        },
+        {
+          access: 'account-scoped',
+          clientForProvider: providerClientFactory,
+          signal,
+        },
+      )
+      const data = requireComposedProviderValue(composed)
+      const selectedProviderId = composed.selectedProviderIds[0]
+      const selectedProvider = getAppViewProvidersForSurface('threads').find(
+        provider => provider.id === selectedProviderId,
+      )
+      const threadClient =
+        (selectedProviderId && providerClients.get(selectedProviderId)) ||
+        client
+      const threadPublicClient = selectedProvider
+        ? getPublicAppviewClient(selectedProvider.endpoint)
+        : publicClient
       return {
         ...data,
         thread: await hydrateBlockedThreadItems(data.thread || [], uris =>
-          fetchThreadPostsWithPublicFallback(client, publicClient, uris),
+          fetchThreadPostsWithPublicFallback(
+            threadClient,
+            threadPublicClient,
+            uris,
+            signal,
+          ),
         ),
       }
     },

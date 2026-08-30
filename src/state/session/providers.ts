@@ -1,10 +1,12 @@
 import {type DidString, isDidString} from '@atproto/lex'
 
+import {getDefaultAppViewDisplayName} from '#/lib/appview-provider-label'
 import {
   DEFAULT_IDENTITY_RESOLUTION_POLICY,
   type IdentityResolutionPolicy,
 } from '#/lib/identity-runtime'
 import {
+  isRuntimeComposedProviderSurface,
   PROVIDER_RECONCILIATION_MODES,
   PROVIDER_SURFACES,
   type ProviderReconciliationMode,
@@ -18,11 +20,15 @@ import {
   IS_DEV,
   PUBLIC_APPVIEW_URL,
 } from '#/env'
+import {emitAppViewProviderPolicyChanged} from '../events'
+
+export {getDefaultAppViewDisplayName} from '#/lib/appview-provider-label'
 
 const configuredAppViewDisplayName = process.env
   .EXPO_PUBLIC_APPVIEW_DISPLAY_NAME as string | undefined
-const configuredAppViewOperatorId = process.env
-  .EXPO_PUBLIC_APPVIEW_OPERATOR_ID as string | undefined
+const configuredAppViewOperatorId =
+  (process.env.EXPO_PUBLIC_APPVIEW_OPERATOR_ID as string | undefined)?.trim() ||
+  undefined
 
 export const APPVIEW_PROVIDER_CAPABILITIES = [
   'public-read',
@@ -81,33 +87,20 @@ const ANONYMOUS_PUBLIC_READ_SURFACES = [
   'media',
 ] as const satisfies readonly ProviderSurface[]
 
-export function getDefaultAppViewDisplayName(
-  endpoint: string,
-  configuredName = configuredAppViewDisplayName,
-): string {
-  if (configuredName?.trim()) return configuredName.trim()
-
-  try {
-    const hostname = new URL(endpoint).hostname.toLowerCase()
-    if (hostname === 'api.bsky.app' || hostname === 'public.api.bsky.app') {
-      return 'Public AT Protocol AppView (external read provider)'
-    }
-  } catch {
-    // Endpoint validation reports the malformed endpoint separately.
-  }
-
-  return 'Project AppView'
-}
-
 export const DEFAULT_APPVIEW_PROVIDER: AppViewProvider = {
   id: 'project-appview',
-  displayName: getDefaultAppViewDisplayName(PUBLIC_APPVIEW_URL),
+  displayName: getDefaultAppViewDisplayName(
+    PUBLIC_APPVIEW_URL,
+    configuredAppViewDisplayName,
+  ),
   serviceDid: APPVIEW_PROXY_DID,
   serviceFragment: APPVIEW_PROXY_FRAGMENT,
   endpoint: PUBLIC_APPVIEW_URL,
   healthPath: '/xrpc/_health',
   builtin: true,
-  operatorId: configuredAppViewOperatorId || 'project-appview-operator',
+  // An operator ID is an explicit external assertion. Do not synthesize one
+  // for the bundled/default endpoint or imply that the client operates it.
+  operatorId: configuredAppViewOperatorId,
   // Keep the named provider visible even when deployment configuration is
   // absent so failure is attributable to this service, never silently routed
   // to a stock AppView.
@@ -181,7 +174,10 @@ export function getAppViewProviders(): AppViewProvider[] {
             ? {
                 ...configured,
                 capabilities: provider.capabilities,
-                operatorId: provider.operatorId ?? configured.operatorId,
+                operatorId: normalizeConfiguredOperatorId(
+                  provider.operatorId,
+                  configured.operatorId,
+                ),
               }
             : provider,
         )
@@ -240,6 +236,10 @@ export function getAppViewProvidersForHandleResolution(): AppViewProvider[] {
 export function getAppViewProvidersForSurface(
   surface: ProviderSurface,
 ): AppViewProvider[] {
+  // Media and Communities have different service contracts today. Do not let
+  // a broad registry declaration make the default AppView look like their
+  // runtime authority before those existing boundaries are wired explicitly.
+  if (!isRuntimeComposedProviderSurface(surface)) return []
   const providers = getAppViewProvidersForCapability(surface)
   if (providers.length > 0 || !isAnonymousPublicReadSurface(surface)) {
     return providers
@@ -308,6 +308,7 @@ export async function setAppViewReconciliationPolicy(
     ...(persisted.get('appviewReconciliationPolicies') ?? {}),
     [surface]: policy,
   })
+  emitAppViewProviderPolicyChanged()
 }
 
 export function getIdentityResolutionPolicy(): IdentityResolutionPolicy {
@@ -341,10 +342,21 @@ export async function setIdentityResolutionPolicy(
     throw new Error('Preferred identity resolver is not registered')
   }
   await persisted.write('identityResolutionPolicy', policy)
+  emitAppViewProviderPolicyChanged()
 }
 
 function configuredProjectProvider(): AppViewProvider | undefined {
   return DEFAULT_APPVIEW_PROVIDER
+}
+
+function normalizeConfiguredOperatorId(
+  persistedOperatorId: string | undefined,
+  configuredOperatorId: string | undefined,
+): string | undefined {
+  if (configuredOperatorId) return configuredOperatorId
+  return persistedOperatorId === 'project-appview-operator'
+    ? undefined
+    : persistedOperatorId
 }
 
 export function getSelectedAppViewProvider(did: string): AppViewProvider {
@@ -401,6 +413,7 @@ export async function registerAppViewProvider(
     item => item.id !== provider.id,
   )
   await persisted.write('appviewProviders', [...providers, validated])
+  emitAppViewProviderPolicyChanged()
   return validated
 }
 
@@ -437,6 +450,7 @@ export async function setAppViewProviderCapabilities(
       mode: 'require-agreement',
     })
   }
+  emitAppViewProviderPolicyChanged()
   return updated
 }
 
@@ -527,6 +541,7 @@ export async function importAppViewPolicy(serialized: string): Promise<void> {
   await persisted.write('appviewFallbacks', fallbacks)
   await persisted.write('appviewReconciliationPolicies', reconciliationPolicies)
   await persisted.write('identityResolutionPolicy', identityResolutionPolicy)
+  emitAppViewProviderPolicyChanged()
 }
 
 /** Revoke all optional provider participation without deleting registrations. */
@@ -543,6 +558,7 @@ export async function resetAppViewPolicy(): Promise<void> {
   await persisted.write('identityResolutionPolicy', {
     mode: 'require-agreement',
   })
+  emitAppViewProviderPolicyChanged()
 }
 
 function parsePortableAppViewPolicy(serialized: string): PortableAppViewPolicy {

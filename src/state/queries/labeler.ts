@@ -52,17 +52,25 @@ export function useLabelerInfoQuery({
   return useQuery({
     enabled: !!did && enabled !== false,
     queryKey: labelerInfoQueryKey(did as string),
-    queryFn: async () => {
+    queryFn: async ({signal}) => {
       try {
         const res = requireComposedProviderValue(
           await composeAppViewProviderRead(
             'labels',
-            providerClient =>
-              providerClient.call(app.bsky.labeler.getServices, {
-                dids: [did! as DidString],
-                detailed: true,
-              }),
-            {clientForProvider: providerClientFactory},
+            (providerClient, _provider, context) =>
+              providerClient.call(
+                app.bsky.labeler.getServices,
+                {
+                  dids: [did! as DidString],
+                  detailed: true,
+                },
+                {signal: context.signal},
+              ),
+            {
+              access: 'account-scoped',
+              clientForProvider: providerClientFactory,
+              signal,
+            },
           ),
         )
         return res.views[0] as app.bsky.labeler.defs.LabelerViewDetailed
@@ -87,16 +95,24 @@ export function useLabelersInfoQuery({dids}: {dids: string[]}) {
   return useQuery({
     enabled: !!dids.length,
     queryKey: labelersInfoQueryKey(dids),
-    queryFn: async () => {
+    queryFn: async ({signal}) => {
       try {
         const res = requireComposedProviderValue(
           await composeAppViewProviderRead(
             'labels',
-            providerClient =>
-              providerClient.call(app.bsky.labeler.getServices, {
-                dids: dids as DidString[],
-              }),
-            {clientForProvider: providerClientFactory},
+            (providerClient, _provider, context) =>
+              providerClient.call(
+                app.bsky.labeler.getServices,
+                {
+                  dids: dids as DidString[],
+                },
+                {signal: context.signal},
+              ),
+            {
+              access: 'account-scoped',
+              clientForProvider: providerClientFactory,
+              signal,
+            },
           ),
         )
         return res.views as app.bsky.labeler.defs.LabelerView[]
@@ -123,17 +139,25 @@ export function useLabelersDetailedInfoQuery({dids}: {dids: string[]}) {
     queryKey: createLabelersDetailedInfoQueryKey(dids),
     gcTime: GCTIME.INFINITY,
     staleTime: STALE.MINUTES.ONE,
-    queryFn: async () => {
+    queryFn: async ({signal}) => {
       try {
         const res = requireComposedProviderValue(
           await composeAppViewProviderRead(
             'labels',
-            providerClient =>
-              providerClient.call(app.bsky.labeler.getServices, {
-                dids: dids as DidString[],
-                detailed: true,
-              }),
-            {clientForProvider: providerClientFactory},
+            (providerClient, _provider, context) =>
+              providerClient.call(
+                app.bsky.labeler.getServices,
+                {
+                  dids: dids as DidString[],
+                  detailed: true,
+                },
+                {signal: context.signal},
+              ),
+            {
+              access: 'account-scoped',
+              clientForProvider: providerClientFactory,
+              signal,
+            },
           ),
         )
         return res.views as app.bsky.labeler.defs.LabelerViewDetailed[]

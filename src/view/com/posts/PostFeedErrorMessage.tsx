@@ -6,7 +6,9 @@ import {useLingui} from '@lingui/react'
 import {Trans} from '@lingui/react/macro'
 import {useNavigation} from '@react-navigation/native'
 
+import {shouldRetryPostFeedError} from '#/lib/api/feed/retry'
 import {usePalette} from '#/lib/hooks/usePalette'
+import {ProviderCompositionError} from '#/lib/provider-composition'
 import {type NavigationProp} from '#/lib/routes/types'
 import {cleanError} from '#/lib/strings/errors'
 import {getErrorName, getErrorStatus} from '#/lib/xrpc-error'
@@ -61,6 +63,7 @@ export function PostFeedErrorMessage({
         feedDesc={feedDesc}
         knownError={knownError}
         rawError={error}
+        onPressTryAgain={onPressTryAgain}
         savedFeedConfig={savedFeedConfig}
       />
     )
@@ -89,11 +92,13 @@ function FeedgenErrorMessage({
   feedDesc,
   knownError,
   rawError,
+  onPressTryAgain,
   savedFeedConfig,
 }: {
   feedDesc: FeedDescriptor
   knownError: KnownError
   rawError?: Error
+  onPressTryAgain: () => void
   savedFeedConfig?: app.bsky.actor.defs.SavedFeed
 }) {
   const pal = usePalette('default')
@@ -130,6 +135,15 @@ function FeedgenErrorMessage({
   )
   const [__, uri] = feedDesc.split('|')
   const [ownerDid] = safeParseFeedgenUri(uri)
+  const composition =
+    rawError instanceof ProviderCompositionError
+      ? rawError.composition
+      : undefined
+  const shouldOfferRetry =
+    knownError === KnownError.FeedgenOffline ||
+    knownError === KnownError.FeedTooManyRequests ||
+    shouldRetryPostFeedError(rawError)
+  const shouldOfferProviderChoice = Boolean(composition?.observations.length)
   const removePromptControl = Prompt.usePromptControl()
   const {mutateAsync: removeFeed} = useRemoveFeedMutation()
 
@@ -140,6 +154,10 @@ function FeedgenErrorMessage({
   const onPressRemoveFeed = useCallback(() => {
     removePromptControl.open()
   }, [removePromptControl])
+
+  const onPressChangeProvider = useCallback(() => {
+    navigation.navigate('ServicesSettings')
+  }, [navigation])
 
   const onRemoveFeed = useCallback(async () => {
     try {
@@ -165,9 +183,16 @@ function FeedgenErrorMessage({
       case KnownError.FeedgenMisconfigured:
       case KnownError.FeedgenBadResponse:
       case KnownError.FeedgenOffline:
+      case KnownError.FeedTooManyRequests:
       case KnownError.FeedgenUnknown: {
         return (
-          <View style={{flexDirection: 'row', alignItems: 'center', gap: 10}}>
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              gap: 10,
+            }}>
             {knownError === KnownError.FeedgenDoesNotExist &&
               savedFeedConfig && (
                 <Button
@@ -176,6 +201,20 @@ function FeedgenErrorMessage({
                   onPress={onRemoveFeed}
                 />
               )}
+            {shouldOfferRetry && (
+              <Button
+                type="default-light"
+                label={_l(msgLingui`Try again`)}
+                onPress={onPressTryAgain}
+              />
+            )}
+            {shouldOfferProviderChoice && (
+              <Button
+                type="default-light"
+                label={_l(msgLingui`Change provider`)}
+                onPress={onPressChangeProvider}
+              />
+            )}
             <Button
               type="default-light"
               label={_l(msgLingui`View profile`)}
@@ -185,7 +224,17 @@ function FeedgenErrorMessage({
         )
       }
     }
-  }, [knownError, onViewProfile, onRemoveFeed, _l, savedFeedConfig])
+  }, [
+    knownError,
+    onViewProfile,
+    onRemoveFeed,
+    onPressTryAgain,
+    shouldOfferRetry,
+    shouldOfferProviderChoice,
+    onPressChangeProvider,
+    _l,
+    savedFeedConfig,
+  ])
 
   return (
     <>
@@ -207,6 +256,18 @@ function FeedgenErrorMessage({
             <Trans>Message from server: {rawError.message}</Trans>
           </Text>
         )}
+
+        {composition ? (
+          <Text style={pal.textLight}>
+            Providers:{' '}
+            {composition.observations
+              .map(
+                observation =>
+                  `${observation.provider.displayName} (${observation.status})`,
+              )
+              .join(', ')}
+          </Text>
+        ) : null}
 
         {cta}
       </View>
@@ -250,8 +311,30 @@ function detectKnownError(
   }
 
   // check status codes
-  if (getErrorStatus(error) === 429) {
+  const status = getErrorStatus(error)
+  if (status === 429) {
     return KnownError.FeedTooManyRequests
+  }
+  if (status !== undefined && status >= 500) {
+    return KnownError.FeedgenOffline
+  }
+
+  if (error instanceof ProviderCompositionError) {
+    if (
+      error.composition.observations.some(
+        observation => observation.status === 'invalid',
+      )
+    ) {
+      return KnownError.FeedgenBadResponse
+    }
+    if (
+      error.composition.observations.some(
+        observation =>
+          observation.status === 'stale' || observation.retryable === true,
+      )
+    ) {
+      return KnownError.FeedgenOffline
+    }
   }
 
   // convert error to string and continue

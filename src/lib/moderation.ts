@@ -40,6 +40,42 @@ export {
   type ModerationUI,
 } from '@bsky/sdk/moderation'
 
+export type LabelModerationCause = Extract<ModerationCause, {type: 'label'}>
+
+/**
+ * The attributable moderation decision that the client applies to a label.
+ *
+ * This is deliberately a projection of the SDK cause rather than a new
+ * moderation authority: the issuer's label remains the assertion, the
+ * viewer's setting remains the policy input, and the behavior is only the
+ * local presentation result.
+ */
+export interface ModerationPolicyTrace {
+  source: LabelModerationCause['source']
+  assertion: {
+    label: LabelModerationCause['label']
+    target: LabelModerationCause['target']
+  }
+  userRule: LabelPreference
+  clientBehavior: ModerationBehavior
+  userOverridable: boolean
+}
+
+export function getModerationPolicyTrace(
+  cause: LabelModerationCause,
+): ModerationPolicyTrace {
+  return {
+    source: cause.source,
+    assertion: {
+      label: cause.label,
+      target: cause.target,
+    },
+    userRule: cause.setting,
+    clientBehavior: cause.behavior,
+    userOverridable: !cause.noOverride,
+  }
+}
+
 type ModerationSubjectFeedGenerator = Parameters<
   typeof sdkModerateFeedGenerator
 >[0]
@@ -69,8 +105,8 @@ function isOrdinaryLabel(
 ): boolean {
   return Boolean(
     definition &&
-      !definition.identifier.startsWith('!') &&
-      !definition.flags.includes('adult'),
+    !definition.identifier.startsWith('!') &&
+    !definition.flags.includes('adult'),
   )
 }
 

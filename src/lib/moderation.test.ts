@@ -1,11 +1,12 @@
 import {describe, expect, it} from '@jest/globals'
 
 import {
-  type InterpretedLabelValueDefinition,
-  type ModerationOpts,
-  ModerationDecision,
   applyViewerSovereignModeration,
+  getModerationPolicyTrace,
+  type InterpretedLabelValueDefinition,
   moderatePost,
+  ModerationDecision,
+  type ModerationOpts,
 } from './moderation'
 
 const labelerDid = 'did:plc:labeler.test'
@@ -88,6 +89,23 @@ describe('viewer-sovereign moderation policy', () => {
       expect(decision.ui('contentList').filters.length > 0).toBe(
         preference === 'hide',
       )
+
+      if (cause?.type !== 'label') {
+        throw new Error('Expected a label moderation cause')
+      }
+      const trace = getModerationPolicyTrace(cause)
+      expect(trace.source).toEqual({type: 'labeler', did: labelerDid})
+      expect(trace.assertion.label.val).toBe(labelValue)
+      expect(trace.assertion.target).toBe('content')
+      expect(trace.userRule).toBe(setting)
+      expect(trace.userOverridable).toBe(true)
+      expect(trace.clientBehavior).toEqual(
+        setting === 'ignore'
+          ? {}
+          : setting === 'warn'
+            ? {contentList: 'blur', contentView: 'alert'}
+            : {contentList: 'blur', contentView: 'alert'},
+      )
     },
   )
 
@@ -122,6 +140,13 @@ describe('viewer-sovereign moderation policy', () => {
     applyViewerSovereignModeration(decision)
 
     expect(decision.causes[0].type).toBe('label')
+    if (decision.causes[0].type !== 'label') {
+      throw new Error('Expected a label moderation cause')
+    }
+    const trace = getModerationPolicyTrace(decision.causes[0])
+    expect(trace.userRule).toBe('hide')
+    expect(trace.userOverridable).toBe(false)
+    expect(trace.clientBehavior).toEqual({contentView: 'blur'})
     expect(decision.ui('contentView').noOverride).toBe(true)
   })
 

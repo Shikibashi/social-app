@@ -8,7 +8,7 @@ import {IS_WEB} from '#/env'
 const openPermissionAlert = (perm: string) => {
   Alert.alert(
     'Permission needed',
-    `Edriffles does not have permission to access your ${perm}.`,
+    `Plumbline does not have permission to access your ${perm}.`,
     [
       {
         text: 'Cancel',

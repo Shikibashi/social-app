@@ -151,7 +151,7 @@ function Inner({
           to={urls.website.blog.initialVerificationAnnouncement}
           label={_(
             msg({
-              message: `Learn more about verification on Edriffles`,
+              message: `Learn more about verification on Plumbline`,
               context: `english-only-resource`,
             }),
           )}

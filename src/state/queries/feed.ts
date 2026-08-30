@@ -195,31 +195,52 @@ export function getAvatarTypeFromUri(uri: string) {
 
 export function useFeedSourceInfoQuery({uri}: {uri: string}) {
   const type = getFeedTypeFromUri(uri)
-  const {client} = useFeedReadClients()
   const providerClientFactory = useAppviewProviderClientFactory()
 
   return useQuery({
     staleTime: STALE.INFINITY,
     queryKey: feedSourceInfoQueryKey({uri}),
-    queryFn: async () => {
+    queryFn: async ({signal}) => {
       let view: FeedSourceInfo
 
       if (type === 'feed') {
         const composed = await composeAppViewProviderRead(
           'feeds',
-          providerClient =>
-            providerClient.call(app.bsky.feed.getFeedGenerator, {
-              feed: uri as AtUriString,
-            }),
-          {clientForProvider: providerClientFactory},
+          (providerClient, _provider, context) =>
+            providerClient.call(
+              app.bsky.feed.getFeedGenerator,
+              {
+                feed: uri as AtUriString,
+              },
+              {signal: context.signal},
+            ),
+          {
+            access: 'account-scoped',
+            clientForProvider: providerClientFactory,
+            signal,
+          },
         )
         const data = requireComposedProviderValue(composed)
         view = hydrateFeedGenerator(data.view)
       } else {
-        const data = await client.call(app.bsky.graph.getList, {
-          list: uri as AtUriString,
-          limit: 1,
-        })
+        const composed = await composeAppViewProviderRead(
+          'feeds',
+          (providerClient, _provider, context) =>
+            providerClient.call(
+              app.bsky.graph.getList,
+              {
+                list: uri as AtUriString,
+                limit: 1,
+              },
+              {signal: context.signal},
+            ),
+          {
+            access: 'account-scoped',
+            clientForProvider: providerClientFactory,
+            signal,
+          },
+        )
+        const data = requireComposedProviderValue(composed)
         view = hydrateList(data.list)
       }
 
@@ -310,16 +331,24 @@ export function useGetPopularFeedsQuery(options?: GetPopularFeedsOptions) {
   const query = useInfiniteQuery({
     enabled: Boolean(moderationOpts) && options?.enabled !== false,
     queryKey: createGetPopularFeedsQueryKey(options),
-    queryFn: async ({pageParam}) => {
+    queryFn: async ({pageParam, signal}) => {
       let data = requireComposedProviderValue(
         await composeAppViewProviderRead(
           'feeds',
-          providerClient =>
-            providerClient.call(app.bsky.unspecced.getPopularFeedGenerators, {
-              limit,
-              cursor: pageParam,
-            }),
-          {clientForProvider: providerClientFactory},
+          (providerClient, _provider, context) =>
+            providerClient.call(
+              app.bsky.unspecced.getPopularFeedGenerators,
+              {
+                limit,
+                cursor: pageParam,
+              },
+              {signal: context.signal},
+            ),
+          {
+            access: 'account-scoped',
+            clientForProvider: providerClientFactory,
+            signal,
+          },
         ),
       )
       data = await addDeploymentFeedFallback(data, publicClient, pageParam)
@@ -408,12 +437,19 @@ export function useSearchPopularFeedsMutation() {
       const data = requireComposedProviderValue(
         await composeAppViewProviderRead(
           'feeds',
-          providerClient =>
-            providerClient.call(app.bsky.unspecced.getPopularFeedGenerators, {
-              limit: 10,
-              query: query,
-            }),
-          {clientForProvider: providerClientFactory},
+          (providerClient, _provider, context) =>
+            providerClient.call(
+              app.bsky.unspecced.getPopularFeedGenerators,
+              {
+                limit: 10,
+                query: query,
+              },
+              {signal: context.signal},
+            ),
+          {
+            access: 'account-scoped',
+            clientForProvider: providerClientFactory,
+          },
         ),
       )
 
@@ -449,17 +485,25 @@ export function usePopularFeedsSearch({
   return useInfiniteQuery({
     enabled: enabledInner,
     queryKey: createPopularFeedsSearchQueryKey(query),
-    queryFn: async ({pageParam}) => {
+    queryFn: async ({pageParam, signal}) => {
       const data = requireComposedProviderValue(
         await composeAppViewProviderRead(
           'feeds',
-          providerClient =>
-            providerClient.call(app.bsky.unspecced.getPopularFeedGenerators, {
-              limit: 15,
-              query: query,
-              cursor: pageParam,
-            }),
-          {clientForProvider: providerClientFactory},
+          (providerClient, _provider, context) =>
+            providerClient.call(
+              app.bsky.unspecced.getPopularFeedGenerators,
+              {
+                limit: 15,
+                query: query,
+                cursor: pageParam,
+              },
+              {signal: context.signal},
+            ),
+          {
+            access: 'account-scoped',
+            clientForProvider: providerClientFactory,
+            signal,
+          },
         ),
       )
 
@@ -755,19 +799,34 @@ export function useSavedFeeds() {
 const feedInfoQueryKeyRoot = 'feedInfo'
 
 export function useFeedInfo(feedUri: string | undefined) {
-  const client = useAppviewClient()
+  const providerClientFactory = useAppviewProviderClientFactory()
 
   return useQuery({
     staleTime: STALE.INFINITY,
     queryKey: [feedInfoQueryKeyRoot, feedUri],
-    queryFn: async () => {
+    queryFn: async ({signal}) => {
       if (!feedUri) {
         return null
       }
 
-      const data = await client.call(app.bsky.feed.getFeedGenerator, {
-        feed: feedUri as AtUriString,
-      })
+      const data = requireComposedProviderValue(
+        await composeAppViewProviderRead(
+          'feeds',
+          (providerClient, _provider, context) =>
+            providerClient.call(
+              app.bsky.feed.getFeedGenerator,
+              {
+                feed: feedUri as AtUriString,
+              },
+              {signal: context.signal},
+            ),
+          {
+            access: 'account-scoped',
+            clientForProvider: providerClientFactory,
+            signal,
+          },
+        ),
+      )
 
       const feedSourceInfo = hydrateFeedGenerator(data.view)
       return feedSourceInfo

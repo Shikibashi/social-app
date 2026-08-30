@@ -1,9 +1,27 @@
+import {
+  type ProviderCompositionStatus,
+  type ProviderIndependence,
+} from '#/lib/provider-composition'
 import {type app} from '#/lexicons'
+
+export type FeedProviderProvenance = {
+  id: string
+  displayName: string
+  endpoint: string
+  serviceDid?: string
+  operatorId?: string
+}
 
 export interface FeedAPIResponse {
   cursor?: string
   feedContext?: string
   feed: app.bsky.feed.defs.FeedViewPost[]
+  /** The provider(s) selected by the local reconciliation policy. */
+  providerProvenance?: FeedProviderProvenance[]
+  /** Evidence status is retained separately from the selected feed value. */
+  providerCompositionStatus?: ProviderCompositionStatus
+  /** Declared operator identity is not proof of independent control. */
+  providerIndependence?: ProviderIndependence
 }
 
 export interface FeedAPI {
@@ -11,9 +29,11 @@ export interface FeedAPI {
   fetch({
     cursor,
     limit,
+    signal,
   }: {
     cursor: string | undefined
     limit: number
+    signal?: AbortSignal
   }): Promise<FeedAPIResponse>
 }
 

@@ -74,7 +74,7 @@ export function useSearchPostsV2Query({
     string | undefined
   >({
     queryKey: searchPostsV2QueryKey({query, sort, filters}),
-    queryFn: async ({pageParam}) => {
+    queryFn: async ({pageParam, signal}) => {
       /*
        * Operators embedded in the query string (e.g. for back-compat links) are
        * merged with the explicit structured filters from the advanced search
@@ -95,20 +95,28 @@ export function useSearchPostsV2Query({
       return requireComposedProviderValue(
         await composeAppViewProviderRead(
           'search',
-          providerClient =>
-            providerClient.call(app.bsky.feed.searchPostsV2, {
-              ...builtFilters,
-              query: finalQuery,
-              limit: 25,
-              cursor: pageParam,
-              /*
-               * v2 calls the recency sort 'recent'; the rest of the app still
-               * uses the v1 'latest' label.
-               */
-              sort: sort === 'latest' ? 'recent' : sort,
-              allTime: true,
-            }),
-          {clientForProvider: providerClientFactory},
+          (providerClient, _provider, context) =>
+            providerClient.call(
+              app.bsky.feed.searchPostsV2,
+              {
+                ...builtFilters,
+                query: finalQuery,
+                limit: 25,
+                cursor: pageParam,
+                /*
+                 * v2 calls the recency sort 'recent'; the rest of the app still
+                 * uses the v1 'latest' label.
+                 */
+                sort: sort === 'latest' ? 'recent' : sort,
+                allTime: true,
+              },
+              {signal: context.signal},
+            ),
+          {
+            access: 'account-scoped',
+            clientForProvider: providerClientFactory,
+            signal,
+          },
         ),
       )
     },

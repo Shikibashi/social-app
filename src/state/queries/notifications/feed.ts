@@ -90,7 +90,13 @@ export function useNotificationFeedQuery(opts: {
   >({
     staleTime: STALE.INFINITY,
     queryKey: RQKEY(filter),
-    async queryFn({pageParam}: {pageParam: RQPageParam}) {
+    async queryFn({
+      pageParam,
+      signal,
+    }: {
+      pageParam: RQPageParam
+      signal: AbortSignal
+    }) {
       let page
       if (filter === 'all' && !pageParam) {
         // for the first page, we check the cached page held by the unread-checker first
@@ -109,7 +115,7 @@ export function useNotificationFeedQuery(opts: {
         page = requireComposedProviderValue(
           await composeAppViewProviderRead<FeedPage>(
             'notifications',
-            providerClient =>
+            (providerClient, _provider, context) =>
               fetchPage({
                 client: providerClient,
                 limit: PAGE_SIZE,
@@ -118,10 +124,13 @@ export function useNotificationFeedQuery(opts: {
                 moderationOpts,
                 fetchAdditionalData: true,
                 reasons,
+                signal: context.signal,
               }).then(result => result.page),
             {
+              access: 'account-scoped',
               clientForProvider: providerClientFactory,
               claimKey: page => notificationPageClaimKey({page}),
+              signal,
             },
           ),
         )

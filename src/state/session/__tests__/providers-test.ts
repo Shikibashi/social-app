@@ -60,8 +60,19 @@ describe('AppView provider validation and health probing', () => {
       'Public AT Protocol AppView (external read provider)',
     )
     expect(getDefaultAppViewDisplayName('https://appview.social.example')).toBe(
-      'Project AppView',
+      'Configured AT Protocol read provider',
     )
+  })
+
+  it('does not infer an operator from the bundled provider name', () => {
+    mockPersistedState.appviewProviders = [
+      {
+        ...DEFAULT_APPVIEW_PROVIDER,
+        operatorId: 'project-appview-operator',
+      },
+    ]
+
+    expect(getAppViewProviders()[0]?.operatorId).toBeUndefined()
   })
 
   it('requires a safe HTTPS origin and preserves the provider identity', () => {
@@ -258,6 +269,14 @@ describe('AppView provider validation and health probing', () => {
       getAppViewProvidersForSurface('profiles').map(provider => provider.id),
     ).toEqual([DEFAULT_APPVIEW_PROVIDER.id])
     expect(getAppViewProvidersForSurface('notifications')).toEqual([])
+    expect(getAppViewProvidersForSurface('media')).toEqual([])
+    expect(getAppViewProvidersForSurface('communities')).toEqual([])
+  })
+
+  it('does not route boundary-owned media or community declarations through AppView', () => {
+    mockPersistedState.appviewProviders = [DEFAULT_APPVIEW_PROVIDER]
+
+    expect(getAppViewProvidersForSurface('media')).toEqual([])
     expect(getAppViewProvidersForSurface('communities')).toEqual([])
   })
 

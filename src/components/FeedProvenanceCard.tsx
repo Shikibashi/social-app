@@ -62,10 +62,27 @@ export function FeedProvenanceCard({
           <Text>
             Algorithm: {provenance.algorithmName} {algorithmVersionLabel}
           </Text>
-          <Text>AppView: {provenance.provider}</Text>
+          <Text>AppView provider(s): {provenance.provider}</Text>
           {provenance.providerDid ? (
             <Text>AppView provider DID: {provenance.providerDid}</Text>
           ) : null}
+          {provenance.providerProvenance?.map(provider => (
+            <Text key={provider.id}>
+              {provider.displayName}: {provider.endpoint}
+              {provider.operatorId ? ` · operator ${provider.operatorId}` : ''}
+            </Text>
+          ))}
+          {provenance.providerCompositionStatus ? (
+            <Text>
+              Provider composition: {provenance.providerCompositionStatus}
+            </Text>
+          ) : null}
+          <Text>
+            Operator independence:{' '}
+            {provenance.providerIndependence === 'declared-distinct'
+              ? 'distinct operator IDs declared; independent control not proven'
+              : 'not established'}
+          </Text>
           {provenance.feedProviderDid ? (
             <Text>Feed provider DID: {provenance.feedProviderDid}</Text>
           ) : null}
@@ -120,6 +137,9 @@ export function ActiveFeedProvenance({
   feedUri,
   privacy,
   feedContext,
+  providerProvenance,
+  providerCompositionStatus,
+  providerIndependence,
   onChangeRanking,
   onChangeProvider,
 }: {
@@ -131,6 +151,9 @@ export function ActiveFeedProvenance({
   feedUri: string
   privacy: string
   feedContext?: string
+  providerProvenance?: FeedProvenance['providerProvenance']
+  providerCompositionStatus?: FeedProvenance['providerCompositionStatus']
+  providerIndependence?: FeedProvenance['providerIndependence']
   onChangeRanking?: () => void
   onChangeProvider?: () => void
 }) {
@@ -150,6 +173,19 @@ export function ActiveFeedProvenance({
     })
   }, [currentAccount])
 
+  const actualProviders = providerProvenance?.length
+    ? providerProvenance
+    : [
+        {
+          id: provider.id,
+          displayName: provider.displayName,
+          endpoint: provider.endpoint,
+          serviceDid: provider.serviceDid,
+          operatorId: provider.operatorId,
+        },
+      ]
+  const actualPrimaryProvider = actualProviders[0]
+
   return (
     <FeedProvenanceCard
       provenance={{
@@ -158,14 +194,17 @@ export function ActiveFeedProvenance({
           ? `Provider-supplied ${providerContext.algorithm}`
           : algorithmName,
         algorithmVersion: providerContext?.version ?? algorithmVersion,
-        provider: provider.displayName,
-        providerDid: provider.serviceDid,
+        provider: actualProviders.map(item => item.displayName).join(', '),
+        providerDid: actualPrimaryProvider?.serviceDid,
         feedProviderDid: providerContext?.provider,
         feedOwnerDid,
         feedUri,
         manifestStatus: 'unverified',
         objective,
         privacy,
+        providerProvenance: actualProviders,
+        providerCompositionStatus,
+        providerIndependence,
       }}
       onChangeRanking={onChangeRanking}
       onChangeProvider={onChangeProvider}
