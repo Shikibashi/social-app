@@ -86,8 +86,18 @@ type ServiceWorkbenchRow = {
   provider: string
   state: string
   detail: string
-  section: ServicesSection
+  target: ServiceWorkbenchTarget
 }
+
+type ServiceWorkbenchRoute =
+  | 'Moderation'
+  | 'ContentAndMediaSettings'
+  | 'PermissionedSpacesSettings'
+  | 'IdentitySovereigntySettings'
+
+type ServiceWorkbenchTarget =
+  | {kind: 'services'; section: ServicesSection}
+  | {kind: 'route'; route: ServiceWorkbenchRoute}
 
 function describeProviderSources(providers: readonly AppViewProvider[]): {
   provider: string
@@ -200,7 +210,7 @@ function ServiceWorkbenchMatrix({
   compact,
 }: {
   rows: readonly ServiceWorkbenchRow[]
-  onInspect: (section: ServicesSection) => void
+  onInspect: (target: ServiceWorkbenchTarget) => void
   compact: boolean
 }) {
   const t = useTheme()
@@ -333,7 +343,7 @@ function ServiceWorkbenchMatrix({
               color="secondary"
               variant="outline"
               shape="rectangular"
-              onPress={() => onInspect(row.section)}>
+              onPress={() => onInspect(row.target)}>
               <ButtonText>Inspect</ButtonText>
             </Button>
           </View>
@@ -343,7 +353,7 @@ function ServiceWorkbenchMatrix({
   )
 }
 
-export function ServicesSettingsScreen({route}: Props) {
+export function ServicesSettingsScreen({route, navigation}: Props) {
   const {currentAccount} = useSession()
   const {_} = useLingui()
   const t = useTheme()
@@ -727,7 +737,7 @@ export function ServicesSettingsScreen({route}: Props) {
       provider: currentAccount?.did ?? 'No active account',
       state: currentAccount ? 'Active' : 'Not signed in',
       detail: `DID-backed account; ${identityPolicy.mode} resolver policy`,
-      section: 'identity',
+      target: {kind: 'services', section: 'identity'},
     },
     {
       id: 'pds',
@@ -736,7 +746,7 @@ export function ServicesSettingsScreen({route}: Props) {
       state: currentAccount?.pdsUrl ? 'Write host' : 'Unavailable',
       detail:
         'Account records, writes, and profile media remain on the account host.',
-      section: 'overview',
+      target: {kind: 'route', route: 'IdentitySovereigntySettings'},
     },
     {
       id: 'appview',
@@ -744,7 +754,7 @@ export function ServicesSettingsScreen({route}: Props) {
       provider: selectedProvider?.displayName ?? 'No provider selected',
       state: selectedProvider ? 'Active' : 'Not selected',
       detail: selectedProvider?.endpoint ?? 'Choose an explicit read provider.',
-      section: 'providers',
+      target: {kind: 'services', section: 'providers'},
     },
     {
       id: 'feeds',
@@ -752,7 +762,7 @@ export function ServicesSettingsScreen({route}: Props) {
       provider: feedProviderSources.provider,
       state: feedProviderSources.state,
       detail: 'Feed results retain source and reconciliation state.',
-      section: 'providers',
+      target: {kind: 'services', section: 'providers'},
     },
     {
       id: 'moderation-reach',
@@ -761,7 +771,7 @@ export function ServicesSettingsScreen({route}: Props) {
       state: 'Local policy',
       detail:
         'Labels are claims; local rules decide warning, hiding, or ranking.',
-      section: 'policies',
+      target: {kind: 'route', route: 'Moderation'},
     },
     {
       id: 'search',
@@ -769,7 +779,7 @@ export function ServicesSettingsScreen({route}: Props) {
       provider: searchProviderSources.provider,
       state: searchProviderSources.state,
       detail: 'Search results remain attributable to their read provider.',
-      section: 'providers',
+      target: {kind: 'services', section: 'providers'},
     },
     {
       id: 'notifications',
@@ -778,7 +788,7 @@ export function ServicesSettingsScreen({route}: Props) {
       state: notificationProviderSources.state,
       detail:
         'Account-scoped reads use an explicit authenticated provider boundary.',
-      section: 'authorization',
+      target: {kind: 'services', section: 'authorization'},
     },
     {
       id: 'authorization',
@@ -787,7 +797,7 @@ export function ServicesSettingsScreen({route}: Props) {
       state: currentAccount ? 'Delegated' : 'Not signed in',
       detail:
         'Feature-scoped session permissions can be inspected and upgraded.',
-      section: 'authorization',
+      target: {kind: 'services', section: 'authorization'},
     },
     {
       id: 'media',
@@ -795,7 +805,7 @@ export function ServicesSettingsScreen({route}: Props) {
       provider: currentAccount?.pdsUrl ?? 'Account PDS',
       state: currentAccount?.pdsUrl ? 'Boundary-owned' : 'Unavailable',
       detail: PROVIDER_SURFACE_DETAILS.media.description,
-      section: 'policies',
+      target: {kind: 'route', route: 'ContentAndMediaSettings'},
     },
     {
       id: 'communities',
@@ -803,7 +813,7 @@ export function ServicesSettingsScreen({route}: Props) {
       provider: 'Spaces transport and community authority',
       state: 'Boundary-owned',
       detail: PROVIDER_SURFACE_DETAILS.communities.description,
-      section: 'policies',
+      target: {kind: 'route', route: 'PermissionedSpacesSettings'},
     },
     {
       id: 'exit-backups',
@@ -812,9 +822,17 @@ export function ServicesSettingsScreen({route}: Props) {
       state: 'Available',
       detail:
         'Export repository data and portable policy without exporting credentials.',
-      section: 'identity',
+      target: {kind: 'route', route: 'IdentitySovereigntySettings'},
     },
   ]
+
+  function inspectService(target: ServiceWorkbenchTarget) {
+    if (target.kind === 'services') {
+      setActiveSection(target.section)
+      return
+    }
+    navigation.navigate(target.route)
+  }
   const activeState =
     activeSection === 'overview'
       ? `${providers.length} registered read provider${providers.length === 1 ? '' : 's'}; ${selectedProvider?.displayName ?? 'no provider selected'}`
@@ -1036,7 +1054,7 @@ export function ServicesSettingsScreen({route}: Props) {
                     <SettingsList.Item>
                       <ServiceWorkbenchMatrix
                         rows={serviceWorkbenchRows}
-                        onInspect={setActiveSection}
+                        onInspect={inspectService}
                         compact={!gtTablet}
                       />
                     </SettingsList.Item>
