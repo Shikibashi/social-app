@@ -1,5 +1,6 @@
 import {useMemo, useState} from 'react'
 import {Pressable, StyleSheet, View} from 'react-native'
+import * as Clipboard from 'expo-clipboard'
 import {msg} from '@lingui/core/macro'
 import {useLingui} from '@lingui/react'
 
@@ -11,6 +12,7 @@ import {
 } from '#/lib/provider-composition'
 import {type FeedSourceInfo} from '#/state/queries/feed'
 import {useTheme} from '#/alf'
+import * as Toast from '#/components/Toast'
 import {Text} from '#/components/Typography'
 
 export function PostProvenance({
@@ -60,6 +62,13 @@ export function PostProvenance({
   )
 
   if (!hasWhyThisPostDetails(model)) return null
+
+  const onCopyPostUri = (event: {stopPropagation: () => void}) => {
+    event.stopPropagation()
+    void Clipboard.setStringAsync(model.postUri).then(() => {
+      Toast.show(_(msg`AT URI copied to clipboard`), {type: 'success'})
+    })
+  }
 
   return (
     <View
@@ -175,6 +184,24 @@ export function PostProvenance({
             <Text style={styles.label}>{_(msg`Post record`)}: </Text>
             {model.postUri}
           </Text>
+          <Pressable
+            testID="post-provenance-copy-uri"
+            accessibilityRole="button"
+            accessibilityLabel={_(msg`Copy AT URI`)}
+            accessibilityHint={_(
+              msg`Copy the post's stable AT Protocol address to the clipboard`,
+            )}
+            onPress={onCopyPostUri}
+            style={({pressed}) => [
+              styles.copyAction,
+              {borderColor: t.palette.contrast_200},
+              pressed && styles.pressed,
+            ]}>
+            <Text
+              style={[styles.copyActionText, {color: t.atoms.text_link.color}]}>
+              {_(msg`Copy AT URI`)}
+            </Text>
+          </Pressable>
         </View>
       ) : null}
     </View>
@@ -204,6 +231,17 @@ const styles = StyleSheet.create({
   },
   detail: {
     fontSize: 12,
+  },
+  copyAction: {
+    alignSelf: 'flex-start',
+    borderWidth: 1,
+    marginTop: 3,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  copyActionText: {
+    fontSize: 12,
+    fontWeight: '600',
   },
   providerDetail: {
     gap: 2,

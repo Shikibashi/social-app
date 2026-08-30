@@ -284,7 +284,7 @@ msgid "{0} is not supported by your device."
 msgstr "{0} is not supported by your device."
 
 #. placeholder {0}: registered.displayName
-#: src/screens/Settings/ServicesSettings.tsx:944
+#: src/screens/Settings/ServicesSettings.tsx:1029
 msgid "{0} is now an explicit provider choice. It will not replace your PDS or identity."
 msgstr "{0} is now an explicit provider choice. It will not replace your PDS or identity."
 
@@ -1891,11 +1891,11 @@ msgstr ""
 msgid "Approve protected access"
 msgstr "Approve protected access"
 
-#: src/screens/Settings/ServicesSettings.tsx:877
+#: src/screens/Settings/ServicesSettings.tsx:962
 msgid "AppView changed"
 msgstr "AppView changed"
 
-#: src/screens/Settings/ServicesSettings.tsx:1256
+#: src/screens/Settings/ServicesSettings.tsx:1428
 msgid "AppView service DID"
 msgstr "AppView service DID"
 
@@ -2022,7 +2022,11 @@ msgstr ""
 msgid "AT Protocol FAQ"
 msgstr "AT Protocol FAQ"
 
-#: src/screens/Settings/ServicesSettings.tsx:1276
+#: src/components/Post/PostProvenance.tsx:69
+msgid "AT URI copied to clipboard"
+msgstr "AT URI copied to clipboard"
+
+#: src/screens/Settings/ServicesSettings.tsx:1448
 msgid "ATProto service fragment for this AppView"
 msgstr "ATProto service fragment for this AppView"
 
@@ -2535,7 +2539,7 @@ msgstr "Camera access needed"
 #: src/screens/Settings/components/ChangeHandleDialog.tsx:88
 #: src/screens/Settings/components/ChangePasswordDialog.tsx:252
 #: src/screens/Settings/components/ChangePasswordDialog.tsx:258
-#: src/screens/Settings/ServicesSettings.tsx:887
+#: src/screens/Settings/ServicesSettings.tsx:972
 #: src/screens/Settings/Settings.tsx:344
 #: src/screens/Takendown.tsx:100
 #: src/screens/Takendown.tsx:103
@@ -2803,8 +2807,8 @@ msgstr ""
 msgid "Check <0>{currentEmail}</0> for an email with the confirmation code to enter below:"
 msgstr ""
 
-#: src/screens/Settings/ServicesSettings.tsx:1292
-#: src/screens/Settings/ServicesSettings.tsx:1307
+#: src/screens/Settings/ServicesSettings.tsx:1464
+#: src/screens/Settings/ServicesSettings.tsx:1479
 msgid "Check and add provider"
 msgstr "Check and add provider"
 
@@ -2817,7 +2821,7 @@ msgstr "Check back later!"
 msgid "Check my status"
 msgstr ""
 
-#: src/screens/Settings/ServicesSettings.tsx:1305
+#: src/screens/Settings/ServicesSettings.tsx:1477
 msgid "Checking provider…"
 msgstr "Checking provider…"
 
@@ -3412,6 +3416,11 @@ msgstr ""
 msgid "Copy App Password"
 msgstr ""
 
+#: src/components/Post/PostProvenance.tsx:190
+#: src/components/Post/PostProvenance.tsx:202
+msgid "Copy AT URI"
+msgstr "Copy AT URI"
+
 #: src/view/com/profile/ProfileMenu.tsx:572
 #: src/view/com/profile/ProfileMenu.tsx:575
 msgid "Copy at:// URI"
@@ -3490,6 +3499,10 @@ msgstr ""
 #: src/components/StarterPack/QrCodeDialog.tsx:182
 msgid "Copy QR code"
 msgstr ""
+
+#: src/components/Post/PostProvenance.tsx:192
+msgid "Copy the post's stable AT Protocol address to the clipboard"
+msgstr "Copy the post's stable AT Protocol address to the clipboard"
 
 #: src/screens/Settings/components/ChangeHandleDialog.tsx:483
 msgid "Copy TXT record value"
@@ -3846,7 +3859,7 @@ msgstr ""
 msgid "Debug Moderation"
 msgstr ""
 
-#: src/components/Post/PostProvenance.tsx:125
+#: src/components/Post/PostProvenance.tsx:134
 msgid "Declared operator"
 msgstr "Declared operator"
 
@@ -4049,7 +4062,7 @@ msgstr ""
 msgid "Dialog: Set search filters"
 msgstr "Dialog: Set search filters"
 
-#: src/screens/Settings/ServicesSettings.tsx:1258
+#: src/screens/Settings/ServicesSettings.tsx:1430
 msgid "DID that identifies this AppView"
 msgstr "DID that identifies this AppView"
 
@@ -4202,7 +4215,7 @@ msgstr ""
 msgid "Display name"
 msgstr ""
 
-#: src/components/Post/PostProvenance.tsx:147
+#: src/components/Post/PostProvenance.tsx:156
 #: src/components/ProviderCompositionProvenance.tsx:106
 msgid "Distinct operator IDs declared; independent control not proven"
 msgstr "Distinct operator IDs declared; independent control not proven"
@@ -4664,7 +4677,7 @@ msgstr "Enter a backup password first."
 msgid "Enter a community space URI"
 msgstr "Enter a community space URI"
 
-#: src/screens/Settings/ServicesSettings.tsx:911
+#: src/screens/Settings/ServicesSettings.tsx:996
 msgid "Enter a name, HTTPS endpoint, and service DID before adding a provider."
 msgstr "Enter a name, HTTPS endpoint, and service DID before adding a provider."
 
@@ -5351,23 +5364,23 @@ msgstr ""
 msgid "Feed menu"
 msgstr ""
 
-#: src/components/Post/PostProvenance.tsx:159
+#: src/components/Post/PostProvenance.tsx:168
 msgid "Feed owner"
 msgstr "Feed owner"
 
-#: src/components/Post/PostProvenance.tsx:98
+#: src/components/Post/PostProvenance.tsx:107
 msgid "Feed provider"
 msgstr "Feed provider"
 
-#: src/components/Post/PostProvenance.tsx:163
+#: src/components/Post/PostProvenance.tsx:172
 msgid "Feed record"
 msgstr "Feed record"
 
-#: src/components/Post/PostProvenance.tsx:155
+#: src/components/Post/PostProvenance.tsx:164
 msgid "Feed source"
 msgstr "Feed source"
 
-#: src/components/Post/PostProvenance.tsx:170
+#: src/components/Post/PostProvenance.tsx:179
 msgid "Feed surface"
 msgstr "Feed surface"
 
@@ -6367,8 +6380,8 @@ msgstr ""
 msgid "Hide verification badges"
 msgstr ""
 
-#: src/components/Post/PostProvenance.tsx:72
-#: src/components/Post/PostProvenance.tsx:84
+#: src/components/Post/PostProvenance.tsx:81
+#: src/components/Post/PostProvenance.tsx:93
 msgid "Hide why this post"
 msgstr "Hide why this post"
 
@@ -6467,7 +6480,7 @@ msgstr ""
 msgid "How we use your number:"
 msgstr ""
 
-#: src/screens/Settings/ServicesSettings.tsx:1239
+#: src/screens/Settings/ServicesSettings.tsx:1411
 msgid "HTTPS origin checked before registration"
 msgstr "HTTPS origin checked before registration"
 
@@ -7486,7 +7499,7 @@ msgstr ""
 msgid "Loading..."
 msgstr ""
 
-#: src/components/Post/PostProvenance.tsx:92
+#: src/components/Post/PostProvenance.tsx:101
 msgid "Local policy"
 msgstr "Local policy"
 
@@ -8003,7 +8016,7 @@ msgstr "My starter pack"
 msgid "Name"
 msgstr ""
 
-#: src/screens/Settings/ServicesSettings.tsx:1223
+#: src/screens/Settings/ServicesSettings.tsx:1395
 msgid "Name shown for this read provider"
 msgstr "Name shown for this read provider"
 
@@ -8178,7 +8191,7 @@ msgid "New posts from {firstAuthorName} and {additionalAuthorsCount, plural, one
 msgstr ""
 
 #. placeholder {0}: provider.displayName
-#: src/screens/Settings/ServicesSettings.tsx:879
+#: src/screens/Settings/ServicesSettings.tsx:964
 msgid "New reads will use {0}. PDS writes remain on your account host."
 msgstr "New reads will use {0}. PDS writes remain on your account host."
 
@@ -8540,7 +8553,7 @@ msgstr "Not available on this platform"
 msgid "Not available on this platform."
 msgstr ""
 
-#: src/components/Post/PostProvenance.tsx:149
+#: src/components/Post/PostProvenance.tsx:158
 #: src/components/ProviderCompositionProvenance.tsx:108
 msgid "Not established"
 msgstr "Not established"
@@ -8558,7 +8571,7 @@ msgstr "Not following"
 msgid "Not Found"
 msgstr ""
 
-#: src/screens/Settings/ServicesSettings.tsx:948
+#: src/screens/Settings/ServicesSettings.tsx:1033
 msgid "Not now"
 msgstr "Not now"
 
@@ -9115,7 +9128,7 @@ msgstr ""
 msgid "Opens your private PDS feed"
 msgstr "Opens your private PDS feed"
 
-#: src/components/Post/PostProvenance.tsx:143
+#: src/components/Post/PostProvenance.tsx:152
 #: src/components/ProviderCompositionProvenance.tsx:102
 msgid "Operator independence"
 msgstr "Operator independence"
@@ -9776,7 +9789,7 @@ msgctxt "toast"
 msgid "Post pinned"
 msgstr ""
 
-#: src/components/Post/PostProvenance.tsx:175
+#: src/components/Post/PostProvenance.tsx:184
 msgid "Post record"
 msgstr "Post record"
 
@@ -10002,28 +10015,28 @@ msgstr "Protected accounts are unavailable on this PDS. No private account state
 msgid "Protocol method"
 msgstr "Protocol method"
 
-#: src/screens/Settings/ServicesSettings.tsx:942
+#: src/screens/Settings/ServicesSettings.tsx:1027
 msgid "Provider added"
 msgstr "Provider added"
 
-#: src/components/Post/PostProvenance.tsx:136
+#: src/components/Post/PostProvenance.tsx:145
 msgid "Provider composition"
 msgstr "Provider composition"
 
-#: src/screens/Settings/ServicesSettings.tsx:909
+#: src/screens/Settings/ServicesSettings.tsx:994
 msgid "Provider details required"
 msgstr "Provider details required"
 
-#: src/screens/Settings/ServicesSettings.tsx:1237
+#: src/screens/Settings/ServicesSettings.tsx:1409
 msgid "Provider HTTPS endpoint"
 msgstr "Provider HTTPS endpoint"
 
-#: src/screens/Settings/ServicesSettings.tsx:1221
-#: src/screens/Settings/ServicesSettings.tsx:1225
+#: src/screens/Settings/ServicesSettings.tsx:1393
+#: src/screens/Settings/ServicesSettings.tsx:1397
 msgid "Provider name"
 msgstr "Provider name"
 
-#: src/screens/Settings/ServicesSettings.tsx:953
+#: src/screens/Settings/ServicesSettings.tsx:1038
 msgid "Provider not added"
 msgstr "Provider not added"
 
@@ -10037,7 +10050,7 @@ msgstr "Provider observations"
 msgid "Provider Privacy Policy"
 msgstr "Provider Privacy Policy"
 
-#: src/screens/Settings/ServicesSettings.tsx:1274
+#: src/screens/Settings/ServicesSettings.tsx:1446
 msgid "Provider service fragment"
 msgstr "Provider service fragment"
 
@@ -10047,7 +10060,7 @@ msgstr "Provider service fragment"
 msgid "Provider Terms of Service"
 msgstr "Provider Terms of Service"
 
-#: src/screens/Settings/ServicesSettings.tsx:884
+#: src/screens/Settings/ServicesSettings.tsx:969
 msgid "Provider unavailable"
 msgstr "Provider unavailable"
 
@@ -10230,7 +10243,7 @@ msgstr "Read private media"
 msgid "Read private record"
 msgstr "Read private record"
 
-#: src/components/Post/PostProvenance.tsx:105
+#: src/components/Post/PostProvenance.tsx:114
 msgid "Read provider(s)"
 msgstr "Read provider(s)"
 
@@ -11657,16 +11670,16 @@ msgstr ""
 msgid "Server address"
 msgstr ""
 
-#: src/components/Post/PostProvenance.tsx:118
+#: src/components/Post/PostProvenance.tsx:127
 msgid "Service DID"
 msgstr "Service DID"
 
-#: src/screens/Settings/ServicesSettings.tsx:1278
+#: src/screens/Settings/ServicesSettings.tsx:1450
 msgid "Service fragment"
 msgstr "Service fragment"
 
 #: src/Navigation.tsx:428
-#: src/screens/Settings/ServicesSettings.tsx:967
+#: src/screens/Settings/ServicesSettings.tsx:1052
 #: src/screens/Settings/Settings.tsx:195
 #: src/screens/Settings/Settings.tsx:198
 #: src/view/shell/desktop/RightNav.tsx:212
@@ -12055,7 +12068,7 @@ msgstr ""
 msgid "Show the account PDS and blob references used for profile media"
 msgstr "Show the account PDS and blob references used for profile media"
 
-#: src/components/Post/PostProvenance.tsx:75
+#: src/components/Post/PostProvenance.tsx:84
 msgid "Show the public reasons and sources for this post's placement"
 msgstr "Show the public reasons and sources for this post's placement"
 
@@ -14193,7 +14206,7 @@ msgid "Uploading video..."
 msgstr ""
 
 #. placeholder {0}: candidate.displayName
-#: src/screens/Settings/ServicesSettings.tsx:891
+#: src/screens/Settings/ServicesSettings.tsx:976
 msgid "Use {0}"
 msgstr "Use {0}"
 
@@ -14231,7 +14244,7 @@ msgstr ""
 msgid "Use in-app browser to open links"
 msgstr ""
 
-#: src/screens/Settings/ServicesSettings.tsx:947
+#: src/screens/Settings/ServicesSettings.tsx:1032
 msgid "Use it now"
 msgstr "Use it now"
 
@@ -15016,8 +15029,8 @@ msgstr ""
 msgid "Why should this user be reviewed?"
 msgstr ""
 
-#: src/components/Post/PostProvenance.tsx:72
-#: src/components/Post/PostProvenance.tsx:84
+#: src/components/Post/PostProvenance.tsx:81
+#: src/components/Post/PostProvenance.tsx:93
 msgid "Why this post?"
 msgstr "Why this post?"
 
