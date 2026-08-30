@@ -1,4 +1,4 @@
-import {useEffect, useState} from 'react'
+import {type ReactNode, useEffect, useState} from 'react'
 import {Alert, TextInput, View} from 'react-native'
 import * as Clipboard from 'expo-clipboard'
 import {msg} from '@lingui/core/macro'
@@ -11,7 +11,6 @@ import {
   BOUNDARY_OWNED_PROVIDER_SURFACES,
   PROVIDER_SURFACE_DETAILS,
   PROVIDER_SURFACES,
-  type ProviderReconciliationMode,
   type ProviderReconciliationPolicy,
   type ProviderSurface,
   RUNTIME_COMPOSED_PROVIDER_SURFACES,
@@ -54,8 +53,13 @@ import * as Layout from '#/components/Layout'
 
 type Props = NativeStackScreenProps<CommonNavigatorParams, 'ServicesSettings'>
 
+type ConfigurableProviderSurface = Exclude<
+  ProviderSurface,
+  'identity-resolution'
+>
+
 const CONFIGURABLE_PROVIDER_SURFACES = PROVIDER_SURFACES.filter(
-  (surface): surface is Exclude<ProviderSurface, 'identity-resolution'> =>
+  (surface): surface is ConfigurableProviderSurface =>
     surface !== 'identity-resolution' &&
     RUNTIME_COMPOSED_PROVIDER_SURFACES.includes(surface),
 )
@@ -72,7 +76,18 @@ const OAUTH_FEATURE_LABELS: Record<OAuthFeature, string> = {
   notifications: 'Notifications',
 }
 
-function providerSurfaceLabel(surface: ProviderSurface): string {
+const RECONCILIATION_MODES: Array<{
+  id: ProviderReconciliationPolicy['mode']
+  label: string
+}> = [
+  {id: 'require-agreement', label: 'Require agreement'},
+  {id: 'first-verified', label: 'Use first verified result'},
+  {id: 'merge', label: 'Merge attributable results'},
+]
+
+function providerSurfaceLabel(
+  surface: ProviderSurface | AppViewProviderCapability,
+): string {
   return surface
     .split('-')
     .map(word => word.charAt(0).toUpperCase() + word.slice(1))
@@ -97,6 +112,13 @@ type ServiceWorkbenchRoute =
 type ServiceWorkbenchTarget =
   | {kind: 'services'; section: ServicesSection}
   | {kind: 'route'; route: ServiceWorkbenchRoute}
+
+type WorkbenchPanel =
+  | {kind: 'provider'; providerId: string}
+  | {kind: 'provider-surfaces'; providerId: string}
+  | {kind: 'surface-policy'; surface: ConfigurableProviderSurface}
+  | {kind: 'identity-policy'}
+  | {kind: 'resolver'; resolverId: string}
 
 function describeProviderSources(providers: readonly AppViewProvider[]): {
   provider: string
@@ -352,6 +374,135 @@ function ServiceWorkbenchMatrix({
   )
 }
 
+function WorkbenchActionPanel({
+  title,
+  description,
+  testID,
+  children,
+}: {
+  title: string
+  description: string
+  testID: string
+  children: ReactNode
+}) {
+  const t = useTheme()
+
+  return (
+    <View
+      testID={testID}
+      style={[
+        a.w_full,
+        a.border,
+        a.p_sm,
+        a.gap_sm,
+        t.atoms.bg_contrast_25,
+        t.atoms.border_contrast_low,
+      ]}>
+      <View style={[a.gap_2xs]}>
+        <SettingsList.ItemText
+          style={[{paddingHorizontal: 0}, a.font_semi_bold]}>
+          {title}
+        </SettingsList.ItemText>
+        <SettingsList.ItemText
+          style={[
+            {paddingHorizontal: 0},
+            a.text_sm,
+            t.atoms.text_contrast_medium,
+          ]}>
+          {description}
+        </SettingsList.ItemText>
+      </View>
+      {children}
+    </View>
+  )
+}
+
+function ProviderSurfaceActionPanel({
+  provider,
+  onToggle,
+  onBack,
+  onClose,
+}: {
+  provider: AppViewProvider
+  onToggle: (surface: ConfigurableProviderSurface) => void
+  onBack: () => void
+  onClose: () => void
+}) {
+  const t = useTheme()
+
+  return (
+    <WorkbenchActionPanel
+      testID="service-workbench-provider-surfaces-panel"
+      title={`${provider.displayName} read surfaces`}
+      description="Each surface is an independent local capability declaration. Removing a surface stops this provider from receiving that class of read request; it does not delete the provider or alter your account host.">
+      <View style={[a.gap_xs]}>
+        {CONFIGURABLE_PROVIDER_SURFACES.map(surface => {
+          const enabled = provider.capabilities?.includes(surface)
+          return (
+            <View
+              key={surface}
+              testID={`service-workbench-surface-${surface}`}
+              style={[
+                a.flex_row,
+                a.align_center,
+                a.gap_xs,
+                a.border,
+                a.p_xs,
+                t.atoms.border_contrast_low,
+              ]}>
+              <View style={[a.flex_1, {minWidth: 0}]}>
+                <SettingsList.ItemText
+                  style={[{paddingHorizontal: 0}, a.font_semi_bold]}>
+                  {providerSurfaceLabel(surface)}
+                </SettingsList.ItemText>
+                <SettingsList.ItemText
+                  style={[
+                    {paddingHorizontal: 0},
+                    a.text_xs,
+                    t.atoms.text_contrast_medium,
+                  ]}>
+                  {enabled
+                    ? 'This provider may answer this surface.'
+                    : 'This provider is excluded from this surface.'}
+                </SettingsList.ItemText>
+              </View>
+              <Button
+                label={`${enabled ? 'Remove' : 'Allow'} ${providerSurfaceLabel(surface)} surface for ${provider.displayName}`}
+                onPress={() => onToggle(surface)}
+                size="small"
+                color={enabled ? 'primary' : 'secondary'}
+                variant={enabled ? 'solid' : 'outline'}
+                shape="rectangular">
+                <ButtonText>{enabled ? 'Allowed' : 'Allow'}</ButtonText>
+              </Button>
+            </View>
+          )
+        })}
+      </View>
+      <View style={[a.flex_row, a.flex_wrap, a.gap_xs]}>
+        <Button
+          label={`Inspect ${provider.displayName} provider`}
+          onPress={onBack}
+          size="small"
+          color="secondary"
+          variant="outline"
+          shape="rectangular">
+          <ButtonText>Back to provider</ButtonText>
+        </Button>
+        <Button
+          label="Close provider surfaces inspector"
+          onPress={onClose}
+          size="small"
+          color="secondary"
+          variant="outline"
+          shape="rectangular">
+          <ButtonText>Close</ButtonText>
+        </Button>
+      </View>
+    </WorkbenchActionPanel>
+  )
+}
+
 export function ServicesSettingsScreen({route, navigation}: Props) {
   const {currentAccount} = useSession()
   const {_} = useLingui()
@@ -385,6 +536,7 @@ export function ServicesSettingsScreen({route, navigation}: Props) {
   const [pendingOAuthFeature, setPendingOAuthFeature] = useState<
     OAuthFeature | undefined
   >()
+  const [openPanel, setOpenPanel] = useState<WorkbenchPanel | undefined>()
   const [activeSection, setActiveSection] = useState<ServicesSection>(
     () => route.params?.section ?? 'overview',
   )
@@ -448,44 +600,7 @@ export function ServicesSettingsScreen({route, navigation}: Props) {
   }
 
   function chooseIdentityPolicy() {
-    const identityProviders = getAppViewProvidersForCapability(
-      'identity-resolution',
-    )
-    Alert.alert(
-      'Identity resolution policy',
-      'Every identity-capable provider is queried. This policy controls how the client handles disagreement; it does not grant a provider ownership of your identity.',
-      [
-        {
-          text: 'Require agreement',
-          onPress: () => void saveIdentityPolicy({mode: 'require-agreement'}),
-        },
-        {
-          text: 'Use first verified result',
-          onPress: () => void saveIdentityPolicy({mode: 'first-verified'}),
-        },
-        {
-          text: 'Prefer one provider',
-          onPress: () => {
-            Alert.alert(
-              'Preferred identity provider',
-              'Choose the provider whose verified claim may be used when claims are incomplete or disagree.',
-              [
-                ...identityProviders.map(provider => ({
-                  text: provider.displayName,
-                  onPress: () =>
-                    void saveIdentityPolicy({
-                      mode: 'prefer-provider',
-                      preferredProviderId: provider.id,
-                    }),
-                })),
-                {text: 'Cancel', style: 'cancel' as const},
-              ],
-            )
-          },
-        },
-        {text: 'Cancel', style: 'cancel'},
-      ],
-    )
+    setOpenPanel({kind: 'identity-policy'})
   }
 
   async function toggleIdentityProvider(provider: AppViewProvider) {
@@ -531,14 +646,7 @@ export function ServicesSettingsScreen({route, navigation}: Props) {
   }
 
   function chooseProviderSurfaces(provider: AppViewProvider) {
-    Alert.alert(
-      `${provider.displayName} read surfaces`,
-      'Each surface is an independent local capability declaration. Removing a surface stops this provider from receiving that class of read request.',
-      CONFIGURABLE_PROVIDER_SURFACES.map(surface => ({
-        text: `${provider.capabilities?.includes(surface) ? 'Remove' : 'Allow'} ${providerSurfaceLabel(surface)}`,
-        onPress: () => void toggleProviderSurface(provider, surface),
-      })),
-    )
+    setOpenPanel({kind: 'provider-surfaces', providerId: provider.id})
   }
 
   async function saveSurfacePolicy(
@@ -556,62 +664,13 @@ export function ServicesSettingsScreen({route, navigation}: Props) {
     }
   }
 
-  function chooseSurfacePolicy(surface: ProviderSurface) {
-    const current = reconciliationPolicies[surface] ?? {
-      mode: 'require-agreement' as const,
-    }
-    const providers = getAppViewProvidersForSurface(surface)
-    const chooseMode = (mode: ProviderReconciliationMode) =>
-      void saveSurfacePolicy(surface, {mode})
-    Alert.alert(
-      `${providerSurfaceLabel(surface)} reconciliation`,
-      `Current policy: ${current.mode}. Provider disagreement remains visible to the client and is not silently replaced.`,
-      [
-        {
-          text: 'Require agreement',
-          onPress: () => chooseMode('require-agreement'),
-        },
-        {
-          text: 'Use first verified result',
-          onPress: () => chooseMode('first-verified'),
-        },
-        {
-          text: 'Merge attributable results',
-          onPress: () => chooseMode('merge'),
-        },
-        {
-          text: 'Prefer one provider',
-          onPress: () =>
-            Alert.alert(
-              'Preferred provider',
-              'This is an explicit local preference, not a claim that the provider is independently authoritative.',
-              [
-                ...providers.map(provider => ({
-                  text: provider.displayName,
-                  onPress: () =>
-                    void saveSurfacePolicy(surface, {
-                      mode: 'prefer-provider',
-                      preferredProviderId: provider.id,
-                    }),
-                })),
-                {text: 'Cancel', style: 'cancel' as const},
-              ],
-            ),
-        },
-        {text: 'Cancel', style: 'cancel'},
-      ],
-    )
+  function chooseSurfacePolicy(surface: ConfigurableProviderSurface) {
+    setOpenPanel({kind: 'surface-policy', surface})
   }
 
   function chooseAnySurfacePolicy() {
-    Alert.alert(
-      'Provider reconciliation policies',
-      'Choose the read surface whose disagreements should be reconciled.',
-      CONFIGURABLE_PROVIDER_SURFACES.map(surface => ({
-        text: `${providerSurfaceLabel(surface)} · ${reconciliationPolicies[surface]?.mode ?? 'require-agreement'}`,
-        onPress: () => chooseSurfacePolicy(surface),
-      })),
-    )
+    const firstSurface = CONFIGURABLE_PROVIDER_SURFACES[0]
+    if (firstSurface) chooseSurfacePolicy(firstSurface)
   }
 
   async function copyProviderPolicy() {
@@ -843,6 +902,7 @@ export function ServicesSettingsScreen({route, navigation}: Props) {
 
   function selectSection(section: ServicesSection) {
     setActiveSection(section)
+    setOpenPanel(undefined)
     navigation.setParams({section})
   }
 
@@ -867,6 +927,31 @@ export function ServicesSettingsScreen({route, navigation}: Props) {
             : activeSection === 'identity'
               ? `${getAppViewProvidersForCapability('identity-resolution').length} identity provider${getAppViewProvidersForCapability('identity-resolution').length === 1 ? '' : 's'} enabled`
               : `${plcResolvers.filter(resolver => resolver.enabled).length} declared PLC resolver${plcResolvers.filter(resolver => resolver.enabled).length === 1 ? '' : 's'} enabled`
+
+  const panelProviderId =
+    openPanel?.kind === 'provider' || openPanel?.kind === 'provider-surfaces'
+      ? openPanel.providerId
+      : undefined
+  const panelProvider = panelProviderId
+    ? providers.find(provider => provider.id === panelProviderId)
+    : undefined
+  const panelPolicySurface =
+    openPanel?.kind === 'surface-policy' ? openPanel.surface : undefined
+  const panelPolicy = panelPolicySurface
+    ? (reconciliationPolicies[panelPolicySurface] ?? {
+        mode: 'require-agreement' as const,
+      })
+    : undefined
+  const panelPolicyProviders = panelPolicySurface
+    ? getAppViewProvidersForSurface(panelPolicySurface)
+    : []
+  const panelIdentityProviders = getAppViewProvidersForCapability(
+    'identity-resolution',
+  )
+  const panelResolver =
+    openPanel?.kind === 'resolver'
+      ? plcResolvers.find(resolver => resolver.id === openPanel.resolverId)
+      : undefined
 
   async function choose(provider: AppViewProvider) {
     if (!currentAccount) return
@@ -1148,18 +1233,105 @@ export function ServicesSettingsScreen({route, navigation}: Props) {
                     {providers.map(provider => (
                       <SettingsList.PressableItem
                         key={provider.id}
-                        label={provider.displayName}
-                        onPress={() => void choose(provider)}>
+                        label={`Inspect ${provider.displayName} provider`}
+                        onPress={() =>
+                          setOpenPanel({
+                            kind: 'provider',
+                            providerId: provider.id,
+                          })
+                        }>
                         <SettingsList.ItemText>
                           {provider.displayName}
                         </SettingsList.ItemText>
                         <SettingsList.BadgeText>
                           {selected === provider.id
-                            ? `${provider.serviceDid} · ${provider.endpoint}`
-                            : provider.serviceDid}
+                            ? `Selected read provider · ${provider.serviceDid}`
+                            : `${provider.enabled ? 'Enabled' : 'Disabled'} · ${provider.serviceDid}`}
                         </SettingsList.BadgeText>
                       </SettingsList.PressableItem>
                     ))}
+                    {openPanel?.kind === 'provider' && panelProvider && (
+                      <SettingsList.Item>
+                        <WorkbenchActionPanel
+                          testID="service-workbench-provider-panel"
+                          title={`${panelProvider.displayName} provider`}
+                          description="Inspect the service identity and endpoint before choosing it for new reads. This choice never moves account writes away from the repository PDS.">
+                          <SettingsList.ItemText
+                            selectable
+                            style={[{paddingHorizontal: 0}, a.text_sm]}>
+                            Service DID: {panelProvider.serviceDid}
+                          </SettingsList.ItemText>
+                          <SettingsList.ItemText
+                            selectable
+                            style={[{paddingHorizontal: 0}, a.text_sm]}>
+                            HTTPS endpoint: {panelProvider.endpoint}
+                          </SettingsList.ItemText>
+                          <SettingsList.ItemText
+                            style={[{paddingHorizontal: 0}, a.text_sm]}>
+                            Declared surfaces:{' '}
+                            {(panelProvider.capabilities ?? ['public-read'])
+                              .map(providerSurfaceLabel)
+                              .join(', ')}
+                          </SettingsList.ItemText>
+                          <View style={[a.flex_row, a.flex_wrap, a.gap_xs]}>
+                            <Button
+                              testID="service-workbench-use-provider"
+                              label={`Use ${panelProvider.displayName} for new reads`}
+                              onPress={() => void choose(panelProvider)}
+                              disabled={
+                                !currentAccount || selected === panelProvider.id
+                              }
+                              size="small"
+                              shape="rectangular">
+                              <ButtonText>
+                                {selected === panelProvider.id
+                                  ? 'Selected for new reads'
+                                  : 'Use for new reads'}
+                              </ButtonText>
+                            </Button>
+                            <Button
+                              testID="service-workbench-configure-provider"
+                              label={`Configure read surfaces for ${panelProvider.displayName}`}
+                              onPress={() =>
+                                chooseProviderSurfaces(panelProvider)
+                              }
+                              size="small"
+                              color="secondary"
+                              variant="outline"
+                              shape="rectangular">
+                              <ButtonText>Configure surfaces</ButtonText>
+                            </Button>
+                            <Button
+                              label="Close provider inspector"
+                              onPress={() => setOpenPanel(undefined)}
+                              size="small"
+                              color="secondary"
+                              variant="outline"
+                              shape="rectangular">
+                              <ButtonText>Close</ButtonText>
+                            </Button>
+                          </View>
+                        </WorkbenchActionPanel>
+                      </SettingsList.Item>
+                    )}
+                    {openPanel?.kind === 'provider-surfaces' &&
+                      panelProvider && (
+                        <SettingsList.Item>
+                          <ProviderSurfaceActionPanel
+                            provider={panelProvider}
+                            onToggle={surface =>
+                              void toggleProviderSurface(panelProvider, surface)
+                            }
+                            onBack={() =>
+                              setOpenPanel({
+                                kind: 'provider',
+                                providerId: panelProvider.id,
+                              })
+                            }
+                            onClose={() => setOpenPanel(undefined)}
+                          />
+                        </SettingsList.Item>
+                      )}
                     <SettingsList.Item>
                       <View style={[a.flex_1, a.gap_sm]}>
                         <SettingsList.ItemText style={[{paddingHorizontal: 0}]}>
@@ -1348,6 +1520,24 @@ export function ServicesSettingsScreen({route, navigation}: Props) {
                         </SettingsList.BadgeText>
                       </SettingsList.PressableItem>
                     ))}
+                    {openPanel?.kind === 'provider-surfaces' &&
+                      panelProvider && (
+                        <SettingsList.Item>
+                          <ProviderSurfaceActionPanel
+                            provider={panelProvider}
+                            onToggle={surface =>
+                              void toggleProviderSurface(panelProvider, surface)
+                            }
+                            onBack={() =>
+                              setOpenPanel({
+                                kind: 'provider',
+                                providerId: panelProvider.id,
+                              })
+                            }
+                            onClose={() => setOpenPanel(undefined)}
+                          />
+                        </SettingsList.Item>
+                      )}
                     <SettingsList.Item>
                       <View style={[a.flex_1, a.gap_sm]}>
                         <SettingsList.ItemText style={[{paddingHorizontal: 0}]}>
@@ -1397,6 +1587,141 @@ export function ServicesSettingsScreen({route, navigation}: Props) {
                         {`${Object.keys(reconciliationPolicies).length} surfaces configured`}
                       </SettingsList.BadgeText>
                     </SettingsList.PressableItem>
+                    {panelPolicySurface && panelPolicy && (
+                      <SettingsList.Item>
+                        <WorkbenchActionPanel
+                          testID="service-workbench-reconciliation-panel"
+                          title={`${providerSurfaceLabel(panelPolicySurface)} reconciliation`}
+                          description="This is a local reconciliation rule for this read surface. Provider disagreement, outage, and partial results remain attributable; selecting a preference does not make a provider universally authoritative.">
+                          <SettingsList.ItemText
+                            style={[{paddingHorizontal: 0}, a.text_sm]}>
+                            Current policy: {panelPolicy.mode}
+                            {panelPolicy.preferredProviderId
+                              ? ` · ${
+                                  panelPolicyProviders.find(
+                                    provider =>
+                                      provider.id ===
+                                      panelPolicy.preferredProviderId,
+                                  )?.displayName ??
+                                  panelPolicy.preferredProviderId
+                                }`
+                              : ''}
+                          </SettingsList.ItemText>
+                          <View style={[a.flex_row, a.flex_wrap, a.gap_xs]}>
+                            {CONFIGURABLE_PROVIDER_SURFACES.map(surface => {
+                              const isActive = surface === panelPolicySurface
+                              return (
+                                <Button
+                                  key={surface}
+                                  label={`Inspect ${providerSurfaceLabel(surface)} reconciliation policy`}
+                                  accessibilityState={{selected: isActive}}
+                                  onPress={() => chooseSurfacePolicy(surface)}
+                                  size="small"
+                                  color={isActive ? 'primary' : 'secondary'}
+                                  variant={isActive ? 'solid' : 'outline'}
+                                  shape="rectangular">
+                                  <ButtonText>
+                                    {providerSurfaceLabel(surface)}
+                                  </ButtonText>
+                                </Button>
+                              )
+                            })}
+                          </View>
+                          <View style={[a.flex_row, a.flex_wrap, a.gap_xs]}>
+                            {RECONCILIATION_MODES.map(mode => {
+                              const isActive = panelPolicy.mode === mode.id
+                              return (
+                                <Button
+                                  key={mode.id}
+                                  label={`Set ${mode.label.toLowerCase()} for ${providerSurfaceLabel(panelPolicySurface)}`}
+                                  accessibilityState={{selected: isActive}}
+                                  onPress={() =>
+                                    void saveSurfacePolicy(panelPolicySurface, {
+                                      mode: mode.id,
+                                    })
+                                  }
+                                  size="small"
+                                  color={isActive ? 'primary' : 'secondary'}
+                                  variant={isActive ? 'solid' : 'outline'}
+                                  shape="rectangular">
+                                  <ButtonText>{mode.label}</ButtonText>
+                                </Button>
+                              )
+                            })}
+                          </View>
+                          <View style={[a.gap_xs]}>
+                            <SettingsList.ItemText
+                              style={[
+                                {paddingHorizontal: 0},
+                                a.text_sm,
+                                a.font_semi_bold,
+                              ]}>
+                              Explicit provider preference
+                            </SettingsList.ItemText>
+                            <SettingsList.ItemText
+                              style={[
+                                {paddingHorizontal: 0},
+                                a.text_xs,
+                                t.atoms.text_contrast_medium,
+                              ]}>
+                              Choose a provider only when you want a local
+                              preference for incomplete or disagreeing results.
+                            </SettingsList.ItemText>
+                            {panelPolicyProviders.length === 0 ? (
+                              <SettingsList.ItemText
+                                style={[
+                                  {paddingHorizontal: 0},
+                                  a.text_sm,
+                                  t.atoms.text_contrast_medium,
+                                ]}>
+                                No provider is enabled for this surface.
+                              </SettingsList.ItemText>
+                            ) : (
+                              <View style={[a.flex_row, a.flex_wrap, a.gap_xs]}>
+                                {panelPolicyProviders.map(provider => {
+                                  const isActive =
+                                    panelPolicy.mode === 'prefer-provider' &&
+                                    panelPolicy.preferredProviderId ===
+                                      provider.id
+                                  return (
+                                    <Button
+                                      key={provider.id}
+                                      label={`Prefer ${provider.displayName} for ${providerSurfaceLabel(panelPolicySurface)}`}
+                                      accessibilityState={{selected: isActive}}
+                                      onPress={() =>
+                                        void saveSurfacePolicy(
+                                          panelPolicySurface,
+                                          {
+                                            mode: 'prefer-provider',
+                                            preferredProviderId: provider.id,
+                                          },
+                                        )
+                                      }
+                                      size="small"
+                                      color={isActive ? 'primary' : 'secondary'}
+                                      variant={isActive ? 'solid' : 'outline'}
+                                      shape="rectangular">
+                                      <ButtonText>
+                                        {provider.displayName}
+                                      </ButtonText>
+                                    </Button>
+                                  )
+                                })}
+                              </View>
+                            )}
+                          </View>
+                          <Button
+                            label="Close reconciliation inspector"
+                            onPress={() => setOpenPanel(undefined)}
+                            size="small"
+                            color="secondary"
+                            variant="outline"
+                            shape="rectangular">
+                            <ButtonText>Close</ButtonText>
+                          </Button>
+                        </WorkbenchActionPanel>
+                      </SettingsList.Item>
+                    )}
                     <SettingsList.PressableItem
                       label="Export provider policy"
                       onPress={() => void copyProviderPolicy()}>
@@ -1461,6 +1786,129 @@ export function ServicesSettingsScreen({route, navigation}: Props) {
                         {identityPolicyLabel}
                       </SettingsList.BadgeText>
                     </SettingsList.PressableItem>
+                    {openPanel?.kind === 'identity-policy' && (
+                      <SettingsList.Item>
+                        <WorkbenchActionPanel
+                          testID="service-workbench-identity-policy-panel"
+                          title="Identity resolution policy"
+                          description="Enabled identity providers may make claims about a handle or DID. This local rule controls disagreement handling; it does not grant a resolver ownership of identity continuity.">
+                          <SettingsList.ItemText
+                            style={[{paddingHorizontal: 0}, a.text_sm]}>
+                            Current policy: {identityPolicyLabel}
+                          </SettingsList.ItemText>
+                          <View style={[a.flex_row, a.flex_wrap, a.gap_xs]}>
+                            <Button
+                              label="Require agreement from all identity providers"
+                              accessibilityState={{
+                                selected:
+                                  identityPolicy.mode === 'require-agreement',
+                              }}
+                              onPress={() =>
+                                void saveIdentityPolicy({
+                                  mode: 'require-agreement',
+                                })
+                              }
+                              size="small"
+                              color={
+                                identityPolicy.mode === 'require-agreement'
+                                  ? 'primary'
+                                  : 'secondary'
+                              }
+                              variant={
+                                identityPolicy.mode === 'require-agreement'
+                                  ? 'solid'
+                                  : 'outline'
+                              }
+                              shape="rectangular">
+                              <ButtonText>Require agreement</ButtonText>
+                            </Button>
+                            <Button
+                              label="Use the first verified identity provider result"
+                              accessibilityState={{
+                                selected:
+                                  identityPolicy.mode === 'first-verified',
+                              }}
+                              onPress={() =>
+                                void saveIdentityPolicy({
+                                  mode: 'first-verified',
+                                })
+                              }
+                              size="small"
+                              color={
+                                identityPolicy.mode === 'first-verified'
+                                  ? 'primary'
+                                  : 'secondary'
+                              }
+                              variant={
+                                identityPolicy.mode === 'first-verified'
+                                  ? 'solid'
+                                  : 'outline'
+                              }
+                              shape="rectangular">
+                              <ButtonText>First verified result</ButtonText>
+                            </Button>
+                          </View>
+                          <View style={[a.gap_xs]}>
+                            <SettingsList.ItemText
+                              style={[
+                                {paddingHorizontal: 0},
+                                a.text_sm,
+                                a.font_semi_bold,
+                              ]}>
+                              Prefer one provider
+                            </SettingsList.ItemText>
+                            {panelIdentityProviders.length === 0 ? (
+                              <SettingsList.ItemText
+                                style={[
+                                  {paddingHorizontal: 0},
+                                  a.text_sm,
+                                  t.atoms.text_contrast_medium,
+                                ]}>
+                                No identity provider is enabled.
+                              </SettingsList.ItemText>
+                            ) : (
+                              <View style={[a.flex_row, a.flex_wrap, a.gap_xs]}>
+                                {panelIdentityProviders.map(provider => {
+                                  const isActive =
+                                    identityPolicy.mode === 'prefer-provider' &&
+                                    identityPolicy.preferredProviderId ===
+                                      provider.id
+                                  return (
+                                    <Button
+                                      key={provider.id}
+                                      label={`Prefer ${provider.displayName} for identity resolution`}
+                                      accessibilityState={{selected: isActive}}
+                                      onPress={() =>
+                                        void saveIdentityPolicy({
+                                          mode: 'prefer-provider',
+                                          preferredProviderId: provider.id,
+                                        })
+                                      }
+                                      size="small"
+                                      color={isActive ? 'primary' : 'secondary'}
+                                      variant={isActive ? 'solid' : 'outline'}
+                                      shape="rectangular">
+                                      <ButtonText>
+                                        {provider.displayName}
+                                      </ButtonText>
+                                    </Button>
+                                  )
+                                })}
+                              </View>
+                            )}
+                          </View>
+                          <Button
+                            label="Close identity policy inspector"
+                            onPress={() => setOpenPanel(undefined)}
+                            size="small"
+                            color="secondary"
+                            variant="outline"
+                            shape="rectangular">
+                            <ButtonText>Close</ButtonText>
+                          </Button>
+                        </WorkbenchActionPanel>
+                      </SettingsList.Item>
+                    )}
                   </>
                 )}
 
@@ -1492,9 +1940,12 @@ export function ServicesSettingsScreen({route, navigation}: Props) {
                     {plcResolvers.map(resolver => (
                       <SettingsList.PressableItem
                         key={`plc-resolver-${resolver.id}`}
-                        label={`${resolver.enabled ? 'Disable' : 'Enable'} PLC resolver ${resolver.displayName}`}
+                        label={`Inspect PLC resolver ${resolver.displayName}`}
                         onPress={() =>
-                          void togglePlcResolver(resolver.id, !resolver.enabled)
+                          setOpenPanel({
+                            kind: 'resolver',
+                            resolverId: resolver.id,
+                          })
                         }>
                         <SettingsList.ItemText>
                           {resolver.displayName}
@@ -1504,6 +1955,57 @@ export function ServicesSettingsScreen({route, navigation}: Props) {
                         </SettingsList.BadgeText>
                       </SettingsList.PressableItem>
                     ))}
+                    {openPanel?.kind === 'resolver' && panelResolver && (
+                      <SettingsList.Item>
+                        <WorkbenchActionPanel
+                          testID="service-workbench-resolver-panel"
+                          title={`${panelResolver.displayName} resolver`}
+                          description="A resolver is a replaceable source of identity claims. The endpoint and operator declaration are inspectable inputs; cryptographic history verification is still required before a result can be trusted.">
+                          <SettingsList.ItemText
+                            selectable
+                            style={[{paddingHorizontal: 0}, a.text_sm]}>
+                            HTTPS endpoint: {panelResolver.endpoint}
+                          </SettingsList.ItemText>
+                          <SettingsList.ItemText
+                            selectable
+                            style={[{paddingHorizontal: 0}, a.text_sm]}>
+                            Declared operator: {panelResolver.operatorId}
+                          </SettingsList.ItemText>
+                          <SettingsList.ItemText
+                            style={[{paddingHorizontal: 0}, a.text_sm]}>
+                            State:{' '}
+                            {panelResolver.enabled ? 'Enabled' : 'Disabled'}
+                          </SettingsList.ItemText>
+                          <View style={[a.flex_row, a.flex_wrap, a.gap_xs]}>
+                            <Button
+                              label={`${panelResolver.enabled ? 'Disable' : 'Enable'} PLC resolver ${panelResolver.displayName}`}
+                              onPress={() =>
+                                void togglePlcResolver(
+                                  panelResolver.id,
+                                  !panelResolver.enabled,
+                                )
+                              }
+                              size="small"
+                              shape="rectangular">
+                              <ButtonText>
+                                {panelResolver.enabled
+                                  ? 'Disable resolver'
+                                  : 'Enable resolver'}
+                              </ButtonText>
+                            </Button>
+                            <Button
+                              label="Close resolver inspector"
+                              onPress={() => setOpenPanel(undefined)}
+                              size="small"
+                              color="secondary"
+                              variant="outline"
+                              shape="rectangular">
+                              <ButtonText>Close</ButtonText>
+                            </Button>
+                          </View>
+                        </WorkbenchActionPanel>
+                      </SettingsList.Item>
+                    )}
                     <SettingsList.Item>
                       <View style={[a.flex_1, a.gap_sm]}>
                         <SettingsList.ItemText style={[{paddingHorizontal: 0}]}>
