@@ -1288,3 +1288,79 @@ avoids treating a provider error as a data claim.
 This iteration removes the ambient Spaces read assumption without creating a
 new sovereign intermediary. The external Relay/AppView, short-TTL OAuth, and
 independent-PLC operator gates remain separate and unresolved.
+
+## Iteration 29: expose the profile-media record and delivery seam
+
+The profile already used the account PDS as the source of truth for the
+signed-in owner's avatar and banner CIDs, but the inspector exposed only the
+PDS origin and opaque blob references. That made it difficult to answer which
+AT record established the media or to open the exact source URL in a browser.
+
+### Residual authority concentration and why it matters
+
+The remaining problem was presentation ambiguity rather than a missing media
+provider. A CDN or AppView-derived image URL could look like the author of the
+media even though the profile record and blob CID are account-owned. Adding a
+second media-provider registry would increase machinery without dispersing
+that authority. The high-value change was to make the existing record-to-
+delivery boundary inspectable and browser-addressable.
+
+### Ecosystem precedent and chosen change
+
+The implementation follows ATProto's existing repository/blob split: the
+`app.bsky.actor.profile/self` record identifies the authored blob CID, while
+`com.atproto.sync.getBlob` is a PDS delivery method. The existing
+`MediaDeliveryProvenance` component now localizes the authority summary,
+exposes the profile AT URI, derives exact avatar/banner PDS blob URLs from the
+record-owned CIDs, and renders ordinary external links to those sources. It
+does not treat a CDN, AppView, or delivery URL as a second author of the
+media.
+
+### Authority before versus after
+
+| Boundary | Before iteration 29 | After iteration 29 |
+| --- | --- | --- |
+| Media authority | The UI named the Account PDS and CIDs, but did not expose the profile record address. | The inspector identifies the Account PDS profile record and exposes `at://…/app.bsky.actor.profile/self` as selectable evidence. |
+| Delivery path | The PDS origin and method were visible, but the user had no direct source action. | The UI derives and opens the exact avatar/banner `com.atproto.sync.getBlob` URLs. |
+| Provider semantics | A cached AppView/CDN image could be mistaken for the record source. | The summary and note distinguish authored record/CID authority from transport delivery and cached views. |
+| Exit and inspection | Users could read opaque values but had no direct browser path to inspect the media source. | Users can copy the record/CID values or open each direct PDS source in a new browser context. |
+
+### Interoperability and security tradeoffs
+
+This is a backward-compatible UI and provenance extension. It preserves the
+ATProto profile record, DID, CID, and standard `com.atproto.sync.getBlob`
+semantics. It does not add a privileged media service, rewrite third-party
+profile media, weaken URL validation, or grant new write authority. The
+external source links are derived only from an already validated HTTP(S) PDS
+origin and the record-owned CID; the existing endpoint normalization remains
+the gate. The tradeoff is that direct PDS delivery can have different caching
+or availability from an AppView/CDN, which is made explicit rather than
+silently hidden.
+
+### Implementation evidence
+
+- `src/lib/api/account-profile.ts` adds the profile record AT URI to
+  `AccountProfileMediaProvenance` and keeps direct blob URL derivation at the
+  account-PDS boundary.
+- `src/components/MediaDeliveryProvenance.tsx` localizes the authority
+  summary, exposes the record URI, and adds accessible browser-native links
+  for avatar and banner sources.
+- `src/lib/api/account-profile.test.ts` verifies the new record URI while
+  retaining the existing PDS-owned media and endpoint safety cases.
+- `src/locale/locales/en/messages.po` contains the extracted English UI
+  messages.
+
+### Verification
+
+| Check | Status | Evidence |
+| --- | --- | --- |
+| Touched-file Oxlint | PASS | `pnpm exec oxlint --quiet` over the media API, test, and component files |
+| Touched-file formatting and whitespace | PASS | Prettier check and `git diff --check` |
+| Account-profile tests | PASS | `pnpm exec jest src/lib/api/account-profile.test.ts --runInBand`; 6 tests |
+| Web TypeScript | PASS | `pnpm typecheck:web` |
+| English catalog extraction/compile | PASS | `pnpm intl:extract && pnpm intl:compile`; 3321 source messages |
+| Production web export | PASS | `EXPO_PUBLIC_ENV=production pnpm build-web`; existing bundle-size warnings remain |
+
+The client code remains compatible with the existing provider composition
+architecture. The external Relay/AppView, short-TTL OAuth, and independent-PLC
+operator evidence gates remain separate and unresolved.
