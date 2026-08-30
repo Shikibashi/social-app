@@ -1,8 +1,9 @@
-import {type Client} from '@atproto/lex'
+import {type Client, getBlobCidString} from '@atproto/lex'
 import {
   type AtIdentifierString,
   type DidString,
   type HandleString,
+  type UriString,
 } from '@atproto/syntax'
 
 import {app, com} from '#/lexicons'
@@ -19,11 +20,14 @@ export async function fetchAccountProfile({
   appviewClient,
   actor,
   handle,
+  pdsEndpoint,
 }: {
   pdsClient: Client
   appviewClient?: Client
   actor: string
   handle?: string
+  /** The account PDS origin, used for a direct public blob fallback. */
+  pdsEndpoint?: string
 }): Promise<app.bsky.actor.defs.ProfileViewDetailed> {
   if (pdsClient.assertDid !== actor) {
     throw new Error('Account PDS client does not own this actor')
@@ -37,17 +41,57 @@ export async function fetchAccountProfile({
   if (!app.bsky.actor.profile.main.matches(record.value)) {
     throw new Error('Account PDS returned an invalid profile record')
   }
+  const profileRecord = record.value as app.bsky.actor.profile.Main
 
   const appviewProfile = appviewClient
     ? await getAppviewProfile(appviewClient, actor)
     : undefined
+  const pdsBlobUrls = {
+    avatar: buildPdsBlobUrl(
+      pdsEndpoint,
+      actor,
+      profileRecord.avatar ? getBlobCidString(profileRecord.avatar) : undefined,
+    ),
+    banner: buildPdsBlobUrl(
+      pdsEndpoint,
+      actor,
+      profileRecord.banner ? getBlobCidString(profileRecord.banner) : undefined,
+    ),
+  }
 
   return mergeAccountProfileView({
     actor,
     handle,
     profile: appviewProfile,
-    record: record.value,
+    record: profileRecord,
+    pdsBlobUrls,
   })
+}
+
+/**
+ * Build the protocol-standard public blob URL on the account PDS. This is a
+ * derived delivery URL, not a second media authority: the CID still comes
+ * from the signed-in account's profile record and the PDS remains the blob
+ * host. It is used when an AppView/CDN view is missing or behind.
+ */
+export function buildPdsBlobUrl(
+  pdsEndpoint: string | undefined,
+  did: string,
+  cid: string | undefined,
+): UriString | undefined {
+  if (!pdsEndpoint || !cid) return undefined
+  try {
+    const endpoint = new URL(pdsEndpoint)
+    if (endpoint.protocol !== 'https:' && endpoint.protocol !== 'http:') {
+      return undefined
+    }
+    const url = new URL('/xrpc/com.atproto.sync.getBlob', endpoint)
+    url.searchParams.set('did', did)
+    url.searchParams.set('cid', cid)
+    return url.toString() as UriString
+  } catch {
+    return undefined
+  }
 }
 
 /**
@@ -60,19 +104,24 @@ export function mergeAccountProfileView({
   handle,
   profile,
   record,
+  pdsBlobUrls,
 }: {
   actor: string
   handle?: string
   profile?: app.bsky.actor.defs.ProfileViewDetailed
   record: app.bsky.actor.profile.Main
+  pdsBlobUrls?: {
+    avatar?: UriString
+    banner?: UriString
+  }
 }): app.bsky.actor.defs.ProfileViewDetailed {
   return {
     ...profile,
     $type: 'app.bsky.actor.defs#profileViewDetailed',
     did: actor as DidString,
     handle: (profile?.handle ?? handle ?? actor) as HandleString,
-    avatar: profile?.avatar,
-    banner: profile?.banner,
+    avatar: pdsBlobUrls?.avatar ?? profile?.avatar,
+    banner: pdsBlobUrls?.banner ?? profile?.banner,
     labels: profile?.labels,
     status: profile?.status,
     viewer: profile?.viewer,

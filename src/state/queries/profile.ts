@@ -99,7 +99,7 @@ export function useProfileQuery({
     staleTime,
     refetchOnWindowFocus: true,
     queryKey: RQKEY(did ?? ''),
-    queryFn: async () => {
+    queryFn: async ({signal}) => {
       if (pdsClient && ownerAccount) {
         try {
           return await fetchAccountProfile({
@@ -107,6 +107,7 @@ export function useProfileQuery({
             appviewClient: client,
             actor: ownerAccount.did,
             handle: ownerAccount.handle,
+            pdsEndpoint: ownerAccount.pdsUrl,
           })
         } catch {
           // Keep the AppView path when the account PDS is temporarily unavailable.
@@ -115,11 +116,19 @@ export function useProfileQuery({
 
       const composed = await composeAppViewProviderRead(
         'profiles',
-        providerClient =>
-          providerClient.call(app.bsky.actor.getProfile, {
-            actor: (did ?? '') as AtIdentifierString,
-          }),
-        {clientForProvider: providerClientFactory},
+        (providerClient, _provider, context) =>
+          providerClient.call(
+            app.bsky.actor.getProfile,
+            {
+              actor: (did ?? '') as AtIdentifierString,
+            },
+            {signal: context.signal},
+          ),
+        {
+          access: 'account-scoped',
+          clientForProvider: providerClientFactory,
+          signal,
+        },
       )
       return requireComposedProviderValue(composed)
     },
@@ -143,14 +152,22 @@ export function useProfilesQuery({
     enabled: handles.length > 0,
     staleTime: STALE.MINUTES.FIVE,
     queryKey: profilesQueryKey(handles),
-    queryFn: async () => {
+    queryFn: async ({signal}) => {
       const composed = await composeAppViewProviderRead(
         'profiles',
-        providerClient =>
-          providerClient.call(app.bsky.actor.getProfiles, {
-            actors: handles as AtIdentifierString[],
-          }),
-        {clientForProvider: providerClientFactory},
+        (providerClient, _provider, context) =>
+          providerClient.call(
+            app.bsky.actor.getProfiles,
+            {
+              actors: handles as AtIdentifierString[],
+            },
+            {signal: context.signal},
+          ),
+        {
+          access: 'account-scoped',
+          clientForProvider: providerClientFactory,
+          signal,
+        },
       )
       return requireComposedProviderValue(composed)
     },
@@ -159,21 +176,35 @@ export function useProfilesQuery({
 }
 
 export function usePrefetchProfileQuery() {
-  const client = useAppviewClient()
+  const providerClientFactory = useAppviewProviderClientFactory()
   const queryClient = useQueryClient()
   const prefetchProfileQuery = useCallback(
     async (did: string) => {
       await queryClient.prefetchQuery({
         staleTime: STALE.SECONDS.THIRTY,
         queryKey: RQKEY(did),
-        queryFn: async () => {
-          return await client.call(app.bsky.actor.getProfile, {
-            actor: (did || '') as AtIdentifierString,
-          })
+        queryFn: async ({signal}) => {
+          const composed = await composeAppViewProviderRead(
+            'profiles',
+            (providerClient, _provider, context) =>
+              providerClient.call(
+                app.bsky.actor.getProfile,
+                {
+                  actor: (did || '') as AtIdentifierString,
+                },
+                {signal: context.signal},
+              ),
+            {
+              access: 'account-scoped',
+              clientForProvider: providerClientFactory,
+              signal,
+            },
+          )
+          return requireComposedProviderValue(composed)
         },
       })
     },
-    [queryClient, client],
+    [queryClient, providerClientFactory],
   )
   return prefetchProfileQuery
 }

@@ -1,6 +1,6 @@
 import {useEffect, useMemo, useState} from 'react'
 import {Alert, TextInput, View} from 'react-native'
-import {type LexMap} from '@atproto/lex'
+import {type Client, type LexMap} from '@atproto/lex'
 import {type NsidString} from '@atproto/syntax'
 import {RichText} from '@bsky/sdk/richtext'
 import {useNavigation} from '@react-navigation/native'
@@ -12,6 +12,12 @@ import {
   createSpaceCredentialSession,
 } from '#/lib/atproto/spaces'
 import {
+  type CommunityDirectoryComposition,
+  type CommunityDirectoryEntry,
+  type CommunityDirectorySource,
+  composeCommunityDirectory,
+} from '#/lib/atproto/spaces/community-directory'
+import {
   readAllSpaceRecords,
   type SpaceFanoutRecord,
 } from '#/lib/atproto/spaces/fanout'
@@ -22,6 +28,7 @@ import {
 } from '#/lib/routes/types'
 import {usePdsClient, useSession, useSessionApi} from '#/state/session'
 import {hasOAuthFeature} from '#/state/session/oauth-scopes'
+import {resolvePdsEndpointForDid} from '#/state/session/pds-resolution'
 import {atoms as a, useBreakpoints, useTheme} from '#/alf'
 import {Button, ButtonText} from '#/components/Button'
 import * as Layout from '#/components/Layout'
@@ -32,19 +39,8 @@ import {us} from '#/lexicons'
 
 type Props = NativeStackScreenProps<CommonNavigatorParams, 'CommunityBoard'>
 
-type CommunityVisibility =
-  'public' | 'restricted' | 'invite-only' | 'private' | 'protected'
-
-type Community = {
-  uri: string
-  authorityDid?: string
-  ownerDid?: string
-  kind?: 'account' | 'community'
-  name?: string
-  description?: string
-  visibility?: CommunityVisibility
-  createdAt?: string
-}
+type Community = CommunityDirectoryEntry
+type CommunityVisibility = NonNullable<Community['visibility']>
 
 type CommunityPage = {
   spaces: Community[]
@@ -99,6 +95,50 @@ function postCollectionsForSpace(space: string): readonly NsidString[] {
     : [POST_COLLECTION]
 }
 
+async function readCommunityDirectory(
+  client: Client,
+): Promise<readonly CommunityDirectoryEntry[]> {
+  const spaces: CommunityDirectoryEntry[] = []
+  let cursor: string | undefined
+  const seenCursors = new Set<string>()
+  do {
+    const page = (await client.call(
+      us.edriffles.radlib.private.listCommunities,
+      {
+        limit: 100,
+        ...(cursor ? {cursor} : {}),
+      },
+    )) as CommunityPage
+    spaces.push(...page.spaces)
+    if (!page.cursor || seenCursors.has(page.cursor)) break
+    seenCursors.add(page.cursor)
+    cursor = page.cursor
+  } while (cursor)
+  return spaces
+}
+
+async function readAuthorityCommunityDirectory(
+  client: Client,
+  requestedSpace: string,
+  authorityEndpoint: string | undefined,
+): Promise<readonly CommunityDirectoryEntry[]> {
+  const authorityClient = await createRadlibAuthorityClient(
+    client,
+    requestedSpace,
+    us.edriffles.radlib.private.listCommunities.$lxm,
+    () => Promise.resolve(authorityEndpoint),
+  )
+  const spaces = [...(await readCommunityDirectory(authorityClient))]
+  if (!spaces.some(item => item.uri === requestedSpace)) {
+    spaces.push(
+      (await authorityClient.call(us.edriffles.radlib.private.getSpace, {
+        space: requestedSpace,
+      })) as CommunityDirectoryEntry,
+    )
+  }
+  return spaces
+}
+
 export function CommunityBoardScreen({route}: Props) {
   const client = usePdsClient()
   const {currentAccount} = useSession()
@@ -151,52 +191,46 @@ export function CommunityBoardScreen({route}: Props) {
   const communitySpacesQuery = useQuery({
     queryKey: ['radlib-community-spaces', client.did, requestedSpace],
     enabled: !!client.did && SPACES_ALPHA_ENABLED,
-    queryFn: async () => {
-      const spaces: Community[] = []
-      let localListError: unknown
-
-      try {
-        let cursor: string | undefined
-        const seenCursors = new Set<string>()
-        do {
-          const page = (await client.call(
-            us.edriffles.radlib.private.listCommunities,
-            {
-              limit: 100,
-              ...(cursor ? {cursor} : {}),
-            },
-          )) as CommunityPage
-          spaces.push(...page.spaces)
-          if (!page.cursor || seenCursors.has(page.cursor)) break
-          seenCursors.add(page.cursor)
-          cursor = page.cursor
-        } while (cursor)
-      } catch (error) {
-        if (!requestedSpace) throw error
-        localListError = error
+    queryFn: async ({signal}) => {
+      const accountPdsEndpoint =
+        currentAccount?.pdsUrl ??
+        (client.service && client.service.startsWith('http')
+          ? client.service
+          : await resolvePdsEndpointForDid(client.did!))
+      const accountSource: CommunityDirectorySource = {
+        id: `account-pds:${client.did}`,
+        displayName: 'Account PDS community directory',
+        endpoint: accountPdsEndpoint ?? 'account-pds:session-routed',
+        kind: 'account-pds',
+        read: () => readCommunityDirectory(client),
       }
+      const sources: CommunityDirectorySource[] = [accountSource]
 
       // A member's own PDS does not host the authority's Radlib control DB.
-      // Resolve a deep-linked remote community through a narrowly-scoped
-      // service-auth call so discovery does not mirror policy into every PDS.
-      if (requestedSpace && !spaces.some(item => item.uri === requestedSpace)) {
-        try {
-          const authorityClient = await createRadlibAuthorityClient(
-            client,
-            requestedSpace,
-            us.edriffles.radlib.private.getSpace.$lxm,
-          )
-          spaces.push(
-            (await authorityClient.call(us.edriffles.radlib.private.getSpace, {
-              space: requestedSpace,
-            })) as Community,
-          )
-        } catch (error) {
-          // Do not turn an unresolved deep link into an apparently empty index.
-          throw localListError ?? error
-        }
+      // Add a deep-linked authority as a second, narrowly-scoped directory
+      // source. The composition result retains outages and disagreements
+      // instead of silently making either source sovereign.
+      const authorityDid = requestedSpace
+        ? parseSpaceAuthority(requestedSpace)
+        : undefined
+      if (requestedSpace && authorityDid && authorityDid !== client.did) {
+        const authorityEndpoint = await resolvePdsEndpointForDid(authorityDid)
+        sources.push({
+          id: `community-authority-pds:${authorityDid}`,
+          displayName: 'Deep-linked community authority PDS',
+          endpoint: authorityEndpoint ?? `community-authority:${authorityDid}`,
+          serviceDid: authorityDid,
+          kind: 'community-authority-pds',
+          read: () =>
+            readAuthorityCommunityDirectory(
+              client,
+              requestedSpace,
+              authorityEndpoint,
+            ),
+        })
       }
-      return {spaces}
+
+      return composeCommunityDirectory(sources, {signal})
     },
   })
 
@@ -648,7 +682,7 @@ export function CommunityBoardScreen({route}: Props) {
                 ]}>
                 <View style={[a.flex_1, {gap: 3}]}>
                   <Text style={[eyebrowStyle(colors), {color: colors.accent}]}>
-                    COMMUNITIES / EDRIFFLES
+                    COMMUNITIES / PLUMBLINE
                   </Text>
                   <H1 style={{color: colors.ink}}>Find your people.</H1>
                   <Text style={{color: colors.secondary, lineHeight: 21}}>
@@ -751,6 +785,12 @@ export function CommunityBoardScreen({route}: Props) {
                   </View>
                 ) : visibleCommunities.length ? (
                   <View style={{gap: 6}}>
+                    {communitySpacesQuery.data?.composition ? (
+                      <CommunityDirectoryEvidence
+                        composition={communitySpacesQuery.data.composition}
+                        colors={colors}
+                      />
+                    ) : null}
                     {visibleCommunities.map(item => {
                       const itemName = item.name || 'Untitled community'
                       const isSelected = item.uri === space
@@ -813,6 +853,12 @@ export function CommunityBoardScreen({route}: Props) {
                   </View>
                 ) : (
                   <View style={{gap: 6}}>
+                    {communitySpacesQuery.data?.composition ? (
+                      <CommunityDirectoryEvidence
+                        composition={communitySpacesQuery.data.composition}
+                        colors={colors}
+                      />
+                    ) : null}
                     <Text style={{color: colors.secondary}}>
                       No communities match this view. Try All or clear the
                       search.
@@ -2042,6 +2088,106 @@ function InfoChip({label, colors}: {label: string; colors: ForumColors}) {
         paddingVertical: 5,
       }}>
       <Text style={[metaStyle(colors), {color: colors.ink}]}>{label}</Text>
+    </View>
+  )
+}
+
+function CommunityDirectoryEvidence({
+  composition,
+  colors,
+}: {
+  composition: CommunityDirectoryComposition['composition']
+  colors: ForumColors
+}) {
+  const hasConflict =
+    composition.status === 'disagreement' || composition.status === 'partial'
+  const statusColor = (
+    status: (typeof composition.observations)[number]['status'],
+  ) => (status === 'ok' ? colors.positive : colors.negative)
+  return (
+    <View
+      accessibilityRole="summary"
+      style={{
+        borderWidth: 1,
+        borderColor: hasConflict ? colors.accent : colors.border,
+        backgroundColor: colors.surface,
+        padding: 9,
+        gap: 3,
+      }}>
+      <View style={[a.flex_row, a.align_center, a.justify_between, a.gap_sm]}>
+        <Text
+          accessibilityRole="header"
+          style={[metaStyle(colors), {color: colors.ink, fontWeight: '700'}]}>
+          DIRECTORY EVIDENCE
+        </Text>
+        <Text
+          style={[
+            metaStyle(colors),
+            {color: hasConflict ? colors.accent : colors.positive},
+          ]}>
+          {composition.status.toUpperCase()}
+        </Text>
+      </View>
+      <Text style={[metaStyle(colors), {color: colors.secondary}]}>
+        Each row is a source observation. The list remains a local merge, not a
+        claim that one provider owns the community.
+      </Text>
+      {composition.observations.map((observation, index) => {
+        const endpoint = observation.provider.endpoint.startsWith('http')
+          ? observation.provider.endpoint
+          : `source: ${observation.provider.endpoint}`
+        return (
+          <View
+            key={`${observation.provider.id}-${index}`}
+            accessible
+            accessibilityLabel={`${observation.provider.displayName}: ${observation.status}`}
+            accessibilityHint="Shows the provider endpoint and any read error"
+            style={[a.flex_row, a.align_start, a.gap_sm, {paddingTop: 5}]}>
+            <View
+              aria-hidden
+              style={{
+                width: 8,
+                height: 8,
+                marginTop: 4,
+                borderRadius: 4,
+                backgroundColor: statusColor(observation.status),
+              }}
+            />
+            <View style={[a.flex_1, {gap: 2}]}>
+              <Text
+                style={[
+                  metaStyle(colors),
+                  {color: colors.ink, fontWeight: '700'},
+                ]}>
+                {observation.provider.displayName} · {observation.status}
+              </Text>
+              <Text selectable style={metaStyle(colors)}>
+                {observation.provider.id} · {endpoint}
+              </Text>
+              {observation.error ? (
+                <Text
+                  selectable
+                  style={[metaStyle(colors), {color: colors.negative}]}>
+                  {observation.error}
+                </Text>
+              ) : null}
+            </View>
+          </View>
+        )
+      })}
+      <Text
+        style={[metaStyle(colors), {color: colors.secondary, paddingTop: 5}]}>
+        {composition.selectedProviderIds.length
+          ? `Selected source${composition.selectedProviderIds.length === 1 ? '' : 's'}: ${composition.selectedProviderIds.join(', ')}`
+          : 'No source was selected under the current reconciliation policy.'}
+      </Text>
+      {hasConflict ? (
+        <Text
+          style={[metaStyle(colors), {color: colors.accent, paddingTop: 3}]}>
+          The list is usable under the local merge policy, but provider
+          disagreement or an outage remains visible above.
+        </Text>
+      ) : null}
     </View>
   )
 }

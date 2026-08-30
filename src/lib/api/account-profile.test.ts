@@ -2,7 +2,11 @@ import {type Client} from '@atproto/lex'
 import {describe, expect, it, jest} from '@jest/globals'
 
 import {app, com} from '#/lexicons'
-import {fetchAccountProfile, mergeAccountProfileView} from './account-profile'
+import {
+  buildPdsBlobUrl,
+  fetchAccountProfile,
+  mergeAccountProfileView,
+} from './account-profile'
 
 const actor = 'did:plc:viewer'
 const handle = 'edriffles.us'
@@ -78,6 +82,38 @@ describe('account profile reads', () => {
       handle,
       displayName: 'Current PDS name',
       description: 'Current PDS bio',
+    })
+  })
+
+  it('builds a direct public blob URL from the account PDS and CID', () => {
+    expect(
+      buildPdsBlobUrl(
+        'https://pds.example.test/',
+        actor,
+        'bafybeigdyrzt3examplecid',
+      ),
+    ).toBe(
+      `https://pds.example.test/xrpc/com.atproto.sync.getBlob?did=${encodeURIComponent(actor)}&cid=bafybeigdyrzt3examplecid`,
+    )
+  })
+
+  it('prefers the PDS-owned media delivery URL over an AppView-derived URL', () => {
+    expect(
+      mergeAccountProfileView({
+        actor,
+        handle,
+        profile: {
+          did: actor,
+          handle,
+          avatar: 'https://cdn.example/stale-avatar.jpg',
+        },
+        record: profileRecord(),
+        pdsBlobUrls: {
+          avatar: `https://pds.example.test/xrpc/com.atproto.sync.getBlob?did=${actor}&cid=avatar-cid`,
+        },
+      }),
+    ).toMatchObject({
+      avatar: `https://pds.example.test/xrpc/com.atproto.sync.getBlob?did=${actor}&cid=avatar-cid`,
     })
   })
 })
