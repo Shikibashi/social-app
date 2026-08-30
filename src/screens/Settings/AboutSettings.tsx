@@ -90,19 +90,19 @@ export function AboutSettingsScreen({}: Props) {
       <Layout.Content>
         <SettingsList.Container>
           <SettingsList.LinkItem
-            to="https://bsky.social/about/support/tos"
-            label={_(msg`Terms of Service`)}>
+            to="/support/tos"
+            label={_(msg`Provider Terms of Service`)}>
             <SettingsList.ItemIcon icon={NewspaperIcon} />
             <SettingsList.ItemText>
-              <Trans>Terms of Service</Trans>
+              <Trans>Provider Terms of Service</Trans>
             </SettingsList.ItemText>
           </SettingsList.LinkItem>
           <SettingsList.LinkItem
-            to="https://bsky.social/about/support/privacy-policy"
-            label={_(msg`Privacy Policy`)}>
+            to="/support/privacy"
+            label={_(msg`Provider Privacy Policy`)}>
             <SettingsList.ItemIcon icon={NewspaperIcon} />
             <SettingsList.ItemText>
-              <Trans>Privacy Policy</Trans>
+              <Trans>Provider Privacy Policy</Trans>
             </SettingsList.ItemText>
           </SettingsList.LinkItem>
           <SettingsList.LinkItem

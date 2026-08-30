@@ -208,10 +208,10 @@ export function Takendown() {
                 <Trans>
                   Your account was found to be in violation of the{' '}
                   <SimpleInlineLinkText
-                    label={_(msg`Terms of Service`)}
-                    to="https://bsky.social/about/support/tos"
+                    label={_(msg`hosting provider's Terms of Service`)}
+                    to="/support/tos"
                     style={[a.text_md, a.leading_snug]}>
-                    Terms of Service
+                    hosting provider's Terms of Service
                   </SimpleInlineLinkText>
                   . You have been sent an email outlining the specific violation
                   and suspension period, if applicable. You can appeal this
