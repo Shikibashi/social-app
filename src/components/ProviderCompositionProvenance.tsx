@@ -5,6 +5,7 @@ import {useLingui} from '@lingui/react'
 import {useNavigation} from '@react-navigation/native'
 
 import {
+  getProviderClaimSummary,
   ProviderCompositionError,
   type ProviderCompositionResult,
 } from '#/lib/provider-composition'
@@ -88,6 +89,10 @@ export function ProviderCompositionProvenance({
           <Detail
             label={_(msg`Reconciliation`)}
             value={reconciliationLabel(composition)}
+          />
+          <Detail
+            label={_(msg`Claims compared`)}
+            value={providerClaimsLabel(composition)}
           />
           <Detail
             label={_(msg`Selected providers`)}
@@ -250,6 +255,36 @@ function reconciliationLabel(
         composition.policy.preferredProviderId ?? 'provider not specified'
       }`
   }
+}
+
+function providerClaimsLabel(
+  composition: ProviderCompositionResult<unknown>,
+): string {
+  const {
+    observedProviderCount,
+    respondingProviderCount,
+    distinctClaimCount,
+    nonClaimObservationCount,
+  } = getProviderClaimSummary(composition)
+
+  if (respondingProviderCount === 0) {
+    return `No usable claims from ${observedProviderCount} provider observation${
+      observedProviderCount === 1 ? '' : 's'
+    }`
+  }
+
+  const claimSummary =
+    distinctClaimCount === 1
+      ? respondingProviderCount === 1
+        ? '1 claim from 1 responding provider'
+        : `1 shared claim from ${respondingProviderCount} responding providers`
+      : `${distinctClaimCount} distinct claims from ${respondingProviderCount} responding providers`
+
+  return nonClaimObservationCount === 0
+    ? claimSummary
+    : `${claimSummary}; ${nonClaimObservationCount} provider observation${
+        nonClaimObservationCount === 1 ? '' : 's'
+      } did not provide a usable claim`
 }
 
 const styles = StyleSheet.create({

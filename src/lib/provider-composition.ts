@@ -194,6 +194,36 @@ export type ProviderCompositionResult<T> = {
   independence: ProviderIndependence
 }
 
+export type ProviderClaimSummary = {
+  observedProviderCount: number
+  respondingProviderCount: number
+  distinctClaimCount: number
+  nonClaimObservationCount: number
+}
+
+/**
+ * Summarize the claims that are available for progressive UI inspection.
+ * Distinct claims come from the same claim-key calculation used by
+ * composition; non-claim observations remain evidence but are not counted as
+ * responses that can be compared.
+ */
+export function getProviderClaimSummary<T>(
+  composition: ProviderCompositionResult<T>,
+): ProviderClaimSummary {
+  const respondingProviderCount = composition.observations.filter(
+    observation =>
+      observation.status === 'ok' && observation.value !== undefined,
+  ).length
+
+  return {
+    observedProviderCount: composition.observations.length,
+    respondingProviderCount,
+    distinctClaimCount: composition.distinctResultKeys.length,
+    nonClaimObservationCount:
+      composition.observations.length - respondingProviderCount,
+  }
+}
+
 /**
  * Raised when an explicit reconciliation policy refuses to promote the
  * available provider observations to a value. Keeping the complete result on

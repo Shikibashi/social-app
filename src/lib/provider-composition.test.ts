@@ -3,6 +3,7 @@ import {describe, expect, it} from '@jest/globals'
 import {
   BOUNDARY_OWNED_PROVIDER_SURFACES,
   composeProviderResults,
+  getProviderClaimSummary,
   isProviderCompositionQueryMeta,
   PROVIDER_COMPOSITION_QUERY_META,
   PROVIDER_SURFACE_DETAILS,
@@ -146,6 +147,24 @@ describe('provider result composition', () => {
       expect(result.declaredOperatorIds).toEqual(['operator-a', 'operator-b'])
       expect(result.independence).toBe('declared-distinct')
     }
+  })
+
+  it('summarizes compared claims without discarding failed observations', async () => {
+    const result = await composeProviderResults(
+      providers,
+      provider =>
+        provider.id === 'provider-b'
+          ? Promise.reject(new Error('temporary outage'))
+          : Promise.resolve({value: {answer: 'same'}}),
+      {surface: 'profiles'},
+    )
+
+    expect(getProviderClaimSummary(result)).toEqual({
+      observedProviderCount: 2,
+      respondingProviderCount: 1,
+      distinctClaimCount: 1,
+      nonClaimObservationCount: 1,
+    })
   })
 
   it('retains stale evidence but refuses to use it as fresh agreement', async () => {
