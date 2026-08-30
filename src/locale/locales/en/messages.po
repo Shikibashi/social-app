@@ -158,7 +158,7 @@ msgstr ""
 #. placeholder {0}: numUnreadNotifications ?? 0
 #: src/view/shell/bottom-bar/BottomBar.tsx:246
 #: src/view/shell/bottom-bar/BottomBar.tsx:278
-#: src/view/shell/Drawer.tsx:560
+#: src/view/shell/Drawer.tsx:561
 msgid "{0, plural, one {# unread item} other {# unread items}}"
 msgstr ""
 
@@ -196,11 +196,11 @@ msgstr ""
 msgid "{0, plural, one {post} other {posts}}"
 msgstr ""
 
-#. Number of users (always at least 25) who have joined Edriffles using a specific starter pack
+#. Number of users (always at least 25) who have joined Plumbline using a specific starter pack
 #. placeholder {0}: starterPack.joinedAllTimeCount || 0
 #: src/screens/StarterPack/StarterPackScreen.tsx:493
-msgid "{0, plural, other {# people have}} joined Edriffles via this starter pack!"
-msgstr "{0, plural, other {# people have}} joined Edriffles via this starter pack!"
+msgid "{0, plural, other {# people have}} joined Plumbline via this starter pack!"
+msgstr "{0, plural, other {# people have}} joined Plumbline via this starter pack!"
 
 #. placeholder {0}: starterPack.list.listItemCount - 4
 #: src/components/dialogs/StarterPackDialog.tsx:354
@@ -274,7 +274,7 @@ msgid "{0} is not supported by your device."
 msgstr "{0} is not supported by your device."
 
 #. placeholder {0}: registered.displayName
-#: src/screens/Settings/ServicesSettings.tsx:121
+#: src/screens/Settings/ServicesSettings.tsx:627
 msgid "{0} is now an explicit provider choice. It will not replace your PDS or identity."
 msgstr "{0} is now an explicit provider choice. It will not replace your PDS or identity."
 
@@ -412,7 +412,7 @@ msgstr "{0}/{imageCount}"
 #. placeholder {0}: UNREAD_REQUEST_CAP - 1
 #. placeholder {0}: i18n.number(UNREAD_NOTIFICATION_CAP - 1)
 #: src/screens/Messages/components/InboxRequests.tsx:55
-#: src/screens/Moderation/index.tsx:169
+#: src/screens/Moderation/index.tsx:168
 msgid "{0}+"
 msgstr "{0}+"
 
@@ -462,7 +462,7 @@ msgstr "{count, plural, one {# new join request} other {# new join requests}}"
 msgid "{count, plural, one {# request} other {# requests}}"
 msgstr "{count, plural, one {# request} other {# requests}}"
 
-#: src/view/shell/desktop/LeftNav.tsx:487
+#: src/view/shell/desktop/LeftNav.tsx:496
 msgid "{count, plural, one {# unread item} other {# unread items}}"
 msgstr ""
 
@@ -704,7 +704,7 @@ msgctxt "Displayed when there are more than 20 requests to join a group chat"
 msgid "{JOIN_REQUESTS_THRESHOLD}+ new join requests"
 msgstr "{JOIN_REQUESTS_THRESHOLD}+ new join requests"
 
-#. Number of users (always at least 50) who have joined Edriffles using a specific starter pack
+#. Number of users (always at least 50) who have joined Plumbline using a specific starter pack
 #: src/components/StarterPack/StarterPackCard.tsx:98
 msgid "{joinedAllTimeCount, plural, other {# users have}} joined!"
 msgstr ""
@@ -713,11 +713,11 @@ msgstr ""
 msgid "{MAX_ALT_TEXT, plural, other {Alt text must be less than # characters.}}"
 msgstr ""
 
-#: src/screens/Profile/Header/EditProfileDialog.tsx:380
+#: src/screens/Profile/Header/EditProfileDialog.tsx:431
 msgid "{MAX_DESCRIPTION, plural, other {Description is too long. The maximum number of characters is #.}}"
 msgstr "{MAX_DESCRIPTION, plural, other {Description is too long. The maximum number of characters is #.}}"
 
-#: src/screens/Profile/Header/EditProfileDialog.tsx:329
+#: src/screens/Profile/Header/EditProfileDialog.tsx:350
 msgid "{MAX_DISPLAY_NAME, plural, other {Display name is too long. The maximum number of characters is #.}}"
 msgstr "{MAX_DISPLAY_NAME, plural, other {Display name is too long. The maximum number of characters is #.}}"
 
@@ -760,13 +760,21 @@ msgstr ""
 msgid "{numMatches, plural, one {# contact found} other {# contacts found}}"
 msgstr ""
 
+#: src/view/screens/PrivacyPolicy.tsx:30
+msgid "{PRODUCT_NAME} uses the hosting provider's privacy policy, which is maintained at <0/>"
+msgstr "{PRODUCT_NAME} uses the hosting provider's privacy policy, which is maintained at <0/>"
+
+#: src/view/screens/TermsOfService.tsx:30
+msgid "{PRODUCT_NAME} uses the hosting provider's Terms of Service, which are maintained at"
+msgstr "{PRODUCT_NAME} uses the hosting provider's Terms of Service, which are maintained at"
+
 #: src/components/NewskieDialog.tsx:116
-msgid "{profileName} joined Edriffles {timeAgoString} ago"
-msgstr "{profileName} joined Edriffles {timeAgoString} ago"
+msgid "{profileName} joined Plumbline {timeAgoString} ago"
+msgstr "{profileName} joined Plumbline {timeAgoString} ago"
 
 #: src/components/NewskieDialog.tsx:113
-msgid "{profileName} joined Edriffles using a starter pack {timeAgoString} ago"
-msgstr "{profileName} joined Edriffles using a starter pack {timeAgoString} ago"
+msgid "{profileName} joined Plumbline using a starter pack {timeAgoString} ago"
+msgstr "{profileName} joined Plumbline using a starter pack {timeAgoString} ago"
 
 #. The trending topic rank, i.e. "1. March Madness", "2. The Bachelor"
 #. The trending topic rank, i.e. "1. March Madness", "2. The Bachelor"
@@ -858,21 +866,21 @@ msgstr ""
 #. Quote count display, the <0> tags enclose the number of quotes in bold (will never be 0)
 #. placeholder {0}: formatPostStatCount(post.quoteCount)
 #. placeholder {1}: post.quoteCount
-#: src/screens/PostThread/components/ThreadItemAnchor.tsx:485
+#: src/screens/PostThread/components/ThreadItemAnchor.tsx:486
 msgid "<0>{0}</0> {1, plural, one {quote} other {quotes}}"
 msgstr ""
 
 #. Repost count display, the <0> tags enclose the number of reposts in bold (will never be 0)
 #. placeholder {0}: formatPostStatCount(post.repostCount)
 #. placeholder {1}: post.repostCount
-#: src/screens/PostThread/components/ThreadItemAnchor.tsx:464
+#: src/screens/PostThread/components/ThreadItemAnchor.tsx:465
 msgid "<0>{0}</0> {1, plural, one {repost} other {reposts}}"
 msgstr ""
 
 #. Save count display, the <0> tags enclose the number of saves in bold (will never be 0)
 #. placeholder {0}: formatPostStatCount(post.bookmarkCount)
 #. placeholder {1}: post.bookmarkCount
-#: src/screens/PostThread/components/ThreadItemAnchor.tsx:504
+#: src/screens/PostThread/components/ThreadItemAnchor.tsx:505
 msgid "<0>{0}</0> {1, plural, one {save} other {saves}}"
 msgstr ""
 
@@ -907,8 +915,8 @@ msgstr "<0>{displayName}</0><1/><2> added you</2>"
 
 #: src/screens/Hashtag.tsx:232
 #: src/screens/Search/SearchResults.tsx:412
-msgid "<0>Sign in</0><1> or </1><2>create an account</2><3> </3><4>to search for news, sports, politics, and everything else happening on Edriffles.</4>"
-msgstr "<0>Sign in</0><1> or </1><2>create an account</2><3> </3><4>to search for news, sports, politics, and everything else happening on Edriffles.</4>"
+msgid "<0>Sign in</0><1> or </1><2>create an account</2><3> </3><4>to search for news, sports, politics, and everything else happening on Plumbline.</4>"
+msgstr "<0>Sign in</0><1> or </1><2>create an account</2><3> </3><4>to search for news, sports, politics, and everything else happening on Plumbline.</4>"
 
 #. placeholder {0}: getName(items[1] /* [0] is self, skip it */)
 #: src/screens/StarterPack/Wizard/index.tsx:490
@@ -939,8 +947,8 @@ msgid "7 days"
 msgstr ""
 
 #: src/screens/Onboarding/StepFinished/ValuePropositionPager.shared.tsx:27
-msgid "A collection of popular feeds you can find on Edriffles, including News, Booksky, Game Dev, Blacksky, and Fountain Pens"
-msgstr "A collection of popular feeds you can find on Edriffles, including News, Booksky, Game Dev, Blacksky, and Fountain Pens"
+msgid "A collection of popular feeds you can find on Plumbline, including News, Booksky, Game Dev, Blacksky, and Fountain Pens"
+msgstr "A collection of popular feeds you can find on Plumbline, including News, Booksky, Game Dev, Blacksky, and Fountain Pens"
 
 #. If last message does not contain text, fall back to "{user} reacted to {a message}"
 #: src/components/dms/getReactionInfo.ts:58
@@ -979,8 +987,8 @@ msgstr "A reply to a message sent before you joined"
 
 #. Contains a post that originally appeared in English. Consider translating the post text if it makes sense in your language, and noting that the post was translated from English.
 #: src/components/dialogs/nuxs/LiveNowBetaDialog.tsx:147
-msgid "A screenshot of a post from @esb.lol, showing the user is currently livestreaming content on Twitch. The post reads: \"Hello! I'm live on Twitch, and I'm testing Edriffles' latest feature too!\""
-msgstr "A screenshot of a post from @esb.lol, showing the user is currently livestreaming content on Twitch. The post reads: \"Hello! I'm live on Twitch, and I'm testing Edriffles' latest feature too!\""
+msgid "A screenshot of a post from @esb.lol, showing the user is currently livestreaming content on Twitch. The post reads: \"Hello! I'm live on Twitch, and I'm testing Plumbline' latest feature too!\""
+msgstr "A screenshot of a post from @esb.lol, showing the user is currently livestreaming content on Twitch. The post reads: \"Hello! I'm live on Twitch, and I'm testing Plumbline' latest feature too!\""
 
 #. Contains a post that originally appeared in English. Consider translating the post text if it makes sense in your language, and noting that the post was translated from English.
 #: src/components/dialogs/nuxs/BookmarksAnnouncement.tsx:121
@@ -993,19 +1001,22 @@ msgstr ""
 
 #. Contains a post that originally appeared in English. Consider translating the post text if it makes sense in your language, and noting that the post was translated from English.
 #: src/components/dialogs/nuxs/DraftsAnnouncement.tsx:98
-msgid "A screenshot of the post composer with a new button next to the post button that says \"Drafts\", with a rainbow firework effect. Below, the text in the composer reads \"Hey, did you hear the news? Edriffles has drafts now!!!\"."
-msgstr "A screenshot of the post composer with a new button next to the post button that says \"Drafts\", with a rainbow firework effect. Below, the text in the composer reads \"Hey, did you hear the news? Edriffles has drafts now!!!\"."
+msgid "A screenshot of the post composer with a new button next to the post button that says \"Drafts\", with a rainbow firework effect. Below, the text in the composer reads \"Hey, did you hear the news? Plumbline has drafts now!!!\"."
+msgstr "A screenshot of the post composer with a new button next to the post button that says \"Drafts\", with a rainbow firework effect. Below, the text in the composer reads \"Hey, did you hear the news? Plumbline has drafts now!!!\"."
 
 #: src/components/dms/dialogs/NewChatDialog.tsx:102
 #: src/components/dms/dialogs/ShareViaChatDialog.tsx:118
 msgid "A selected recipient is not followed by the sender."
 msgstr "A selected recipient is not followed by the sender."
 
+#: src/screens/Moderation/index.tsx:200
+msgid "A service makes an assertion, your rule interprets it, and Plumbline applies the resulting client action. These are separate authorities; changing a local rule does not erase the underlying record or label."
+msgstr "A service makes an assertion, your rule interprets it, and Plumbline applies the resulting client action. These are separate authorities; changing a local rule does not erase the underlying record or label."
+
 #: src/Navigation.tsx:561
 #: src/screens/Settings/AboutSettings.tsx:85
-#: src/screens/Settings/Settings.tsx:301
-#: src/screens/Settings/Settings.tsx:304
-#: src/view/com/auth/SplashScreen.web.tsx:173
+#: src/screens/Settings/Settings.tsx:299
+#: src/screens/Settings/Settings.tsx:302
 msgid "About"
 msgstr ""
 
@@ -1046,8 +1057,8 @@ msgid "Access requested! The group owner will review your request."
 msgstr "Access requested! The group owner will review your request."
 
 #: src/screens/Settings/AccessibilitySettings.tsx:45
-#: src/screens/Settings/Settings.tsx:271
-#: src/screens/Settings/Settings.tsx:274
+#: src/screens/Settings/Settings.tsx:269
+#: src/screens/Settings/Settings.tsx:272
 msgid "Accessibility"
 msgstr ""
 
@@ -1089,20 +1100,20 @@ msgctxt "toast"
 msgid "Account muted"
 msgstr ""
 
-#: src/components/moderation/ModerationDetailsDialog.tsx:123
+#: src/components/moderation/ModerationDetailsDialog.tsx:184
 #: src/lib/moderation/useModerationCauseDescription.ts:96
 msgid "Account Muted"
 msgstr ""
 
-#: src/components/moderation/ModerationDetailsDialog.tsx:109
+#: src/components/moderation/ModerationDetailsDialog.tsx:170
 msgid "Account Muted by List"
 msgstr ""
 
-#: src/screens/Settings/Settings.tsx:692
+#: src/screens/Settings/Settings.tsx:690
 msgid "Account options"
 msgstr ""
 
-#: src/screens/Settings/Settings.tsx:727
+#: src/screens/Settings/Settings.tsx:725
 msgid "Account removed from quick access"
 msgstr ""
 
@@ -1130,8 +1141,8 @@ msgid "Account visibility"
 msgstr "Account visibility"
 
 #: src/components/verification/VerifierDialog.tsx:100
-msgid "Accounts with a scalloped blue check mark <0><1/></0> can verify others. These trusted verifiers are selected by Edriffles."
-msgstr "Accounts with a scalloped blue check mark <0><1/></0> can verify others. These trusted verifiers are selected by Edriffles."
+msgid "Accounts with a scalloped blue check mark <0><1/></0> can verify others. These trusted verifiers are selected by Plumbline."
+msgstr "Accounts with a scalloped blue check mark <0><1/></0> can verify others. These trusted verifiers are selected by Plumbline."
 
 #: src/lib/hooks/useNotificationHandler.ts:214
 #: src/screens/Settings/NotificationSettings/ActivityNotificationSettings.tsx:105
@@ -1167,10 +1178,6 @@ msgstr ""
 msgid "Add a content warning"
 msgstr ""
 
-#: src/screens/Settings/ServicesSettings.tsx:178
-msgid "Add a read provider"
-msgstr "Add a read provider"
-
 #: src/features/liveNow/components/GoLiveDialog.tsx:114
 msgid "Add a temporary live status to your profile. When someone clicks on your avatar, they’ll see information about your live event."
 msgstr ""
@@ -1199,10 +1206,10 @@ msgstr ""
 msgid "Add alt text (optional)"
 msgstr ""
 
-#: src/screens/Settings/Settings.tsx:630
-#: src/screens/Settings/Settings.tsx:633
-#: src/view/shell/desktop/LeftNav.tsx:279
-#: src/view/shell/desktop/LeftNav.tsx:282
+#: src/screens/Settings/Settings.tsx:628
+#: src/screens/Settings/Settings.tsx:631
+#: src/view/shell/desktop/LeftNav.tsx:288
+#: src/view/shell/desktop/LeftNav.tsx:291
 msgid "Add another account"
 msgstr ""
 
@@ -1382,7 +1389,7 @@ msgstr ""
 msgid "Adult Content"
 msgstr ""
 
-#: src/screens/Moderation/index.tsx:432
+#: src/screens/Moderation/index.tsx:486
 msgid "Adult content can only be enabled via the Web at <0>bsky.app</0>."
 msgstr ""
 
@@ -1399,7 +1406,7 @@ msgstr ""
 msgid "Adult sexual abuse content"
 msgstr ""
 
-#: src/screens/Moderation/index.tsx:475
+#: src/screens/Moderation/index.tsx:529
 msgid "Advanced"
 msgstr ""
 
@@ -1509,7 +1516,7 @@ msgstr "Already directly blocked"
 msgid "Already have a code?"
 msgstr ""
 
-#: src/components/WelcomeModal.tsx:187
+#: src/components/WelcomeModal.tsx:188
 msgid "Already have an account?"
 msgstr ""
 
@@ -1630,21 +1637,21 @@ msgstr ""
 
 #: src/components/contacts/components/HeroImage.tsx:28
 #: src/components/dialogs/nuxs/FindContactsAnnouncement.tsx:79
-msgid "An illustration depicting user avatars flowing from a contact book into the Edriffles app"
-msgstr "An illustration depicting user avatars flowing from a contact book into the Edriffles app"
+msgid "An illustration depicting user avatars flowing from a contact book into the Plumbline app"
+msgstr "An illustration depicting user avatars flowing from a contact book into the Plumbline app"
 
 #: src/screens/Onboarding/StepFinished/ValuePropositionPager.shared.tsx:45
-msgid "An illustration of several Edriffles posts alongside repost, like, and comment icons"
-msgstr "An illustration of several Edriffles posts alongside repost, like, and comment icons"
+msgid "An illustration of several Plumbline posts alongside repost, like, and comment icons"
+msgstr "An illustration of several Plumbline posts alongside repost, like, and comment icons"
 
 #: src/components/dialogs/nuxs/InviteFriendsAnnouncement.tsx:111
-msgid "An illustration of the Edriffles app with a paper airplane flying out of it, representing inviting friends"
-msgstr "An illustration of the Edriffles app with a paper airplane flying out of it, representing inviting friends"
+msgid "An illustration of the Plumbline app with a paper airplane flying out of it, representing inviting friends"
+msgstr "An illustration of the Plumbline app with a paper airplane flying out of it, representing inviting friends"
 
 #: src/components/dialogs/nuxs/InitialVerificationAnnouncement.tsx:86
 #: src/components/verification/VerifierDialog.tsx:88
-msgid "An illustration showing that Edriffles selects trusted verifiers, and trusted verifiers in turn verify individual user accounts."
-msgstr "An illustration showing that Edriffles selects trusted verifiers, and trusted verifiers in turn verify individual user accounts."
+msgid "An illustration showing that Plumbline selects trusted verifiers, and trusted verifiers in turn verify individual user accounts."
+msgstr "An illustration showing that Plumbline selects trusted verifiers, and trusted verifiers in turn verify individual user accounts."
 
 #: src/screens/Messages/components/InviteLinkDialog.tsx:195
 msgid "An invite link lets people join this group chat without being added directly. You control who can join the chat. You can disable the link at any time."
@@ -1674,10 +1681,10 @@ msgid "An issue occurred, please try again."
 msgstr ""
 
 #: src/components/dialogs/nuxs/InitialVerificationAnnouncement.tsx:121
-msgid "An mockup of a iPhone showing the Edriffles app open to the profile of a verified user with a blue checkmark next to their display name."
-msgstr "An mockup of a iPhone showing the Edriffles app open to the profile of a verified user with a blue checkmark next to their display name."
+msgid "An mockup of a iPhone showing the Plumbline app open to the profile of a verified user with a blue checkmark next to their display name."
+msgstr "An mockup of a iPhone showing the Plumbline app open to the profile of a verified user with a blue checkmark next to their display name."
 
-#: src/components/moderation/ModerationDetailsDialog.tsx:154
+#: src/components/moderation/ModerationDetailsDialog.tsx:215
 #: src/lib/moderation/useModerationCauseDescription.ts:142
 msgid "an unknown labeler"
 msgstr ""
@@ -1707,8 +1714,8 @@ msgid "Announcement"
 msgstr ""
 
 #: src/components/dialogs/nuxs/InitialVerificationAnnouncement.tsx:39
-msgid "Announcing verification on Edriffles"
-msgstr "Announcing verification on Edriffles"
+msgid "Announcing verification on Plumbline"
+msgstr "Announcing verification on Plumbline"
 
 #. Placeholder text for a date picker
 #: src/screens/Search/components/AdvancedSearchDialog/ClearableDateField.tsx:43
@@ -1792,7 +1799,7 @@ msgstr ""
 
 #: src/components/moderation/LabelsOnMeDialog.tsx:169
 #: src/components/moderation/LabelsOnMeDialog.tsx:172
-#: src/components/moderation/ModerationDetailsDialog.tsx:223
+#: src/components/moderation/ModerationDetailsDialog.tsx:284
 msgid "Appeal"
 msgstr ""
 
@@ -1801,7 +1808,7 @@ msgstr ""
 msgid "Appeal \"{0}\" label"
 msgstr ""
 
-#: src/components/moderation/ModerationDetailsDialog.tsx:159
+#: src/components/moderation/ModerationDetailsDialog.tsx:220
 msgid "Appeal label"
 msgstr "Appeal label"
 
@@ -1832,14 +1839,14 @@ msgstr ""
 msgid "Appeal this decision"
 msgstr ""
 
-#: src/components/moderation/ModerationDetailsDialog.tsx:219
+#: src/components/moderation/ModerationDetailsDialog.tsx:280
 msgid "Appeal this label"
 msgstr "Appeal this label"
 
 #: src/Navigation.tsx:412
 #: src/screens/Settings/AppearanceSettings.tsx:71
-#: src/screens/Settings/Settings.tsx:263
-#: src/screens/Settings/Settings.tsx:266
+#: src/screens/Settings/Settings.tsx:261
+#: src/screens/Settings/Settings.tsx:264
 msgid "Appearance"
 msgstr ""
 
@@ -1848,8 +1855,8 @@ msgstr ""
 msgid "Apply default recommended feeds"
 msgstr ""
 
+#: src/screens/Settings/Settings.tsx:559
 #: src/screens/Settings/Settings.tsx:561
-#: src/screens/Settings/Settings.tsx:563
 msgid "Apply Pull Request"
 msgstr ""
 
@@ -1857,21 +1864,21 @@ msgstr ""
 msgid "Approve protected access"
 msgstr "Approve protected access"
 
-#: src/screens/Settings/ServicesSettings.tsx:55
+#: src/screens/Settings/ServicesSettings.tsx:560
 msgid "AppView changed"
 msgstr "AppView changed"
 
-#: src/screens/Settings/ServicesSettings.tsx:225
+#: src/screens/Settings/ServicesSettings.tsx:936
 msgid "AppView service DID"
 msgstr "AppView service DID"
 
 #. placeholder {0}: niceDate(i18n, createdAt, 'medium')
-#: src/screens/PostThread/components/ThreadItemAnchor.tsx:624
+#: src/screens/PostThread/components/ThreadItemAnchor.tsx:625
 msgid "Archived from {0}"
 msgstr ""
 
-#: src/screens/PostThread/components/ThreadItemAnchor.tsx:595
-#: src/screens/PostThread/components/ThreadItemAnchor.tsx:633
+#: src/screens/PostThread/components/ThreadItemAnchor.tsx:596
+#: src/screens/PostThread/components/ThreadItemAnchor.tsx:634
 msgid "Archived post"
 msgstr ""
 
@@ -1911,7 +1918,7 @@ msgid "Are you sure you want to delete this starter pack?"
 msgstr ""
 
 #: src/components/dialogs/lists/CreateOrEditListDialog.tsx:100
-#: src/screens/Profile/Header/EditProfileDialog.tsx:77
+#: src/screens/Profile/Header/EditProfileDialog.tsx:78
 msgid "Are you sure you want to discard your changes?"
 msgstr ""
 
@@ -1971,6 +1978,10 @@ msgstr "Ask apps and sites not to show my account to logged-out users"
 msgid "Ask apps to hide my posts from algorithmic recommendations"
 msgstr "Ask apps to hide my posts from algorithmic recommendations"
 
+#: src/components/moderation/ModerationDetailsDialog.tsx:341
+msgid "Assertion"
+msgstr "Assertion"
+
 #: src/components/PostControls/PostMenu/PostMenuItems.tsx:634
 #: src/components/PostControls/PostMenu/PostMenuItems.tsx:636
 msgid "Assign topic for algo"
@@ -1984,7 +1995,7 @@ msgstr ""
 msgid "AT Protocol FAQ"
 msgstr "AT Protocol FAQ"
 
-#: src/screens/Settings/ServicesSettings.tsx:243
+#: src/screens/Settings/ServicesSettings.tsx:956
 msgid "ATProto service fragment for this AppView"
 msgstr "ATProto service fragment for this AppView"
 
@@ -2131,8 +2142,8 @@ msgstr ""
 
 #: src/Navigation.tsx:492
 #: src/screens/Settings/BetaFeaturesSettings.tsx:116
-#: src/screens/Settings/Settings.tsx:285
-#: src/screens/Settings/Settings.tsx:288
+#: src/screens/Settings/Settings.tsx:283
+#: src/screens/Settings/Settings.tsx:286
 msgid "Beta features"
 msgstr "Beta features"
 
@@ -2228,7 +2239,7 @@ msgstr ""
 msgid "Block user and/or leave this conversation"
 msgstr "Block user and/or leave this conversation"
 
-#: src/screens/Moderation/index.tsx:356
+#: src/screens/Moderation/index.tsx:408
 msgid "Blocked accounts"
 msgstr ""
 
@@ -2251,10 +2262,6 @@ msgstr ""
 
 #: src/components/moderation/BlockDialog.tsx:156
 msgid "Blocking will not prevent labels from being applied on your account, but it will stop this account from replying in your threads or interacting with you."
-msgstr ""
-
-#: src/view/com/auth/SplashScreen.web.tsx:168
-msgid "Blog"
 msgstr ""
 
 #. Advanced search: Examples of hashtags
@@ -2282,6 +2289,38 @@ msgstr ""
 #: src/lib/moderation/useLabelBehaviorDescription.ts:55
 msgid "Blur images and filter from feeds"
 msgstr ""
+
+#: src/components/moderation/ModerationDetailsDialog.tsx:84
+msgid "Blur the avatar"
+msgstr "Blur the avatar"
+
+#: src/components/moderation/ModerationDetailsDialog.tsx:89
+msgid "Blur the banner"
+msgstr "Blur the banner"
+
+#: src/components/moderation/ModerationDetailsDialog.tsx:95
+msgid "Blur the content in lists"
+msgstr "Blur the content in lists"
+
+#: src/components/moderation/ModerationDetailsDialog.tsx:113
+msgid "Blur the content media"
+msgstr "Blur the content media"
+
+#: src/components/moderation/ModerationDetailsDialog.tsx:104
+msgid "Blur the content view"
+msgstr "Blur the content view"
+
+#: src/components/moderation/ModerationDetailsDialog.tsx:92
+msgid "Blur the display name"
+msgstr "Blur the display name"
+
+#: src/components/moderation/ModerationDetailsDialog.tsx:66
+msgid "Blur the profile in lists"
+msgstr "Blur the profile in lists"
+
+#: src/components/moderation/ModerationDetailsDialog.tsx:75
+msgid "Blur the profile view"
+msgstr "Blur the profile view"
 
 #: src/lib/interests.ts:54
 msgid "Books"
@@ -2367,9 +2406,9 @@ msgstr "by @{0}"
 
 #. The group chat creator, in the format 'By {displayName}'.
 #. placeholder {0}: createSanitizedDisplayName( joinLinkPreview.owner, true, moderateProfile(joinLinkPreview.owner, moderationOpts).ui( 'displayName', ), )
-#. placeholder {0}: info.creatorHandle === TRENDING_HANDLE ? l`Edriffles` : sanitizeHandle(info.creatorHandle, '@')
+#. placeholder {0}: info.creatorHandle === TRENDING_HANDLE ? PRODUCT_NAME : sanitizeHandle(info.creatorHandle, '@')
 #: src/components/intents/GroupChatJoinDialog.tsx:384
-#: src/screens/CustomFeed/components/CustomFeedHeader.tsx:502
+#: src/screens/CustomFeed/components/CustomFeedHeader.tsx:503
 msgid "By <0>{0}</0>"
 msgstr ""
 
@@ -2442,8 +2481,8 @@ msgstr "Camera access needed"
 #: src/screens/Messages/ConversationSettings/prompts.tsx:132
 #: src/screens/Messages/ConversationSettings/prompts.tsx:156
 #: src/screens/Messages/ConversationSettings/prompts.tsx:180
-#: src/screens/Profile/Header/EditProfileDialog.tsx:215
-#: src/screens/Profile/Header/EditProfileDialog.tsx:223
+#: src/screens/Profile/Header/EditProfileDialog.tsx:234
+#: src/screens/Profile/Header/EditProfileDialog.tsx:242
 #: src/screens/Search/components/AdvancedSearchDialog/index.tsx:202
 #: src/screens/Search/components/AdvancedSearchDialog/index.tsx:209
 #: src/screens/Settings/AppIconSettings/index.tsx:42
@@ -2454,15 +2493,15 @@ msgstr "Camera access needed"
 #: src/screens/Settings/components/ChangeHandleDialog.tsx:88
 #: src/screens/Settings/components/ChangePasswordDialog.tsx:252
 #: src/screens/Settings/components/ChangePasswordDialog.tsx:258
-#: src/screens/Settings/ServicesSettings.tsx:65
-#: src/screens/Settings/Settings.tsx:346
+#: src/screens/Settings/ServicesSettings.tsx:570
+#: src/screens/Settings/Settings.tsx:344
 #: src/screens/Takendown.tsx:100
 #: src/screens/Takendown.tsx:103
 #: src/view/com/composer/Composer.tsx:1964
 #: src/view/com/composer/Composer.tsx:1974
 #: src/view/com/composer/photos/EditImageDialog.web.tsx:44
 #: src/view/com/composer/photos/EditImageDialog.web.tsx:53
-#: src/view/shell/desktop/LeftNav.tsx:231
+#: src/view/shell/desktop/LeftNav.tsx:240
 msgid "Cancel"
 msgstr ""
 
@@ -2561,6 +2600,10 @@ msgstr ""
 msgid "Change password dialog"
 msgstr ""
 
+#: src/view/com/posts/PostFeedErrorMessage.tsx:214
+msgid "Change provider"
+msgstr "Change provider"
+
 #: src/components/moderation/ReportDialog/index.tsx:385
 msgid "Change report category"
 msgstr ""
@@ -2597,8 +2640,8 @@ msgstr ""
 #: src/lib/hooks/useNotificationHandler.ts:133
 #: src/Navigation.tsx:587
 #: src/view/shell/bottom-bar/BottomBar.tsx:237
-#: src/view/shell/desktop/LeftNav.tsx:709
-#: src/view/shell/Drawer.tsx:528
+#: src/view/shell/desktop/LeftNav.tsx:719
+#: src/view/shell/Drawer.tsx:529
 msgid "Chat"
 msgstr ""
 
@@ -2701,8 +2744,8 @@ msgstr ""
 msgid "Check <0>{currentEmail}</0> for an email with the confirmation code to enter below:"
 msgstr ""
 
-#: src/screens/Settings/ServicesSettings.tsx:259
-#: src/screens/Settings/ServicesSettings.tsx:274
+#: src/screens/Settings/ServicesSettings.tsx:972
+#: src/screens/Settings/ServicesSettings.tsx:987
 msgid "Check and add provider"
 msgstr "Check and add provider"
 
@@ -2715,7 +2758,7 @@ msgstr "Check back later!"
 msgid "Check my status"
 msgstr ""
 
-#: src/screens/Settings/ServicesSettings.tsx:272
+#: src/screens/Settings/ServicesSettings.tsx:985
 msgid "Checking provider…"
 msgstr "Checking provider…"
 
@@ -2810,11 +2853,11 @@ msgstr ""
 msgid "Clear"
 msgstr "Clear"
 
-#: src/screens/Settings/Settings.tsx:553
+#: src/screens/Settings/Settings.tsx:551
 msgid "Clear all storage data"
 msgstr ""
 
-#: src/screens/Settings/Settings.tsx:555
+#: src/screens/Settings/Settings.tsx:553
 msgid "Clear all storage data (restart after this)"
 msgstr ""
 
@@ -2989,7 +3032,7 @@ msgstr "Close the incoming requests banner"
 msgid "Close this dialog"
 msgstr ""
 
-#: src/components/WelcomeModal.tsx:212
+#: src/components/WelcomeModal.tsx:213
 msgid "Close welcome modal"
 msgstr ""
 
@@ -3054,7 +3097,7 @@ msgstr ""
 
 #: src/lib/hotkeys/index.tsx:66
 #: src/view/com/feeds/ComposerPrompt.tsx:149
-#: src/view/shell/desktop/LeftNav.tsx:590
+#: src/view/shell/desktop/LeftNav.tsx:599
 msgid "Compose new post"
 msgstr ""
 
@@ -3134,8 +3177,8 @@ msgstr ""
 msgid "Content & Media"
 msgstr ""
 
-#: src/screens/Settings/Settings.tsx:243
-#: src/screens/Settings/Settings.tsx:246
+#: src/screens/Settings/Settings.tsx:241
+#: src/screens/Settings/Settings.tsx:244
 msgid "Content and media"
 msgstr ""
 
@@ -3147,7 +3190,7 @@ msgstr ""
 msgid "Content Blocked"
 msgstr ""
 
-#: src/screens/Moderation/index.tsx:388
+#: src/screens/Moderation/index.tsx:440
 msgid "Content filters"
 msgstr ""
 
@@ -3155,7 +3198,7 @@ msgstr ""
 msgid "Content languages"
 msgstr ""
 
-#: src/components/moderation/ModerationDetailsDialog.tsx:102
+#: src/components/moderation/ModerationDetailsDialog.tsx:163
 #: src/lib/moderation/useModerationCauseDescription.ts:80
 msgid "Content Not Available"
 msgstr ""
@@ -3164,7 +3207,7 @@ msgstr ""
 msgid "Content promoting or depicting self-harm"
 msgstr ""
 
-#: src/components/moderation/ModerationDetailsDialog.tsx:70
+#: src/components/moderation/ModerationDetailsDialog.tsx:131
 #: src/components/moderation/ScreenHider.tsx:98
 #: src/lib/moderation/useGlobalLabelStrings.ts:22
 #: src/lib/moderation/useModerationCauseDescription.ts:43
@@ -3542,8 +3585,8 @@ msgstr ""
 msgid "Create a starter pack for me"
 msgstr ""
 
-#: src/components/WelcomeModal.tsx:153
-#: src/components/WelcomeModal.tsx:161
+#: src/components/WelcomeModal.tsx:154
+#: src/components/WelcomeModal.tsx:162
 #: src/screens/Messages/JoinRequest.tsx:318
 #: src/screens/Signup/index.tsx:139
 #: src/screens/Signup/OAuthSignup.tsx:53
@@ -3671,8 +3714,8 @@ msgid "Customization options"
 msgstr ""
 
 #: src/screens/Onboarding/Layout.tsx:60
-msgid "Customizes your Edriffles experience"
-msgstr "Customizes your Edriffles experience"
+msgid "Customizes your Plumbline experience"
+msgstr "Customizes your Plumbline experience"
 
 #: src/components/moderation/ReportDialog/utils/useReportOptions.ts:202
 msgid "Dangerous challenges or activities"
@@ -3716,7 +3759,7 @@ msgstr "Day"
 msgid "Deactivate account"
 msgstr ""
 
-#: src/screens/Settings/Settings.tsx:518
+#: src/screens/Settings/Settings.tsx:516
 msgid "Debug Moderation"
 msgstr ""
 
@@ -3769,8 +3812,8 @@ msgstr ""
 msgid "Delete chat"
 msgstr ""
 
+#: src/screens/Settings/Settings.tsx:521
 #: src/screens/Settings/Settings.tsx:523
-#: src/screens/Settings/Settings.tsx:525
 msgid "Delete chat declaration record"
 msgstr ""
 
@@ -3857,8 +3900,8 @@ msgstr "Deny protected access"
 
 #: src/components/dialogs/lists/CreateOrEditListDialog.tsx:461
 #: src/components/SendErrorReportDialog.tsx:78
-#: src/screens/Profile/Header/EditProfileDialog.tsx:360
-#: src/screens/Profile/Header/EditProfileDialog.tsx:367
+#: src/screens/Profile/Header/EditProfileDialog.tsx:411
+#: src/screens/Profile/Header/EditProfileDialog.tsx:418
 msgid "Description"
 msgstr ""
 
@@ -3890,8 +3933,8 @@ msgctxt "toast"
 msgid "Developer mode enabled"
 msgstr ""
 
-#: src/screens/Settings/Settings.tsx:328
-#: src/screens/Settings/Settings.tsx:331
+#: src/screens/Settings/Settings.tsx:326
+#: src/screens/Settings/Settings.tsx:329
 msgid "Developer options"
 msgstr ""
 
@@ -3907,7 +3950,7 @@ msgstr ""
 msgid "Dialog: Set search filters"
 msgstr "Dialog: Set search filters"
 
-#: src/screens/Settings/ServicesSettings.tsx:226
+#: src/screens/Settings/ServicesSettings.tsx:938
 msgid "DID that identifies this AppView"
 msgstr "DID that identifies this AppView"
 
@@ -3962,12 +4005,12 @@ msgstr "Disable this invite link?"
 #: src/lib/moderation/useLabelBehaviorDescription.ts:36
 #: src/lib/moderation/useLabelBehaviorDescription.ts:46
 #: src/lib/moderation/useLabelBehaviorDescription.ts:72
-#: src/screens/Moderation/index.tsx:422
+#: src/screens/Moderation/index.tsx:476
 msgid "Disabled"
 msgstr ""
 
 #: src/components/dialogs/lists/CreateOrEditListDialog.tsx:102
-#: src/screens/Profile/Header/EditProfileDialog.tsx:79
+#: src/screens/Profile/Header/EditProfileDialog.tsx:80
 #: src/view/com/composer/Composer.tsx:1640
 #: src/view/com/composer/Composer.tsx:1684
 #: src/view/com/composer/Composer.tsx:1893
@@ -3977,7 +4020,7 @@ msgid "Discard"
 msgstr ""
 
 #: src/components/dialogs/lists/CreateOrEditListDialog.tsx:99
-#: src/screens/Profile/Header/EditProfileDialog.tsx:76
+#: src/screens/Profile/Header/EditProfileDialog.tsx:77
 msgid "Discard changes?"
 msgstr ""
 
@@ -4055,8 +4098,8 @@ msgstr "Dismisses the QR scanner"
 msgid "Display larger alt text badges"
 msgstr ""
 
-#: src/screens/Profile/Header/EditProfileDialog.tsx:310
-#: src/screens/Profile/Header/EditProfileDialog.tsx:316
+#: src/screens/Profile/Header/EditProfileDialog.tsx:331
+#: src/screens/Profile/Header/EditProfileDialog.tsx:337
 msgid "Display name"
 msgstr ""
 
@@ -4133,7 +4176,7 @@ msgstr ""
 msgid "Double tap to close the dialog"
 msgstr ""
 
-#: src/screens/VideoFeed/index.tsx:1198
+#: src/screens/VideoFeed/index.tsx:1199
 msgid "Double tap to like"
 msgstr ""
 
@@ -4195,7 +4238,7 @@ msgstr "Dusk"
 msgid "e.g. alice"
 msgstr ""
 
-#: src/screens/Profile/Header/EditProfileDialog.tsx:317
+#: src/screens/Profile/Header/EditProfileDialog.tsx:338
 msgid "e.g. Alice Lastname"
 msgstr ""
 
@@ -4322,8 +4365,8 @@ msgstr ""
 msgid "Edit post interaction settings"
 msgstr ""
 
-#: src/screens/Profile/Header/EditProfileDialog.tsx:265
-#: src/screens/Profile/Header/EditProfileDialog.tsx:271
+#: src/screens/Profile/Header/EditProfileDialog.tsx:286
+#: src/screens/Profile/Header/EditProfileDialog.tsx:292
 #: src/screens/Profile/Header/ProfileHeaderLabeler.tsx:303
 #: src/screens/Profile/Header/ProfileHeaderStandard.tsx:338
 msgid "Edit profile"
@@ -4354,56 +4397,6 @@ msgstr ""
 #: src/Navigation.tsx:643
 msgid "Edit your starter pack"
 msgstr ""
-
-#: src/components/dialogs/ServerInput.tsx:144
-#: src/components/dialogs/ServerInput.tsx:146
-#: src/screens/CustomFeed/components/CustomFeedHeader.tsx:514
-msgid "Edriffles"
-msgstr "Edriffles"
-
-#: src/components/contacts/screens/GetContacts.tsx:237
-msgid "Edriffles helps friends find each other by creating an encoded digital fingerprint, called a \"hash\", and then looking for matching hashes."
-msgstr "Edriffles helps friends find each other by creating an encoded digital fingerprint, called a \"hash\", and then looking for matching hashes."
-
-#: src/components/ProgressGuide/List.tsx:115
-msgid "Edriffles is better with friends!"
-msgstr "Edriffles is better with friends!"
-
-#: src/screens/Onboarding/StepFindContactsIntro/index.tsx:43
-msgid "Edriffles is more fun with friends"
-msgstr "Edriffles is more fun with friends"
-
-#: src/components/dialogs/nuxs/FindContactsAnnouncement.tsx:108
-msgid "Edriffles is more fun with friends! Import your contacts to see who’s already here."
-msgstr "Edriffles is more fun with friends! Import your contacts to see who’s already here."
-
-#: src/components/contacts/screens/ViewMatches.tsx:323
-msgid "Edriffles is more fun with friends. Do you want to invite some of yours? <0/>"
-msgstr "Edriffles is more fun with friends. Do you want to invite some of yours? <0/>"
-
-#: src/features/inviteFriends/InviteScannerScreen.tsx:105
-msgid "Edriffles needs camera access to scan QR codes from other profiles."
-msgstr "Edriffles needs camera access to scan QR codes from other profiles."
-
-#: src/screens/Settings/FindContactsSettings.tsx:574
-msgid "Edriffles stores your contacts as encoded data. Removing your contacts will immediately delete this data."
-msgstr "Edriffles stores your contacts as encoded data. Removing your contacts will immediately delete this data."
-
-#: src/components/StarterPack/ProfileStarterPacks.tsx:343
-msgid "Edriffles will choose a set of recommended accounts from people in your network."
-msgstr "Edriffles will choose a set of recommended accounts from people in your network."
-
-#: src/screens/Settings/components/PwiOptOut.tsx:101
-msgid "Edriffles will not show your account to logged-out users and will ask other apps to do the same. Other apps may not honor this request. It doesn't make your account private."
-msgstr "Edriffles will not show your account to logged-out users and will ask other apps to do the same. Other apps may not honor this request. It doesn't make your account private."
-
-#: src/screens/Settings/components/AlgoVisibilityOptOut.tsx:43
-msgid "Edriffles will not show your posts in the Discover feed (except to your followers) and will ask other apps not to show your posts in their own algorithmic recommendations."
-msgstr "Edriffles will not show your posts in the Discover feed (except to your followers) and will ask other apps not to show your posts in their own algorithmic recommendations."
-
-#: src/components/dialogs/nuxs/InitialVerificationAnnouncement.tsx:136
-msgid "Edriffles will proactively verify notable and authentic accounts."
-msgstr "Edriffles will proactively verify notable and authentic accounts."
 
 #: src/lib/interests.ts:59
 msgid "Education"
@@ -4481,7 +4474,7 @@ msgstr ""
 msgid "Enable {0} only"
 msgstr ""
 
-#: src/screens/Moderation/index.tsx:409
+#: src/screens/Moderation/index.tsx:461
 msgid "Enable adult content"
 msgstr ""
 
@@ -4535,11 +4528,11 @@ msgstr ""
 msgid "Enable trending videos in your Discover feed"
 msgstr ""
 
-#: src/screens/Moderation/index.tsx:420
+#: src/screens/Moderation/index.tsx:474
 msgid "Enabled"
 msgstr ""
 
-#: src/screens/Settings/PersonalizationSettings.tsx:253
+#: src/screens/Settings/PersonalizationSettings.tsx:254
 msgid "Encrypted backup copied"
 msgstr "Encrypted backup copied"
 
@@ -4555,7 +4548,7 @@ msgstr "Ensure you have selected a language for each caption file."
 msgid "Enter 6-digit code that was sent to your phone number"
 msgstr ""
 
-#: src/screens/Settings/PersonalizationSettings.tsx:244
+#: src/screens/Settings/PersonalizationSettings.tsx:245
 msgid "Enter a backup password first."
 msgstr "Enter a backup password first."
 
@@ -4563,7 +4556,7 @@ msgstr "Enter a backup password first."
 msgid "Enter a community space URI"
 msgstr "Enter a community space URI"
 
-#: src/screens/Settings/ServicesSettings.tsx:89
+#: src/screens/Settings/ServicesSettings.tsx:594
 msgid "Enter a name, HTTPS endpoint, and service DID before adding a provider."
 msgstr "Enter a name, HTTPS endpoint, and service DID before adding a provider."
 
@@ -4771,7 +4764,7 @@ msgstr ""
 msgid "Expand post text"
 msgstr ""
 
-#: src/screens/VideoFeed/index.tsx:1074
+#: src/screens/VideoFeed/index.tsx:1075
 msgid "Expands or collapses post text"
 msgstr ""
 
@@ -4795,7 +4788,7 @@ msgstr ""
 #. placeholder {0}: timeDiff(Date.now(), label.exp)
 #. placeholder {0}: timeDiff(Date.now(), modcause.label.exp)
 #: src/components/moderation/LabelsOnMeDialog.tsx:218
-#: src/components/moderation/ModerationDetailsDialog.tsx:294
+#: src/components/moderation/ModerationDetailsDialog.tsx:401
 msgid "Expires in {0}"
 msgstr ""
 
@@ -4816,17 +4809,17 @@ msgstr ""
 
 #: src/Navigation.tsx:847
 #: src/screens/Search/Shell.tsx:549
-#: src/view/shell/desktop/LeftNav.tsx:688
-#: src/view/shell/Drawer.tsx:476
+#: src/view/shell/desktop/LeftNav.tsx:698
+#: src/view/shell/Drawer.tsx:477
 msgid "Explore"
 msgstr ""
 
-#: src/components/WelcomeModal.tsx:166
-#: src/components/WelcomeModal.tsx:175
+#: src/components/WelcomeModal.tsx:167
+#: src/components/WelcomeModal.tsx:176
 msgid "Explore the app"
 msgstr ""
 
-#: src/screens/Settings/PersonalizationSettings.tsx:233
+#: src/screens/Settings/PersonalizationSettings.tsx:234
 msgid "Export copied"
 msgstr "Export copied"
 
@@ -5213,7 +5206,7 @@ msgstr ""
 #. placeholder {0}: sanitizeHandle(feed.creatorHandle, '@')
 #. placeholder {0}: sanitizeHandle(view.creator.handle, '@')
 #: src/components/FeedCard.tsx:167
-#: src/state/queries/feed.ts:131
+#: src/state/queries/feed.ts:136
 #: src/view/com/feeds/FeedSourceCard.tsx:149
 msgid "Feed by {0}"
 msgstr ""
@@ -5223,7 +5216,7 @@ msgid "Feed creator"
 msgstr ""
 
 #: src/Navigation.tsx:436
-#: src/screens/Settings/PersonalizationSettings.tsx:508
+#: src/screens/Settings/PersonalizationSettings.tsx:527
 #: src/screens/Settings/Settings.tsx:203
 #: src/screens/Settings/Settings.tsx:206
 msgid "Feed customization & data"
@@ -5233,9 +5226,29 @@ msgstr "Feed customization & data"
 msgid "Feed identifier"
 msgstr ""
 
-#: src/screens/CustomFeed/components/CustomFeedHeader.tsx:401
+#: src/screens/CustomFeed/components/CustomFeedHeader.tsx:402
 msgid "Feed menu"
 msgstr ""
+
+#: src/components/Post/PostProvenance.tsx:86
+msgid "Feed owner"
+msgstr "Feed owner"
+
+#: src/components/Post/PostProvenance.tsx:75
+msgid "Feed provider"
+msgstr "Feed provider"
+
+#: src/components/Post/PostProvenance.tsx:90
+msgid "Feed record"
+msgstr "Feed record"
+
+#: src/components/Post/PostProvenance.tsx:82
+msgid "Feed source"
+msgstr "Feed source"
+
+#: src/components/Post/PostProvenance.tsx:97
+msgid "Feed surface"
+msgstr "Feed surface"
 
 #: src/components/StarterPack/Wizard/WizardListCard.tsx:58
 msgid "Feed toggle"
@@ -5245,9 +5258,9 @@ msgstr ""
 msgid "Feed unavailable"
 msgstr ""
 
-#: src/view/shell/desktop/RightNav.tsx:109
-#: src/view/shell/desktop/RightNav.tsx:110
-#: src/view/shell/Drawer.tsx:430
+#: src/view/shell/desktop/RightNav.tsx:106
+#: src/view/shell/desktop/RightNav.tsx:107
+#: src/view/shell/Drawer.tsx:431
 msgid "Feedback"
 msgstr ""
 
@@ -5258,8 +5271,8 @@ msgstr ""
 #: src/screens/StarterPack/StarterPackScreen.tsx:194
 #: src/view/screens/Feeds.tsx:504
 #: src/view/screens/Profile.tsx:235
-#: src/view/shell/desktop/LeftNav.tsx:721
-#: src/view/shell/Drawer.tsx:592
+#: src/view/shell/desktop/LeftNav.tsx:731
+#: src/view/shell/Drawer.tsx:593
 msgid "Feeds"
 msgstr ""
 
@@ -5346,8 +5359,8 @@ msgstr ""
 
 #: src/features/inviteFriends/components/FollowersPromoBanner.tsx:49
 #: src/screens/Settings/FindContactsSettings.tsx:79
-#: src/screens/Settings/Settings.tsx:254
-#: src/screens/Settings/Settings.tsx:257
+#: src/screens/Settings/Settings.tsx:252
+#: src/screens/Settings/Settings.tsx:255
 msgid "Find and invite friends"
 msgstr "Find and invite friends"
 
@@ -5374,8 +5387,8 @@ msgid "Find people you know"
 msgstr "Find people you know"
 
 #: src/screens/Search/Shell.tsx:765
-msgid "Find posts, users, and feeds on Edriffles"
-msgstr "Find posts, users, and feeds on Edriffles"
+msgid "Find posts, users, and feeds on Plumbline"
+msgstr "Find posts, users, and feeds on Plumbline"
 
 #: src/components/dialogs/nuxs/FindContactsAnnouncement.tsx:98
 msgid "Find your friends"
@@ -5383,8 +5396,8 @@ msgstr ""
 
 #: src/screens/Onboarding/StepFindContactsIntro/index.tsx:46
 #: src/screens/Settings/FindContactsSettings.tsx:131
-msgid "Find your friends on Edriffles by verifying your phone number and matching with your contacts. We protect your information and you control what happens next. <0>Learn more</0>"
-msgstr "Find your friends on Edriffles by verifying your phone number and matching with your contacts. We protect your information and you control what happens next. <0>Learn more</0>"
+msgid "Find your friends on Plumbline by verifying your phone number and matching with your contacts. We protect your information and you control what happens next. <0>Learn more</0>"
+msgstr "Find your friends on Plumbline by verifying your phone number and matching with your contacts. We protect your information and you control what happens next. <0>Learn more</0>"
 
 #: src/screens/Onboarding/StepFinished/ValuePropositionPager.shared.tsx:31
 msgid "Find your people"
@@ -5428,7 +5441,7 @@ msgstr "Focus the search field"
 #: src/screens/Messages/ConversationSettings/Member.tsx:170
 #: src/screens/PostThread/components/ThreadItemAnchorFollowButton.tsx:157
 #: src/screens/Profile/Header/ProfileHeaderStandard.tsx:415
-#: src/screens/VideoFeed/index.tsx:957
+#: src/screens/VideoFeed/index.tsx:958
 #: src/view/com/notifications/NotificationFeedItem.tsx:887
 #: src/view/com/notifications/NotificationFeedItem.tsx:894
 msgid "Follow"
@@ -5444,7 +5457,7 @@ msgstr ""
 msgid "Follow {displayName}"
 msgstr "Follow {displayName}"
 
-#: src/screens/VideoFeed/index.tsx:936
+#: src/screens/VideoFeed/index.tsx:937
 msgid "Follow {handle}"
 msgstr ""
 
@@ -5544,7 +5557,7 @@ msgstr ""
 #: src/components/ProfileHoverCard/index.web.tsx:503
 #: src/screens/PostThread/components/ThreadItemAnchorFollowButton.tsx:160
 #: src/screens/Profile/Header/ProfileHeaderStandard.tsx:411
-#: src/screens/VideoFeed/index.tsx:955
+#: src/screens/VideoFeed/index.tsx:956
 #: src/view/com/notifications/NotificationFeedItem.tsx:866
 #: src/view/com/notifications/NotificationFeedItem.tsx:882
 msgid "Following"
@@ -5569,7 +5582,7 @@ msgstr ""
 msgid "Following {displayName}"
 msgstr "Following {displayName}"
 
-#: src/screens/VideoFeed/index.tsx:935
+#: src/screens/VideoFeed/index.tsx:936
 msgid "Following {handle}"
 msgstr ""
 
@@ -5635,8 +5648,8 @@ msgstr ""
 
 #. This is alt text for a marketing image which transcribes English text that appears in the image
 #: src/components/dialogs/nuxs/GroupChatsAnnouncement.tsx:153
-msgid "Four message bubbles representing a group chat. First message: \"Did you hear the news? Edriffles has group chats now!\" Second message: \"omg, no way\" Third message: \"Wow, 50 people in one chat!\" Fourth message: \"You can send invite links too!\""
-msgstr "Four message bubbles representing a group chat. First message: \"Did you hear the news? Edriffles has group chats now!\" Second message: \"omg, no way\" Third message: \"Wow, 50 people in one chat!\" Fourth message: \"You can send invite links too!\""
+msgid "Four message bubbles representing a group chat. First message: \"Did you hear the news? Plumbline has group chats now!\" Second message: \"omg, no way\" Third message: \"Wow, 50 people in one chat!\" Fourth message: \"You can send invite links too!\""
+msgstr "Four message bubbles representing a group chat. First message: \"Did you hear the news? Plumbline has group chats now!\" Second message: \"omg, no way\" Third message: \"Wow, 50 people in one chat!\" Fourth message: \"You can send invite links too!\""
 
 #: src/screens/Onboarding/StepFinished/ValuePropositionPager.shared.tsx:22
 msgid "Free your feed"
@@ -5705,7 +5718,7 @@ msgstr ""
 msgid "Get early access to experimental features we’re testing."
 msgstr "Get early access to experimental features we’re testing."
 
-#: src/view/shell/Drawer.tsx:434
+#: src/view/shell/Drawer.tsx:435
 msgid "Get help"
 msgstr ""
 
@@ -5813,8 +5826,8 @@ msgstr ""
 #: src/screens/ProfileList/components/ErrorScreen.tsx:35
 #: src/screens/ProfileList/components/ErrorScreen.tsx:41
 #: src/screens/VideoFeed/components/Header.tsx:163
-#: src/screens/VideoFeed/index.tsx:1259
-#: src/screens/VideoFeed/index.tsx:1263
+#: src/screens/VideoFeed/index.tsx:1260
+#: src/screens/VideoFeed/index.tsx:1264
 #: src/view/com/auth/LoggedOut.tsx:127
 #: src/view/com/profile/ProfileFollowers.tsx:225
 #: src/view/com/profile/ProfileFollowers.tsx:226
@@ -5891,8 +5904,8 @@ msgstr ""
 #: src/components/dms/ConvoMenu.tsx:243
 #: src/screens/Messages/components/MessagesListInfoPanel.tsx:102
 #: src/screens/Messages/ConversationSettings/MemberMenu.tsx:196
-#: src/view/shell/desktop/LeftNav.tsx:339
-#: src/view/shell/desktop/LeftNav.tsx:345
+#: src/view/shell/desktop/LeftNav.tsx:348
+#: src/view/shell/desktop/LeftNav.tsx:354
 msgid "Go to profile"
 msgstr ""
 
@@ -6005,7 +6018,7 @@ msgstr "Group name"
 msgid "Group name is too long. {MAX_GROUP_NAME_GRAPHEME_LENGTH, plural, other {The maximum number of characters is #.}}"
 msgstr "Group name is too long. {MAX_GROUP_NAME_GRAPHEME_LENGTH, plural, other {The maximum number of characters is #.}}"
 
-#: src/screens/Settings/Settings.tsx:503
+#: src/screens/Settings/Settings.tsx:501
 msgid "GrowthBook"
 msgstr "GrowthBook"
 
@@ -6084,14 +6097,14 @@ msgid "Having trouble?"
 msgstr ""
 
 #: src/components/contacts/screens/PhoneInput.tsx:290
-msgid "Held by Edriffles for 7 days to prevent abuse, then deleted"
-msgstr "Held by Edriffles for 7 days to prevent abuse, then deleted"
+msgid "Held by Plumbline for 7 days to prevent abuse, then deleted"
+msgstr "Held by Plumbline for 7 days to prevent abuse, then deleted"
 
-#: src/screens/Settings/Settings.tsx:293
-#: src/screens/Settings/Settings.tsx:297
+#: src/screens/Settings/Settings.tsx:291
+#: src/screens/Settings/Settings.tsx:295
+#: src/view/shell/desktop/RightNav.tsx:127
 #: src/view/shell/desktop/RightNav.tsx:130
-#: src/view/shell/desktop/RightNav.tsx:133
-#: src/view/shell/Drawer.tsx:443
+#: src/view/shell/Drawer.tsx:444
 msgid "Help"
 msgstr ""
 
@@ -6113,7 +6126,7 @@ msgstr ""
 msgid "Hidden"
 msgstr ""
 
-#: src/screens/VideoFeed/index.tsx:737
+#: src/screens/VideoFeed/index.tsx:738
 msgid "Hidden by your moderation settings."
 msgstr ""
 
@@ -6121,6 +6134,7 @@ msgstr ""
 msgid "Hidden list"
 msgstr ""
 
+#: src/components/interstitials/Trending.tsx:149
 #: src/components/interstitials/TrendingVideos.tsx:140
 #: src/components/moderation/ContentHider.tsx:217
 #: src/components/moderation/LabelPreference.tsx:141
@@ -6174,6 +6188,10 @@ msgstr "Hide reposts in feeds"
 msgid "Hide this card"
 msgstr ""
 
+#: src/components/moderation/ModerationDetailsDialog.tsx:369
+msgid "Hide this content"
+msgstr "Hide this content"
+
 #: src/components/PostControls/PostMenu/PostMenuItems.tsx:844
 msgid "Hide this post?"
 msgstr ""
@@ -6190,9 +6208,14 @@ msgstr ""
 msgid "Hide translation"
 msgstr "Hide translation"
 
+#: src/components/interstitials/Trending.tsx:131
 #: src/components/TrendingTopics.tsx:42
 msgid "Hide trending topics"
 msgstr ""
+
+#: src/components/interstitials/Trending.tsx:147
+msgid "Hide trending topics?"
+msgstr "Hide trending topics?"
 
 #: src/components/interstitials/TrendingVideos.tsx:138
 msgid "Hide trending videos?"
@@ -6207,6 +6230,11 @@ msgstr ""
 msgid "Hide verification badges"
 msgstr ""
 
+#: src/components/Post/PostProvenance.tsx:49
+#: src/components/Post/PostProvenance.tsx:61
+msgid "Hide why this post"
+msgstr "Hide why this post"
+
 #: src/components/moderation/ContentHider.tsx:168
 #: src/components/moderation/PostHider.tsx:91
 msgid "Hides the content"
@@ -6220,27 +6248,27 @@ msgstr "Hides the invite friends promo banner"
 msgid "Hmm, it looks like you're signed in with an <0>App Password</0>. To set your birthdate, you'll need to sign in with your main account password, or ask whomever controls this account to do so."
 msgstr ""
 
-#: src/view/com/posts/PostFeedErrorMessage.tsx:123
+#: src/view/com/posts/PostFeedErrorMessage.tsx:128
 msgid "Hmm, some kind of issue occurred when contacting the feed server. Please let the feed owner know about this issue."
 msgstr ""
 
-#: src/view/com/posts/PostFeedErrorMessage.tsx:111
+#: src/view/com/posts/PostFeedErrorMessage.tsx:116
 msgid "Hmm, the feed server appears to be misconfigured. Please let the feed owner know about this issue."
 msgstr ""
 
-#: src/view/com/posts/PostFeedErrorMessage.tsx:117
+#: src/view/com/posts/PostFeedErrorMessage.tsx:122
 msgid "Hmm, the feed server appears to be offline. Please let the feed owner know about this issue."
 msgstr ""
 
-#: src/view/com/posts/PostFeedErrorMessage.tsx:114
+#: src/view/com/posts/PostFeedErrorMessage.tsx:119
 msgid "Hmm, the feed server gave a bad response. Please let the feed owner know about this issue."
 msgstr ""
 
-#: src/view/com/posts/PostFeedErrorMessage.tsx:108
+#: src/view/com/posts/PostFeedErrorMessage.tsx:113
 msgid "Hmm, we're having trouble finding this feed. It may have been deleted."
 msgstr ""
 
-#: src/screens/Moderation/index.tsx:59
+#: src/screens/Moderation/index.tsx:58
 msgid "Hmmmm, it seems we're having trouble loading this data. See below for more details. If this issue persists, please contact us."
 msgstr ""
 
@@ -6255,8 +6283,8 @@ msgstr ""
 #: src/Navigation.tsx:842
 #: src/Navigation.tsx:863
 #: src/view/shell/bottom-bar/BottomBar.tsx:193
-#: src/view/shell/desktop/LeftNav.tsx:668
-#: src/view/shell/Drawer.tsx:502
+#: src/view/shell/desktop/LeftNav.tsx:678
+#: src/view/shell/Drawer.tsx:503
 msgid "Home"
 msgstr ""
 
@@ -6280,6 +6308,10 @@ msgstr "Hosting provider: {0}"
 msgid "Hosting provider: {PRODUCT_NAME}"
 msgstr "Hosting provider: {PRODUCT_NAME}"
 
+#: src/screens/Moderation/index.tsx:197
+msgid "How a moderation decision reaches your screen"
+msgstr "How a moderation decision reaches your screen"
+
 #: src/components/contacts/components/InviteInfo.tsx:54
 msgid "How it works:"
 msgstr ""
@@ -6293,17 +6325,21 @@ msgstr ""
 msgid "How we use your number:"
 msgstr ""
 
-#: src/screens/Settings/ServicesSettings.tsx:208
+#: src/screens/Settings/ServicesSettings.tsx:919
 msgid "HTTPS origin checked before registration"
 msgstr "HTTPS origin checked before registration"
+
+#: src/screens/Profile/Header/EditProfileDialog.tsx:388
+msgid "https://example.com"
+msgstr "https://example.com"
 
 #: src/components/moderation/ReportDialog/utils/useReportOptions.ts:152
 msgid "Human trafficking"
 msgstr ""
 
 #: src/components/contacts/screens/GetContacts.tsx:270
-msgid "I consent to Edriffles using my contacts for mutual friend discovery and to retain hashed data for matching until I opt out."
-msgstr "I consent to Edriffles using my contacts for mutual friend discovery and to retain hashed data for matching until I opt out."
+msgid "I consent to Plumbline using my contacts for mutual friend discovery and to retain hashed data for matching until I opt out."
+msgstr "I consent to Plumbline using my contacts for mutual friend discovery and to retain hashed data for matching until I opt out."
 
 #: src/screens/Settings/components/DisableEmail2FADialog.tsx:142
 #: src/screens/Settings/components/DisableEmail2FADialog.tsx:145
@@ -6321,10 +6357,10 @@ msgstr "I understand this does not unlink my identity"
 
 #. placeholder {0}: currentAccount.handle
 #: src/components/contacts/screens/ViewMatches.tsx:586
-msgid "I'm on Edriffles as {0} - come find me!"
-msgstr "I'm on Edriffles as {0} - come find me!"
+msgid "I'm on Plumbline as {0} - come find me!"
+msgstr "I'm on Plumbline as {0} - come find me!"
 
-#: src/screens/Settings/IdentitySovereigntySettings.tsx:99
+#: src/screens/Settings/IdentitySovereigntySettings.tsx:214
 msgid "Identity & recovery"
 msgstr "Identity & recovery"
 
@@ -6451,7 +6487,7 @@ msgstr ""
 msgid "Impersonation"
 msgstr ""
 
-#: src/screens/Settings/PersonalizationSettings.tsx:274
+#: src/screens/Settings/PersonalizationSettings.tsx:275
 msgid "Import complete"
 msgstr "Import complete"
 
@@ -6476,7 +6512,7 @@ msgstr "Import contacts or invite your friends"
 msgid "Import contacts to find your friends"
 msgstr ""
 
-#: src/screens/Settings/PersonalizationSettings.tsx:279
+#: src/screens/Settings/PersonalizationSettings.tsx:280
 msgid "Import rejected"
 msgstr "Import rejected"
 
@@ -6568,7 +6604,7 @@ msgstr ""
 msgid "Interaction limited"
 msgstr ""
 
-#: src/screens/Moderation/index.tsx:296
+#: src/screens/Moderation/index.tsx:348
 msgid "Interaction settings"
 msgstr ""
 
@@ -6632,8 +6668,8 @@ msgid "Invite"
 msgstr ""
 
 #: src/components/contacts/screens/ViewMatches.tsx:575
-msgid "Invite {name} to join Edriffles"
-msgstr "Invite {name} to join Edriffles"
+msgid "Invite {name} to join Plumbline"
+msgstr "Invite {name} to join Plumbline"
 
 #: src/screens/Signup/StepInfo/index.tsx:160
 msgid "Invite code"
@@ -6745,17 +6781,17 @@ msgstr "Join"
 msgid "Join community"
 msgstr "Join community"
 
-#: src/screens/StarterPack/StarterPackLandingScreen.tsx:202
-#: src/screens/StarterPack/StarterPackLandingScreen.tsx:207
-#: src/screens/StarterPack/StarterPackScreen.tsx:467
-#: src/screens/StarterPack/StarterPackScreen.tsx:477
-msgid "Join Edriffles"
-msgstr "Join Edriffles"
-
 #: src/components/intents/GroupChatJoinDialog.tsx:70
 #: src/components/intents/GroupChatJoinDialog.tsx:469
 msgid "Join group chat"
 msgstr "Join group chat"
+
+#: src/screens/StarterPack/StarterPackLandingScreen.tsx:202
+#: src/screens/StarterPack/StarterPackLandingScreen.tsx:207
+#: src/screens/StarterPack/StarterPackScreen.tsx:467
+#: src/screens/StarterPack/StarterPackScreen.tsx:477
+msgid "Join Plumbline"
+msgstr "Join Plumbline"
 
 #: src/components/intents/GroupChatJoinDialog.tsx:194
 #: src/screens/Messages/components/OutgoingRequestListItem.tsx:29
@@ -6825,8 +6861,8 @@ msgid "Language Settings"
 msgstr ""
 
 #: src/screens/Settings/LanguageSettings.tsx:98
-#: src/screens/Settings/Settings.tsx:277
-#: src/screens/Settings/Settings.tsx:280
+#: src/screens/Settings/Settings.tsx:275
+#: src/screens/Settings/Settings.tsx:278
 msgid "Languages"
 msgstr ""
 
@@ -6843,7 +6879,7 @@ msgstr ""
 #: src/components/verification/VerificationsDialog.tsx:168
 #: src/components/verification/VerifierDialog.tsx:136
 #: src/screens/Moderation/VerificationSettings.tsx:52
-#: src/screens/Profile/Header/EditProfileDialog.tsx:346
+#: src/screens/Profile/Header/EditProfileDialog.tsx:367
 #: src/screens/Settings/components/ChangeHandleDialog.tsx:220
 #: src/screens/Settings/components/ChangeHandleDialog.tsx:301
 msgctxt "english-only-resource"
@@ -6858,10 +6894,6 @@ msgstr ""
 msgctxt "english-only-resource"
 msgid "Learn more about <0>how to use advanced search</0>."
 msgstr "Learn more about <0>how to use advanced search</0>."
-
-#: src/view/com/auth/SplashScreen.web.tsx:171
-msgid "Learn more about edriffles"
-msgstr "Learn more about edriffles"
 
 #: src/components/contacts/components/InviteInfo.tsx:33
 msgid "Learn more about how inviting friends works"
@@ -6900,13 +6932,13 @@ msgstr ""
 #: src/components/verification/VerificationsDialog.tsx:153
 #: src/components/verification/VerifierDialog.tsx:122
 msgctxt "english-only-resource"
-msgid "Learn more about verification on Edriffles"
-msgstr "Learn more about verification on Edriffles"
+msgid "Learn more about verification on Plumbline"
+msgstr "Learn more about verification on Plumbline"
 
 #: src/screens/Settings/PrivacyAndSecuritySettings.tsx:165
 #: src/screens/Settings/PrivacyAndSecuritySettings.tsx:168
-msgid "Learn more about what is public on Edriffles."
-msgstr "Learn more about what is public on Edriffles."
+msgid "Learn more about what is public on Plumbline."
+msgstr "Learn more about what is public on Plumbline."
 
 #: src/screens/Profile/components/GermButton.tsx:213
 msgid "Learn more about your Germ DM link"
@@ -6969,8 +7001,8 @@ msgstr "Leave this group chat"
 
 #: src/components/dialogs/LinkWarning.tsx:83
 #: src/components/dialogs/LinkWarning.tsx:91
-msgid "Leaving Edriffles"
-msgstr "Leaving Edriffles"
+msgid "Leaving Plumbline"
+msgstr "Leaving Plumbline"
 
 #: src/screens/Messages/ConversationSettings/prompts.tsx:153
 msgid "Leaving this chat will lock it permanently and you won’t be able to rejoin."
@@ -7009,7 +7041,7 @@ msgid "Light"
 msgstr ""
 
 #: src/components/PostControls/index.tsx:297
-#: src/screens/CustomFeed/components/CustomFeedHeader.tsx:564
+#: src/screens/CustomFeed/components/CustomFeedHeader.tsx:565
 msgid "Like"
 msgstr ""
 
@@ -7028,7 +7060,7 @@ msgstr ""
 msgid "Like 10 posts to train the Discover feed"
 msgstr ""
 
-#: src/screens/CustomFeed/components/CustomFeedHeader.tsx:552
+#: src/screens/CustomFeed/components/CustomFeedHeader.tsx:553
 msgid "Like this feed"
 msgstr ""
 
@@ -7073,7 +7105,7 @@ msgid "Liked by {0} and {1}"
 msgstr "Liked by {0} and {1}"
 
 #: src/components/LabelingServiceCard/index.tsx:96
-#: src/screens/CustomFeed/components/CustomFeedHeader.tsx:540
+#: src/screens/CustomFeed/components/CustomFeedHeader.tsx:541
 #: src/screens/Profile/Header/ProfileHeaderLabeler.tsx:166
 #: src/screens/Profile/Header/ProfileHeaderLabeler.tsx:180
 msgid "Liked by {likeCount, plural, one {# user} other {# users}}"
@@ -7184,8 +7216,8 @@ msgstr ""
 #: src/view/screens/Lists.tsx:60
 #: src/view/screens/Profile.tsx:229
 #: src/view/screens/Profile.tsx:237
-#: src/view/shell/desktop/LeftNav.tsx:731
-#: src/view/shell/Drawer.tsx:607
+#: src/view/shell/desktop/LeftNav.tsx:741
+#: src/view/shell/Drawer.tsx:608
 msgid "Lists"
 msgstr ""
 
@@ -7241,7 +7273,7 @@ msgstr ""
 #: src/screens/CustomFeed/index.tsx:274
 #: src/screens/Profile/Sections/Feed.tsx:121
 #: src/screens/ProfileList/FeedSection.tsx:113
-#: src/view/com/feeds/FeedPage.tsx:269
+#: src/view/com/feeds/FeedPage.tsx:301
 msgid "Load new posts"
 msgstr ""
 
@@ -7261,6 +7293,10 @@ msgstr ""
 #: src/view/com/composer/text-input/mobile/Autocomplete.tsx:60
 msgid "Loading..."
 msgstr ""
+
+#: src/components/Post/PostProvenance.tsx:69
+msgid "Local policy"
+msgstr "Local policy"
 
 #: src/screens/Messages/ConversationSettings/index.tsx:564
 msgid "Lock"
@@ -7293,15 +7329,6 @@ msgstr ""
 #: src/screens/Settings/PrivacyAndSecuritySettings.tsx:145
 msgid "Logged-out visibility"
 msgstr "Logged-out visibility"
-
-#: src/view/shell/desktop/RightNav.tsx:142
-msgid "Logo by @sawaratsuki.bsky.social"
-msgstr ""
-
-#: src/view/shell/desktop/RightNav.tsx:139
-#: src/view/shell/Drawer.tsx:771
-msgid "Logo by <0>@sawaratsuki.bsky.social</0>"
-msgstr ""
 
 #. placeholder {0}: isCashtag ? tag : `#${tag}`
 #: src/components/RichTextTag.tsx:55
@@ -7346,7 +7373,7 @@ msgstr ""
 msgid "Manage saved feeds"
 msgstr ""
 
-#: src/screens/Moderation/index.tsx:366
+#: src/screens/Moderation/index.tsx:418
 msgid "Manage verification settings"
 msgstr ""
 
@@ -7497,7 +7524,7 @@ msgid "Message from @{0}: {1}"
 msgstr ""
 
 #. placeholder {0}: rawError.message
-#: src/view/com/posts/PostFeedErrorMessage.tsx:207
+#: src/view/com/posts/PostFeedErrorMessage.tsx:256
 msgid "Message from server: {0}"
 msgstr ""
 
@@ -7543,21 +7570,18 @@ msgid "Missing media"
 msgstr ""
 
 #: src/Navigation.tsx:188
-#: src/screens/Moderation/index.tsx:98
-msgid "Moderation"
-msgstr ""
+#: src/screens/Moderation/index.tsx:97
+#: src/screens/Settings/Settings.tsx:225
+#: src/screens/Settings/Settings.tsx:228
+msgid "Moderation & Reach"
+msgstr "Moderation & Reach"
 
-#: src/screens/Settings/Settings.tsx:227
-#: src/screens/Settings/Settings.tsx:230
-msgid "Moderation and content filters"
-msgstr "Moderation and content filters"
-
-#: src/components/moderation/ModerationDetailsDialog.tsx:175
+#: src/components/moderation/ModerationDetailsDialog.tsx:236
 msgid "Moderation details"
 msgstr ""
 
 #: src/Navigation.tsx:193
-#: src/screens/Moderation/index.tsx:263
+#: src/screens/Moderation/index.tsx:316
 #: src/screens/ModerationInbox/index.tsx:21
 msgid "Moderation inbox"
 msgstr "Moderation inbox"
@@ -7588,7 +7612,7 @@ msgctxt "toast"
 msgid "Moderation list updated"
 msgstr ""
 
-#: src/screens/Moderation/index.tsx:326
+#: src/screens/Moderation/index.tsx:378
 msgid "Moderation lists"
 msgstr ""
 
@@ -7605,11 +7629,11 @@ msgstr ""
 msgid "Moderation states"
 msgstr ""
 
-#: src/screens/Moderation/index.tsx:281
+#: src/screens/Moderation/index.tsx:333
 msgid "Moderation tools"
 msgstr ""
 
-#: src/components/moderation/ModerationDetailsDialog.tsx:72
+#: src/components/moderation/ModerationDetailsDialog.tsx:133
 #: src/lib/moderation/useModerationCauseDescription.ts:45
 msgid "Moderator has chosen to set a general warning on the content."
 msgstr ""
@@ -7735,7 +7759,7 @@ msgstr "Mute, leave, or remove people anytime. It’s your chat."
 msgid "Muted"
 msgstr "Muted"
 
-#: src/screens/Moderation/index.tsx:341
+#: src/screens/Moderation/index.tsx:393
 msgid "Muted accounts"
 msgstr ""
 
@@ -7753,7 +7777,7 @@ msgstr ""
 msgid "Muted by \"{0}\""
 msgstr ""
 
-#: src/screens/Moderation/index.tsx:311
+#: src/screens/Moderation/index.tsx:363
 msgid "Muted words & tags"
 msgstr ""
 
@@ -7786,7 +7810,7 @@ msgstr "My starter pack"
 msgid "Name"
 msgstr ""
 
-#: src/screens/Settings/ServicesSettings.tsx:193
+#: src/screens/Settings/ServicesSettings.tsx:903
 msgid "Name shown for this read provider"
 msgstr "Name shown for this read provider"
 
@@ -7946,8 +7970,8 @@ msgstr ""
 msgid "New post"
 msgstr ""
 
-#: src/view/com/feeds/FeedPage.tsx:280
-#: src/view/shell/desktop/LeftNav.tsx:601
+#: src/view/com/feeds/FeedPage.tsx:312
+#: src/view/shell/desktop/LeftNav.tsx:610
 msgctxt "action"
 msgid "New post"
 msgstr ""
@@ -7961,7 +7985,7 @@ msgid "New posts from {firstAuthorName} and {additionalAuthorsCount, plural, one
 msgstr ""
 
 #. placeholder {0}: provider.displayName
-#: src/screens/Settings/ServicesSettings.tsx:57
+#: src/screens/Settings/ServicesSettings.tsx:562
 msgid "New reads will use {0}. PDS writes remain on your account host."
 msgstr "New reads will use {0}. PDS writes remain on your account host."
 
@@ -8024,8 +8048,8 @@ msgid "No"
 msgstr "No"
 
 #: src/screens/Onboarding/StepFinished/ValuePropositionPager.shared.tsx:42
-msgid "No ads, no invasive tracking, no engagement traps. Edriffles respects your time and attention."
-msgstr "No ads, no invasive tracking, no engagement traps. Edriffles respects your time and attention."
+msgid "No ads, no invasive tracking, no engagement traps. Plumbline respects your time and attention."
+msgstr "No ads, no invasive tracking, no engagement traps. Plumbline respects your time and attention."
 
 #: src/screens/Settings/AppPasswords.tsx:108
 msgid "No app passwords yet"
@@ -8176,6 +8200,10 @@ msgstr ""
 msgid "No posts yet"
 msgstr ""
 
+#: src/components/moderation/ModerationDetailsDialog.tsx:388
+msgid "No presentation change"
+msgstr "No presentation change"
+
 #: src/view/com/post-thread/PostQuotes.tsx:113
 msgid "No quotes yet"
 msgstr ""
@@ -8316,7 +8344,7 @@ msgstr "Not following"
 msgid "Not Found"
 msgstr ""
 
-#: src/screens/Settings/ServicesSettings.tsx:125
+#: src/screens/Settings/ServicesSettings.tsx:631
 msgid "Not now"
 msgstr "Not now"
 
@@ -8329,8 +8357,8 @@ msgid "Note about sharing"
 msgstr ""
 
 #: src/screens/Settings/PrivacyAndSecuritySettings.tsx:155
-msgid "Note: Edriffles is part of the Atmosphere, an open public network. These settings ask other apps and websites to limit your visibility, but they can choose not to. Your public content may still appear elsewhere."
-msgstr "Note: Edriffles is part of the Atmosphere, an open public network. These settings ask other apps and websites to limit your visibility, but they can choose not to. Your public content may still appear elsewhere."
+msgid "Note: Plumbline is part of the Atmosphere, an open public network. These settings ask other apps and websites to limit your visibility, but they can choose not to. Your public content may still appear elsewhere."
+msgstr "Note: Plumbline is part of the Atmosphere, an open public network. These settings ask other apps and websites to limit your visibility, but they can choose not to. Your public content may still appear elsewhere."
 
 #: src/components/PostControls/ShareMenu/ShareMenuItems.web.tsx:131
 msgid "Note: This post is only visible to logged-in users."
@@ -8358,12 +8386,12 @@ msgstr ""
 #: src/screens/Notifications/ActivityList.tsx:31
 #: src/screens/Settings/NotificationSettings/ActivityNotificationSettings.tsx:93
 #: src/screens/Settings/NotificationSettings/index.tsx:125
-#: src/screens/Settings/Settings.tsx:235
-#: src/screens/Settings/Settings.tsx:238
+#: src/screens/Settings/Settings.tsx:233
+#: src/screens/Settings/Settings.tsx:236
 #: src/view/screens/Notifications.tsx:128
 #: src/view/shell/bottom-bar/BottomBar.tsx:274
-#: src/view/shell/desktop/LeftNav.tsx:698
-#: src/view/shell/Drawer.tsx:555
+#: src/view/shell/desktop/LeftNav.tsx:708
+#: src/view/shell/Drawer.tsx:556
 msgid "Notifications"
 msgstr ""
 
@@ -8407,7 +8435,7 @@ msgstr ""
 #: src/components/dms/InitiateChatFlow.tsx:831
 #: src/components/dms/MessageItem.tsx:760
 #: src/screens/Login/PasswordUpdatedForm.tsx:35
-#: src/screens/PostThread/components/ThreadItemAnchor.tsx:655
+#: src/screens/PostThread/components/ThreadItemAnchor.tsx:656
 msgid "Okay"
 msgstr ""
 
@@ -8426,7 +8454,7 @@ msgstr "On"
 msgid "on<0><1/><2><3/></2></0>"
 msgstr ""
 
-#: src/screens/Settings/Settings.tsx:443
+#: src/screens/Settings/Settings.tsx:441
 msgid "Onboarding reset"
 msgstr ""
 
@@ -8585,13 +8613,13 @@ msgstr ""
 msgid "Open emoji picker"
 msgstr ""
 
-#: src/screens/CustomFeed/components/CustomFeedHeader.tsx:214
-#: src/screens/CustomFeed/components/CustomFeedHeader.tsx:228
+#: src/screens/CustomFeed/components/CustomFeedHeader.tsx:215
+#: src/screens/CustomFeed/components/CustomFeedHeader.tsx:229
 msgid "Open feed info screen"
 msgstr ""
 
-#: src/screens/CustomFeed/components/CustomFeedHeader.tsx:338
-#: src/screens/CustomFeed/components/CustomFeedHeader.tsx:343
+#: src/screens/CustomFeed/components/CustomFeedHeader.tsx:339
+#: src/screens/CustomFeed/components/CustomFeedHeader.tsx:344
 msgid "Open feed options menu"
 msgstr ""
 
@@ -8626,11 +8654,11 @@ msgstr ""
 msgid "Open message options"
 msgstr ""
 
-#: src/screens/Settings/Settings.tsx:516
+#: src/screens/Settings/Settings.tsx:514
 msgid "Open moderation debug page"
 msgstr ""
 
-#: src/screens/Moderation/index.tsx:307
+#: src/screens/Moderation/index.tsx:359
 msgid "Open muted words and tags settings"
 msgstr ""
 
@@ -8664,11 +8692,11 @@ msgstr ""
 msgid "Open starter pack menu"
 msgstr ""
 
-#: src/screens/Settings/Settings.tsx:509
+#: src/screens/Settings/Settings.tsx:507
 msgid "Open storybook page"
 msgstr ""
 
-#: src/screens/Settings/Settings.tsx:494
+#: src/screens/Settings/Settings.tsx:492
 msgid "Open system log"
 msgstr ""
 
@@ -8750,7 +8778,7 @@ msgstr "Opens flow to sign in to your existing ATmosphere account"
 msgid "Opens full image"
 msgstr "Opens full image"
 
-#: src/screens/Settings/Settings.tsx:294
+#: src/screens/Settings/Settings.tsx:292
 msgid "Opens helpdesk in browser"
 msgstr ""
 
@@ -8886,8 +8914,8 @@ msgid "Our moderation team has received your report."
 msgstr ""
 
 #: src/screens/Messages/components/ChatDisabled.tsx:54
-msgid "Our moderators have reviewed reports and decided to disable your access to chats on Edriffles."
-msgstr "Our moderators have reviewed reports and decided to disable your access to chats on Edriffles."
+msgid "Our moderators have reviewed reports and decided to disable your access to chats on Plumbline."
+msgstr "Our moderators have reviewed reports and decided to disable your access to chats on Plumbline."
 
 #: src/components/dialogs/StarterPackDialog.tsx:376
 msgid "Owner"
@@ -8924,7 +8952,7 @@ msgstr ""
 msgid "Password must be at least 8 characters long."
 msgstr ""
 
-#: src/screens/Settings/PersonalizationSettings.tsx:243
+#: src/screens/Settings/PersonalizationSettings.tsx:244
 msgid "Password required"
 msgstr "Password required"
 
@@ -9021,7 +9049,7 @@ msgstr "Permissioned account space: available on this PDS. Public posts and your
 msgid "Person toggle"
 msgstr ""
 
-#: src/screens/Settings/PersonalizationSettings.tsx:275
+#: src/screens/Settings/PersonalizationSettings.tsx:276
 msgid "Personalization state was validated and restored."
 msgstr "Personalization state was validated and restored."
 
@@ -9055,8 +9083,8 @@ msgid "Pictures meant for adults."
 msgstr ""
 
 #: src/components/FeedCard.tsx:361
-#: src/screens/CustomFeed/components/CustomFeedHeader.tsx:569
-#: src/screens/CustomFeed/components/CustomFeedHeader.tsx:578
+#: src/screens/CustomFeed/components/CustomFeedHeader.tsx:570
+#: src/screens/CustomFeed/components/CustomFeedHeader.tsx:579
 #: src/screens/SavedFeeds.tsx:559
 msgid "Pin feed"
 msgstr ""
@@ -9066,7 +9094,7 @@ msgstr ""
 msgid "Pin to home"
 msgstr ""
 
-#: src/screens/CustomFeed/components/CustomFeedHeader.tsx:385
+#: src/screens/CustomFeed/components/CustomFeedHeader.tsx:386
 msgid "Pin to Home"
 msgstr ""
 
@@ -9080,8 +9108,8 @@ msgid "Pinned"
 msgstr ""
 
 #. placeholder {0}: info.displayName
-#: src/screens/CustomFeed/components/CustomFeedHeader.tsx:166
-#: src/screens/CustomFeed/components/CustomFeedHeader.tsx:180
+#: src/screens/CustomFeed/components/CustomFeedHeader.tsx:167
+#: src/screens/CustomFeed/components/CustomFeedHeader.tsx:181
 msgid "Pinned {0} to Home"
 msgstr ""
 
@@ -9147,8 +9175,8 @@ msgid "Please choose your password."
 msgstr ""
 
 #: src/components/dialogs/EmailDialog/screens/Update.tsx:286
-msgid "Please click on the link in the email we just sent you to verify your new email address. This is an important step to allow you to continue enjoying all the features of Edriffles."
-msgstr "Please click on the link in the email we just sent you to verify your new email address. This is an important step to allow you to continue enjoying all the features of Edriffles."
+msgid "Please click on the link in the email we just sent you to verify your new email address. This is an important step to allow you to continue enjoying all the features of Plumbline."
+msgstr "Please click on the link in the email we just sent you to verify your new email address. This is an important step to allow you to continue enjoying all the features of Plumbline."
 
 #: src/screens/Signup/state.ts:319
 msgid "Please complete the verification captcha."
@@ -9255,10 +9283,6 @@ msgctxt "english-only-resource"
 msgid "Please submit your report through the Report non-consensual intimate imagery (NCII) form."
 msgstr "Please submit your report through the Report non-consensual intimate imagery (NCII) form."
 
-#: src/features/inviteFriends/InviteScannerScreen.web.tsx:40
-msgid "Please use the Edriffles mobile app to scan a QR code."
-msgstr "Please use the Edriffles mobile app to scan a QR code."
-
 #: src/screens/Settings/FindContactsSettings.tsx:105
 msgid "Please use the native app to import your contacts."
 msgstr ""
@@ -9267,6 +9291,10 @@ msgstr ""
 msgid "Please use the native app to sync your contacts."
 msgstr ""
 
+#: src/features/inviteFriends/InviteScannerScreen.web.tsx:40
+msgid "Please use the Plumbline mobile app to scan a QR code."
+msgstr "Please use the Plumbline mobile app to scan a QR code."
+
 #: src/components/dialogs/EmailDialog/screens/VerificationReminder.tsx:59
 msgid "Please verify your email"
 msgstr ""
@@ -9274,6 +9302,59 @@ msgstr ""
 #: src/lib/hooks/useCreateSupportLink.ts:29
 msgid "Please write your message below:"
 msgstr ""
+
+#: src/components/dialogs/ServerInput.tsx:144
+#: src/components/dialogs/ServerInput.tsx:146
+msgid "Plumbline"
+msgstr "Plumbline"
+
+#: src/components/moderation/ModerationDetailsDialog.tsx:382
+msgid "Plumbline action"
+msgstr "Plumbline action"
+
+#: src/components/contacts/screens/GetContacts.tsx:237
+msgid "Plumbline helps friends find each other by creating an encoded digital fingerprint, called a \"hash\", and then looking for matching hashes."
+msgstr "Plumbline helps friends find each other by creating an encoded digital fingerprint, called a \"hash\", and then looking for matching hashes."
+
+#: src/components/ProgressGuide/List.tsx:115
+msgid "Plumbline is better with friends!"
+msgstr "Plumbline is better with friends!"
+
+#: src/screens/Onboarding/StepFindContactsIntro/index.tsx:43
+msgid "Plumbline is more fun with friends"
+msgstr "Plumbline is more fun with friends"
+
+#: src/components/dialogs/nuxs/FindContactsAnnouncement.tsx:108
+msgid "Plumbline is more fun with friends! Import your contacts to see who’s already here."
+msgstr "Plumbline is more fun with friends! Import your contacts to see who’s already here."
+
+#: src/components/contacts/screens/ViewMatches.tsx:323
+msgid "Plumbline is more fun with friends. Do you want to invite some of yours? <0/>"
+msgstr "Plumbline is more fun with friends. Do you want to invite some of yours? <0/>"
+
+#: src/features/inviteFriends/InviteScannerScreen.tsx:105
+msgid "Plumbline needs camera access to scan QR codes from other profiles."
+msgstr "Plumbline needs camera access to scan QR codes from other profiles."
+
+#: src/screens/Settings/FindContactsSettings.tsx:574
+msgid "Plumbline stores your contacts as encoded data. Removing your contacts will immediately delete this data."
+msgstr "Plumbline stores your contacts as encoded data. Removing your contacts will immediately delete this data."
+
+#: src/components/StarterPack/ProfileStarterPacks.tsx:343
+msgid "Plumbline will choose a set of recommended accounts from people in your network."
+msgstr "Plumbline will choose a set of recommended accounts from people in your network."
+
+#: src/screens/Settings/components/PwiOptOut.tsx:101
+msgid "Plumbline will not show your account to logged-out users and will ask other apps to do the same. Other apps may not honor this request. It doesn't make your account private."
+msgstr "Plumbline will not show your account to logged-out users and will ask other apps to do the same. Other apps may not honor this request. It doesn't make your account private."
+
+#: src/screens/Settings/components/AlgoVisibilityOptOut.tsx:43
+msgid "Plumbline will not show your posts in the Discover feed (except to your followers) and will ask other apps not to show your posts in their own algorithmic recommendations."
+msgstr "Plumbline will not show your posts in the Discover feed (except to your followers) and will ask other apps not to show your posts in their own algorithmic recommendations."
+
+#: src/components/dialogs/nuxs/InitialVerificationAnnouncement.tsx:136
+msgid "Plumbline will proactively verify notable and authentic accounts."
+msgstr "Plumbline will proactively verify notable and authentic accounts."
 
 #: src/lib/interests.ts:70
 #: src/screens/Search/modules/ExploreTrendingTopics.tsx:244
@@ -9340,19 +9421,19 @@ msgstr ""
 msgid "Post failed to upload. Please check your Internet connection and try again."
 msgstr ""
 
-#: src/screens/PostThread/components/ThreadItemAnchor.tsx:134
-#: src/screens/PostThread/components/ThreadItemPost.tsx:121
-#: src/screens/PostThread/components/ThreadItemTreePost.tsx:112
-#: src/screens/VideoFeed/index.tsx:553
+#: src/screens/PostThread/components/ThreadItemAnchor.tsx:135
+#: src/screens/PostThread/components/ThreadItemPost.tsx:122
+#: src/screens/PostThread/components/ThreadItemTreePost.tsx:113
+#: src/screens/VideoFeed/index.tsx:554
 msgid "Post has been deleted"
 msgstr ""
 
-#: src/components/moderation/ModerationDetailsDialog.tsx:127
+#: src/components/moderation/ModerationDetailsDialog.tsx:188
 #: src/lib/moderation/useModerationCauseDescription.ts:104
 msgid "Post Hidden by Muted Word"
 msgstr ""
 
-#: src/components/moderation/ModerationDetailsDialog.tsx:130
+#: src/components/moderation/ModerationDetailsDialog.tsx:191
 #: src/lib/moderation/useModerationCauseDescription.ts:113
 msgid "Post Hidden by You"
 msgstr ""
@@ -9367,8 +9448,8 @@ msgid "Post Interaction Settings"
 msgstr ""
 
 #: src/components/dialogs/nuxs/GroupChatsAnnouncement.tsx:193
-msgid "Post it to Edriffles or share anywhere."
-msgstr "Post it to Edriffles or share anywhere."
+msgid "Post it to Plumbline or share anywhere."
+msgstr "Post it to Plumbline or share anywhere."
 
 #. Accessibility label for button that opens dialog to choose post language settings
 #: src/view/com/composer/select-language/PostLanguageSelect.tsx:195
@@ -9389,6 +9470,10 @@ msgstr ""
 msgctxt "toast"
 msgid "Post pinned"
 msgstr ""
+
+#: src/components/Post/PostProvenance.tsx:102
+msgid "Post record"
+msgstr "Post record"
 
 #. Include search results with or without replies
 #: src/screens/Search/components/AdvancedSearchDialog/index.tsx:392
@@ -9413,7 +9498,7 @@ msgstr ""
 msgid "Posts can be muted based on their text, their tags, or both. We recommend avoiding common words that appear in many posts, since it can result in no posts being shown."
 msgstr ""
 
-#: src/view/com/posts/PostFeedErrorMessage.tsx:74
+#: src/view/com/posts/PostFeedErrorMessage.tsx:77
 msgid "Posts hidden"
 msgstr ""
 
@@ -9464,8 +9549,8 @@ msgstr ""
 msgid "Primary language"
 msgstr ""
 
-#: src/view/shell/desktop/RightNav.tsx:118
-#: src/view/shell/desktop/RightNav.tsx:119
+#: src/view/shell/desktop/RightNav.tsx:115
+#: src/view/shell/desktop/RightNav.tsx:116
 msgid "Privacy"
 msgstr ""
 
@@ -9491,9 +9576,8 @@ msgstr ""
 #: src/Navigation.tsx:352
 #: src/screens/Settings/AboutSettings.tsx:102
 #: src/screens/Settings/AboutSettings.tsx:105
-#: src/view/screens/PrivacyPolicy.tsx:25
+#: src/view/shell/Drawer.tsx:765
 #: src/view/shell/Drawer.tsx:766
-#: src/view/shell/Drawer.tsx:767
 msgid "Privacy Policy"
 msgstr ""
 
@@ -9538,9 +9622,9 @@ msgid "profile"
 msgstr ""
 
 #: src/view/shell/bottom-bar/BottomBar.tsx:317
-#: src/view/shell/desktop/LeftNav.tsx:754
+#: src/view/shell/desktop/LeftNav.tsx:764
 #: src/view/shell/Drawer.tsx:92
-#: src/view/shell/Drawer.tsx:658
+#: src/view/shell/Drawer.tsx:659
 msgid "Profile"
 msgstr ""
 
@@ -9553,7 +9637,7 @@ msgstr "Profile banner placeholder"
 msgid "Profile not found"
 msgstr ""
 
-#: src/screens/Profile/Header/EditProfileDialog.tsx:186
+#: src/screens/Profile/Header/EditProfileDialog.tsx:203
 msgctxt "toast"
 msgid "Profile updated"
 msgstr ""
@@ -9584,32 +9668,40 @@ msgstr "Protected account DID"
 msgid "Protected accounts are unavailable on this PDS. No private account state was changed."
 msgstr "Protected accounts are unavailable on this PDS. No private account state was changed."
 
-#: src/screens/Settings/ServicesSettings.tsx:119
+#: src/screens/Settings/ServicesSettings.tsx:625
 msgid "Provider added"
 msgstr "Provider added"
 
-#: src/screens/Settings/ServicesSettings.tsx:87
+#: src/screens/Settings/ServicesSettings.tsx:592
 msgid "Provider details required"
 msgstr "Provider details required"
 
-#: src/screens/Settings/ServicesSettings.tsx:206
+#: src/screens/Settings/ServicesSettings.tsx:917
 msgid "Provider HTTPS endpoint"
 msgstr "Provider HTTPS endpoint"
 
-#: src/screens/Settings/ServicesSettings.tsx:192
-#: src/screens/Settings/ServicesSettings.tsx:194
+#: src/screens/Settings/ServicesSettings.tsx:901
+#: src/screens/Settings/ServicesSettings.tsx:905
 msgid "Provider name"
 msgstr "Provider name"
 
-#: src/screens/Settings/ServicesSettings.tsx:130
+#: src/screens/Settings/ServicesSettings.tsx:636
 msgid "Provider not added"
 msgstr "Provider not added"
 
-#: src/screens/Settings/ServicesSettings.tsx:241
+#: src/view/screens/PrivacyPolicy.tsx:26
+msgid "Provider Privacy Policy"
+msgstr "Provider Privacy Policy"
+
+#: src/screens/Settings/ServicesSettings.tsx:954
 msgid "Provider service fragment"
 msgstr "Provider service fragment"
 
-#: src/screens/Settings/ServicesSettings.tsx:62
+#: src/view/screens/TermsOfService.tsx:26
+msgid "Provider Terms of Service"
+msgstr "Provider Terms of Service"
+
+#: src/screens/Settings/ServicesSettings.tsx:567
 msgid "Provider unavailable"
 msgstr "Provider unavailable"
 
@@ -9707,7 +9799,7 @@ msgstr ""
 msgid "Quotes"
 msgstr ""
 
-#: src/screens/PostThread/components/ThreadItemAnchor.tsx:481
+#: src/screens/PostThread/components/ThreadItemAnchor.tsx:482
 msgid "Quotes of this post"
 msgstr ""
 
@@ -9764,11 +9856,11 @@ msgstr "Read about how to use advanced search filters"
 msgid "Read blog post"
 msgstr ""
 
-#: src/screens/VideoFeed/index.tsx:1075
+#: src/screens/VideoFeed/index.tsx:1076
 msgid "Read less"
 msgstr ""
 
-#: src/screens/VideoFeed/index.tsx:1075
+#: src/screens/VideoFeed/index.tsx:1076
 msgid "Read more"
 msgstr ""
 
@@ -9788,10 +9880,6 @@ msgstr "Read private media"
 msgid "Read private record"
 msgstr "Read private record"
 
-#: src/view/com/auth/SplashScreen.web.tsx:166
-msgid "Read the edriffles blog"
-msgstr "Read the edriffles blog"
-
 #: src/screens/Signup/StepInfo/Policies.tsx:53
 #: src/screens/Signup/StepInfo/Policies.tsx:79
 msgid "Read the Privacy Policy"
@@ -9802,11 +9890,11 @@ msgstr "Read the Privacy Policy"
 msgid "Read the Terms of Service"
 msgstr "Read the Terms of Service"
 
-#: src/components/WelcomeModal.tsx:144
+#: src/components/WelcomeModal.tsx:145
 msgid "Real conversations."
 msgstr ""
 
-#: src/components/WelcomeModal.tsx:142
+#: src/components/WelcomeModal.tsx:143
 msgid "Real people."
 msgstr ""
 
@@ -9856,10 +9944,6 @@ msgstr "Record owner DID"
 msgid "Refresh communities"
 msgstr "Refresh communities"
 
-#: src/screens/Settings/ServicesSettings.tsx:186
-msgid "Register an AppView read provider by its own endpoint. The endpoint is checked first; no silent fallback is added."
-msgstr "Register an AppView read provider by its own endpoint. The endpoint is checked first; no silent fallback is added."
-
 #. Reject a chat request, this opens a menu with options
 #: src/screens/Messages/components/RequestButtons.tsx:136
 msgid "Reject"
@@ -9896,9 +9980,9 @@ msgstr ""
 #: src/screens/Bookmarks.tsx:256
 #: src/screens/Messages/ConversationSettings/Member.tsx:162
 #: src/screens/Messages/ConversationSettings/prompts.tsx:178
-#: src/screens/Moderation/index.tsx:494
-#: src/screens/Settings/Settings.tsx:729
-#: src/view/com/posts/PostFeedErrorMessage.tsx:219
+#: src/screens/Moderation/index.tsx:548
+#: src/screens/Settings/Settings.tsx:727
+#: src/view/com/posts/PostFeedErrorMessage.tsx:280
 msgid "Remove"
 msgstr ""
 
@@ -9923,8 +10007,8 @@ msgstr "Remove {displayName}?"
 msgid "Remove {q}"
 msgstr "Remove {q}"
 
-#: src/screens/Settings/Settings.tsx:710
-#: src/screens/Settings/Settings.tsx:713
+#: src/screens/Settings/Settings.tsx:708
+#: src/screens/Settings/Settings.tsx:711
 msgid "Remove account"
 msgstr ""
 
@@ -9963,11 +10047,11 @@ msgstr ""
 
 #: src/view/com/posts/FeedShutdownMsg.tsx:122
 #: src/view/com/posts/FeedShutdownMsg.tsx:126
-#: src/view/com/posts/PostFeedErrorMessage.tsx:175
+#: src/view/com/posts/PostFeedErrorMessage.tsx:200
 msgid "Remove feed"
 msgstr ""
 
-#: src/view/com/posts/PostFeedErrorMessage.tsx:216
+#: src/view/com/posts/PostFeedErrorMessage.tsx:277
 msgid "Remove feed?"
 msgstr ""
 
@@ -9980,15 +10064,15 @@ msgstr "Remove filter"
 msgid "Remove from chat"
 msgstr "Remove from chat"
 
-#: src/screens/CustomFeed/components/CustomFeedHeader.tsx:368
-#: src/screens/CustomFeed/components/CustomFeedHeader.tsx:373
+#: src/screens/CustomFeed/components/CustomFeedHeader.tsx:369
+#: src/screens/CustomFeed/components/CustomFeedHeader.tsx:374
 #: src/screens/ProfileList/components/MoreOptionsMenu.tsx:156
 #: src/screens/ProfileList/components/MoreOptionsMenu.tsx:159
 #: src/screens/SavedFeeds.tsx:549
 msgid "Remove from my feeds"
 msgstr ""
 
-#: src/screens/Settings/Settings.tsx:723
+#: src/screens/Settings/Settings.tsx:721
 msgid "Remove from quick access?"
 msgstr ""
 
@@ -10038,11 +10122,11 @@ msgstr ""
 msgid "Remove suggestion"
 msgstr ""
 
-#: src/view/com/posts/PostFeedErrorMessage.tsx:217
+#: src/view/com/posts/PostFeedErrorMessage.tsx:278
 msgid "Remove this feed from your saved feeds"
 msgstr ""
 
-#: src/screens/Moderation/index.tsx:490
+#: src/screens/Moderation/index.tsx:544
 msgid "Remove unavailable moderation services"
 msgstr ""
 
@@ -10087,13 +10171,13 @@ msgstr ""
 msgid "Removed from starter pack"
 msgstr ""
 
-#: src/screens/CustomFeed/components/CustomFeedHeader.tsx:128
+#: src/screens/CustomFeed/components/CustomFeedHeader.tsx:129
 #: src/screens/ProfileList/components/MoreOptionsMenu.tsx:71
 #: src/view/com/posts/FeedShutdownMsg.tsx:46
 msgid "Removed from your feeds"
 msgstr ""
 
-#: src/screens/Moderation/index.tsx:217
+#: src/screens/Moderation/index.tsx:269
 msgid "Removed unavailable services"
 msgstr ""
 
@@ -10185,12 +10269,12 @@ msgstr ""
 msgid "Reply ({0, plural, one {# reply} other {# replies}})"
 msgstr ""
 
-#: src/components/moderation/ModerationDetailsDialog.tsx:136
+#: src/components/moderation/ModerationDetailsDialog.tsx:197
 #: src/lib/moderation/useModerationCauseDescription.ts:123
 msgid "Reply Hidden by Thread Author"
 msgstr ""
 
-#: src/components/moderation/ModerationDetailsDialog.tsx:135
+#: src/components/moderation/ModerationDetailsDialog.tsx:196
 #: src/lib/moderation/useModerationCauseDescription.ts:122
 msgid "Reply Hidden by You"
 msgstr ""
@@ -10235,8 +10319,8 @@ msgstr ""
 msgid "Report dialog"
 msgstr ""
 
-#: src/screens/CustomFeed/components/CustomFeedHeader.tsx:596
-#: src/screens/CustomFeed/components/CustomFeedHeader.tsx:602
+#: src/screens/CustomFeed/components/CustomFeedHeader.tsx:597
+#: src/screens/CustomFeed/components/CustomFeedHeader.tsx:603
 msgid "Report feed"
 msgstr ""
 
@@ -10354,7 +10438,7 @@ msgstr ""
 msgid "Reposts Hidden"
 msgstr "Reposts Hidden"
 
-#: src/screens/PostThread/components/ThreadItemAnchor.tsx:460
+#: src/screens/PostThread/components/ThreadItemAnchor.tsx:461
 msgid "Reposts of this post"
 msgstr ""
 
@@ -10427,6 +10511,10 @@ msgstr ""
 msgid "Require an email code to sign in to your account."
 msgstr ""
 
+#: src/components/moderation/ModerationDetailsDialog.tsx:372
+msgid "Required by the label definition; not user-overridable here"
+msgstr "Required by the label definition; not user-overridable here"
+
 #: src/screens/Signup/StepInfo/index.tsx:174
 msgid "Required for this provider"
 msgstr ""
@@ -10472,8 +10560,8 @@ msgstr ""
 msgid "Resend Verification Email"
 msgstr ""
 
+#: src/screens/Settings/Settings.tsx:543
 #: src/screens/Settings/Settings.tsx:545
-#: src/screens/Settings/Settings.tsx:547
 msgid "Reset activity subscription nudge"
 msgstr ""
 
@@ -10481,8 +10569,8 @@ msgstr ""
 msgid "Reset code"
 msgstr ""
 
+#: src/screens/Settings/Settings.tsx:528
 #: src/screens/Settings/Settings.tsx:530
-#: src/screens/Settings/Settings.tsx:532
 msgid "Reset onboarding state"
 msgstr ""
 
@@ -10552,7 +10640,7 @@ msgstr ""
 
 #: src/screens/ProfileList/components/ErrorScreen.tsx:36
 #: src/screens/Settings/components/ChangeHandleDialog.tsx:617
-#: src/screens/VideoFeed/index.tsx:1260
+#: src/screens/VideoFeed/index.tsx:1261
 #: src/view/screens/NotFound.tsx:54
 msgid "Returns to previous page"
 msgstr ""
@@ -10581,8 +10669,8 @@ msgstr "Sad GIFs"
 #: src/features/liveNow/components/EditLiveDialog.tsx:199
 #: src/features/liveNow/components/EditLiveDialog.tsx:206
 #: src/screens/Messages/ConversationSettings/prompts.tsx:82
-#: src/screens/Profile/Header/EditProfileDialog.tsx:233
-#: src/screens/Profile/Header/EditProfileDialog.tsx:247
+#: src/screens/Profile/Header/EditProfileDialog.tsx:252
+#: src/screens/Profile/Header/EditProfileDialog.tsx:267
 #: src/screens/SavedFeeds.tsx:124
 #: src/screens/SavedFeeds.tsx:315
 #: src/screens/Settings/components/ChangeHandleDialog.tsx:291
@@ -10650,13 +10738,13 @@ msgstr ""
 msgid "Save these options for next time"
 msgstr ""
 
-#: src/screens/CustomFeed/components/CustomFeedHeader.tsx:368
-#: src/screens/CustomFeed/components/CustomFeedHeader.tsx:374
+#: src/screens/CustomFeed/components/CustomFeedHeader.tsx:369
+#: src/screens/CustomFeed/components/CustomFeedHeader.tsx:375
 msgid "Save to my feeds"
 msgstr ""
 
-#: src/view/shell/desktop/LeftNav.tsx:741
-#: src/view/shell/Drawer.tsx:633
+#: src/view/shell/desktop/LeftNav.tsx:751
+#: src/view/shell/Drawer.tsx:634
 msgctxt "link to bookmarks screen"
 msgid "Saved"
 msgstr ""
@@ -10672,7 +10760,7 @@ msgstr ""
 msgid "Saved Posts"
 msgstr ""
 
-#: src/screens/CustomFeed/components/CustomFeedHeader.tsx:138
+#: src/screens/CustomFeed/components/CustomFeedHeader.tsx:139
 #: src/screens/ProfileList/components/Header.tsx:86
 msgid "Saved to your feeds"
 msgstr ""
@@ -11113,7 +11201,7 @@ msgstr ""
 msgid "Send error report"
 msgstr "Send error report"
 
-#: src/view/shell/Drawer.tsx:423
+#: src/view/shell/Drawer.tsx:424
 msgid "Send feedback"
 msgstr ""
 
@@ -11165,12 +11253,12 @@ msgstr ""
 msgid "Server address"
 msgstr ""
 
-#: src/screens/Settings/ServicesSettings.tsx:245
+#: src/screens/Settings/ServicesSettings.tsx:958
 msgid "Service fragment"
 msgstr "Service fragment"
 
 #: src/Navigation.tsx:428
-#: src/screens/Settings/ServicesSettings.tsx:144
+#: src/screens/Settings/ServicesSettings.tsx:650
 #: src/screens/Settings/Settings.tsx:195
 #: src/screens/Settings/Settings.tsx:198
 msgid "Services"
@@ -11211,8 +11299,8 @@ msgstr ""
 
 #: src/Navigation.tsx:229
 #: src/screens/Settings/Settings.tsx:108
-#: src/view/shell/desktop/LeftNav.tsx:764
-#: src/view/shell/Drawer.tsx:671
+#: src/view/shell/desktop/LeftNav.tsx:774
+#: src/view/shell/Drawer.tsx:672
 msgid "Settings"
 msgstr ""
 
@@ -11353,7 +11441,7 @@ msgstr "Share Profile"
 msgid "Share QR code"
 msgstr ""
 
-#: src/screens/CustomFeed/components/CustomFeedHeader.tsx:522
+#: src/screens/CustomFeed/components/CustomFeedHeader.tsx:523
 msgid "Share this feed"
 msgstr ""
 
@@ -11367,8 +11455,8 @@ msgid "Share this starter pack"
 msgstr ""
 
 #: src/components/StarterPack/ShareDialog.tsx:86
-msgid "Share this starter pack and help people join your community on Edriffles."
-msgstr "Share this starter pack and help people join your community on Edriffles."
+msgid "Share this starter pack and help people join your community on Plumbline."
+msgstr "Share this starter pack and help people join your community on Plumbline."
 
 #: src/components/PostControls/ShareMenu/ShareMenuItems.tsx:128
 #: src/components/PostControls/ShareMenu/ShareMenuItems.tsx:131
@@ -11399,17 +11487,53 @@ msgstr ""
 msgid "Show"
 msgstr ""
 
+#: src/components/moderation/ModerationDetailsDialog.tsx:86
+msgid "Show a warning for the avatar"
+msgstr "Show a warning for the avatar"
+
+#: src/components/moderation/ModerationDetailsDialog.tsx:97
+msgid "Show a warning for the content in lists"
+msgstr "Show a warning for the content in lists"
+
+#: src/components/moderation/ModerationDetailsDialog.tsx:106
+msgid "Show a warning for the content view"
+msgstr "Show a warning for the content view"
+
+#: src/components/moderation/ModerationDetailsDialog.tsx:68
+msgid "Show a warning for the profile in lists"
+msgstr "Show a warning for the profile in lists"
+
+#: src/components/moderation/ModerationDetailsDialog.tsx:77
+msgid "Show a warning for the profile view"
+msgstr "Show a warning for the profile view"
+
 #: src/components/AltBadgeWithDialog.tsx:48
 msgid "Show alt text"
 msgstr ""
+
+#: src/components/moderation/ModerationDetailsDialog.tsx:100
+msgid "Show an information notice for the content in lists"
+msgstr "Show an information notice for the content in lists"
+
+#: src/components/moderation/ModerationDetailsDialog.tsx:109
+msgid "Show an information notice for the content view"
+msgstr "Show an information notice for the content view"
+
+#: src/components/moderation/ModerationDetailsDialog.tsx:71
+msgid "Show an information notice for the profile in lists"
+msgstr "Show an information notice for the profile in lists"
+
+#: src/components/moderation/ModerationDetailsDialog.tsx:80
+msgid "Show an information notice for the profile view"
+msgstr "Show an information notice for the profile view"
 
 #: src/components/moderation/ScreenHider.tsx:175
 #: src/components/moderation/ScreenHider.tsx:178
 #: src/features/liveNow/components/LiveStatusDialog.tsx:315
 #: src/features/liveNow/components/LiveStatusDialog.tsx:319
 #: src/screens/List/ListHiddenScreen.tsx:180
-#: src/screens/VideoFeed/index.tsx:740
-#: src/screens/VideoFeed/index.tsx:746
+#: src/screens/VideoFeed/index.tsx:741
+#: src/screens/VideoFeed/index.tsx:747
 msgid "Show anyway"
 msgstr ""
 
@@ -11501,6 +11625,18 @@ msgstr "Show reposts in feeds"
 msgid "Show samples of your saved feeds in your Following feed"
 msgstr ""
 
+#: src/components/Post/PostProvenance.tsx:52
+msgid "Show the public reasons and sources for this post's placement"
+msgstr "Show the public reasons and sources for this post's placement"
+
+#: src/components/moderation/ModerationDetailsDialog.tsx:367
+msgid "Show this content with a warning"
+msgstr "Show this content with a warning"
+
+#: src/components/moderation/ModerationDetailsDialog.tsx:363
+msgid "Show this content without a moderation treatment"
+msgstr "Show this content without a moderation treatment"
+
 #: src/lib/moderation/useLabelBehaviorDescription.ts:62
 msgid "Show warning"
 msgstr ""
@@ -11514,7 +11650,7 @@ msgstr ""
 msgid "Show when you’re live"
 msgstr ""
 
-#: src/screens/PostThread/components/ThreadItemAnchor.tsx:596
+#: src/screens/PostThread/components/ThreadItemAnchor.tsx:597
 msgid "Shows information about when this post was created"
 msgstr ""
 
@@ -11529,8 +11665,8 @@ msgstr ""
 
 #: src/components/dialogs/Signin.tsx:98
 #: src/components/dialogs/Signin.tsx:100
-#: src/components/WelcomeModal.tsx:193
-#: src/components/WelcomeModal.tsx:204
+#: src/components/WelcomeModal.tsx:194
+#: src/components/WelcomeModal.tsx:205
 #: src/screens/Hashtag.tsx:233
 #: src/screens/Login/index.tsx:138
 #: src/screens/Login/index.tsx:159
@@ -11590,15 +11726,15 @@ msgstr "Sign in to request access to this group chat."
 msgid "Sign in to view post"
 msgstr ""
 
+#: src/screens/Settings/Settings.tsx:309
 #: src/screens/Settings/Settings.tsx:311
-#: src/screens/Settings/Settings.tsx:313
-#: src/screens/Settings/Settings.tsx:345
+#: src/screens/Settings/Settings.tsx:343
 #: src/screens/SignupQueued.tsx:101
 #: src/screens/SignupQueued.tsx:104
 #: src/screens/Takendown.tsx:86
-#: src/view/shell/desktop/LeftNav.tsx:230
-#: src/view/shell/desktop/LeftNav.tsx:285
-#: src/view/shell/desktop/LeftNav.tsx:288
+#: src/view/shell/desktop/LeftNav.tsx:239
+#: src/view/shell/desktop/LeftNav.tsx:294
+#: src/view/shell/desktop/LeftNav.tsx:297
 msgid "Sign out"
 msgstr ""
 
@@ -11606,8 +11742,8 @@ msgstr ""
 msgid "Sign Out"
 msgstr ""
 
-#: src/screens/Settings/Settings.tsx:342
-#: src/view/shell/desktop/LeftNav.tsx:227
+#: src/screens/Settings/Settings.tsx:340
+#: src/view/shell/desktop/LeftNav.tsx:236
 msgid "Sign out?"
 msgstr ""
 
@@ -11678,7 +11814,7 @@ msgstr ""
 msgid "So many thoughts, you should post one"
 msgstr ""
 
-#: src/components/WelcomeModal.tsx:146
+#: src/components/WelcomeModal.tsx:147
 msgid "Social media you control."
 msgstr ""
 
@@ -11690,7 +11826,7 @@ msgstr ""
 msgid "Some accounts could not be blocked. Review the selection and try again."
 msgstr "Some accounts could not be blocked. Review the selection and try again."
 
-#: src/screens/Moderation/index.tsx:483
+#: src/screens/Moderation/index.tsx:537
 msgid "Some moderation services in your list are no longer available."
 msgstr ""
 
@@ -11769,7 +11905,7 @@ msgstr ""
 msgid "Something went wrong, please try again"
 msgstr ""
 
-#: src/screens/Moderation/index.tsx:110
+#: src/screens/Moderation/index.tsx:109
 #: src/screens/Profile/Sections/Labels.tsx:186
 #: src/screens/Settings/BetaFeaturesSettings.tsx:85
 #: src/screens/Settings/components/BetaFeaturesFeedbackDialog.tsx:84
@@ -11788,7 +11924,7 @@ msgstr ""
 msgid "Something went wrong. Please try again."
 msgstr ""
 
-#: src/screens/CustomFeed/components/CustomFeedHeader.tsx:592
+#: src/screens/CustomFeed/components/CustomFeedHeader.tsx:593
 msgid "Something wrong? Let us know."
 msgstr ""
 
@@ -11797,7 +11933,7 @@ msgid "Sorry, we're unable to load account suggestions at this time."
 msgstr ""
 
 #: src/App.tsx:134
-#: src/App.web.tsx:159
+#: src/App.web.tsx:179
 msgid "Sorry! Your session expired. Please sign in again."
 msgstr ""
 
@@ -11813,8 +11949,11 @@ msgstr ""
 msgid "Sort replies to the same post by:"
 msgstr ""
 
+#: src/components/moderation/ModerationDetailsDialog.tsx:316
+msgid "Source"
+msgstr "Source"
+
 #: src/components/moderation/LabelsOnMeDialog.tsx:197
-#: src/components/moderation/ModerationDetailsDialog.tsx:272
 msgid "Source: <0>{sourceName}</0>"
 msgstr ""
 
@@ -11922,7 +12061,7 @@ msgstr ""
 msgid "Step {0} of {1}"
 msgstr ""
 
-#: src/screens/Settings/Settings.tsx:448
+#: src/screens/Settings/Settings.tsx:446
 msgid "Storage cleared, you need to restart the app now."
 msgstr ""
 
@@ -11931,13 +12070,13 @@ msgid "Stored as part of a secure code for matching with others"
 msgstr ""
 
 #: src/Navigation.tsx:322
-#: src/screens/Settings/Settings.tsx:511
+#: src/screens/Settings/Settings.tsx:509
 msgid "Storybook"
 msgstr ""
 
 #: src/components/dialogs/nuxs/LiveNowBetaDialog.tsx:182
-msgid "Streaming on Twitch? Set your live status on Edriffles to add a badge to your avatar. Tapping it takes people straight to your stream."
-msgstr "Streaming on Twitch? Set your live status on Edriffles to add a badge to your avatar. Tapping it takes people straight to your stream."
+msgid "Streaming on Twitch? Set your live status on Plumbline to add a badge to your avatar. Tapping it takes people straight to your stream."
+msgstr "Streaming on Twitch? Set your live status on Plumbline to add a badge to your avatar. Tapping it takes people straight to your stream."
 
 #: src/components/moderation/AppealForm.tsx:165
 #: src/components/moderation/AppealForm.tsx:166
@@ -12080,17 +12219,17 @@ msgstr "Suspended accounts cannot participate in chat."
 #: src/components/dialogs/SwitchAccount.tsx:50
 #: src/screens/Settings/Settings.tsx:130
 #: src/screens/Settings/Settings.tsx:142
-#: src/screens/Settings/Settings.tsx:670
-#: src/view/shell/desktop/LeftNav.tsx:265
+#: src/screens/Settings/Settings.tsx:668
+#: src/view/shell/desktop/LeftNav.tsx:274
 msgid "Switch account"
 msgstr ""
 
-#: src/view/shell/desktop/LeftNav.tsx:127
+#: src/view/shell/desktop/LeftNav.tsx:136
 msgid "Switch accounts"
 msgstr ""
 
 #. placeholder {0}: sanitizeHandle( profile?.handle ?? account.handle, '@', )
-#: src/view/shell/desktop/LeftNav.tsx:367
+#: src/view/shell/desktop/LeftNav.tsx:376
 msgid "Switch to {0}"
 msgstr ""
 
@@ -12104,7 +12243,7 @@ msgstr ""
 #: src/screens/Log.tsx:49
 #: src/screens/Settings/AboutSettings.tsx:117
 #: src/screens/Settings/AboutSettings.tsx:120
-#: src/screens/Settings/Settings.tsx:496
+#: src/screens/Settings/Settings.tsx:494
 msgid "System log"
 msgstr ""
 
@@ -12117,8 +12256,8 @@ msgid "Take the conversation private."
 msgstr "Take the conversation private."
 
 #: src/components/dialogs/DeviceLocationRequestDialog.tsx:110
-msgid "Tap below to allow Edriffles to access your GPS location. We will then use that data to more accurately determine the content and features available in your region."
-msgstr "Tap below to allow Edriffles to access your GPS location. We will then use that data to more accurately determine the content and features available in your region."
+msgid "Tap below to allow Plumbline to access your GPS location. We will then use that data to more accurately determine the content and features available in your region."
+msgstr "Tap below to allow Plumbline to access your GPS location. We will then use that data to more accurately determine the content and features available in your region."
 
 #: src/components/dms/MessageItem.tsx:699
 msgid "Tap for details"
@@ -12133,8 +12272,8 @@ msgid "Tap for more information"
 msgstr ""
 
 #: src/components/PolicyUpdateOverlay/updates/202508/index.tsx:165
-msgid "Tap to acknowledge that you understand and agree to these updates and continue using Edriffles"
-msgstr "Tap to acknowledge that you understand and agree to these updates and continue using Edriffles"
+msgid "Tap to acknowledge that you understand and agree to these updates and continue using Plumbline"
+msgstr "Tap to acknowledge that you understand and agree to these updates and continue using Plumbline"
 
 #: src/components/ContextMenu/Backdrop.ios.tsx:54
 #: src/components/ContextMenu/Backdrop.ios.tsx:80
@@ -12210,7 +12349,7 @@ msgstr ""
 msgid "Tech"
 msgstr ""
 
-#: src/screens/Profile/Header/EditProfileDialog.tsx:368
+#: src/screens/Profile/Header/EditProfileDialog.tsx:419
 msgid "Tell us a bit about yourself"
 msgstr ""
 
@@ -12222,8 +12361,8 @@ msgstr ""
 msgid "Temporarily deactivate your account"
 msgstr "Temporarily deactivate your account"
 
-#: src/view/shell/desktop/RightNav.tsx:125
-#: src/view/shell/desktop/RightNav.tsx:126
+#: src/view/shell/desktop/RightNav.tsx:122
+#: src/view/shell/desktop/RightNav.tsx:123
 msgid "Terms"
 msgstr ""
 
@@ -12234,9 +12373,8 @@ msgstr ""
 #: src/screens/Settings/AboutSettings.tsx:94
 #: src/screens/Settings/AboutSettings.tsx:97
 #: src/screens/Takendown.tsx:211
-#: src/view/screens/TermsOfService.tsx:25
-#: src/view/shell/Drawer.tsx:759
-#: src/view/shell/Drawer.tsx:761
+#: src/view/shell/Drawer.tsx:758
+#: src/view/shell/Drawer.tsx:760
 msgid "Terms of Service"
 msgstr ""
 
@@ -12283,11 +12421,11 @@ msgstr ""
 msgid "That's all, folks!"
 msgstr ""
 
-#: src/screens/VideoFeed/index.tsx:1232
+#: src/screens/VideoFeed/index.tsx:1233
 msgid "That's everything!"
 msgstr ""
 
-#: src/screens/Settings/PersonalizationSettings.tsx:235
+#: src/screens/Settings/PersonalizationSettings.tsx:236
 msgid "The {level} portability export is on the clipboard. It contains no credentials."
 msgstr "The {level} portability export is on the clipboard. It contains no credentials."
 
@@ -12308,14 +12446,18 @@ msgid "The AT Protocol is an open network where you can choose your hosting prov
 msgstr "The AT Protocol is an open network where you can choose your hosting provider. If you're a developer, you can host your own server."
 
 #: src/components/dialogs/ServerInput.tsx:162
-msgid "The AT Protocol is an open network where you can choose your own provider. If you're new here, we recommend sticking with the default Edriffles service."
-msgstr "The AT Protocol is an open network where you can choose your own provider. If you're new here, we recommend sticking with the default Edriffles service."
+msgid "The AT Protocol is an open network where you can choose your own provider. If you're new here, we recommend sticking with the default Plumbline service."
+msgstr "The AT Protocol is an open network where you can choose your own provider. If you're new here, we recommend sticking with the default Plumbline service."
 
-#: src/screens/Settings/PersonalizationSettings.tsx:254
+#: src/screens/Settings/PersonalizationSettings.tsx:255
 msgid "The authenticated encrypted archive is on the clipboard."
 msgstr "The authenticated encrypted archive is on the clipboard."
 
-#: src/components/moderation/ModerationDetailsDialog.tsx:139
+#: src/components/moderation/ModerationDetailsDialog.tsx:320
+msgid "The author of this post"
+msgstr "The author of this post"
+
+#: src/components/moderation/ModerationDetailsDialog.tsx:200
 #: src/lib/moderation/useModerationCauseDescription.ts:126
 msgid "The author of this thread has hidden this reply."
 msgstr ""
@@ -12373,13 +12515,13 @@ msgstr "The member limit has been reached."
 msgid "The moderation service is temporarily unavailable. Please try again later."
 msgstr "The moderation service is temporarily unavailable. Please try again later."
 
+#: src/screens/Moderation/index.tsx:489
+msgid "The Plumbline web application"
+msgstr "The Plumbline web application"
+
 #: src/view/com/composer/select-language/SuggestedLanguage.tsx:400
 msgid "The post you’re replying to was marked as being written in {suggestedLanguageName} by its author. Would you like to reply in <0>{suggestedLanguageName}</0>?"
 msgstr "The post you’re replying to was marked as being written in {suggestedLanguageName} by its author. Would you like to reply in <0>{suggestedLanguageName}</0>?"
-
-#: src/view/screens/PrivacyPolicy.tsx:29
-msgid "The Privacy Policy has been moved to <0/>"
-msgstr ""
 
 #: src/view/com/composer/state/video.ts:488
 msgid "The processed video is too large. Please try again with a smaller file."
@@ -12427,10 +12569,6 @@ msgstr ""
 msgid "The support form has been moved. If you need help, please <0/> or visit {HELP_DESK_URL} to get in touch with us."
 msgstr ""
 
-#: src/view/screens/TermsOfService.tsx:29
-msgid "The Terms of Service have been moved to"
-msgstr ""
-
 #: src/components/intents/VerifyEmailIntentDialog.tsx:90
 msgid "The verification code you have provided is invalid. Please make sure that you have used the correct verification link or request a new one."
 msgstr ""
@@ -12473,7 +12611,7 @@ msgstr "There was a problem loading GIFs. Check your connection and try again."
 msgid "There was a problem with your internet connection, please try again"
 msgstr ""
 
-#: src/screens/CustomFeed/components/CustomFeedHeader.tsx:184
+#: src/screens/CustomFeed/components/CustomFeedHeader.tsx:185
 #: src/screens/ProfileList/components/Header.tsx:89
 #: src/screens/ProfileList/components/MoreOptionsMenu.tsx:73
 #: src/screens/SavedFeeds.tsx:99
@@ -12481,7 +12619,7 @@ msgstr ""
 msgid "There was an issue contacting the server"
 msgstr ""
 
-#: src/screens/CustomFeed/components/CustomFeedHeader.tsx:467
+#: src/screens/CustomFeed/components/CustomFeedHeader.tsx:468
 #: src/screens/Profile/Header/ProfileHeaderLabeler.tsx:98
 msgid "There was an issue contacting the server, please check your internet connection and try again."
 msgstr ""
@@ -12491,7 +12629,7 @@ msgid "There was an issue fetching notifications. Tap here to try again."
 msgstr ""
 
 #: src/screens/Search/Explore.tsx:1013
-#: src/view/com/posts/PostFeed.tsx:1101
+#: src/view/com/posts/PostFeed.tsx:1133
 msgid "There was an issue fetching posts. Tap here to try again."
 msgstr ""
 
@@ -12512,11 +12650,11 @@ msgstr ""
 msgid "There was an issue fetching your service info"
 msgstr ""
 
-#: src/view/com/posts/PostFeedErrorMessage.tsx:151
+#: src/view/com/posts/PostFeedErrorMessage.tsx:169
 msgid "There was an issue removing this feed. Please check your internet connection and try again."
 msgstr ""
 
-#: src/screens/CustomFeed/components/CustomFeedHeader.tsx:143
+#: src/screens/CustomFeed/components/CustomFeedHeader.tsx:144
 #: src/view/com/posts/FeedShutdownMsg.tsx:54
 #: src/view/com/posts/FeedShutdownMsg.tsx:75
 msgid "There was an issue updating your feeds, please check your internet connection and try again."
@@ -12563,8 +12701,8 @@ msgid "There was an unexpected issue in the application. Please let us know if t
 msgstr ""
 
 #: src/screens/SignupQueued.tsx:140
-msgid "There's been a rush of new users to Edriffles! We'll activate your account as soon as we can."
-msgstr "There's been a rush of new users to Edriffles! We'll activate your account as soon as we can."
+msgid "There's been a rush of new users to Plumbline! We'll activate your account as soon as we can."
+msgstr "There's been a rush of new users to Plumbline! We'll activate your account as soon as we can."
 
 #: src/components/dialogs/PostInteractionSettingsDialog.tsx:657
 msgid "These are your default settings"
@@ -12691,12 +12829,12 @@ msgstr ""
 msgid "This content is hosted by {0}. Do you want to enable external media?"
 msgstr ""
 
-#: src/components/moderation/ModerationDetailsDialog.tsx:104
+#: src/components/moderation/ModerationDetailsDialog.tsx:165
 #: src/lib/moderation/useModerationCauseDescription.ts:82
 msgid "This content is not available because one of the users involved has blocked the other."
 msgstr ""
 
-#: src/view/com/posts/PostFeedErrorMessage.tsx:120
+#: src/view/com/posts/PostFeedErrorMessage.tsx:125
 msgid "This content is not viewable without an account."
 msgstr "This content is not viewable without an account."
 
@@ -12737,7 +12875,7 @@ msgstr ""
 msgid "This feature is not available while using an App Password. Please sign in with your main password."
 msgstr ""
 
-#: src/view/com/posts/PostFeedErrorMessage.tsx:126
+#: src/view/com/posts/PostFeedErrorMessage.tsx:131
 msgid "This feed is currently receiving high traffic and is temporarily unavailable. Please try again later."
 msgstr ""
 
@@ -12785,6 +12923,7 @@ msgstr "This is just a one-time security check, since we haven't seen this accou
 
 #: src/features/liveNow/components/EditLiveDialog.tsx:173
 #: src/features/liveNow/components/GoLiveDialog.tsx:161
+#: src/screens/Profile/Header/EditProfileDialog.tsx:404
 msgid "This is not a valid link"
 msgstr ""
 
@@ -12792,16 +12931,12 @@ msgstr ""
 msgid "This label lets the world know that this account is automated. If turned on, this label appears next to the account's name on their profile and posts. It can be turned on or off at any time."
 msgstr "This label lets the world know that this account is automated. If turned on, this label appears next to the account's name on their profile and posts. It can be turned on or off at any time."
 
-#: src/components/moderation/ModerationDetailsDialog.tsx:254
-msgid "This label was applied by the author."
-msgstr ""
-
 #: src/components/moderation/LabelsOnMeDialog.tsx:184
 msgid "This label was applied by you."
 msgstr ""
 
 #: src/components/moderation/LabelsOnMeDialog.tsx:156
-#: src/components/moderation/ModerationDetailsDialog.tsx:231
+#: src/components/moderation/ModerationDetailsDialog.tsx:292
 msgid "This label was applied to the entire user account and will appear on all posts."
 msgstr "This label was applied to the entire user account and will appear on all posts."
 
@@ -12815,12 +12950,12 @@ msgstr ""
 
 #. placeholder {0}: sanitizeHandle(list.creator.handle, '@')
 #: src/screens/List/ListHiddenScreen.tsx:141
-msgid "This list – created by <0>{0}</0> – contains possible violations of Edriffles' community guidelines in its name or description."
-msgstr "This list – created by <0>{0}</0> – contains possible violations of Edriffles' community guidelines in its name or description."
+msgid "This list – created by <0>{0}</0> – contains possible violations of Plumbline' community guidelines in its name or description."
+msgstr "This list – created by <0>{0}</0> – contains possible violations of Plumbline' community guidelines in its name or description."
 
 #: src/screens/List/ListHiddenScreen.tsx:136
-msgid "This list – created by you – contains possible violations of Edriffles' community guidelines in its name or description."
-msgstr "This list – created by you – contains possible violations of Edriffles' community guidelines in its name or description."
+msgid "This list – created by you – contains possible violations of Plumbline' community guidelines in its name or description."
+msgstr "This list – created by you – contains possible violations of Plumbline' community guidelines in its name or description."
 
 #: src/components/dialogs/lists/ReviewListMembersDialog.tsx:150
 msgid "This list has no members to review."
@@ -12858,7 +12993,7 @@ msgstr "This person is blocking you"
 
 #. placeholder {0}: niceDate(i18n, createdAt)
 #. placeholder {1}: niceDate(i18n, indexedAt)
-#: src/screens/PostThread/components/ThreadItemAnchor.tsx:636
+#: src/screens/PostThread/components/ThreadItemAnchor.tsx:637
 msgid "This post claims to have been created on <0>{0}</0>, but was first indexed on <1>{1}</1>."
 msgstr "This post claims to have been created on <0>{0}</0>, but was first indexed on <1>{1}</1>."
 
@@ -12903,7 +13038,7 @@ msgstr ""
 msgid "This screen is only available for group conversations."
 msgstr "This screen is only available for group conversations."
 
-#: src/screens/PostThread/components/ThreadItemAnchor.tsx:649
+#: src/screens/PostThread/components/ThreadItemAnchor.tsx:650
 msgid "This service cannot confirm the authenticity of the claimed date."
 msgstr "This service cannot confirm the authenticity of the claimed date."
 
@@ -12936,7 +13071,7 @@ msgstr ""
 msgid "This user has blocked you and cannot be messaged."
 msgstr "This user has blocked you and cannot be messaged."
 
-#: src/components/moderation/ModerationDetailsDialog.tsx:99
+#: src/components/moderation/ModerationDetailsDialog.tsx:160
 #: src/lib/moderation/useModerationCauseDescription.ts:73
 msgid "This user has blocked you. You cannot view their content."
 msgstr ""
@@ -12951,12 +13086,12 @@ msgid "This user has requested that their content only be shown to signed-in use
 msgstr ""
 
 #. placeholder {0}: list.name
-#: src/components/moderation/ModerationDetailsDialog.tsx:79
+#: src/components/moderation/ModerationDetailsDialog.tsx:140
 msgid "This user is included in the <0>{0}</0> list which you have blocked."
 msgstr ""
 
 #. placeholder {0}: list.name
-#: src/components/moderation/ModerationDetailsDialog.tsx:111
+#: src/components/moderation/ModerationDetailsDialog.tsx:172
 msgid "This user is included in the <0>{0}</0> list which you have muted."
 msgstr ""
 
@@ -12990,7 +13125,7 @@ msgid "This will irreversibly delete your ATmosphere account <0>{currentHandle}<
 msgstr "This will irreversibly delete your ATmosphere account <0>{currentHandle}</0> and all associated data. Note that this will affect any other <1>AT Protocol</1> services you use with this account."
 
 #. placeholder {0}: account.handle
-#: src/screens/Settings/Settings.tsx:724
+#: src/screens/Settings/Settings.tsx:722
 msgid "This will remove @{0} from the quick access list."
 msgstr ""
 
@@ -13057,7 +13192,7 @@ msgstr ""
 msgid "Today"
 msgstr ""
 
-#: src/screens/Moderation/index.tsx:412
+#: src/screens/Moderation/index.tsx:464
 msgid "Toggle to enable or disable adult content"
 msgstr ""
 
@@ -13172,6 +13307,7 @@ msgstr "Try a different search term."
 
 #: src/features/inviteFriends/InviteScannerScreen.tsx:221
 #: src/features/inviteFriends/InviteScannerScreen.tsx:226
+#: src/view/com/posts/PostFeedErrorMessage.tsx:207
 msgid "Try again"
 msgstr "Try again"
 
@@ -13211,8 +13347,12 @@ msgid "Type:"
 msgstr ""
 
 #: src/components/dialogs/DeviceLocationRequestDialog.tsx:86
-msgid "Unable to access location. You'll need to visit your system settings to enable location services for Edriffles."
-msgstr "Unable to access location. You'll need to visit your system settings to enable location services for Edriffles."
+msgid "Unable to access location. You'll need to visit your system settings to enable location services for Plumbline."
+msgstr "Unable to access location. You'll need to visit your system settings to enable location services for Plumbline."
+
+#: src/App.web.tsx:153
+msgid "Unable to complete sign in. Please try again."
+msgstr "Unable to complete sign in. Please try again."
 
 #: src/lib/hooks/useCleanError.ts:30
 #: src/lib/strings/errors.ts:40
@@ -13255,11 +13395,11 @@ msgstr "Unable to find the selected recipient."
 msgid "Unable to resolve handle"
 msgstr ""
 
-#: src/screens/Settings/Settings.tsx:570
+#: src/screens/Settings/Settings.tsx:568
 msgid "Unapply Pull Request"
 msgstr ""
 
-#: src/screens/Settings/Settings.tsx:572
+#: src/screens/Settings/Settings.tsx:570
 msgid "Unapply Pull Request {currentChannel}"
 msgstr ""
 
@@ -13341,7 +13481,7 @@ msgstr ""
 msgid "Unfollow account"
 msgstr ""
 
-#: src/screens/VideoFeed/index.tsx:939
+#: src/screens/VideoFeed/index.tsx:940
 msgid "Unfollows the user"
 msgstr ""
 
@@ -13362,7 +13502,7 @@ msgid "Unlabeled, abusive, or non-consensual adult content"
 msgstr ""
 
 #: src/components/PostControls/index.tsx:296
-#: src/screens/CustomFeed/components/CustomFeedHeader.tsx:564
+#: src/screens/CustomFeed/components/CustomFeedHeader.tsx:565
 msgid "Unlike"
 msgstr ""
 
@@ -13432,14 +13572,14 @@ msgid "Unpin"
 msgstr ""
 
 #: src/components/FeedCard.tsx:352
-#: src/screens/CustomFeed/components/CustomFeedHeader.tsx:569
-#: src/screens/CustomFeed/components/CustomFeedHeader.tsx:576
+#: src/screens/CustomFeed/components/CustomFeedHeader.tsx:570
+#: src/screens/CustomFeed/components/CustomFeedHeader.tsx:577
 #: src/screens/SavedFeeds.tsx:467
 msgid "Unpin feed"
 msgstr ""
 
-#: src/screens/CustomFeed/components/CustomFeedHeader.tsx:360
-#: src/screens/CustomFeed/components/CustomFeedHeader.tsx:362
+#: src/screens/CustomFeed/components/CustomFeedHeader.tsx:361
+#: src/screens/CustomFeed/components/CustomFeedHeader.tsx:363
 msgid "Unpin from home"
 msgstr ""
 
@@ -13454,7 +13594,7 @@ msgid "Unpin moderation list"
 msgstr ""
 
 #. placeholder {0}: info.displayName
-#: src/screens/CustomFeed/components/CustomFeedHeader.tsx:169
+#: src/screens/CustomFeed/components/CustomFeedHeader.tsx:170
 msgid "Unpinned {0} from Home"
 msgstr ""
 
@@ -13466,8 +13606,8 @@ msgstr ""
 msgid "Unpinned list"
 msgstr ""
 
+#: src/screens/Settings/Settings.tsx:535
 #: src/screens/Settings/Settings.tsx:537
-#: src/screens/Settings/Settings.tsx:539
 msgid "Unsnooze email reminder"
 msgstr ""
 
@@ -13602,7 +13742,7 @@ msgid "Uploading video..."
 msgstr ""
 
 #. placeholder {0}: candidate.displayName
-#: src/screens/Settings/ServicesSettings.tsx:69
+#: src/screens/Settings/ServicesSettings.tsx:574
 msgid "Use {0}"
 msgstr "Use {0}"
 
@@ -13640,7 +13780,7 @@ msgstr ""
 msgid "Use in-app browser to open links"
 msgstr ""
 
-#: src/screens/Settings/ServicesSettings.tsx:124
+#: src/screens/Settings/ServicesSettings.tsx:630
 msgid "Use it now"
 msgstr "Use it now"
 
@@ -13676,7 +13816,7 @@ msgctxt "toast"
 msgid "User blocked"
 msgstr ""
 
-#: src/components/moderation/ModerationDetailsDialog.tsx:91
+#: src/components/moderation/ModerationDetailsDialog.tsx:152
 #: src/lib/moderation/useModerationCauseDescription.ts:61
 msgid "User Blocked"
 msgstr ""
@@ -13686,7 +13826,7 @@ msgstr ""
 msgid "User Blocked by \"{0}\""
 msgstr ""
 
-#: src/components/moderation/ModerationDetailsDialog.tsx:77
+#: src/components/moderation/ModerationDetailsDialog.tsx:138
 msgid "User Blocked by List"
 msgstr ""
 
@@ -13694,7 +13834,7 @@ msgstr ""
 msgid "User Blocking You"
 msgstr ""
 
-#: src/components/moderation/ModerationDetailsDialog.tsx:97
+#: src/components/moderation/ModerationDetailsDialog.tsx:158
 msgid "User Blocks You"
 msgstr ""
 
@@ -13704,7 +13844,7 @@ msgid "User list by {0}"
 msgstr ""
 
 #. placeholder {0}: sanitizeHandle(view.creator.handle, '@')
-#: src/state/queries/feed.ts:177
+#: src/state/queries/feed.ts:182
 msgid "User List by {0}"
 msgstr ""
 
@@ -13757,7 +13897,7 @@ msgstr ""
 msgid "Verification failed, please try again."
 msgstr ""
 
-#: src/screens/Moderation/index.tsx:371
+#: src/screens/Moderation/index.tsx:423
 msgid "Verification settings"
 msgstr ""
 
@@ -13767,8 +13907,8 @@ msgid "Verification Settings"
 msgstr ""
 
 #: src/screens/Moderation/VerificationSettings.tsx:45
-msgid "Verifications on Edriffles work differently than on other platforms. <0>Learn more here.</0>"
-msgstr "Verifications on Edriffles work differently than on other platforms. <0>Learn more here.</0>"
+msgid "Verifications on Plumbline work differently than on other platforms. <0>Learn more here.</0>"
+msgstr "Verifications on Plumbline work differently than on other platforms. <0>Learn more here.</0>"
 
 #: src/components/verification/VerificationsDialog.tsx:105
 msgid "Verified by:"
@@ -13857,7 +13997,7 @@ msgid "Video from {0}: {text}"
 msgstr ""
 
 #. placeholder {0}: sanitizeHandle( post.author.handle, '@', )
-#: src/screens/VideoFeed/index.tsx:1194
+#: src/screens/VideoFeed/index.tsx:1195
 msgid "Video from {0}. Tap to play or pause the video"
 msgstr ""
 
@@ -13866,11 +14006,11 @@ msgstr ""
 msgid "Video Games"
 msgstr ""
 
-#: src/screens/VideoFeed/index.tsx:1193
+#: src/screens/VideoFeed/index.tsx:1194
 msgid "Video is paused"
 msgstr ""
 
-#: src/screens/VideoFeed/index.tsx:1193
+#: src/screens/VideoFeed/index.tsx:1194
 msgid "Video is playing"
 msgstr ""
 
@@ -13920,9 +14060,9 @@ msgstr ""
 #. placeholder {0}: authors[0].profile.displayName || authors[0].profile.handle
 #. placeholder {0}: info.creatorHandle
 #. placeholder {0}: profile.handle
-#: src/screens/CustomFeed/components/CustomFeedHeader.tsx:505
+#: src/screens/CustomFeed/components/CustomFeedHeader.tsx:506
 #: src/screens/Search/components/SearchProfileCard.tsx:37
-#: src/screens/VideoFeed/index.tsx:900
+#: src/screens/VideoFeed/index.tsx:901
 #: src/view/com/notifications/NotificationFeedItem.tsx:601
 msgid "View {0}'s profile"
 msgstr ""
@@ -13953,8 +14093,8 @@ msgstr ""
 msgid "View debug entry"
 msgstr ""
 
-#: src/screens/VideoFeed/index.tsx:768
-#: src/screens/VideoFeed/index.tsx:786
+#: src/screens/VideoFeed/index.tsx:769
+#: src/screens/VideoFeed/index.tsx:787
 msgid "View details"
 msgstr ""
 
@@ -13963,7 +14103,7 @@ msgstr ""
 msgid "View full thread"
 msgstr ""
 
-#: src/screens/Settings/Settings.tsx:501
+#: src/screens/Settings/Settings.tsx:499
 msgid "View GrowthBook information"
 msgstr "View GrowthBook information"
 
@@ -14001,7 +14141,7 @@ msgstr ""
 #: src/components/ProfileHoverCard/index.web.tsx:463
 #: src/components/ProfileHoverCard/index.web.tsx:483
 #: src/components/ProfileHoverCard/index.web.tsx:510
-#: src/view/com/posts/PostFeedErrorMessage.tsx:181
+#: src/view/com/posts/PostFeedErrorMessage.tsx:220
 #: src/view/com/util/PostMeta.tsx:93
 #: src/view/com/util/PostMeta.tsx:121
 msgid "View profile"
@@ -14035,7 +14175,7 @@ msgstr ""
 msgid "View this user's verifications"
 msgstr ""
 
-#: src/screens/CustomFeed/components/CustomFeedHeader.tsx:536
+#: src/screens/CustomFeed/components/CustomFeedHeader.tsx:537
 msgid "View users who like this feed"
 msgstr ""
 
@@ -14043,11 +14183,11 @@ msgstr ""
 msgid "View video"
 msgstr ""
 
-#: src/screens/Moderation/index.tsx:351
+#: src/screens/Moderation/index.tsx:403
 msgid "View your blocked accounts"
 msgstr ""
 
-#: src/screens/Moderation/index.tsx:291
+#: src/screens/Moderation/index.tsx:343
 msgid "View your default post interaction settings"
 msgstr ""
 
@@ -14056,15 +14196,15 @@ msgstr ""
 msgid "View your feeds and explore more"
 msgstr ""
 
-#: src/screens/Moderation/index.tsx:257
+#: src/screens/Moderation/index.tsx:310
 msgid "View your moderation inbox"
 msgstr "View your moderation inbox"
 
-#: src/screens/Moderation/index.tsx:321
+#: src/screens/Moderation/index.tsx:373
 msgid "View your moderation lists"
 msgstr ""
 
-#: src/screens/Moderation/index.tsx:336
+#: src/screens/Moderation/index.tsx:388
 msgid "View your muted accounts"
 msgstr ""
 
@@ -14090,8 +14230,8 @@ msgid "Violent or threatening content"
 msgstr ""
 
 #: src/view/com/auth/SplashScreen.web.tsx:161
-msgid "Visit edriffles.us"
-msgstr "Visit edriffles.us"
+msgid "Visit Plumbline at plumblines.uk"
+msgstr "Visit Plumbline at plumblines.uk"
 
 #: src/components/dialogs/LinkWarning.tsx:112
 #: src/components/dialogs/LinkWarning.tsx:122
@@ -14219,7 +14359,7 @@ msgstr ""
 msgid "We were unable to load your birthdate preferences. Please try again."
 msgstr ""
 
-#: src/screens/Moderation/index.tsx:508
+#: src/screens/Moderation/index.tsx:562
 msgid "We were unable to load your configured labelers at this time."
 msgstr ""
 
@@ -14263,8 +14403,8 @@ msgid "We’re having network issues, try again"
 msgstr "We’re having network issues, try again"
 
 #: src/components/dialogs/nuxs/InitialVerificationAnnouncement.tsx:97
-msgid "We’re introducing a new layer of verification on Edriffles — an easy-to-see checkmark."
-msgstr "We’re introducing a new layer of verification on Edriffles — an easy-to-see checkmark."
+msgid "We’re introducing a new layer of verification on Plumbline — an easy-to-see checkmark."
+msgstr "We’re introducing a new layer of verification on Plumbline — an easy-to-see checkmark."
 
 #: src/screens/Signup/index.tsx:140
 msgid "We’re so excited to have you join us!"
@@ -14319,6 +14459,8 @@ msgstr ""
 msgid "We’re updating our Terms of Service, Privacy Policy, and Copyright Policy, effective September 15th, 2025. We're also updating our Community Guidelines, and we want your input! These new guidelines will take effect on October 15th, 2025. Learn more about these changes and how to share your thoughts with us by reading our blog post."
 msgstr ""
 
+#: src/screens/Profile/Header/EditProfileDialog.tsx:381
+#: src/screens/Profile/Header/EditProfileDialog.tsx:387
 #: src/view/com/auth/SplashScreen.web.tsx:163
 msgid "Website"
 msgstr "Website"
@@ -14418,6 +14560,11 @@ msgstr ""
 #: src/components/moderation/ReportDialog/copy.ts:14
 msgid "Why should this user be reviewed?"
 msgstr ""
+
+#: src/components/Post/PostProvenance.tsx:49
+#: src/components/Post/PostProvenance.tsx:61
+msgid "Why this post?"
+msgstr "Why this post?"
 
 #: src/components/dms/AfterReportDialog.tsx:51
 msgid "Would you like to block this user and/or delete this conversation?"
@@ -14562,7 +14709,7 @@ msgstr ""
 msgid "You are verified"
 msgstr ""
 
-#: src/screens/Profile/Header/EditProfileDialog.tsx:341
+#: src/screens/Profile/Header/EditProfileDialog.tsx:362
 msgid "You are verified. You will lose your verification status if you change your display name. <0>Learn more.</0>"
 msgstr ""
 
@@ -14575,8 +14722,8 @@ msgid "You can adjust your interests at any time from \"Content and media\" sett
 msgstr ""
 
 #: src/screens/Settings/components/DeleteAccountDialog.tsx:217
-msgid "You can also <0>temporarily deactivate</0> your account instead. Your profile, posts, feeds, and lists will no longer be visible to other Edriffles users. You can reactivate your account at any time by logging in."
-msgstr "You can also <0>temporarily deactivate</0> your account instead. Your profile, posts, feeds, and lists will no longer be visible to other Edriffles users. You can reactivate your account at any time by logging in."
+msgid "You can also <0>temporarily deactivate</0> your account instead. Your profile, posts, feeds, and lists will no longer be visible to other Plumbline users. You can reactivate your account at any time by logging in."
+msgstr "You can also <0>temporarily deactivate</0> your account instead. Your profile, posts, feeds, and lists will no longer be visible to other Plumbline users. You can reactivate your account at any time by logging in."
 
 #: src/view/com/posts/FollowingEmptyState.tsx:60
 #: src/view/com/posts/FollowingEndOfFeed.tsx:61
@@ -14605,8 +14752,8 @@ msgid "You can now choose to be notified when specific people post. If there’s
 msgstr ""
 
 #: src/components/dialogs/nuxs/InviteFriendsAnnouncement.tsx:154
-msgid "You can now invite friends with a link or QR code. Share the link anywhere, or let them scan the code to join you on Edriffles."
-msgstr "You can now invite friends with a link or QR code. Share the link anywhere, or let them scan the code to join you on Edriffles."
+msgid "You can now invite friends with a link or QR code. Share the link anywhere, or let them scan the code to join you on Plumbline."
+msgstr "You can now invite friends with a link or QR code. Share the link anywhere, or let them scan the code to join you on Plumbline."
 
 #: src/screens/Login/index.tsx:201
 #: src/screens/Login/PasswordUpdatedForm.tsx:25
@@ -14647,6 +14794,7 @@ msgstr "You can read chat history but can’t send new messages."
 msgid "You can select up to {MAX_GALLERY_IMAGES, plural, other {# images}} in total."
 msgstr "You can select up to {MAX_GALLERY_IMAGES, plural, other {# images}} in total."
 
+#: src/components/interstitials/Trending.tsx:148
 #: src/components/interstitials/TrendingVideos.tsx:139
 #: src/components/TrendingTopics.tsx:53
 msgid "You can update this later from your settings."
@@ -14693,7 +14841,7 @@ msgstr ""
 msgid "You have been previously removed from this group and can’t join it using this link."
 msgstr "You have been previously removed from this group and can’t join it using this link."
 
-#: src/components/moderation/ModerationDetailsDialog.tsx:93
+#: src/components/moderation/ModerationDetailsDialog.tsx:154
 #: src/lib/moderation/useModerationCauseDescription.ts:55
 #: src/lib/moderation/useModerationCauseDescription.ts:63
 msgid "You have blocked this user. You cannot view their content."
@@ -14713,7 +14861,7 @@ msgstr ""
 msgid "You have hidden this post"
 msgstr ""
 
-#: src/components/moderation/ModerationDetailsDialog.tsx:131
+#: src/components/moderation/ModerationDetailsDialog.tsx:192
 msgid "You have hidden this post."
 msgstr ""
 
@@ -14721,7 +14869,7 @@ msgstr ""
 msgid "You have marked this account as automated. You can remove it at any time from your account settings."
 msgstr "You have marked this account as automated. You can remove it at any time from your account settings."
 
-#: src/components/moderation/ModerationDetailsDialog.tsx:124
+#: src/components/moderation/ModerationDetailsDialog.tsx:185
 #: src/lib/moderation/useModerationCauseDescription.ts:97
 msgid "You have muted this account."
 msgstr ""
@@ -14783,25 +14931,25 @@ msgstr ""
 msgid "You haven't muted any words or tags yet"
 msgstr ""
 
-#: src/components/moderation/ModerationDetailsDialog.tsx:138
+#: src/components/moderation/ModerationDetailsDialog.tsx:199
 #: src/lib/moderation/useModerationCauseDescription.ts:125
 msgid "You hid this reply."
 msgstr ""
 
 #: src/components/NewskieDialog.tsx:108
-msgid "You joined Edriffles {timeAgoString} ago"
-msgstr "You joined Edriffles {timeAgoString} ago"
+msgid "You joined Plumbline {timeAgoString} ago"
+msgstr "You joined Plumbline {timeAgoString} ago"
 
 #: src/components/NewskieDialog.tsx:105
-msgid "You joined Edriffles using a starter pack {timeAgoString} ago"
-msgstr "You joined Edriffles using a starter pack {timeAgoString} ago"
+msgid "You joined Plumbline using a starter pack {timeAgoString} ago"
+msgstr "You joined Plumbline using a starter pack {timeAgoString} ago"
 
 #: src/components/moderation/LabelsOnMeDialog.tsx:83
 msgid "You may appeal non-self labels if you feel they were placed in error."
 msgstr ""
 
 #: src/components/moderation/LabelsOnMeDialog.tsx:88
-#: src/components/moderation/ModerationDetailsDialog.tsx:210
+#: src/components/moderation/ModerationDetailsDialog.tsx:271
 msgid "You may appeal these labels if you feel they were placed in error."
 msgstr ""
 
@@ -14818,8 +14966,8 @@ msgid "You must be a chat owner to remove a member."
 msgstr "You must be a chat owner to remove a member."
 
 #: src/components/dialogs/BirthDateSettings.tsx:177
-msgid "You must be at least 13 years old to use Edriffles. Read our <0>Terms of Service</0> for more information."
-msgstr "You must be at least 13 years old to use Edriffles. Read our <0>Terms of Service</0> for more information."
+msgid "You must be at least 13 years old to use Plumbline. Read our <0>Terms of Service</0> for more information."
+msgstr "You must be at least 13 years old to use Plumbline. Read our <0>Terms of Service</0> for more information."
 
 #: src/components/StarterPack/ProfileStarterPacks.tsx:368
 msgid "You must be following at least seven other people to generate a starter pack."
@@ -14847,7 +14995,7 @@ msgstr "You own this chat"
 msgid "You previously deactivated @{0}."
 msgstr ""
 
-#: src/screens/Settings/Settings.tsx:459
+#: src/screens/Settings/Settings.tsx:457
 msgid "You probably want to restart the app now."
 msgstr ""
 
@@ -14883,8 +15031,8 @@ msgstr "You replied to yourself"
 msgid "You requested to join"
 msgstr "You requested to join"
 
-#: src/screens/Settings/Settings.tsx:343
-#: src/view/shell/desktop/LeftNav.tsx:228
+#: src/screens/Settings/Settings.tsx:341
+#: src/view/shell/desktop/LeftNav.tsx:237
 msgid "You will be signed out of all your accounts."
 msgstr ""
 
@@ -14932,8 +15080,8 @@ msgid "You'll follow these people right away"
 msgstr ""
 
 #: src/components/contacts/screens/GetContacts.tsx:317
-msgid "You'll need to go to the System Settings for Edriffles and give permission if you want to use this feature."
-msgstr "You'll need to go to the System Settings for Edriffles and give permission if you want to use this feature."
+msgid "You'll need to go to the System Settings for Plumbline and give permission if you want to use this feature."
+msgstr "You'll need to go to the System Settings for Plumbline and give permission if you want to use this feature."
 
 #. placeholder {0}: sanitizeHandle(profile.handle, '@')
 #: src/components/activity-notifications/SubscribeProfileDialog.tsx:169
@@ -14961,7 +15109,7 @@ msgstr ""
 msgid "You've already appealed this label and it's being reviewed by our moderation team."
 msgstr ""
 
-#: src/components/moderation/ModerationDetailsDialog.tsx:128
+#: src/components/moderation/ModerationDetailsDialog.tsx:189
 #: src/lib/moderation/useModerationCauseDescription.ts:106
 msgid "You've chosen to hide a word or tag within this post."
 msgstr ""
@@ -15006,7 +15154,7 @@ msgstr ""
 msgid "You've reached your daily limit for video uploads (too many videos)"
 msgstr ""
 
-#: src/screens/VideoFeed/index.tsx:1241
+#: src/screens/VideoFeed/index.tsx:1242
 msgid "You've run out of videos to watch. Maybe it's a good time to take a break?"
 msgstr ""
 
@@ -15063,12 +15211,12 @@ msgid "Your choice will be remembered for future links. You can change it at any
 msgstr ""
 
 #: src/view/com/notifications/NotificationFeedItem.tsx:379
-msgid "Your contact {firstAuthorLink} is on Edriffles"
-msgstr "Your contact {firstAuthorLink} is on Edriffles"
+msgid "Your contact {firstAuthorLink} is on Plumbline"
+msgstr "Your contact {firstAuthorLink} is on Plumbline"
 
 #: src/view/com/notifications/NotificationFeedItem.tsx:377
-msgid "Your contact {firstAuthorName} is on Edriffles"
-msgstr "Your contact {firstAuthorName} is on Edriffles"
+msgid "Your contact {firstAuthorName} is on Plumbline"
+msgstr "Your contact {firstAuthorName} is on Plumbline"
 
 #: src/components/contacts/screens/ViewMatches.tsx:462
 msgid "Your contact {name}"
@@ -15087,8 +15235,8 @@ msgid "Your email appears to be invalid."
 msgstr ""
 
 #: src/components/dialogs/EmailDialog/screens/VerificationReminder.tsx:62
-msgid "Your email has not yet been verified. Please verify your email in order to enjoy all the features of Edriffles."
-msgstr "Your email has not yet been verified. Please verify your email in order to enjoy all the features of Edriffles."
+msgid "Your email has not yet been verified. Please verify your email in order to enjoy all the features of Plumbline."
+msgstr "Your email has not yet been verified. Please verify your email in order to enjoy all the features of Plumbline."
 
 #: src/state/shell/progress-guide.tsx:214
 msgid "Your first like!"
@@ -15108,8 +15256,8 @@ msgid "Your full handle will be <0>@{0}</0>"
 msgstr ""
 
 #: src/screens/Login/components/HostingProviderDialog.tsx:182
-msgid "Your hosting provider can’t be detected from an email address, so the default Edriffles service will be used. Enter your username instead, or set your provider manually."
-msgstr "Your hosting provider can’t be detected from an email address, so the default Edriffles service will be used. Enter your username instead, or set your provider manually."
+msgid "Your hosting provider can’t be detected from an email address, so the default Plumbline service will be used. Enter your username instead, or set your provider manually."
+msgstr "Your hosting provider can’t be detected from an email address, so the default Plumbline service will be used. Enter your username instead, or set your provider manually."
 
 #: src/view/com/composer/state/video.ts:470
 msgid "Your hosting provider does not support videos this large. Please try again with a smaller file."
@@ -15157,8 +15305,8 @@ msgid "Your name, avatar, the name of the group chat, and the number of members 
 msgstr "Your name, avatar, the name of the group chat, and the number of members will be visible to everyone."
 
 #: src/screens/Settings/components/ChangePasswordDialog.tsx:74
-msgid "Your password has been changed successfully! Please use your new password when you sign in to Edriffles from now on."
-msgstr "Your password has been changed successfully! Please use your new password when you sign in to Edriffles from now on."
+msgid "Your password has been changed successfully! Please use your new password when you sign in to Plumbline from now on."
+msgstr "Your password has been changed successfully! Please use your new password when you sign in to Plumbline from now on."
 
 #: src/screens/Signup/StepInfo/index.tsx:123
 msgid "Your password must be at least 8 characters long."
@@ -15186,8 +15334,8 @@ msgid "Your profile picture surrounded by concentric circles of other users' pro
 msgstr ""
 
 #: src/screens/Settings/components/DeactivateAccountDialog.tsx:76
-msgid "Your profile, posts, feeds, and lists will no longer be visible to other Edriffles users. You can reactivate your account at any time by logging in."
-msgstr "Your profile, posts, feeds, and lists will no longer be visible to other Edriffles users. You can reactivate your account at any time by logging in."
+msgid "Your profile, posts, feeds, and lists will no longer be visible to other Plumbline users. You can reactivate your account at any time by logging in."
+msgstr "Your profile, posts, feeds, and lists will no longer be visible to other Plumbline users. You can reactivate your account at any time by logging in."
 
 #: src/view/com/composer/Composer.tsx:1336
 msgid "Your reply was sent"
@@ -15197,6 +15345,10 @@ msgstr ""
 #: src/components/moderation/ReportDialog/index.tsx:597
 msgid "Your report will be sent to <0>{0}</0>."
 msgstr ""
+
+#: src/components/moderation/ModerationDetailsDialog.tsx:358
+msgid "Your rule"
+msgstr "Your rule"
 
 #: src/screens/Settings/InterestsSettings.tsx:64
 msgid "Your selected interests help us serve you content you care about."
