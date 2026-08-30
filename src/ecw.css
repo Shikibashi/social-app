@@ -249,6 +249,25 @@ body {
   box-shadow: 2px 2px 0 var(--ecw-hard-shadow);
 }
 
+[data-testid^='plumbline-nav-group-'] {
+  border-top: 1px solid var(--ecw-rule-decorative);
+  margin-top: 10px;
+  padding-top: 4px;
+}
+
+[data-testid='plumbline-nav-group-workspace'] {
+  border-top: 0;
+  margin-top: 0;
+  padding-top: 0;
+}
+
+[data-testid^='plumbline-nav-section-label-'] {
+  color: var(--ecw-text-muted);
+  font-family: var(--ecw-font-system);
+  font-size: var(--ecw-font-size-micro) !important;
+  letter-spacing: 0.08em;
+}
+
 [data-testid='plumbline-right-nav'] {
   border-left: 1px solid var(--ecw-border-structural);
   padding-left: 16px !important;
@@ -269,21 +288,48 @@ body {
   text-transform: uppercase;
 }
 
+[data-testid='HomeScreen'] [role='tablist'],
 [data-testid='homeScreen'] [role='tablist'] {
   border-bottom: 1px solid var(--ecw-border-strong);
 }
 
+[data-testid='HomeScreen'] [role='tab'][aria-selected='true'],
 [data-testid='homeScreen'] [role='tab'][aria-selected='true'] {
   box-shadow: inset 0 -3px 0 var(--ecw-marker);
 }
 
+[data-testid='HomeScreen'] [data-testid*='feed'],
 [data-testid='homeScreen'] [data-testid*='feed'] {
   border-bottom: 1px solid var(--ecw-rule-decorative);
 }
 
+[data-testid='HomeScreen'] [data-testid*='feed'] article,
+[data-testid='HomeScreen'] [data-testid*='feed'] [role='article'],
 [data-testid='homeScreen'] [data-testid*='feed'] article,
 [data-testid='homeScreen'] [data-testid*='feed'] [role='article'] {
   border-bottom: 1px solid var(--ecw-rule-decorative);
+}
+
+/* PostFeedItem already owns this boundary; keep the contents interactive while
+ * presenting each entry as a document-stream row instead of a raised card. */
+[data-ecw-mode='workbench'] [data-testid^='feedItem-by-'] {
+  background-color: transparent !important;
+  border-radius: 0 !important;
+  border-top: 0 !important;
+  border-right: 0 !important;
+  border-bottom: 1px solid var(--ecw-rule-decorative) !important;
+  border-left: 0 !important;
+  box-shadow: none !important;
+  padding-top: 12px !important;
+  padding-bottom: 12px !important;
+}
+
+[data-ecw-mode='workbench'] [data-testid^='feedItem-by-']:hover {
+  background-color: color-mix(
+    in srgb,
+    var(--ecw-surface) 42%,
+    transparent
+  ) !important;
 }
 
 [data-ecw-mode='workbench'] h1,

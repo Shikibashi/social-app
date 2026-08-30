@@ -1,4 +1,4 @@
-import {useCallback, useMemo, useState} from 'react'
+import {type ReactNode, useCallback, useMemo, useState} from 'react'
 import {StyleSheet, View} from 'react-native'
 import {plural} from '@lingui/core/macro'
 import {Trans, useLingui} from '@lingui/react/macro'
@@ -52,8 +52,10 @@ import {
   BulletList_Filled_Corner0_Rounded as ListFilledIcon,
   BulletList_Stroke2_Corner0_Rounded as ListIcon,
 } from '#/components/icons/BulletList'
+import {ChainLink_Stroke2_Corner0_Rounded as ServicesIcon} from '#/components/icons/ChainLink'
 import {type Props as SVGIconProps} from '#/components/icons/common'
 import {DotGrid3x1_Stroke2_Corner0_Rounded as EllipsisIcon} from '#/components/icons/DotGrid'
+import {Download_Stroke2_Corner0_Rounded as BackupsIcon} from '#/components/icons/Download'
 import {EditBig_Stroke2_Corner2_Rounded as EditBigIcon} from '#/components/icons/EditBig'
 import {
   Hashtag_Filled_Corner0_Rounded as HashtagFilledIcon,
@@ -63,6 +65,7 @@ import {
   HomeOpen_Filled_Corner0_Rounded as HomeFilledIcon,
   HomeOpen_Stoke2_Corner0_Rounded as HomeIcon,
 } from '#/components/icons/HomeOpen'
+import {Lock_Stroke2_Corner2_Rounded as IdentityIcon} from '#/components/icons/Lock'
 import {
   MagnifyingGlass_Filled_Stroke2_Corner0_Rounded as MagnifyingGlassFilledIcon,
   MagnifyingGlass_Stroke2_Corner0_Rounded as MagnifyingGlassIcon,
@@ -557,6 +560,34 @@ function NavItem({
   )
 }
 
+function NavSection({
+  id,
+  label,
+  minimal,
+  children,
+}: {
+  id: string
+  label: string
+  minimal: boolean
+  children: ReactNode
+}) {
+  const t = useTheme()
+
+  return (
+    <View testID={`plumbline-nav-group-${id}`} style={styles.navSection}>
+      {!minimal && (
+        <Text
+          accessibilityRole="header"
+          testID={`plumbline-nav-section-label-${id}`}
+          style={[styles.navSectionLabel, t.atoms.text_contrast_medium]}>
+          {label}
+        </Text>
+      )}
+      {children}
+    </View>
+  )
+}
+
 function ComposeBtn({minimal}: {minimal: boolean}) {
   const {currentAccount} = useSession()
   const {getState} = useNavigation()
@@ -684,112 +715,159 @@ export function DesktopLeftNav({routeName}: {routeName: string}) {
       ) : null}
       {hasSession && (
         <>
-          <NavItem
-            label={l`Home`}
-            href="/"
-            navItem="home"
-            minimal={leftNavMinimal}
-            icons={{
-              inactive: HomeIcon,
-              active: HomeFilledIcon,
-            }}
-          />
-          <NavItem
-            label="Communities"
-            href="/community"
-            navItem="community"
-            minimal={leftNavMinimal}
-            icons={{
-              inactive: PinIcon,
-              active: PinFilledIcon,
-            }}
-          />
-          <NavItem
-            label={l`Explore`}
-            href="/search"
-            navItem="search"
-            minimal={leftNavMinimal}
-            icons={{
-              inactive: MagnifyingGlassIcon,
-              active: MagnifyingGlassFilledIcon,
-            }}
-          />
-          <NavItem
-            label={l`Notifications`}
-            href="/notifications"
-            navItem="notifications"
-            minimal={leftNavMinimal}
-            count={numUnreadNotifications}
-            icons={{
-              inactive: BellIcon,
-              active: BellFilledIcon,
-            }}
-          />
-          <NavItem
-            label={l`Chat`}
-            href="/messages"
-            navItem="chat"
-            minimal={leftNavMinimal}
-            count={numUnreadMessages.numUnread}
-            hasNew={numUnreadMessages.hasNew}
-            icons={{
-              inactive: MessageIcon,
-              active: MessageFilledIcon,
-            }}
-          />
-          <NavItem
-            label={l`Feeds`}
-            href="/feeds"
-            navItem="feeds"
-            minimal={leftNavMinimal}
-            icons={{
-              inactive: HashtagIcon,
-              active: HashtagFilledIcon,
-            }}
-          />
-          <NavItem
-            label={l`Lists`}
-            href="/lists"
-            navItem="lists"
-            minimal={leftNavMinimal}
-            icons={{
-              inactive: ListIcon,
-              active: ListFilledIcon,
-            }}
-          />
-          <NavItem
-            label={l({
-              message: 'Saved',
-              context: 'link to bookmarks screen',
-            })}
-            href="/saved"
-            navItem="saved"
-            minimal={leftNavMinimal}
-            icons={{
-              inactive: BookmarkIcon,
-              active: BookmarkFilledIcon,
-            }}
-          />
-          <NavItem
-            label={l`Profile`}
-            href={makeProfileLink(currentAccount!)}
-            navItem="profile"
-            minimal={leftNavMinimal}
-            icons={{
-              inactive: UserCircleIcon,
-              active: UserCircleFilledIcon,
-            }}
-          />
-          <NavItem
-            label={l`Settings`}
-            href="/settings"
-            navItem="settings"
-            minimal={leftNavMinimal}
-            icons={{
-              inactive: SettingsIcon,
-              active: SettingsFilledIcon,
-            }}
-          />
+          <NavSection
+            id="workspace"
+            label={l`Workspace`}
+            minimal={leftNavMinimal}>
+            <NavItem
+              label={l`Home`}
+              href="/"
+              navItem="home"
+              minimal={leftNavMinimal}
+              icons={{
+                inactive: HomeIcon,
+                active: HomeFilledIcon,
+              }}
+            />
+            <NavItem
+              label="Communities"
+              href="/community"
+              navItem="community"
+              minimal={leftNavMinimal}
+              icons={{
+                inactive: PinIcon,
+                active: PinFilledIcon,
+              }}
+            />
+            <NavItem
+              label={l`Explore`}
+              href="/search"
+              navItem="search"
+              minimal={leftNavMinimal}
+              icons={{
+                inactive: MagnifyingGlassIcon,
+                active: MagnifyingGlassFilledIcon,
+              }}
+            />
+            <NavItem
+              label={l`Notifications`}
+              href="/notifications"
+              navItem="notifications"
+              minimal={leftNavMinimal}
+              count={numUnreadNotifications}
+              icons={{
+                inactive: BellIcon,
+                active: BellFilledIcon,
+              }}
+            />
+            <NavItem
+              label={l`Chat`}
+              href="/messages"
+              navItem="chat"
+              minimal={leftNavMinimal}
+              count={numUnreadMessages.numUnread}
+              hasNew={numUnreadMessages.hasNew}
+              icons={{
+                inactive: MessageIcon,
+                active: MessageFilledIcon,
+              }}
+            />
+          </NavSection>
+          <NavSection
+            id="feeds"
+            label={l`Feeds and lists`}
+            minimal={leftNavMinimal}>
+            <NavItem
+              label={l`Feeds`}
+              href="/feeds"
+              navItem="feeds"
+              minimal={leftNavMinimal}
+              icons={{
+                inactive: HashtagIcon,
+                active: HashtagFilledIcon,
+              }}
+            />
+            <NavItem
+              label={l`Lists`}
+              href="/lists"
+              navItem="lists"
+              minimal={leftNavMinimal}
+              icons={{
+                inactive: ListIcon,
+                active: ListFilledIcon,
+              }}
+            />
+            <NavItem
+              label={l({
+                message: 'Saved',
+                context: 'link to bookmarks screen',
+              })}
+              href="/saved"
+              navItem="saved"
+              minimal={leftNavMinimal}
+              icons={{
+                inactive: BookmarkIcon,
+                active: BookmarkFilledIcon,
+              }}
+            />
+          </NavSection>
+          <NavSection
+            id="services"
+            label={l`Services`}
+            minimal={leftNavMinimal}>
+            <NavItem
+              label={l`Services`}
+              href="/settings/services"
+              navItem="services"
+              minimal={leftNavMinimal}
+              icons={{
+                inactive: ServicesIcon,
+                active: ServicesIcon,
+              }}
+            />
+            <NavItem
+              label={l`Identity`}
+              href="/settings/identity-sovereignty"
+              navItem="identity"
+              minimal={leftNavMinimal}
+              icons={{
+                inactive: IdentityIcon,
+                active: IdentityIcon,
+              }}
+            />
+            <NavItem
+              label={l`Backups`}
+              href="/settings/personalization"
+              navItem="backups"
+              minimal={leftNavMinimal}
+              icons={{
+                inactive: BackupsIcon,
+                active: BackupsIcon,
+              }}
+            />
+          </NavSection>
+          <NavSection id="account" label={l`Account`} minimal={leftNavMinimal}>
+            <NavItem
+              label={l`Profile`}
+              href={makeProfileLink(currentAccount!)}
+              navItem="profile"
+              minimal={leftNavMinimal}
+              icons={{
+                inactive: UserCircleIcon,
+                active: UserCircleFilledIcon,
+              }}
+            />
+            <NavItem
+              label={l`Settings`}
+              href="/settings"
+              navItem="settings"
+              minimal={leftNavMinimal}
+              icons={{
+                inactive: SettingsIcon,
+                active: SettingsFilledIcon,
+              }}
+            />
+          </NavSection>
           <ComposeBtn minimal={leftNavMinimal} />
         </>
       )}
@@ -798,6 +876,18 @@ export function DesktopLeftNav({routeName}: {routeName: string}) {
 }
 
 const styles = StyleSheet.create({
+  navSection: {
+    marginTop: 8,
+  },
+  navSectionLabel: {
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    paddingBottom: 4,
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 1.1,
+    textTransform: 'uppercase',
+  },
   leftNav: {
     left: '50%',
     width: LEFT_NAV_STANDARD_WIDTH,
