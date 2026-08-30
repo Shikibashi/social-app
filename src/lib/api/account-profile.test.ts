@@ -129,6 +129,7 @@ describe('account profile reads', () => {
     ).toEqual({
       authority: 'account-pds',
       did: actor,
+      recordUri: `at://${actor}/app.bsky.actor.profile/self`,
       endpoint: 'https://pds.example.test',
       deliveryMethod: 'com.atproto.sync.getBlob',
       avatarCid: 'avatar-cid',

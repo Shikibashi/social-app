@@ -1123,13 +1123,17 @@ msgstr ""
 msgid "Account options"
 msgstr ""
 
-#: src/components/MediaDeliveryProvenance.tsx:65
+#: src/components/MediaDeliveryProvenance.tsx:81
 msgid "Account PDS"
 msgstr "Account PDS"
 
 #: src/view/shell/desktop/RightNav.tsx:181
 msgid "Account PDS and selected read providers"
 msgstr "Account PDS and selected read providers"
+
+#: src/components/MediaDeliveryProvenance.tsx:51
+msgid "Account PDS profile record"
+msgstr "Account PDS profile record"
 
 #: src/screens/Settings/Settings.tsx:725
 msgid "Account removed from quick access"
@@ -2043,7 +2047,7 @@ msgstr "Author repository and thread read providers"
 msgid "Author's curation"
 msgstr "Author's curation"
 
-#: src/components/MediaDeliveryProvenance.tsx:65
+#: src/components/MediaDeliveryProvenance.tsx:81
 msgid "Authority"
 msgstr "Authority"
 
@@ -2095,7 +2099,7 @@ msgstr ""
 msgid "Available"
 msgstr ""
 
-#: src/components/MediaDeliveryProvenance.tsx:82
+#: src/components/MediaDeliveryProvenance.tsx:103
 msgid "Avatar CID"
 msgstr "Avatar CID"
 
@@ -2148,7 +2152,7 @@ msgstr ""
 msgid "Banned user returning"
 msgstr ""
 
-#: src/components/MediaDeliveryProvenance.tsx:87
+#: src/components/MediaDeliveryProvenance.tsx:108
 msgid "Banner CID"
 msgstr "Banner CID"
 
@@ -3985,7 +3989,7 @@ msgstr ""
 msgid "Deleted list"
 msgstr ""
 
-#: src/components/MediaDeliveryProvenance.tsx:72
+#: src/components/MediaDeliveryProvenance.tsx:93
 msgid "Delivery endpoint"
 msgstr "Delivery endpoint"
 
@@ -6297,8 +6301,8 @@ msgstr ""
 msgid "Hide post for me"
 msgstr ""
 
-#: src/components/MediaDeliveryProvenance.tsx:44
-#: src/components/MediaDeliveryProvenance.tsx:55
+#: src/components/MediaDeliveryProvenance.tsx:60
+#: src/components/MediaDeliveryProvenance.tsx:71
 msgid "Hide profile media source details"
 msgstr "Hide profile media source details"
 
@@ -6758,7 +6762,7 @@ msgstr "Inspect {surfaceLabel} sources"
 msgid "Inspect authorization settings"
 msgstr "Inspect authorization settings"
 
-#: src/components/MediaDeliveryProvenance.tsx:56
+#: src/components/MediaDeliveryProvenance.tsx:72
 msgid "Inspect profile media source"
 msgstr "Inspect profile media source"
 
@@ -8562,8 +8566,8 @@ msgstr "Not now"
 msgid "Not ready to hit post? Keep your best ideas in Drafts until the timing is just right."
 msgstr ""
 
-#: src/components/MediaDeliveryProvenance.tsx:83
-#: src/components/MediaDeliveryProvenance.tsx:88
+#: src/components/MediaDeliveryProvenance.tsx:104
+#: src/components/MediaDeliveryProvenance.tsx:109
 msgid "Not set"
 msgstr "Not set"
 
@@ -8802,6 +8806,16 @@ msgstr "Open advanced search options"
 msgid "Open avatar creator"
 msgstr ""
 
+#: src/components/MediaDeliveryProvenance.tsx:122
+#: src/components/MediaDeliveryProvenance.tsx:126
+msgid "Open avatar from account PDS"
+msgstr "Open avatar from account PDS"
+
+#: src/components/MediaDeliveryProvenance.tsx:134
+#: src/components/MediaDeliveryProvenance.tsx:138
+msgid "Open banner from account PDS"
+msgstr "Open banner from account PDS"
+
 #: src/view/com/feeds/ComposerPrompt.tsx:203
 msgid "Open camera"
 msgstr ""
@@ -8929,6 +8943,10 @@ msgstr "Open settings"
 msgid "Open share menu"
 msgstr ""
 
+#: src/components/MediaDeliveryProvenance.tsx:115
+msgid "Open source media"
+msgstr "Open source media"
+
 #: src/screens/StarterPack/StarterPackScreen.tsx:571
 msgid "Open starter pack menu"
 msgstr ""
@@ -8940,6 +8958,14 @@ msgstr ""
 #: src/screens/Settings/Settings.tsx:492
 msgid "Open system log"
 msgstr ""
+
+#: src/components/MediaDeliveryProvenance.tsx:124
+msgid "Open the avatar blob served directly by the account PDS"
+msgstr "Open the avatar blob served directly by the account PDS"
+
+#: src/components/MediaDeliveryProvenance.tsx:136
+msgid "Open the banner blob served directly by the account PDS"
+msgstr "Open the banner blob served directly by the account PDS"
 
 #: src/view/screens/Support.tsx:36
 msgid "open the hosting provider's support form"
@@ -9916,7 +9942,11 @@ msgstr ""
 msgid "Profile banner placeholder"
 msgstr "Profile banner placeholder"
 
-#: src/components/MediaDeliveryProvenance.tsx:63
+#: src/components/MediaDeliveryProvenance.tsx:50
+msgid "Profile media"
+msgstr "Profile media"
+
+#: src/components/MediaDeliveryProvenance.tsx:79
 msgid "Profile media delivery"
 msgstr "Profile media delivery"
 
@@ -9924,6 +9954,14 @@ msgstr "Profile media delivery"
 #: src/lib/strings/errors.ts:74
 msgid "Profile not found"
 msgstr ""
+
+#: src/components/MediaDeliveryProvenance.tsx:88
+msgid "Profile record"
+msgstr "Profile record"
+
+#: src/components/MediaDeliveryProvenance.tsx:52
+msgid "Profile record determines blob CID"
+msgstr "Profile record determines blob CID"
 
 #: src/view/shell/desktop/RightNav.tsx:182
 msgid "Profile record, identity resolution, and local moderation"
@@ -9960,7 +9998,7 @@ msgstr "Protected account DID"
 msgid "Protected accounts are unavailable on this PDS. No private account state was changed."
 msgstr "Protected accounts are unavailable on this PDS. No private account state was changed."
 
-#: src/components/MediaDeliveryProvenance.tsx:77
+#: src/components/MediaDeliveryProvenance.tsx:98
 msgid "Protocol method"
 msgstr "Protocol method"
 
@@ -10253,6 +10291,10 @@ msgstr "Reconciliation"
 msgid "Reconnect"
 msgstr ""
 
+#: src/components/MediaDeliveryProvenance.tsx:53
+msgid "Record available; direct PDS delivery"
+msgstr "Record available; direct PDS delivery"
+
 #: src/screens/Settings/PermissionedSpacesSettings.tsx:324
 msgid "Record collection"
 msgstr "Record collection"
@@ -10261,7 +10303,7 @@ msgstr "Record collection"
 msgid "Record key"
 msgstr "Record key"
 
-#: src/components/MediaDeliveryProvenance.tsx:67
+#: src/components/MediaDeliveryProvenance.tsx:83
 msgid "Record owner"
 msgstr "Record owner"
 
@@ -11967,7 +12009,7 @@ msgstr ""
 msgid "Show post replies in a threaded tree view"
 msgstr ""
 
-#: src/components/MediaDeliveryProvenance.tsx:45
+#: src/components/MediaDeliveryProvenance.tsx:61
 msgid "Show profile media source details"
 msgstr "Show profile media source details"
 
@@ -12009,7 +12051,7 @@ msgstr "Show reposts in feeds"
 msgid "Show samples of your saved feeds in your Following feed"
 msgstr ""
 
-#: src/components/MediaDeliveryProvenance.tsx:48
+#: src/components/MediaDeliveryProvenance.tsx:64
 msgid "Show the account PDS and blob references used for profile media"
 msgstr "Show the account PDS and blob references used for profile media"
 
@@ -13101,9 +13143,9 @@ msgstr "There's been a rush of new users to Plumbline! We'll activate your accou
 msgid "These are your default settings"
 msgstr ""
 
-#: src/components/MediaDeliveryProvenance.tsx:93
-msgid "These CIDs come from the account profile record. An AppView or CDN may provide a cached view, but it cannot replace the account PDS as the record authority."
-msgstr "These CIDs come from the account profile record. An AppView or CDN may provide a cached view, but it cannot replace the account PDS as the record authority."
+#: src/components/MediaDeliveryProvenance.tsx:145
+msgid "These CIDs come from the account profile record. The links above open the derived PDS delivery URLs. An AppView or CDN may provide a cached view, but it cannot replace the account PDS as the record authority."
+msgstr "These CIDs come from the account profile record. The links above open the derived PDS delivery URLs. An AppView or CDN may provide a cached view, but it cannot replace the account PDS as the record authority."
 
 #. Advanced search filter
 #: src/screens/Search/components/AdvancedSearchDialog/hooks.tsx:51

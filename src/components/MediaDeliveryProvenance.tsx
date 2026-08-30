@@ -3,8 +3,13 @@ import {Pressable, StyleSheet, View} from 'react-native'
 import {msg} from '@lingui/core/macro'
 import {useLingui} from '@lingui/react'
 
-import {type AccountProfileMediaProvenance} from '#/lib/api/account-profile'
+import {
+  type AccountProfileMediaProvenance,
+  buildPdsBlobUrl,
+} from '#/lib/api/account-profile'
+import {PLUMBLINE_BRASS} from '#/lib/brand'
 import {useTheme} from '#/alf'
+import {InlineLinkText} from '#/components/Link'
 import {PlumblineAuthoritySummary} from '#/components/PlumblineAuthoritySummary'
 import {Text} from '#/components/Typography'
 
@@ -27,14 +32,25 @@ export function MediaDeliveryProvenance({
 
   if (!provenance) return null
 
+  const avatarSource = buildPdsBlobUrl(
+    provenance.endpoint,
+    provenance.did,
+    provenance.avatarCid,
+  )
+  const bannerSource = buildPdsBlobUrl(
+    provenance.endpoint,
+    provenance.did,
+    provenance.bannerCid,
+  )
+
   return (
     <View testID="media-delivery-provenance" style={styles.container}>
       <PlumblineAuthoritySummary
         testID="media-delivery-authority-summary"
-        title="Profile media"
-        source="Account PDS"
-        rule="Profile record determines the blob CID"
-        state="Record available"
+        title={_(msg`Profile media`)}
+        source={_(msg`Account PDS profile record`)}
+        rule={_(msg`Profile record determines blob CID`)}
+        state={_(msg`Record available; direct PDS delivery`)}
       />
       <Pressable
         testID="media-delivery-provenance-toggle"
@@ -69,6 +85,11 @@ export function MediaDeliveryProvenance({
             selectable
           />
           <Detail
+            label={_(msg`Profile record`)}
+            value={provenance.recordUri}
+            selectable
+          />
+          <Detail
             label={_(msg`Delivery endpoint`)}
             value={provenance.endpoint}
             selectable
@@ -88,9 +109,40 @@ export function MediaDeliveryProvenance({
             value={provenance.bannerCid ?? _(msg`Not set`)}
             selectable
           />
+          {avatarSource || bannerSource ? (
+            <View style={styles.sources}>
+              <Text style={styles.sectionTitle}>
+                {_(msg`Open source media`)}
+              </Text>
+              {avatarSource ? (
+                <InlineLinkText
+                  testID="media-delivery-open-avatar-source"
+                  to={avatarSource}
+                  disableMismatchWarning
+                  label={_(msg`Open avatar from account PDS`)}
+                  accessibilityHint={_(
+                    msg`Open the avatar blob served directly by the account PDS`,
+                  )}>
+                  {_(msg`Open avatar from account PDS`)}
+                </InlineLinkText>
+              ) : null}
+              {bannerSource ? (
+                <InlineLinkText
+                  testID="media-delivery-open-banner-source"
+                  to={bannerSource}
+                  disableMismatchWarning
+                  label={_(msg`Open banner from account PDS`)}
+                  accessibilityHint={_(
+                    msg`Open the banner blob served directly by the account PDS`,
+                  )}>
+                  {_(msg`Open banner from account PDS`)}
+                </InlineLinkText>
+              ) : null}
+            </View>
+          ) : null}
           <Text style={styles.note}>
             {_(
-              msg`These CIDs come from the account profile record. An AppView or CDN may provide a cached view, but it cannot replace the account PDS as the record authority.`,
+              msg`These CIDs come from the account profile record. The links above open the derived PDS delivery URLs. An AppView or CDN may provide a cached view, but it cannot replace the account PDS as the record authority.`,
             )}
           </Text>
         </View>
@@ -134,6 +186,17 @@ const styles = StyleSheet.create({
   details: {
     gap: 3,
     paddingTop: 3,
+  },
+  sources: {
+    borderLeftWidth: 2,
+    borderLeftColor: PLUMBLINE_BRASS,
+    gap: 2,
+    marginTop: 2,
+    paddingLeft: 8,
+  },
+  sectionTitle: {
+    fontSize: 12,
+    fontWeight: '600',
   },
   detail: {
     fontSize: 12,

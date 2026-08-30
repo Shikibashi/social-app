@@ -1,6 +1,7 @@
 import {type Client, getBlobCidString} from '@atproto/lex'
 import {
   type AtIdentifierString,
+  type AtUriString,
   type DidString,
   type HandleString,
   type UriString,
@@ -18,6 +19,7 @@ const APPVIEW_PROFILE_TIMEOUT_MS = 1_500
 export type AccountProfileMediaProvenance = {
   authority: 'account-pds'
   did: DidString
+  recordUri: AtUriString
   endpoint: UriString
   deliveryMethod: 'com.atproto.sync.getBlob'
   avatarCid?: string
@@ -108,6 +110,7 @@ export function buildAccountProfileMediaProvenance(
   return {
     authority: 'account-pds',
     did: did as DidString,
+    recordUri: `at://${did}/app.bsky.actor.profile/self` as AtUriString,
     endpoint,
     deliveryMethod: 'com.atproto.sync.getBlob',
     ...(avatarCid ? {avatarCid} : {}),
