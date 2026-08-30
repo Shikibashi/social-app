@@ -37,6 +37,7 @@ import {InlineLinkText, Link} from '#/components/Link'
 import {ListMaybePlaceholder} from '#/components/Lists'
 import {Loader} from '#/components/Loader'
 import {GlobalLabelPreference} from '#/components/moderation/LabelPreference'
+import {PlumblineAuthoritySummary} from '#/components/PlumblineAuthoritySummary'
 import * as Toast from '#/components/Toast'
 import {Text} from '#/components/Typography'
 import {useAnalytics} from '#/analytics'
@@ -286,6 +287,22 @@ export function ModerationScreenInner({
   const adultContentUIDisabledOnIOS = IS_IOS && !adultContentEnabled
   const adultContentUIDisabled = adultContentUIDisabledOnIOS
 
+  const moderationSource = labelers?.length
+    ? labelers
+        .map(labeler =>
+          getLabelingServiceTitle({
+            displayName: labeler.creator.displayName,
+            handle: labeler.creator.handle,
+          }),
+        )
+        .join(', ')
+    : l`Configured label sources`
+  const moderationState = isLabelersLoading
+    ? l`Loading label sources`
+    : labelersError
+      ? l`Source unavailable; local rules remain active`
+      : l`Configured label sources available`
+
   const onToggleAdultContentEnabled = useCallback(
     async (selected: boolean) => {
       try {
@@ -304,6 +321,36 @@ export function ModerationScreenInner({
 
   return (
     <View style={[a.pt_2xl, a.px_lg, gtMobile && a.px_2xl]}>
+      <PlumblineAuthoritySummary
+        testID="moderation-reach-authority-summary"
+        title={l`Moderation & Reach`}
+        source={moderationSource}
+        rule={l`Labels are claims; your rules determine warning, hiding, filtering, or allowing.`}
+        state={moderationState}
+      />
+      <Link
+        testID="moderation-reach-services-link"
+        label={l`Inspect label sources in Services`}
+        to="/settings/services?section=providers"
+        style={[
+          a.self_start,
+          a.border,
+          a.px_md,
+          a.py_sm,
+          a.mb_2xl,
+          t.atoms.border_contrast_low,
+        ]}>
+        {state => (
+          <Text
+            style={[
+              a.font_semi_bold,
+              t.atoms.text_link,
+              (state.hovered || state.pressed) && t.atoms.bg_contrast_25,
+            ]}>
+            {l`Inspect label sources in Services`}
+          </Text>
+        )}
+      </Link>
       <ModerationLayers />
       {isModerationInboxEnabled && (
         <Link
