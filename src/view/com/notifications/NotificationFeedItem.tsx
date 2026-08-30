@@ -575,6 +575,8 @@ let NotificationFeedItem = ({
           : {
               backgroundColor: t.palette.primary_25,
               borderColor: t.palette.primary_100,
+              borderLeftColor: t.palette.primary_500,
+              borderLeftWidth: 3,
             },
         !hideTopBorder && a.border_t,
         // Clip horizontal overflow (in case of long handles) but let the timestamp overflow the bottom of the cell.
@@ -703,9 +705,9 @@ let NotificationFeedItem = ({
                   style={[
                     a.border,
                     a.p_sm,
-                    a.rounded_sm,
                     a.mt_sm,
                     t.atoms.border_contrast_low,
+                    styles.starterPack,
                   ]}>
                   <StarterPackCard starterPack={item.subject} />
                 </View>
@@ -1172,8 +1174,10 @@ const styles = StyleSheet.create({
     opacity: 0.8,
   },
   feedcard: {
-    borderRadius: 8,
     marginTop: 6,
+  },
+  starterPack: {
+    borderRadius: 0,
   },
   addedContainer: {
     paddingTop: 4,
