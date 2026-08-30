@@ -2,7 +2,6 @@ import {useCallback, useEffect, useMemo, useRef, useState} from 'react'
 import {StyleSheet} from 'react-native'
 import {SafeAreaView} from 'react-native-safe-area-context'
 import {ScrollForwarderView} from 'react-native-scroll-forwarder'
-import {moderateProfile, type ModerationOpts} from '#/lib/moderation'
 import {RichText as RichTextAPI} from '@bsky/sdk/richtext'
 import {msg} from '@lingui/core/macro'
 import {useLingui} from '@lingui/react'
@@ -12,6 +11,8 @@ import {useFocusEffect, useNavigation} from '@react-navigation/native'
 import {useOpenComposer} from '#/lib/hooks/useOpenComposer'
 import {useRequireEmailVerification} from '#/lib/hooks/useRequireEmailVerification'
 import {useSetTitle} from '#/lib/hooks/useSetTitle'
+import {type IdentityClaimsResult} from '#/lib/identity-runtime'
+import {moderateProfile, type ModerationOpts} from '#/lib/moderation'
 import {
   type CommonNavigatorParams,
   type NativeStackScreenProps,
@@ -27,7 +28,10 @@ import {useModerationOpts} from '#/state/preferences/moderation-opts'
 import {useLabelerInfoQuery} from '#/state/queries/labeler'
 import {useProfileQuery} from '#/state/queries/profile'
 import {stripNonLocalActorBlockVisibility} from '#/state/queries/public-visibility'
-import {useResolveDidQuery} from '#/state/queries/resolve-uri'
+import {
+  useResolveDidEvidenceQuery,
+  useResolveDidQuery,
+} from '#/state/queries/resolve-uri'
 import {useAppviewClient, useSession} from '#/state/session'
 import {ProfileFeedgens} from '#/view/com/feeds/ProfileFeedgens'
 import {ProfileLists} from '#/view/com/lists/ProfileLists'
@@ -46,6 +50,7 @@ import {Heart2_Stroke1_Corner0_Rounded as HeartIcon} from '#/components/icons/He
 import {Image_Stroke1_Corner0_Rounded as ImageIcon} from '#/components/icons/Image'
 import {Message_Stroke1_Corner0_Rounded_Filled as MessageIcon} from '#/components/icons/Message'
 import {VideoClip_Stroke1_Corner0_Rounded as VideoIcon} from '#/components/icons/VideoClip'
+import {IdentityResolutionProvenance} from '#/components/IdentityResolutionProvenance'
 import * as Layout from '#/components/Layout'
 import {ScreenHider} from '#/components/moderation/ScreenHider'
 import {ProfileStarterPacks} from '#/components/StarterPack/ProfileStarterPacks'
@@ -77,6 +82,7 @@ function ProfileScreenInner({route}: Props) {
     refetch: refetchDid,
     isPending: isDidPending,
   } = useResolveDidQuery(name)
+  const {data: identityResolution} = useResolveDidEvidenceQuery(name)
   const {
     data: profile,
     error: profileError,
@@ -118,6 +124,9 @@ function ProfileScreenInner({route}: Props) {
   if (resolveError || profileError) {
     return (
       <SafeAreaView style={[a.flex_1]}>
+        {identityResolution ? (
+          <IdentityResolutionProvenance result={identityResolution} />
+        ) : null}
         <ErrorScreen
           testID="profileErrorScreen"
           title={profileError ? _(msg`Not Found`) : _(msg`Oops!`)}
@@ -132,6 +141,7 @@ function ProfileScreenInner({route}: Props) {
     return (
       <ProfileScreenLoaded
         profile={profile}
+        identityResolution={identityResolution}
         moderationOpts={moderationOpts}
         isPlaceholderProfile={isPlaceholderProfile}
         hideBackButton={!!route.params.hideBackButton}
@@ -154,11 +164,13 @@ function ProfileScreenInner({route}: Props) {
 
 function ProfileScreenLoaded({
   profile: profileUnshadowed,
+  identityResolution,
   isPlaceholderProfile,
   moderationOpts,
   hideBackButton,
 }: {
   profile: app.bsky.actor.defs.ProfileViewDetailed
+  identityResolution?: IdentityClaimsResult
   moderationOpts: ModerationOpts
   hideBackButton: boolean
   isPlaceholderProfile: boolean
@@ -379,6 +391,9 @@ function ProfileScreenLoaded({
           isPlaceholderProfile={showPlaceholder}
           setMinimumHeight={setMinimumHeight}
         />
+        {identityResolution ? (
+          <IdentityResolutionProvenance result={identityResolution} />
+        ) : null}
       </ScrollForwarderView>
     )
   }

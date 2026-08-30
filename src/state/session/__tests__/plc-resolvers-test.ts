@@ -19,6 +19,7 @@ import {
   PRIMARY_PLC_RESOLVER,
   registerPlcResolver,
   setPlcResolverEnabled,
+  toIdentityDocumentEvidence,
   validatePlcResolver,
 } from '../plc-resolvers'
 
@@ -80,5 +81,49 @@ describe('PLC resolver declarations', () => {
     expect(() =>
       validatePlcResolver({...customResolver, id: PRIMARY_PLC_RESOLVER.id}),
     ).toThrow('identity is invalid')
+  })
+
+  it('maps resolver proof into inspectable identity evidence', () => {
+    const result = {
+      did: 'did:plc:evidence-test',
+      status: 'disagreement' as const,
+      claims: [
+        {
+          resolver: {
+            id: 'replica-a',
+            displayName: 'Replica A',
+            endpoint: 'https://replica-a.example',
+            operatorId: 'operator-a',
+          },
+          retrievedAt: '2026-08-30T12:00:00.000Z',
+          historyLength: 4,
+          verification: {
+            did: 'did:plc:evidence-test',
+            status: 'verified' as const,
+            verifiedOperations: 4,
+            headCid: 'bafy-head',
+          },
+        },
+      ],
+      selected: undefined,
+      distinctDocumentKeys: ['document-a', 'document-b'],
+      declaredOperatorIds: ['operator-a', 'operator-b'],
+      independence: 'declared-distinct' as const,
+    }
+
+    expect(toIdentityDocumentEvidence(result)).toMatchObject({
+      method: 'plc',
+      composition: 'disagreement',
+      distinctDocumentCount: 2,
+      operatorIndependence: 'declared-distinct',
+      resolvers: [
+        {
+          resolverId: 'replica-a',
+          status: 'verified',
+          verifiedOperations: 4,
+          headCid: 'bafy-head',
+        },
+      ],
+    })
   })
 })

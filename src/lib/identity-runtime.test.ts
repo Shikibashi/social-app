@@ -73,6 +73,71 @@ describe('identity runtime', () => {
     expect(result.claims[1]?.provenance.resolver).toBe('resolver-b')
   })
 
+  it('retains PLC disagreement evidence while allowing an explicit local choice', async () => {
+    const plcEvidence = {
+      method: 'plc' as const,
+      composition: 'disagreement' as const,
+      resolvers: [
+        {
+          resolverId: 'plc-replica-a',
+          operatorId: 'operator-a',
+          status: 'verified' as const,
+          verifiedOperations: 3,
+          headCid: 'bafy-plc-head-a',
+        },
+        {
+          resolverId: 'plc-replica-b',
+          operatorId: 'operator-b',
+          status: 'verified' as const,
+          verifiedOperations: 3,
+          headCid: 'bafy-plc-head-b',
+        },
+      ],
+      distinctDocumentCount: 2,
+      declaredOperatorIds: ['operator-a', 'operator-b'],
+      operatorIndependence: 'declared-distinct' as const,
+    }
+    const providers = [
+      {
+        id: 'resolver-a',
+        resolveHandle: () => Promise.resolve({did: 'did:plc:alice'}),
+        resolveDid: () =>
+          Promise.resolve({
+            handle: 'alice.example',
+            endpoint: 'https://pds.example',
+            evidence: plcEvidence,
+          }),
+      },
+      {
+        id: 'resolver-b',
+        resolveHandle: () => Promise.resolve({did: 'did:plc:alice'}),
+        resolveDid: () =>
+          Promise.resolve({
+            handle: 'alice.example',
+            endpoint: 'https://pds.example',
+            evidence: plcEvidence,
+          }),
+      },
+    ]
+
+    const agreement = await resolveIdentityClaims('alice.example', providers)
+    expect(agreement.status).toBe('disagreement')
+    expect(agreement.selected).toBeUndefined()
+    expect(agreement.evidence[0]).toMatchObject({
+      composition: 'disagreement',
+      distinctDocumentCount: 2,
+    })
+    expect(agreement.claims[0]?.evidence?.resolvers[1]?.headCid).toBe(
+      'bafy-plc-head-b',
+    )
+
+    const explicit = await resolveIdentityClaims('alice.example', providers, {
+      mode: 'first-verified',
+    })
+    expect(explicit.status).toBe('disagreement')
+    expect(explicit.selected?.did).toBe('did:plc:alice')
+  })
+
   it('fails closed on disagreement and preserves the disputed claims', async () => {
     const result = await resolveIdentityClaims('alice.example', [
       {

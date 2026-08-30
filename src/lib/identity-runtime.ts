@@ -13,12 +13,52 @@ export type ResolutionProvenance = {
   cacheAgeMs: number
   documentVersion?: string
 }
+
+export type IdentityDocumentEvidenceComposition =
+  | 'agreement'
+  | 'disagreement'
+  | 'partial'
+  | 'unavailable'
+  | 'empty'
+  | 'tombstoned'
+  | 'not-checked'
+
+export type IdentityResolverEvidence = {
+  resolverId: string
+  displayName?: string
+  endpoint?: string
+  operatorId?: string
+  retrievedAt?: string
+  status: 'verified' | 'tombstoned' | 'invalid' | 'empty' | 'unavailable'
+  historyLength?: number
+  verifiedOperations?: number
+  headCid?: string
+  error?: string
+}
+
+/**
+ * Evidence about the document behind an identity claim. This is deliberately
+ * a summary rather than a second DID document model: the PLC verifier remains
+ * the authority for cryptographic validation, while the client keeps enough
+ * provenance to explain which sources agreed, disagreed, or were unavailable.
+ */
+export type IdentityDocumentEvidence = {
+  method: 'plc' | 'did:web' | 'direct'
+  composition: IdentityDocumentEvidenceComposition
+  resolvers: IdentityResolverEvidence[]
+  distinctDocumentCount: number
+  declaredOperatorIds?: string[]
+  operatorIndependence?: 'declared-distinct' | 'not-established'
+  selectedResolverId?: string
+}
+
 export type IdentityResolution = {
   did?: string
   handle?: string
   endpoint?: string
   status: ResolutionStatus
   provenance: ResolutionProvenance
+  evidence?: IdentityDocumentEvidence
 }
 
 /**
@@ -42,6 +82,7 @@ export const DEFAULT_IDENTITY_RESOLUTION_POLICY: IdentityResolutionPolicy = {
 export type IdentityClaimsResult = {
   input: string
   claims: IdentityClaim[]
+  evidence: IdentityDocumentEvidence[]
   /** Providers that did not produce a safe, usable claim. */
   unavailableResolvers: string[]
   /** The evidence state, independent of whether an explicit policy selected a claim. */
@@ -71,9 +112,12 @@ export function getKnownAccountDidForHandle(
 export type ResolverProvider = {
   id: string
   resolveHandle: (handle: string) => Promise<{did: string}>
-  resolveDid: (
-    did: string,
-  ) => Promise<{handle?: string; endpoint?: string; version?: string}>
+  resolveDid: (did: string) => Promise<{
+    handle?: string
+    endpoint?: string
+    version?: string
+    evidence?: IdentityDocumentEvidence
+  }>
 }
 export function validateIdentityEndpoint(
   endpoint: string | undefined,
@@ -174,21 +218,36 @@ function makeIdentityClaim(
   input: string,
   provider: ResolverProvider,
   did: string,
-  doc: {handle?: string; endpoint?: string; version?: string},
+  doc: {
+    handle?: string
+    endpoint?: string
+    version?: string
+    evidence?: IdentityDocumentEvidence
+  },
   now: number,
 ): IdentityClaim {
-  const status: ResolutionStatus =
+  let status: ResolutionStatus =
     input.startsWith('did:') ||
     !doc.handle ||
     doc.handle.toLowerCase() === input.toLowerCase()
       ? 'verified'
       : 'mismatched'
+
+  if (doc.evidence?.composition === 'tombstoned') status = 'revoked'
+  if (
+    doc.evidence?.composition === 'unavailable' ||
+    doc.evidence?.composition === 'empty'
+  ) {
+    status = 'resolver-unavailable'
+  }
+
   return {
     providerId: provider.id,
     did,
     handle: doc.handle,
     endpoint: doc.endpoint,
     status,
+    evidence: doc.evidence,
     provenance: {
       resolver: provider.id,
       resolvedAt: now,
@@ -215,9 +274,7 @@ export function reconcileIdentityClaims(
   if (result.status === 'invalid' || result.claims.length === 0)
     return {...result, selected: undefined}
 
-  const verifiedClaims = result.claims.filter(
-    claim => claim.status === 'verified',
-  )
+  const verifiedClaims = result.claims.filter(isSelectableIdentityClaim)
   let selected: IdentityClaim | undefined
 
   if (result.status === 'verified') {
@@ -252,6 +309,7 @@ export async function resolveIdentityClaims(
     return {
       input,
       claims: [],
+      evidence: [],
       unavailableResolvers: [],
       status: 'invalid',
     }
@@ -266,10 +324,12 @@ export async function resolveIdentityClaims(
           : (await provider.resolveHandle(input)).did
         if (!isSupportedDid(did)) return {providerId: provider.id}
         const doc = await provider.resolveDid(did)
-        if (!validateIdentityEndpoint(doc.endpoint))
-          return {providerId: provider.id}
+        if (!validateIdentityEndpoint(doc.endpoint)) {
+          return {providerId: provider.id, evidence: doc.evidence}
+        }
         return {
           claim: makeIdentityClaim(input, provider, did, doc, now),
+          evidence: doc.evidence,
         }
       } catch {
         return {providerId: provider.id}
@@ -278,33 +338,75 @@ export async function resolveIdentityClaims(
   )
 
   const claims: IdentityClaim[] = []
+  const evidence: IdentityDocumentEvidence[] = []
   const unavailableResolvers: string[] = []
   for (const outcome of outcomes) {
     if ('claim' in outcome && outcome.claim) claims.push(outcome.claim)
     else if ('providerId' in outcome)
       unavailableResolvers.push(outcome.providerId)
+    if ('evidence' in outcome && outcome.evidence)
+      evidence.push(outcome.evidence)
   }
-  const verifiedClaims = claims.filter(claim => claim.status === 'verified')
+  const verifiedClaims = claims.filter(isSelectableIdentityClaim)
   const distinctClaims = new Set(verifiedClaims.map(identityClaimKey))
-  const hasMismatchedClaim = claims.some(claim => claim.status !== 'verified')
+  const hasMismatchedClaim = claims.some(
+    claim => claim.status === 'mismatched' || claim.status === 'revoked',
+  )
+  const hasUnavailableClaim = claims.some(
+    claim => claim.status === 'resolver-unavailable',
+  )
+  const hasEvidenceDisagreement = evidence.some(
+    item => item.composition === 'disagreement',
+  )
+  const hasEvidenceUnavailable = evidence.some(item =>
+    ['partial', 'unavailable', 'empty'].includes(item.composition),
+  )
+  const hasEvidenceTombstone = evidence.some(
+    item => item.composition === 'tombstoned',
+  )
   const hasDisagreement =
     distinctClaims.size > 1 ||
     hasMismatchedClaim ||
-    unavailableResolvers.length > 0
+    hasEvidenceDisagreement ||
+    hasEvidenceTombstone
   const result: IdentityClaimsResult = {
     input,
     claims,
+    evidence: uniqueIdentityEvidence(evidence),
     unavailableResolvers,
     status:
       claims.length === 0
         ? 'resolver-unavailable'
-        : hasMismatchedClaim || distinctClaims.size > 1
+        : hasDisagreement
           ? 'disagreement'
-          : hasDisagreement
+          : hasUnavailableClaim ||
+              hasEvidenceUnavailable ||
+              unavailableResolvers.length > 0
             ? 'resolver-unavailable'
             : 'verified',
   }
   return reconcileIdentityClaims(result, policy)
+}
+
+function isSelectableIdentityClaim(claim: IdentityClaim): boolean {
+  return (
+    claim.status === 'verified' &&
+    claim.evidence?.composition !== 'unavailable' &&
+    claim.evidence?.composition !== 'empty' &&
+    claim.evidence?.composition !== 'tombstoned'
+  )
+}
+
+function uniqueIdentityEvidence(
+  evidence: IdentityDocumentEvidence[],
+): IdentityDocumentEvidence[] {
+  const seen = new Set<string>()
+  return evidence.filter(item => {
+    const key = JSON.stringify(item)
+    if (seen.has(key)) return false
+    seen.add(key)
+    return true
+  })
 }
 
 export class IdentityResolutionDisagreementError extends Error {
@@ -368,6 +470,7 @@ export async function resolveIdentity(
         handle: doc.handle,
         endpoint: doc.endpoint,
         status,
+        evidence: doc.evidence,
         provenance: {
           resolver: provider.id,
           resolvedAt: now,

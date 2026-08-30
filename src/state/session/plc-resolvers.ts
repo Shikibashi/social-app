@@ -1,3 +1,4 @@
+import {type IdentityDocumentEvidence} from '#/lib/identity-runtime'
 import {
   auditLogUrl,
   type PlcResolverCompositionResult,
@@ -128,6 +129,43 @@ export async function resolvePlcIdentity(
   return resolvePlcWithResolvers(did, getEffectivePlcResolvers(), {
     fetcher,
   })
+}
+
+/**
+ * Keep the PLC verifier's result attributable when it crosses into the
+ * generic identity-resolution query. The query needs a small serializable
+ * summary for UI and policy decisions; it must not recreate or weaken PLC
+ * history verification.
+ */
+export function toIdentityDocumentEvidence(
+  result: PlcResolverCompositionResult,
+): IdentityDocumentEvidence {
+  const selectedResolver = result.claims.find(
+    claim => claim.verification?.document === result.selected,
+  )
+
+  return {
+    method: 'plc',
+    composition: result.status,
+    resolvers: result.claims.map(claim => ({
+      resolverId: claim.resolver.id,
+      displayName: claim.resolver.displayName,
+      endpoint: claim.resolver.endpoint,
+      operatorId: claim.resolver.operatorId,
+      retrievedAt: claim.retrievedAt,
+      status: claim.error
+        ? 'unavailable'
+        : (claim.verification?.status ?? 'unavailable'),
+      historyLength: claim.historyLength,
+      verifiedOperations: claim.verification?.verifiedOperations,
+      headCid: claim.verification?.headCid,
+      error: claim.error ?? claim.verification?.error,
+    })),
+    distinctDocumentCount: result.distinctDocumentKeys.length,
+    declaredOperatorIds: result.declaredOperatorIds,
+    operatorIndependence: result.independence,
+    selectedResolverId: selectedResolver?.resolver.id,
+  }
 }
 
 export {auditLogUrl}

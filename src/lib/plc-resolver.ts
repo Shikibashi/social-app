@@ -112,7 +112,14 @@ export async function resolvePlcWithResolvers(
       ),
     ),
   ]
-  const hasFailures = claims.some(claim => !claim.verification)
+  // A response that parsed but failed cryptographic verification is still a
+  // failed provider claim. Do not let a malicious or stale replica disappear
+  // from the composition merely because it returned HTTP 200.
+  const hasFailures = claims.some(
+    claim =>
+      !claim.verification ||
+      !['verified', 'tombstoned'].includes(claim.verification.status),
+  )
   const allTombstoned =
     usable.length > 0 &&
     usable.every(claim => claim.verification.status === 'tombstoned')
