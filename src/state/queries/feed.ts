@@ -15,7 +15,10 @@ import {
 
 import {DISCOVER_FEED_URI, DISCOVER_SAVED_FEED} from '#/lib/constants'
 import {moderateFeedGenerator} from '#/lib/moderation'
-import {PROVIDER_COMPOSITION_QUERY_META} from '#/lib/provider-composition'
+import {
+  PROVIDER_COMPOSITION_QUERY_META,
+  type ProviderCompositionResult,
+} from '#/lib/provider-composition'
 import {sanitizeDisplayName} from '#/lib/strings/display-names'
 import {sanitizeHandle} from '#/lib/strings/handles'
 import {GCTIME, STALE} from '#/state/queries'
@@ -474,6 +477,11 @@ export const createPopularFeedsSearchQueryKey = (query: string) => [
   query,
 ]
 
+export type PopularFeedsSearchPage =
+  app.bsky.unspecced.getPopularFeedGenerators.$OutputBody & {
+    providerComposition?: ProviderCompositionResult<app.bsky.unspecced.getPopularFeedGenerators.$OutputBody>
+  }
+
 export function usePopularFeedsSearch({
   query,
   enabled,
@@ -490,28 +498,28 @@ export function usePopularFeedsSearch({
     meta: PROVIDER_COMPOSITION_QUERY_META,
     queryKey: createPopularFeedsSearchQueryKey(query),
     queryFn: async ({pageParam, signal}) => {
-      const data = requireComposedProviderValue(
-        await composeAppViewProviderRead(
-          'feeds',
-          (providerClient, _provider, context) =>
-            providerClient.call(
-              app.bsky.unspecced.getPopularFeedGenerators,
-              {
-                limit: 15,
-                query: query,
-                cursor: pageParam,
-              },
-              {signal: context.signal},
-            ),
-          {
-            access: 'account-scoped',
-            clientForProvider: providerClientFactory,
-            signal,
-          },
-        ),
+      const composed = await composeAppViewProviderRead(
+        'feeds',
+        (providerClient, _provider, context) =>
+          providerClient.call(
+            app.bsky.unspecced.getPopularFeedGenerators,
+            {
+              limit: 15,
+              query: query,
+              cursor: pageParam,
+            },
+            {signal: context.signal},
+          ),
+        {
+          access: 'account-scoped',
+          clientForProvider: providerClientFactory,
+          signal,
+        },
       )
-
-      return data
+      return {
+        ...requireComposedProviderValue(composed),
+        providerComposition: composed,
+      }
     },
     initialPageParam: undefined as string | undefined,
     getNextPageParam: lastPage => lastPage.cursor,

@@ -581,6 +581,9 @@ let SearchScreenUserResults = ({
   const profiles = useMemo(() => {
     return results?.pages.flatMap(page => page.actors) || []
   }, [results])
+  const providerComposition =
+    results?.pages.find(page => page.providerComposition)
+      ?.providerComposition ?? getProviderCompositionFromError(error)
 
   const fireTracking = useCallOnce(() => {
     ax.metric('search:results:loaded', {
@@ -594,19 +597,29 @@ let SearchScreenUserResults = ({
 
   if (error) {
     return (
-      <EmptyState
-        messageText={
-          shouldRetryError(error) || isNetworkError(error)
-            ? l`We’re sorry, but your search could not be completed. Please try again in a few minutes.`
-            : l`We’re sorry, but your search could not be completed.`
-        }
-        error={error.toString()}
-      />
+      <>
+        <ProviderCompositionProvenance
+          surfaceLabel={l`People`}
+          composition={providerComposition}
+        />
+        <EmptyState
+          messageText={
+            shouldRetryError(error) || isNetworkError(error)
+              ? l`We’re sorry, but your search could not be completed. Please try again in a few minutes.`
+              : l`We’re sorry, but your search could not be completed.`
+          }
+          error={cleanError(error)}
+        />
+      </>
     )
   }
 
   return isFetched && profiles ? (
     <>
+      <ProviderCompositionProvenance
+        surfaceLabel={l`People`}
+        composition={providerComposition}
+      />
       {profiles.length ? (
         <List
           data={profiles}
@@ -667,6 +680,7 @@ let SearchScreenFeedsResults = ({
   active: boolean
 }): React.ReactNode => {
   const ax = useAnalytics()
+  const {t: l} = useLingui()
   const t = useTheme()
 
   const {
@@ -684,6 +698,9 @@ let SearchScreenFeedsResults = ({
   const feeds = useMemo(() => {
     return results?.pages.flatMap(page => page.feeds) || []
   }, [results])
+  const providerComposition =
+    results?.pages.find(page => page.providerComposition)
+      ?.providerComposition ?? getProviderCompositionFromError(error)
   const onEndReached = useCallback(() => {
     if (isFetching || !hasNextPage || error) return
     void fetchNextPage()
@@ -699,8 +716,31 @@ let SearchScreenFeedsResults = ({
     fireTracking()
   }
 
+  if (error) {
+    return (
+      <>
+        <ProviderCompositionProvenance
+          surfaceLabel={l`Feeds`}
+          composition={providerComposition}
+        />
+        <EmptyState
+          messageText={
+            shouldRetryError(error) || isNetworkError(error)
+              ? l`We’re sorry, but your feed search could not be completed. Please try again in a few minutes.`
+              : l`We’re sorry, but your feed search could not be completed.`
+          }
+          error={cleanError(error)}
+        />
+      </>
+    )
+  }
+
   return isFetched ? (
     <>
+      <ProviderCompositionProvenance
+        surfaceLabel={l`Feeds`}
+        composition={providerComposition}
+      />
       {feeds.length || hasNextPage ? (
         <List
           data={feeds}
