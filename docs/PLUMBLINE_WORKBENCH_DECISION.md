@@ -556,6 +556,36 @@ authority boundaries. It does not establish independent operator control,
 close the external Relay/AppView or short-TTL OAuth gates, or prove
 credentialed write behavior.
 
+## 23. Iteration 17 — route service inspection to the owning boundary
+
+The capability map made service seams visible, but several `Inspect` actions
+still opened a generic Services section even when the capability had an
+existing authority-owned settings surface. This iteration keeps the map as
+the entry point while routing each action to the screen that can actually
+explain or change that boundary.
+
+### Implementation and verification evidence
+
+- `src/screens/Settings/ServicesSettings.tsx` now gives each row an explicit
+  workbench destination. Provider-backed identity, AppView, feed, search,
+  notification, and authorization rows remain in the Services workbench;
+  Moderation & Reach opens moderation settings, Media opens Content & Media,
+  Communities opens private Spaces settings, and Personal Data Server plus
+  Exit & backups open Identity sovereignty.
+- The destination is modeled as a typed Services-section or route target, so
+  adding a capability row cannot silently turn its inspection action into a
+  generic provider redirect.
+- Prettier, Oxlint, web TypeScript, and the production web export pass. The
+  export was deployed to `https://8ef923ad.social-edriffles.pages.dev` behind
+  `https://plumblines.uk`. The credential-free ChatGPT in-app-browser check
+  exercised all five route-backed actions, confirmed the expected URLs and
+  titles, found no error state, and returned to the Services overview.
+
+This makes the authority map actionable without adding a second settings
+system or changing provider selection, PDS routing, OAuth grants, or account
+data. It does not establish independent operators, close the external
+Relay/AppView or short-TTL OAuth gates, or prove credentialed write behavior.
+
 ## 24. Remaining concentrations worth attacking next
 
 1. Add a compatible, independently attributable media delivery composition contract only if it can preserve PDS blob authority and safe browser delivery; do not treat a CDN URL as a second authoritatively owned record.
