@@ -86,7 +86,10 @@ export function HomeScreen(props: Props) {
 
   if (preferences && pinnedFeedInfos && !isPinnedFeedsLoading) {
     return (
-      <Layout.Screen testID="HomeScreen" noInsetTop={IS_LIQUID_GLASS}>
+      <Layout.Screen
+        testID="HomeScreen"
+        ecwMode="workbench"
+        noInsetTop={IS_LIQUID_GLASS}>
         <HomeHeaderModeProvider>
           <HomeScreenReady
             {...props}
@@ -98,7 +101,7 @@ export function HomeScreen(props: Props) {
     )
   } else {
     return (
-      <Layout.Screen>
+      <Layout.Screen ecwMode="workbench">
         <Layout.Center style={styles.loading}>
           <ActivityIndicator size="large" />
         </Layout.Center>

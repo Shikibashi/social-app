@@ -521,7 +521,7 @@ export function FeedsScreen(_props: Props) {
   )
 
   return (
-    <Layout.Screen testID="FeedsScreen">
+    <Layout.Screen testID="FeedsScreen" ecwMode="workbench">
       <Layout.Center>
         <Layout.Header.Outer>
           <Layout.Header.BackButton />

@@ -237,6 +237,16 @@ function DesktopWorkbenchInspector({routeName}: {routeName: string}) {
         action: _(msg`Configure feeds`),
       }
       break
+    case 'Notifications':
+      context = {
+        route: _(msg`Notifications`),
+        source: _(msg`Notification service`),
+        rule: _(msg`Filter who you receive notifications from`),
+        control: _(msg`Notification settings`),
+        href: '/settings/notifications',
+        action: _(msg`Notification settings`),
+      }
+      break
     default:
       context = {
         route: routeName,

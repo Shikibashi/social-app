@@ -517,7 +517,7 @@ export function SearchScreenShell({
   const showHeader = !gtMobile || navButton !== 'menu'
 
   return (
-    <Layout.Screen testID={testID}>
+    <Layout.Screen testID={testID} ecwMode="workbench">
       <View
         ref={headerRef}
         onLayout={evt => {
