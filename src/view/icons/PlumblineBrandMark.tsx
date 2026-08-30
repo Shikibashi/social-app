@@ -1,7 +1,7 @@
 import {type ImageStyle, type StyleProp} from 'react-native'
 import Svg, {Path, Rect} from 'react-native-svg'
 
-import {PRODUCT_NAME} from '#/lib/brand'
+import {PLUMBLINE_BRASS, PRODUCT_NAME} from '#/lib/brand'
 
 /**
  * The shared Plumbline mark used by the web and native application shell.
@@ -33,7 +33,7 @@ export function PlumblineBrandMark({
         height="464"
         rx="60"
         fill="none"
-        stroke="#B79A5A"
+        stroke={PLUMBLINE_BRASS}
         strokeWidth="8"
       />
       <Path
@@ -46,26 +46,26 @@ export function PlumblineBrandMark({
       <Path
         d="M256 48v224"
         fill="none"
-        stroke="#B79A5A"
+        stroke={PLUMBLINE_BRASS}
         strokeWidth="4"
         strokeLinecap="round"
       />
       <Path
         d="M235 44h42"
         fill="none"
-        stroke="#B79A5A"
+        stroke={PLUMBLINE_BRASS}
         strokeWidth="10"
         strokeLinecap="round"
       />
       <Path
         d="M226 270h60l-12 28h-36z"
-        fill="#B79A5A"
+        fill={PLUMBLINE_BRASS}
         stroke="#F6F4EF"
         strokeWidth="3"
       />
       <Path
         d="M214 298h84l-20 38-22 111-22-111z"
-        fill="#B79A5A"
+        fill={PLUMBLINE_BRASS}
         stroke="#F6F4EF"
         strokeWidth="4"
         strokeLinejoin="round"

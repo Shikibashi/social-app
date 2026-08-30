@@ -1,6 +1,9 @@
 const DEFAULT_PRODUCT_NAME = 'Plumbline'
 const DEFAULT_PUBLIC_WEB_ORIGIN = 'https://plumblines.uk'
 
+/** The identity accent used by the Plumbline mark and alignment markers. */
+export const PLUMBLINE_BRASS = '#B79A5A'
+
 export function resolveProductName(value: string | undefined): string {
   const name = value?.trim()
   return name && name.length <= 64 ? name : DEFAULT_PRODUCT_NAME

@@ -27,6 +27,7 @@ import {LoadingPlaceholder} from '#/view/com/util/LoadingPlaceholder'
 import {PressableWithHover} from '#/view/com/util/PressableWithHover'
 import {UserAvatar} from '#/view/com/util/UserAvatar'
 import {NavSignupCard} from '#/view/shell/NavSignupCard'
+import {PlumblineSelectionMarker} from '#/view/shell/PlumblineSelectionMarker'
 import {PlumblineShellBrand} from '#/view/shell/PlumblineShellBrand'
 import {
   atoms as a,
@@ -453,7 +454,8 @@ function NavItem({
     [navigation, href, isCurrent, ax, navItem],
   )
 
-  const Icon = isCurrent || isRelated ? icons.active : icons.inactive
+  const isSelected = isCurrent || isRelated
+  const Icon = isSelected ? icons.active : icons.inactive
 
   return (
     <PressableWithHover
@@ -461,10 +463,12 @@ function NavItem({
         a.flex_row,
         a.align_center,
         a.p_md,
-        a.rounded_full,
+        a.relative,
+        web({borderRadius: 1}),
         a.gap_sm,
         a.outline_inset_1,
         a.transition_color,
+        isSelected && t.atoms.bg_contrast_25,
       ]}
       hoverStyle={t.atoms.bg_contrast_25}
       // @ts-expect-error the function signature differs on web -prf
@@ -472,8 +476,13 @@ function NavItem({
       href={href}
       dataSet={{noUnderline: 1}}
       role="link"
+      testID={`plumbline-nav-${navItem}`}
       accessibilityLabel={label}
-      accessibilityHint="">
+      accessibilityHint=""
+      accessibilityState={{selected: isSelected}}>
+      {isSelected ? (
+        <PlumblineSelectionMarker testID={`plumbline-nav-marker-${navItem}`} />
+      ) : null}
       <View
         style={[
           a.align_center,
@@ -601,7 +610,7 @@ function ComposeBtn({minimal}: {minimal: boolean}) {
         size="large"
         color="primary"
         style={[
-          a.rounded_full,
+          web({borderRadius: 1}),
           minimal && {width: LARGE_ELEMENT_SIZE, height: LARGE_ELEMENT_SIZE},
         ]}>
         <ButtonIcon icon={EditBigIcon} size={minimal ? 'lg' : 'sm'} />
