@@ -189,7 +189,48 @@ This preserves ATProto collection names and external provider URLs. It only
 changes the destination used for new internal application links and keeps
 legacy reference links interoperable.
 
-## 13. Remaining concentrations worth attacking next
+## 13. Iteration 7 — inspectable account-PDS profile media
+
+The signed-in account profile already used the account PDS profile record as
+the authority for avatar and banner CIDs, but the UI did not expose that
+boundary. This iteration keeps the direct `com.atproto.sync.getBlob` delivery
+path and adds progressive inspection for the source, record owner, endpoint,
+protocol method, and CIDs. It does not add a second media provider or treat a
+CDN URL as an authoritatively owned record.
+
+### Implementation and verification evidence
+
+- `src/lib/api/account-profile.ts` extracts the profile-record blob CIDs,
+  normalizes the account PDS origin, preserves the direct public blob URLs,
+  and carries typed `AccountProfileMediaProvenance` alongside the owner
+  profile view.
+- `src/components/MediaDeliveryProvenance.tsx` adds a collapsed/expanded
+  inspector to the profile header. It identifies the account PDS as the
+  authority and explains that AppView/CDN views cannot replace the profile
+  record. `src/view/screens/Profile.tsx` renders it only when this verified
+  owner-PDS evidence exists.
+- `src/lib/api/account-profile.test.ts` covers the six account-profile cases,
+  including provenance normalization and refusal to claim a source without a
+  usable endpoint or blob. Web TypeScript, targeted Oxlint, Prettier, and
+  whitespace checks pass.
+- Client commit `0774e978e` was pushed to
+  `fork/codex/spaces-alpha-integration`.
+- The exact web export was deployed with Wrangler at
+  `https://22c77414.social-edriffles.pages.dev`; both the preview and
+  `https://plumblines.uk/` serve the Plumbline title, mark, and
+  `main.40c760a2.js` bundle.
+- The credential-free public-contract probe passed at
+  `2026-08-30T09:06:34.065473Z` with `credentialsUsed: false` and
+  `writesPerformed: false`. The ChatGPT in-app browser loaded the canonical
+  shell and populated public feed content and provenance controls without
+  performing a mutation.
+
+This evidence is intentionally narrower than a general media federation
+claim. Non-owner profiles continue to use the existing public AppView/CDN
+media view until a safe, independently verified PDS endpoint can be derived;
+no account credential is sent to obtain that fallback.
+
+## 14. Remaining concentrations worth attacking next
 
 1. Add a compatible, independently attributable media delivery composition contract only if it can preserve PDS blob authority and safe browser delivery; do not treat a CDN URL as a second authoritatively owned record.
 2. Add credentialed multi-provider browser fixtures for revoked grants, migration, block boundaries, and partial service support without using production credentials.
