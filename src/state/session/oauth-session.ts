@@ -20,6 +20,7 @@ import {
   OAUTH_SIGNUP_PROMPT,
   type OAuthFeature,
 } from './oauth-scopes'
+import {resolvePdsEndpointForDid} from './pds-resolution'
 import {sessionAccountToSessionData, type SessionData} from './session-data'
 import {type SessionAccount} from './types'
 
@@ -188,6 +189,7 @@ export class OAuthSessionAdapter {
     private current: AtprotoOAuthSession | undefined,
     private snapshot: SessionData,
     private readonly hooks: OAuthSessionHooks,
+    private pdsUrl?: string,
   ) {}
 
   static async fromSession(
@@ -196,7 +198,12 @@ export class OAuthSessionAdapter {
     pdsUrl?: string,
   ) {
     const snapshot = await readSessionData(session, pdsUrl)
-    return new OAuthSessionAdapter(session, snapshot, hooks)
+    return new OAuthSessionAdapter(
+      session,
+      snapshot,
+      hooks,
+      extractPdsEndpoint(snapshot.didDoc) ?? pdsUrl,
+    )
   }
 
   static fromStoredAccount(
@@ -207,7 +214,7 @@ export class OAuthSessionAdapter {
       ...sessionAccountToSessionData(account),
       authType: 'oauth' as const,
     }
-    return new OAuthSessionAdapter(undefined, snapshot, hooks)
+    return new OAuthSessionAdapter(undefined, snapshot, hooks, account.pdsUrl)
   }
 
   get destroyed() {
@@ -269,9 +276,10 @@ export class OAuthSessionAdapter {
     if (this.disposed) throw new Error('OAuth session disposed')
     try {
       const next = await getOAuthClient().restore(this.did, true)
-      const nextSnapshot = await readSessionData(next)
+      const nextSnapshot = await readSessionData(next, this.pdsUrl)
       this.current = next
       this.snapshot = nextSnapshot
+      this.pdsUrl = extractPdsEndpoint(nextSnapshot.didDoc) ?? this.pdsUrl
       this.hooks.onUpdated?.(nextSnapshot)
       return nextSnapshot
     } catch (error) {
@@ -334,7 +342,10 @@ async function readSessionData(
   }
   const tokenInfo = await session.getTokenInfo(false)
   const oauthScopes = normalizeOAuthScopes(tokenInfo.scope)
-  const endpoint = pdsUrl ?? extractPdsEndpoint(data.didDoc)
+  const endpoint =
+    pdsUrl ??
+    extractPdsEndpoint(data.didDoc) ??
+    (await resolvePdsEndpointForDid(data.did))
   const didDoc = endpoint
     ? {
         id: data.did,
