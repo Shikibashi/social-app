@@ -6,8 +6,8 @@ import {
 } from '@tanstack/react-query'
 
 import {STALE} from '#/state/queries'
-import {useOnMarkAsRead} from '#/state/queries/messages/list-conversations'
-import {useChatClient} from '#/state/session'
+import {useChatClient, useSession} from '#/state/session'
+import {requiresOAuthFeatureUpgrade} from '#/state/session/oauth-authority'
 import {chat} from '#/lexicons'
 import {
   RQKEY_PARTIAL as UNREAD_COUNTS_PARTIAL_KEY,
@@ -18,6 +18,7 @@ import {
   type ConvoListQueryData,
   getConvoFromQueryData,
   RQKEY_ROOT as LIST_CONVOS_KEY,
+  useOnMarkAsRead,
 } from './list-conversations'
 
 export const RQKEY_ROOT = 'convo'
@@ -25,6 +26,11 @@ export const RQKEY = (convoId: string) => [RQKEY_ROOT, convoId]
 
 export function useConvoQuery({convoId}: {convoId: string}) {
   const client = useChatClient()
+  const {hasSession, currentAccount} = useSession()
+  const chatAuthorizationRequired = requiresOAuthFeatureUpgrade(
+    currentAccount,
+    'chat',
+  )
 
   return useQuery({
     queryKey: RQKEY(convoId),
@@ -33,6 +39,7 @@ export function useConvoQuery({convoId}: {convoId: string}) {
       return data.convo
     },
     staleTime: STALE.INFINITY,
+    enabled: hasSession && !chatAuthorizationRequired,
   })
 }
 

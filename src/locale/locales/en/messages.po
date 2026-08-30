@@ -1373,6 +1373,11 @@ msgstr ""
 msgid "Adding members to list..."
 msgstr ""
 
+#: src/components/AuthorizationProvenance.tsx:219
+#: src/components/AuthorizationProvenance.tsx:229
+msgid "Additional authorization required"
+msgstr "Additional authorization required"
+
 #: src/components/moderation/ReportDialog/index.tsx:624
 msgid "Additional details (limit 300 characters)"
 msgstr ""
@@ -2032,9 +2037,21 @@ msgstr "Author's curation"
 msgid "Authority"
 msgstr "Authority"
 
+#: src/components/AuthorizationProvenance.tsx:248
+msgid "Authorization did not finish:"
+msgstr "Authorization did not finish:"
+
+#: src/components/AuthorizationProvenance.tsx:256
+msgid "Authorize {name}"
+msgstr "Authorize {name}"
+
 #: src/screens/Login/index.tsx:139
 msgid "Authorize this app with your hosting provider"
 msgstr "Authorize this app with your hosting provider"
+
+#: src/components/AuthorizationProvenance.tsx:264
+msgid "Authorize this feature"
+msgstr "Authorize this feature"
 
 #: src/components/BotAccountAlert.tsx:32
 #: src/components/BotBadge.tsx:65
@@ -2096,7 +2113,7 @@ msgstr "Avatar creator"
 #: src/screens/Messages/components/ChatDisabled.tsx:164
 #: src/screens/Messages/components/InviteLinkDialog.tsx:274
 #: src/screens/Messages/components/InviteLinkDialog.tsx:302
-#: src/screens/Messages/Inbox.tsx:222
+#: src/screens/Messages/Inbox.tsx:244
 #: src/screens/Profile/Header/Shell.tsx:175
 #: src/screens/Settings/components/ChangePasswordDialog.tsx:277
 #: src/screens/Settings/components/ChangePasswordDialog.tsx:286
@@ -2109,7 +2126,7 @@ msgstr "Avatar creator"
 msgid "Back"
 msgstr ""
 
-#: src/screens/Messages/Inbox.tsx:221
+#: src/screens/Messages/Inbox.tsx:243
 msgid "Back to Chats"
 msgstr ""
 
@@ -2151,10 +2168,10 @@ msgstr ""
 
 #: src/components/dms/dialogs/NewChatDialog.tsx:148
 #: src/components/dms/MessageProfileButton.tsx:60
-#: src/screens/Messages/ChatList.tsx:142
-#: src/screens/Messages/ChatList.tsx:160
-#: src/screens/Messages/ChatList.tsx:260
-#: src/screens/Messages/ChatList.tsx:516
+#: src/screens/Messages/ChatList.tsx:149
+#: src/screens/Messages/ChatList.tsx:167
+#: src/screens/Messages/ChatList.tsx:273
+#: src/screens/Messages/ChatList.tsx:549
 #: src/screens/Messages/Conversation.tsx:196
 #: src/screens/Messages/ConversationSettings/MemberMenu.tsx:101
 msgid "Before you can message another user, you must first verify your email."
@@ -2711,9 +2728,9 @@ msgstr ""
 msgid "Chat not found."
 msgstr "Chat not found."
 
-#: src/screens/Messages/ChatList.tsx:542
-#: src/screens/Messages/ChatList.tsx:577
-#: src/screens/Messages/ChatList.tsx:624
+#: src/screens/Messages/ChatList.tsx:576
+#: src/screens/Messages/ChatList.tsx:614
+#: src/screens/Messages/ChatList.tsx:665
 msgid "Chat options"
 msgstr "Chat options"
 
@@ -2730,14 +2747,14 @@ msgstr "Chat recipient is not followed by the sender."
 msgid "Chat request inbox"
 msgstr ""
 
-#: src/screens/Messages/Inbox.tsx:86
+#: src/screens/Messages/Inbox.tsx:95
 msgid "Chat requests"
 msgstr ""
 
 #: src/components/dms/ConvoMenu.tsx:82
 #: src/Navigation.tsx:602
-#: src/screens/Messages/ChatList.tsx:644
-#: src/screens/Messages/ChatList.tsx:654
+#: src/screens/Messages/ChatList.tsx:685
+#: src/screens/Messages/ChatList.tsx:695
 msgid "Chat settings"
 msgstr ""
 
@@ -2763,8 +2780,8 @@ msgctxt "toast"
 msgid "Chat unmuted"
 msgstr ""
 
-#: src/screens/Messages/ChatList.tsx:528
-#: src/screens/Messages/ChatList.tsx:568
+#: src/screens/Messages/ChatList.tsx:561
+#: src/screens/Messages/ChatList.tsx:603
 msgid "Chats"
 msgstr ""
 
@@ -5065,8 +5082,8 @@ msgctxt "toast"
 msgid "Failed to leave group chat"
 msgstr "Failed to leave group chat"
 
-#: src/screens/Messages/ChatList.tsx:393
-#: src/screens/Messages/Inbox.tsx:191
+#: src/screens/Messages/ChatList.tsx:421
+#: src/screens/Messages/Inbox.tsx:213
 msgid "Failed to load conversations"
 msgstr ""
 
@@ -5119,13 +5136,13 @@ msgstr ""
 msgid "Failed to lock group chat"
 msgstr "Failed to lock group chat"
 
-#: src/screens/Messages/ChatList.tsx:609
+#: src/screens/Messages/ChatList.tsx:650
 #: src/view/shell/bottom-bar/BottomBar.tsx:442
 msgid "Failed to mark all chats as read"
 msgstr "Failed to mark all chats as read"
 
-#: src/screens/Messages/ChatList.tsx:618
-#: src/screens/Messages/Inbox.tsx:293
+#: src/screens/Messages/ChatList.tsx:659
+#: src/screens/Messages/Inbox.tsx:315
 #: src/view/shell/bottom-bar/BottomBar.tsx:451
 msgid "Failed to mark all requests as read"
 msgstr ""
@@ -5279,6 +5296,10 @@ msgstr ""
 #: src/components/moderation/ReportDialog/utils/useReportOptions.ts:56
 msgid "False information about elections"
 msgstr ""
+
+#: src/components/AuthorizationProvenance.tsx:241
+msgid "Feature"
+msgstr "Feature"
 
 #: src/Navigation.tsx:307
 msgid "Feed"
@@ -6664,12 +6685,12 @@ msgstr "In-app, push, everyone"
 msgid "In-app, push, people you follow"
 msgstr "In-app, push, people you follow"
 
-#: src/screens/Messages/ChatList.tsx:410
+#: src/screens/Messages/ChatList.tsx:438
 msgid "Inbox empty"
 msgstr "Inbox empty"
 
 #. Title message shown in chat requests inbox when it's empty
-#: src/screens/Messages/Inbox.tsx:208
+#: src/screens/Messages/Inbox.tsx:230
 msgid "Inbox zero!"
 msgstr ""
 
@@ -6722,6 +6743,10 @@ msgstr ""
 #: src/components/ProviderCompositionProvenance.tsx:75
 msgid "Inspect {surfaceLabel} sources"
 msgstr "Inspect {surfaceLabel} sources"
+
+#: src/components/AuthorizationProvenance.tsx:269
+msgid "Inspect authorization settings"
+msgstr "Inspect authorization settings"
 
 #: src/components/MediaDeliveryProvenance.tsx:56
 msgid "Inspect profile media source"
@@ -7539,20 +7564,20 @@ msgstr ""
 msgid "Manual"
 msgstr "Manual"
 
-#: src/screens/Messages/Inbox.tsx:301
-#: src/screens/Messages/Inbox.tsx:307
+#: src/screens/Messages/Inbox.tsx:323
+#: src/screens/Messages/Inbox.tsx:329
 msgid "Mark all as read"
 msgstr ""
 
-#: src/screens/Messages/ChatList.tsx:628
-#: src/screens/Messages/ChatList.tsx:632
+#: src/screens/Messages/ChatList.tsx:669
+#: src/screens/Messages/ChatList.tsx:673
 #: src/view/shell/bottom-bar/BottomBar.tsx:460
 #: src/view/shell/bottom-bar/BottomBar.tsx:464
 msgid "Mark all chats as read"
 msgstr "Mark all chats as read"
 
-#: src/screens/Messages/ChatList.tsx:636
-#: src/screens/Messages/ChatList.tsx:640
+#: src/screens/Messages/ChatList.tsx:677
+#: src/screens/Messages/ChatList.tsx:681
 #: src/view/shell/bottom-bar/BottomBar.tsx:468
 #: src/view/shell/bottom-bar/BottomBar.tsx:472
 msgid "Mark all requests as read"
@@ -7563,16 +7588,16 @@ msgstr "Mark all requests as read"
 msgid "Mark as read"
 msgstr ""
 
-#: src/screens/Messages/Inbox.tsx:288
+#: src/screens/Messages/Inbox.tsx:310
 msgid "Marked all as read"
 msgstr ""
 
-#: src/screens/Messages/ChatList.tsx:606
+#: src/screens/Messages/ChatList.tsx:647
 #: src/view/shell/bottom-bar/BottomBar.tsx:439
 msgid "Marked all chats as read"
 msgstr "Marked all chats as read"
 
-#: src/screens/Messages/ChatList.tsx:615
+#: src/screens/Messages/ChatList.tsx:656
 #: src/view/shell/bottom-bar/BottomBar.tsx:448
 msgid "Marked all requests as read"
 msgstr "Marked all requests as read"
@@ -8026,11 +8051,11 @@ msgstr ""
 
 #: src/components/dms/dialogs/NewChatDialog.tsx:162
 #: src/components/dms/dialogs/NewChatDialog.tsx:177
-#: src/screens/Messages/ChatList.tsx:205
-#: src/screens/Messages/ChatList.tsx:206
-#: src/screens/Messages/ChatList.tsx:428
-#: src/screens/Messages/ChatList.tsx:429
-#: src/screens/Messages/ChatList.tsx:553
+#: src/screens/Messages/ChatList.tsx:212
+#: src/screens/Messages/ChatList.tsx:213
+#: src/screens/Messages/ChatList.tsx:456
+#: src/screens/Messages/ChatList.tsx:457
+#: src/screens/Messages/ChatList.tsx:587
 msgid "New chat"
 msgstr ""
 
@@ -8876,6 +8901,7 @@ msgstr "Open QR code scanner"
 msgid "Open service workbench"
 msgstr "Open service workbench"
 
+#: src/components/AuthorizationProvenance.tsx:276
 #: src/view/shell/desktop/RightNav.tsx:185
 msgid "Open Services"
 msgstr "Open Services"
@@ -8916,6 +8942,14 @@ msgstr "Open the mobile app"
 #: src/components/intents/GroupChatJoinDialog.tsx:452
 msgid "Open this group chat"
 msgstr "Open this group chat"
+
+#: src/components/AuthorizationProvenance.tsx:256
+msgid "Opening consent for {name}"
+msgstr "Opening consent for {name}"
+
+#: src/components/AuthorizationProvenance.tsx:264
+msgid "Opening consent…"
+msgstr "Opening consent…"
 
 #. placeholder {0}: feedInfo.displayName
 #: src/view/shell/desktop/Feeds.tsx:188
@@ -10248,8 +10282,8 @@ msgstr ""
 msgid "Reject join request"
 msgstr "Reject join request"
 
-#: src/screens/Messages/ChatList.tsx:397
-#: src/screens/Messages/Inbox.tsx:195
+#: src/screens/Messages/ChatList.tsx:425
+#: src/screens/Messages/Inbox.tsx:217
 msgid "Reload conversations"
 msgstr ""
 
@@ -10891,9 +10925,9 @@ msgstr ""
 #: src/components/StarterPack/ProfileStarterPacks.tsx:380
 #: src/screens/Login/LoginForm.tsx:333
 #: src/screens/Login/LoginForm.tsx:338
-#: src/screens/Messages/ChatList.tsx:402
+#: src/screens/Messages/ChatList.tsx:430
 #: src/screens/Messages/components/MessageListError.tsx:24
-#: src/screens/Messages/Inbox.tsx:200
+#: src/screens/Messages/Inbox.tsx:222
 #: src/screens/Messages/JoinRequests.tsx:348
 #: src/screens/Onboarding/StepSuggestedAccounts/index.tsx:272
 #: src/screens/Onboarding/StepSuggestedAccounts/index.tsx:275
@@ -11069,8 +11103,8 @@ msgstr "Saved-feed order and moderation policy"
 msgid "Say hello!"
 msgstr ""
 
-#: src/screens/Messages/ChatList.tsx:196
-#: src/screens/Messages/ChatList.tsx:419
+#: src/screens/Messages/ChatList.tsx:203
+#: src/screens/Messages/ChatList.tsx:447
 msgid "Say hi to someone"
 msgstr "Say hi to someone"
 
@@ -13340,6 +13374,10 @@ msgstr "This moderation service does not support that report reason. Please choo
 msgid "This moderation service is unavailable. See below for more details. If this issue persists, contact us."
 msgstr ""
 
+#: src/components/AuthorizationProvenance.tsx:232
+msgid "This part of Plumbline uses a separate service permission. No request has been sent to the chat service."
+msgstr "This part of Plumbline uses a separate service permission. No request has been sent to the chat service."
+
 #: src/components/dms/MessagesListBlockedFooter.tsx:72
 msgid "This person is blocking you"
 msgstr "This person is blocking you"
@@ -14879,8 +14917,8 @@ msgid "Who can verify?"
 msgstr ""
 
 #: src/screens/Home/NoFeedsPinned.tsx:80
-#: src/screens/Messages/ChatList.tsx:382
-#: src/screens/Messages/Inbox.tsx:180
+#: src/screens/Messages/ChatList.tsx:410
+#: src/screens/Messages/Inbox.tsx:202
 msgid "Whoops!"
 msgstr ""
 

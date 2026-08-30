@@ -21,10 +21,13 @@ import {useMessagesEventBus} from '#/state/messages/events'
 import {useUnreadCountsQuery} from '#/state/queries/messages/get-unread-counts'
 import {useListConvoRequests} from '#/state/queries/messages/list-conversation-requests'
 import {useUpdateAllRead} from '#/state/queries/messages/update-all-read'
+import {useSession} from '#/state/session'
+import {requiresOAuthFeatureUpgrade} from '#/state/session/oauth-authority'
 import {EmptyState} from '#/view/com/util/EmptyState'
 import {List} from '#/view/com/util/List'
 import {ChatListLoadingPlaceholder} from '#/view/com/util/LoadingPlaceholder'
 import {atoms as a, useTheme, web} from '#/alf'
+import {OAuthFeatureAccessPrompt} from '#/components/AuthorizationProvenance'
 import {Button, ButtonIcon, ButtonText} from '#/components/Button'
 import {useRefreshOnFocus} from '#/components/hooks/useRefreshOnFocus'
 import {ArrowLeft_Stroke2_Corner0_Rounded as ArrowLeftIcon} from '#/components/icons/Arrow'
@@ -54,6 +57,12 @@ export function MessagesInboxScreen(props: Props) {
 }
 
 export function MessagesInboxScreenInner({}: Props) {
+  const {currentAccount} = useSession()
+  const chatAuthorizationRequired = requiresOAuthFeatureUpgrade(
+    currentAccount,
+    'chat',
+  )
+  const navigation = useNavigation<NavigationProp>()
   const listConvosQuery = useListConvoRequests()
   const {data} = listConvosQuery
 
@@ -78,7 +87,7 @@ export function MessagesInboxScreenInner({}: Props) {
   const hasUnreadConvos = (unreadCounts?.unreadRequestConvos ?? 0) > 0
 
   return (
-    <Layout.Screen testID="messagesInboxScreen">
+    <Layout.Screen testID="messagesInboxScreen" ecwMode="workbench">
       <Layout.Header.Outer>
         <Layout.Header.BackButton />
         <Layout.Header.Content align="left">
@@ -88,10 +97,23 @@ export function MessagesInboxScreenInner({}: Props) {
         </Layout.Header.Content>
         {hasUnreadConvos ? <MarkAsReadHeaderButton /> : <Layout.Header.Slot />}
       </Layout.Header.Outer>
-      <RequestList
-        listConvosQuery={listConvosQuery}
-        conversations={conversations}
-      />
+      {chatAuthorizationRequired ? (
+        <Layout.Center style={[web({minHeight: '100%'}), a.p_lg]}>
+          <OAuthFeatureAccessPrompt
+            feature="chat"
+            onOpenServices={() =>
+              navigation.navigate('ServicesSettings', {
+                section: 'authorization',
+              })
+            }
+          />
+        </Layout.Center>
+      ) : (
+        <RequestList
+          listConvosQuery={listConvosQuery}
+          conversations={conversations}
+        />
+      )}
     </Layout.Screen>
   )
 }

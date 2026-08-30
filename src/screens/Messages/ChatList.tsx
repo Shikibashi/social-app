@@ -25,10 +25,13 @@ import {useChatActorStatusQuery} from '#/state/queries/messages/get-status'
 import {useUnreadCountsQuery} from '#/state/queries/messages/get-unread-counts'
 import {useListConvosQuery} from '#/state/queries/messages/list-conversations'
 import {useUpdateAllRead} from '#/state/queries/messages/update-all-read'
+import {useSession} from '#/state/session'
+import {requiresOAuthFeatureUpgrade} from '#/state/session/oauth-authority'
 import {EmptyState} from '#/view/com/util/EmptyState'
 import {List, type ListRef} from '#/view/com/util/List'
 import {ChatListLoadingPlaceholder} from '#/view/com/util/LoadingPlaceholder'
 import {atoms as a, useBreakpoints, useTheme, web} from '#/alf'
+import {OAuthFeatureAccessPrompt} from '#/components/AuthorizationProvenance'
 import {Button, ButtonIcon, ButtonText} from '#/components/Button'
 import {type DialogControlProps, useDialogControl} from '#/components/Dialog'
 import {NewChat} from '#/components/dms/dialogs/NewChatDialog'
@@ -47,7 +50,6 @@ import {
 } from '#/components/icons/Message'
 import {SettingsGear2_Stroke2_Corner0_Rounded as SettingsIcon} from '#/components/icons/SettingsGear2'
 import * as Layout from '#/components/Layout'
-import {Link} from '#/components/Link'
 import {ListFooter} from '#/components/Lists'
 import * as Menu from '#/components/Menu'
 import * as Toast from '#/components/Toast'
@@ -84,6 +86,11 @@ export function MessagesScreen(props: Props) {
 
 export function MessagesScreenInner({navigation, route}: Props) {
   const {isWithinSplitView} = useIsWithinSplitView()
+  const {currentAccount} = useSession()
+  const chatAuthorizationRequired = requiresOAuthFeatureUpgrade(
+    currentAccount,
+    'chat',
+  )
   const {t: l} = useLingui()
   const t = useTheme()
   const newChatControl = useDialogControl()
@@ -199,7 +206,7 @@ export function MessagesScreenInner({navigation, route}: Props) {
           iconColor={t.atoms.text.color}
           iconSize="4xl"
           button={
-            chatStatus?.chatDisabled
+            chatStatus?.chatDisabled || chatAuthorizationRequired
               ? undefined
               : {
                   label: l`New chat`,
@@ -223,7 +230,7 @@ export function MessagesScreenInner({navigation, route}: Props) {
   }
 
   return (
-    <Layout.Screen testID="messagesScreen">
+    <Layout.Screen testID="messagesScreen" ecwMode="workbench">
       <Header newChatControl={newChatControl} chatStatus={chatStatus} />
       <ChatList newChatControl={newChatControl} chatStatus={chatStatus} />
       <NewChat
@@ -247,6 +254,12 @@ export function ChatList({
 }) {
   const t = useTheme()
   const {t: l} = useLingui()
+  const {currentAccount} = useSession()
+  const chatAuthorizationRequired = requiresOAuthFeatureUpgrade(
+    currentAccount,
+    'chat',
+  )
+  const navigation = useNavigation<NavigationProp>()
   const scrollElRef: ListRef = useRef(null)
   const {isWithinSplitView} = useIsWithinSplitView()
 
@@ -362,6 +375,21 @@ export function ChatList({
     }
     return listenSoftReset(() => void onSoftReset())
   }, [onSoftReset, isScreenFocused])
+
+  if (chatAuthorizationRequired) {
+    return (
+      <Layout.Center style={[web({minHeight: '100%'}), a.p_lg]}>
+        <OAuthFeatureAccessPrompt
+          feature="chat"
+          onOpenServices={() =>
+            navigation.navigate('ServicesSettings', {
+              section: 'authorization',
+            })
+          }
+        />
+      </Layout.Center>
+    )
+  }
 
   if (conversations.length === 0) {
     return (
@@ -497,6 +525,11 @@ export function Header({
 }) {
   const {t: l} = useLingui()
   const {gtMobile} = useBreakpoints()
+  const {currentAccount} = useSession()
+  const chatAuthorizationRequired = requiresOAuthFeatureUpgrade(
+    currentAccount,
+    'chat',
+  )
   const requireEmailVerification = useRequireEmailVerification()
   const {isWithinSplitView} = useIsWithinSplitView()
 
@@ -529,36 +562,38 @@ export function Header({
             </Layout.Header.TitleText>
           </Layout.Header.Content>
 
-          <View style={[a.flex_row, a.align_center, a.gap_sm]}>
-            <InboxRequests
-              count={requestCount}
-              variant="solid"
-              action={action}
-            />
-            <ChatSettingsMenu action={action}>
-              {({props}) => (
+          {!chatAuthorizationRequired && (
+            <View style={[a.flex_row, a.align_center, a.gap_sm]}>
+              <InboxRequests
+                count={requestCount}
+                variant="solid"
+                action={action}
+              />
+              <ChatSettingsMenu action={action}>
+                {({props}) => (
+                  <Button
+                    {...props}
+                    label={l`Chat options`}
+                    size="small"
+                    color="secondary"
+                    shape="round"
+                    style={[a.justify_center]}>
+                    <ButtonIcon icon={SettingsIcon} />
+                  </Button>
+                )}
+              </ChatSettingsMenu>
+              {!chatStatus?.chatDisabled && (
                 <Button
-                  {...props}
-                  label={l`Chat options`}
+                  label={l`New chat`}
+                  color="primary"
                   size="small"
-                  color="secondary"
                   shape="round"
-                  style={[a.justify_center]}>
-                  <ButtonIcon icon={SettingsIcon} />
+                  onPress={wrappedOpenChatControl}>
+                  <ButtonIcon icon={NewChatIcon} />
                 </Button>
               )}
-            </ChatSettingsMenu>
-            {!chatStatus?.chatDisabled && (
-              <Button
-                label={l`New chat`}
-                color="primary"
-                size="small"
-                shape="round"
-                onPress={wrappedOpenChatControl}>
-                <ButtonIcon icon={NewChatIcon} />
-              </Button>
-            )}
-          </View>
+            </View>
+          )}
         </>
       ) : (
         <>
@@ -568,23 +603,29 @@ export function Header({
               <Trans>Chats</Trans>
             </Layout.Header.TitleText>
           </Layout.Header.Content>
-          <InboxRequests count={requestCount} variant="ghost" />
-          <Layout.Header.Slot>
-            <ChatSettingsMenu action={action}>
-              {({props}) => (
-                <Button
-                  {...props}
-                  label={l`Chat options`}
-                  size="small"
-                  variant="ghost"
-                  color="secondary"
-                  shape="round"
-                  style={[a.justify_center]}>
-                  <ButtonIcon icon={SettingsIcon} size="lg" />
-                </Button>
-              )}
-            </ChatSettingsMenu>
-          </Layout.Header.Slot>
+          {!chatAuthorizationRequired ? (
+            <>
+              <InboxRequests count={requestCount} variant="ghost" />
+              <Layout.Header.Slot>
+                <ChatSettingsMenu action={action}>
+                  {({props}) => (
+                    <Button
+                      {...props}
+                      label={l`Chat options`}
+                      size="small"
+                      variant="ghost"
+                      color="secondary"
+                      shape="round"
+                      style={[a.justify_center]}>
+                      <ButtonIcon icon={SettingsIcon} size="lg" />
+                    </Button>
+                  )}
+                </ChatSettingsMenu>
+              </Layout.Header.Slot>
+            </>
+          ) : (
+            <Layout.Header.Slot />
+          )}
         </>
       )}
     </Layout.Header.Outer>

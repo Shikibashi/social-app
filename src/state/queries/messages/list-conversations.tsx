@@ -13,6 +13,7 @@ import {useCurrentConvoId} from '#/state/messages/current-convo-id'
 import {useMessagesEventBus} from '#/state/messages/events'
 import {invalidateJoinLinkPreviewsForConvo} from '#/state/queries/join-links'
 import {useChatClient, useSession} from '#/state/session'
+import {requiresOAuthFeatureUpgrade} from '#/state/session/oauth-authority'
 import {chat} from '#/lexicons'
 import * as bsky from '#/types/bsky'
 import {RQKEY as CONVO_KEY} from './conversation'
@@ -112,9 +113,14 @@ export function useListConvosQuery({
   lockStatus?: 'unlocked' | 'locked' | 'locked-permanently'
 } = {}) {
   const client = useChatClient()
+  const {currentAccount} = useSession()
+  const chatAuthorizationRequired = requiresOAuthFeatureUpgrade(
+    currentAccount,
+    'chat',
+  )
 
   return useInfiniteQuery({
-    enabled,
+    enabled: (enabled ?? true) && !chatAuthorizationRequired,
     queryKey: RQKEY(status ?? 'all', readState, kind, lockStatus, limit),
     queryFn: async ({pageParam}) => {
       return await client.call(chat.bsky.convo.listConvos, {

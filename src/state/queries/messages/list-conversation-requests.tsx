@@ -4,7 +4,8 @@ import {
   useInfiniteQuery,
 } from '@tanstack/react-query'
 
-import {useChatClient} from '#/state/session'
+import {useChatClient, useSession} from '#/state/session'
+import {requiresOAuthFeatureUpgrade} from '#/state/session/oauth-authority'
 import {chat} from '#/lexicons'
 import * as bsky from '#/types/bsky'
 
@@ -23,9 +24,14 @@ export function useListConvoRequests({
   limit?: number
 } = {}) {
   const client = useChatClient()
+  const {currentAccount} = useSession()
+  const chatAuthorizationRequired = requiresOAuthFeatureUpgrade(
+    currentAccount,
+    'chat',
+  )
 
   return useInfiniteQuery({
-    enabled,
+    enabled: enabled && !chatAuthorizationRequired,
     queryKey: RQKEY(limit),
     queryFn: async ({pageParam}) => {
       return await client.call(chat.bsky.convo.listConvoRequests, {

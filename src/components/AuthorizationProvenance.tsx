@@ -1,6 +1,9 @@
 import {useState} from 'react'
 import {Pressable, View} from 'react-native'
+import {Trans, useLingui} from '@lingui/react/macro'
 
+import {cleanError} from '#/lib/strings/errors'
+import {useEnsureOAuthFeature} from '#/state/session/oauth-feature-gate'
 import {
   getOAuthFeatureGrantPresentations,
   type OAuthFeature,
@@ -174,6 +177,109 @@ function FeatureGrant({
           </ButtonText>
         </Button>
       ) : null}
+    </View>
+  )
+}
+
+/**
+ * A feature-scoped consent boundary for surfaces that cannot operate without
+ * an additional OAuth grant. The prompt deliberately does not start consent
+ * on mount: opening a new delegated authority remains an explicit user action.
+ */
+export function OAuthFeatureAccessPrompt({
+  feature,
+  onOpenServices,
+}: {
+  feature: OAuthFeature
+  onOpenServices: () => void
+}) {
+  const t = useTheme()
+  const {t: l} = useLingui()
+  const ensureOAuthFeature = useEnsureOAuthFeature()
+  const [pending, setPending] = useState(false)
+  const [error, setError] = useState<string | undefined>()
+  const name = featureLabel(feature)
+
+  const authorize = async () => {
+    setPending(true)
+    setError(undefined)
+    try {
+      await ensureOAuthFeature(feature)
+    } catch (err) {
+      setError(cleanError(err))
+    } finally {
+      setPending(false)
+    }
+  }
+
+  return (
+    <View
+      testID={`oauth-feature-required-${feature}`}
+      accessibilityRole="summary"
+      accessibilityLabel={l`Additional authorization required`}
+      accessibilityHint={l`
+        Explains why this permission is needed and how to change it
+      `}
+      style={[
+        a.gap_md,
+        a.p_lg,
+        a.border,
+        t.atoms.border_contrast_low,
+        {borderLeftWidth: 3, borderLeftColor: t.palette.yellow},
+      ]}>
+      <View style={[a.gap_2xs]}>
+        <Text style={[a.text_lg, a.font_semi_bold]}>
+          <Trans>Additional authorization required</Trans>
+        </Text>
+        <Text style={[a.text_sm, t.atoms.text_contrast_medium]}>
+          <Trans>
+            This part of Plumbline uses a separate service permission. No
+            request has been sent to the chat service.
+          </Trans>
+        </Text>
+      </View>
+
+      <Text style={a.text_sm}>
+        <Text style={a.font_semi_bold}>
+          <Trans>Feature</Trans>:{' '}
+        </Text>
+        {name}
+      </Text>
+
+      {error ? (
+        <Text style={[a.text_sm, t.atoms.text_contrast_medium]}>
+          <Trans>Authorization did not finish:</Trans> {error}
+        </Text>
+      ) : null}
+
+      <View style={[a.gap_sm]}>
+        <Button
+          testID={`oauth-feature-authorize-${feature}`}
+          label={
+            pending ? l`Opening consent for ${name}` : l`Authorize ${name}`
+          }
+          onPress={() => void authorize()}
+          disabled={pending}
+          size="small"
+          color="primary"
+          shape="rectangular">
+          <ButtonText>
+            {pending ? l`Opening consent…` : l`Authorize this feature`}
+          </ButtonText>
+        </Button>
+        <Button
+          testID={`oauth-feature-services-${feature}`}
+          label={l`Inspect authorization settings`}
+          onPress={onOpenServices}
+          size="small"
+          color="secondary"
+          variant="outline"
+          shape="rectangular">
+          <ButtonText>
+            <Trans>Open Services</Trans>
+          </ButtonText>
+        </Button>
+      </View>
     </View>
   )
 }

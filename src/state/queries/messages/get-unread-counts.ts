@@ -1,6 +1,7 @@
 import {useQuery} from '@tanstack/react-query'
 
 import {useChatClient, useSession} from '#/state/session'
+import {requiresOAuthFeatureUpgrade} from '#/state/session/oauth-authority'
 import {chat} from '#/lexicons'
 import {STALE} from '..'
 
@@ -18,7 +19,11 @@ export const UNREAD_REQUEST_CAP = 100
 
 export function useUnreadCountsQuery() {
   const client = useChatClient()
-  const {hasSession} = useSession()
+  const {hasSession, currentAccount} = useSession()
+  const chatAuthorizationRequired = requiresOAuthFeatureUpgrade(
+    currentAccount,
+    'chat',
+  )
   const includeGroupChats = true
 
   return useQuery({
@@ -29,6 +34,6 @@ export function useUnreadCountsQuery() {
       })
     },
     staleTime: STALE.SECONDS.FIFTEEN,
-    enabled: hasSession,
+    enabled: hasSession && !chatAuthorizationRequired,
   })
 }
