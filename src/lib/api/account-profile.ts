@@ -11,6 +11,24 @@ import {app, com} from '#/lexicons'
 const APPVIEW_PROFILE_TIMEOUT_MS = 1_500
 
 /**
+ * Evidence for profile media that is delivered directly by the account PDS.
+ * The CID is still the value authored in the profile record; this metadata
+ * only makes that existing authority legible to the profile workbench.
+ */
+export type AccountProfileMediaProvenance = {
+  authority: 'account-pds'
+  did: DidString
+  endpoint: UriString
+  deliveryMethod: 'com.atproto.sync.getBlob'
+  avatarCid?: string
+  bannerCid?: string
+}
+
+export type AccountProfileView = app.bsky.actor.defs.ProfileViewDetailed & {
+  mediaProvenance?: AccountProfileMediaProvenance
+}
+
+/**
  * The profile record is authoritative for the signed-in account. The
  * AppView is still useful for counts, relationship state, and resolved image
  * URLs, but it must not be allowed to replace newer PDS-owned fields.
@@ -28,7 +46,7 @@ export async function fetchAccountProfile({
   handle?: string
   /** The account PDS origin, used for a direct public blob fallback. */
   pdsEndpoint?: string
-}): Promise<app.bsky.actor.defs.ProfileViewDetailed> {
+}): Promise<AccountProfileView> {
   if (pdsClient.assertDid !== actor) {
     throw new Error('Account PDS client does not own this actor')
   }
@@ -46,26 +64,55 @@ export async function fetchAccountProfile({
   const appviewProfile = appviewClient
     ? await getAppviewProfile(appviewClient, actor)
     : undefined
+  const avatarCid = profileRecord.avatar
+    ? getBlobCidString(profileRecord.avatar)
+    : undefined
+  const bannerCid = profileRecord.banner
+    ? getBlobCidString(profileRecord.banner)
+    : undefined
   const pdsBlobUrls = {
-    avatar: buildPdsBlobUrl(
-      pdsEndpoint,
-      actor,
-      profileRecord.avatar ? getBlobCidString(profileRecord.avatar) : undefined,
-    ),
-    banner: buildPdsBlobUrl(
-      pdsEndpoint,
-      actor,
-      profileRecord.banner ? getBlobCidString(profileRecord.banner) : undefined,
-    ),
+    avatar: buildPdsBlobUrl(pdsEndpoint, actor, avatarCid),
+    banner: buildPdsBlobUrl(pdsEndpoint, actor, bannerCid),
   }
 
-  return mergeAccountProfileView({
-    actor,
-    handle,
-    profile: appviewProfile,
-    record: profileRecord,
-    pdsBlobUrls,
-  })
+  return {
+    ...mergeAccountProfileView({
+      actor,
+      handle,
+      profile: appviewProfile,
+      record: profileRecord,
+      pdsBlobUrls,
+    }),
+    mediaProvenance: buildAccountProfileMediaProvenance(
+      pdsEndpoint,
+      actor,
+      avatarCid,
+      bannerCid,
+    ),
+  }
+}
+
+/**
+ * Describe the existing account-PDS blob boundary without introducing a
+ * second media authority. A missing blob or unsafe endpoint produces no
+ * inspectable delivery claim.
+ */
+export function buildAccountProfileMediaProvenance(
+  pdsEndpoint: string | undefined,
+  did: string,
+  avatarCid: string | undefined,
+  bannerCid: string | undefined,
+): AccountProfileMediaProvenance | undefined {
+  const endpoint = getHttpOrigin(pdsEndpoint)
+  if (!endpoint || (!avatarCid && !bannerCid)) return undefined
+  return {
+    authority: 'account-pds',
+    did: did as DidString,
+    endpoint,
+    deliveryMethod: 'com.atproto.sync.getBlob',
+    ...(avatarCid ? {avatarCid} : {}),
+    ...(bannerCid ? {bannerCid} : {}),
+  }
 }
 
 /**
@@ -79,16 +126,22 @@ export function buildPdsBlobUrl(
   did: string,
   cid: string | undefined,
 ): UriString | undefined {
-  if (!pdsEndpoint || !cid) return undefined
+  const endpoint = getHttpOrigin(pdsEndpoint)
+  if (!endpoint || !cid) return undefined
+  const url = new URL('/xrpc/com.atproto.sync.getBlob', endpoint)
+  url.searchParams.set('did', did)
+  url.searchParams.set('cid', cid)
+  return url.toString() as UriString
+}
+
+function getHttpOrigin(value: string | undefined): UriString | undefined {
+  if (!value) return undefined
   try {
-    const endpoint = new URL(pdsEndpoint)
+    const endpoint = new URL(value)
     if (endpoint.protocol !== 'https:' && endpoint.protocol !== 'http:') {
       return undefined
     }
-    const url = new URL('/xrpc/com.atproto.sync.getBlob', endpoint)
-    url.searchParams.set('did', did)
-    url.searchParams.set('cid', cid)
-    return url.toString() as UriString
+    return endpoint.origin as UriString
   } catch {
     return undefined
   }

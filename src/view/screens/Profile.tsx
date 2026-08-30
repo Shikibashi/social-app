@@ -53,6 +53,7 @@ import {Message_Stroke1_Corner0_Rounded_Filled as MessageIcon} from '#/component
 import {VideoClip_Stroke1_Corner0_Rounded as VideoIcon} from '#/components/icons/VideoClip'
 import {IdentityResolutionProvenance} from '#/components/IdentityResolutionProvenance'
 import * as Layout from '#/components/Layout'
+import {MediaDeliveryProvenance} from '#/components/MediaDeliveryProvenance'
 import {ScreenHider} from '#/components/moderation/ScreenHider'
 import {ProviderCompositionProvenance} from '#/components/ProviderCompositionProvenance'
 import {ProfileStarterPacks} from '#/components/StarterPack/ProfileStarterPacks'
@@ -400,6 +401,9 @@ function ProfileScreenLoaded({
           hideBackButton={hideBackButton}
           isPlaceholderProfile={showPlaceholder}
           setMinimumHeight={setMinimumHeight}
+        />
+        <MediaDeliveryProvenance
+          provenance={profileUnshadowed.mediaProvenance}
         />
         {identityResolution ? (
           <IdentityResolutionProvenance result={identityResolution} />

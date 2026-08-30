@@ -3,6 +3,7 @@ import {describe, expect, it, jest} from '@jest/globals'
 
 import {app, com} from '#/lexicons'
 import {
+  buildAccountProfileMediaProvenance,
   buildPdsBlobUrl,
   fetchAccountProfile,
   mergeAccountProfileView,
@@ -115,5 +116,42 @@ describe('account profile reads', () => {
     ).toMatchObject({
       avatar: `https://pds.example.test/xrpc/com.atproto.sync.getBlob?did=${actor}&cid=avatar-cid`,
     })
+  })
+
+  it('describes profile media as account-PDS-owned delivery', () => {
+    expect(
+      buildAccountProfileMediaProvenance(
+        'https://pds.example.test/path-that-is-not-used',
+        actor,
+        'avatar-cid',
+        'banner-cid',
+      ),
+    ).toEqual({
+      authority: 'account-pds',
+      did: actor,
+      endpoint: 'https://pds.example.test',
+      deliveryMethod: 'com.atproto.sync.getBlob',
+      avatarCid: 'avatar-cid',
+      bannerCid: 'banner-cid',
+    })
+  })
+
+  it('does not claim a media source without a usable blob or endpoint', () => {
+    expect(
+      buildAccountProfileMediaProvenance(
+        undefined,
+        actor,
+        'avatar-cid',
+        undefined,
+      ),
+    ).toBeUndefined()
+    expect(
+      buildAccountProfileMediaProvenance(
+        'ftp://pds.example.test',
+        actor,
+        undefined,
+        undefined,
+      ),
+    ).toBeUndefined()
   })
 })

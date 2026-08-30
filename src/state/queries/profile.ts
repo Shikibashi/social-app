@@ -24,7 +24,10 @@ import {
 } from '@tanstack/react-query'
 
 import {uploadBlob} from '#/lib/api'
-import {fetchAccountProfile} from '#/lib/api/account-profile'
+import {
+  type AccountProfileMediaProvenance,
+  fetchAccountProfile,
+} from '#/lib/api/account-profile'
 import {until} from '#/lib/async/until'
 import {useToggleMutationQueue} from '#/lib/hooks/useToggleMutationQueue'
 import {
@@ -84,6 +87,7 @@ export const profilesQueryKey = (handles: string[]) => [
 
 export type ProfileQueryData = app.bsky.actor.defs.ProfileViewDetailed & {
   providerComposition?: ProviderCompositionResult<app.bsky.actor.defs.ProfileViewDetailed>
+  mediaProvenance?: AccountProfileMediaProvenance
 }
 
 export function useProfileQuery({
