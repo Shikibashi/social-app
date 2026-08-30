@@ -43,6 +43,10 @@ import {SettingsGear2_Stroke2_Corner0_Rounded as Gear} from '#/components/icons/
 import * as Layout from '#/components/Layout'
 import {Link} from '#/components/Link'
 import * as ListCard from '#/components/ListCard'
+import {
+  getProviderCompositionFromError,
+  ProviderCompositionProvenance,
+} from '#/components/ProviderCompositionProvenance'
 import {IS_NATIVE, IS_WEB} from '#/env'
 import {type app} from '#/lexicons'
 
@@ -139,6 +143,13 @@ export function FeedsScreen(_props: Props) {
    * A search query is present. We may not have search results yet.
    */
   const isUserSearching = query.length > 1
+  const popularFeedsComposition =
+    popularFeeds?.pages.find(page => page.providerComposition)
+      ?.providerComposition ??
+    getProviderCompositionFromError(popularFeedsError)
+  const searchFeedsComposition =
+    searchResults?.providerComposition ??
+    getProviderCompositionFromError(searchError)
   const debouncedSearch = useMemo(
     () => debounce(q => search(q), 500), // debounce for 500ms
     [search],
@@ -303,14 +314,14 @@ export function FeedsScreen(_props: Props) {
               type: 'popularFeedsLoading',
             })
           } else {
-            if (!searchResults || searchResults?.length === 0) {
+            if (!searchResults || searchResults.feeds.length === 0) {
               slices.push({
                 key: 'popularFeedsNoResults',
                 type: 'popularFeedsNoResults',
               })
             } else {
               slices = slices.concat(
-                searchResults.map(feed => ({
+                searchResults.feeds.map(feed => ({
                   key: `popularFeed:${feed.uri}`,
                   type: 'popularFeed',
                   feedUri: feed.uri,
@@ -443,6 +454,18 @@ export function FeedsScreen(_props: Props) {
                 onBlur={() => onChangeSearchFocus(false)}
               />
             </View>
+            <View style={{paddingHorizontal: 12}}>
+              <ProviderCompositionProvenance
+                surfaceLabel={
+                  isUserSearching ? _(msg`Feed search`) : _(msg`Popular feeds`)
+                }
+                composition={
+                  isUserSearching
+                    ? searchFeedsComposition
+                    : popularFeedsComposition
+                }
+              />
+            </View>
           </>
         )
       } else if (item.type === 'popularFeedsLoading') {
@@ -491,6 +514,9 @@ export function FeedsScreen(_props: Props) {
       onPressCancelSearch,
       onSubmitQuery,
       onChangeSearchFocus,
+      isUserSearching,
+      searchFeedsComposition,
+      popularFeedsComposition,
     ],
   )
 

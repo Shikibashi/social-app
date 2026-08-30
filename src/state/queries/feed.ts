@@ -278,6 +278,16 @@ export const KNOWN_AUTHED_ONLY_FEEDS = [
 
 type GetPopularFeedsOptions = {limit?: number; enabled?: boolean}
 
+export type PopularFeedsPage =
+  app.bsky.unspecced.getPopularFeedGenerators.$OutputBody & {
+    providerComposition?: ProviderCompositionResult<app.bsky.unspecced.getPopularFeedGenerators.$OutputBody>
+  }
+
+export type PopularFeedsSearchResult = {
+  feeds: app.bsky.feed.defs.GeneratorView[]
+  providerComposition: ProviderCompositionResult<app.bsky.unspecced.getPopularFeedGenerators.$OutputBody>
+}
+
 function useFeedReadClients() {
   const session = useSession()
   const client = useAppviewClient()
@@ -344,41 +354,41 @@ export function useGetPopularFeedsQuery(options?: GetPopularFeedsOptions) {
     meta: PROVIDER_COMPOSITION_QUERY_META,
     queryKey: createGetPopularFeedsQueryKey(options),
     queryFn: async ({pageParam, signal}) => {
-      let data = requireComposedProviderValue(
-        await composeAppViewProviderRead(
-          'feeds',
-          (providerClient, _provider, context) =>
-            providerClient.call(
-              app.bsky.unspecced.getPopularFeedGenerators,
-              {
-                limit,
-                cursor: pageParam,
-              },
-              {signal: context.signal},
-            ),
-          {
-            access: 'account-scoped',
-            clientForProvider: providerClientFactory,
-            signal,
-          },
-        ),
+      const composed = await composeAppViewProviderRead(
+        'feeds',
+        (providerClient, _provider, context) =>
+          providerClient.call(
+            app.bsky.unspecced.getPopularFeedGenerators,
+            {
+              limit,
+              cursor: pageParam,
+            },
+            {signal: context.signal},
+          ),
+        {
+          access: 'account-scoped',
+          clientForProvider: providerClientFactory,
+          signal,
+        },
       )
+      let data = requireComposedProviderValue(composed)
       data = await addDeploymentFeedFallback(data, publicClient, pageParam)
 
       // precache feeds
       for (const feed of data.feeds) {
-        const hydratedFeed = hydrateFeedGenerator(feed)
+        const hydratedFeed = hydrateFeedGenerator(feed, composed)
         precacheFeed(queryClient, hydratedFeed)
       }
 
-      return data
+      return {
+        ...data,
+        providerComposition: composed,
+      }
     },
     initialPageParam: undefined as string | undefined,
     getNextPageParam: lastPage => lastPage.cursor,
     select: useCallback(
-      (
-        data: InfiniteData<app.bsky.unspecced.getPopularFeedGenerators.$OutputBody>,
-      ) => {
+      (data: InfiniteData<PopularFeedsPage>) => {
         const {
           savedFeeds,
           hasSession: hasSessionInner,
@@ -446,33 +456,34 @@ export function useSearchPopularFeedsMutation() {
 
   return useMutation({
     mutationFn: async (query: string) => {
-      const data = requireComposedProviderValue(
-        await composeAppViewProviderRead(
-          'feeds',
-          (providerClient, _provider, context) =>
-            providerClient.call(
-              app.bsky.unspecced.getPopularFeedGenerators,
-              {
-                limit: 10,
-                query: query,
-              },
-              {signal: context.signal},
-            ),
-          {
-            access: 'account-scoped',
-            clientForProvider: providerClientFactory,
-          },
-        ),
+      const composed = await composeAppViewProviderRead(
+        'feeds',
+        (providerClient, _provider, context) =>
+          providerClient.call(
+            app.bsky.unspecced.getPopularFeedGenerators,
+            {
+              limit: 10,
+              query: query,
+            },
+            {signal: context.signal},
+          ),
+        {
+          access: 'account-scoped',
+          clientForProvider: providerClientFactory,
+        },
       )
+      const data = requireComposedProviderValue(composed)
+      const feeds = moderationOpts
+        ? data.feeds.filter(feed => {
+            const decision = moderateFeedGenerator(feed, moderationOpts)
+            return !decision.ui('contentMedia').blur
+          })
+        : data.feeds
 
-      if (moderationOpts) {
-        return data.feeds.filter(feed => {
-          const decision = moderateFeedGenerator(feed, moderationOpts)
-          return !decision.ui('contentMedia').blur
-        })
+      return {
+        feeds,
+        providerComposition: composed,
       }
-
-      return data.feeds
     },
   })
 }
@@ -483,10 +494,7 @@ export const createPopularFeedsSearchQueryKey = (query: string) => [
   query,
 ]
 
-export type PopularFeedsSearchPage =
-  app.bsky.unspecced.getPopularFeedGenerators.$OutputBody & {
-    providerComposition?: ProviderCompositionResult<app.bsky.unspecced.getPopularFeedGenerators.$OutputBody>
-  }
+export type PopularFeedsSearchPage = PopularFeedsPage
 
 export function usePopularFeedsSearch({
   query,
