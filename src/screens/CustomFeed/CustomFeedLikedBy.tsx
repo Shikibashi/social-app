@@ -14,7 +14,7 @@ export const CustomFeedLikedByScreen = ({route}: Props) => {
   const uri = makeRecordUri(name, 'app.bsky.feed.generator', rkey)
 
   return (
-    <Layout.Screen testID="customFeedLikedByScreen">
+    <Layout.Screen testID="customFeedLikedByScreen" ecwMode="workbench">
       <Layout.Header.Outer>
         <Layout.Header.BackButton />
         <Layout.Header.Content>

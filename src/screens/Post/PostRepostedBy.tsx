@@ -21,7 +21,7 @@ export const PostRepostedByScreen = ({route}: Props) => {
   }
 
   return (
-    <Layout.Screen>
+    <Layout.Screen testID="postRepostedByScreen" ecwMode="workbench">
       <Layout.Header.Outer>
         <Layout.Header.BackButton />
         <Layout.Header.Content>

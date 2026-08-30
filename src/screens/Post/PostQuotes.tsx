@@ -21,7 +21,7 @@ export const PostQuotesScreen = ({route}: Props) => {
   }
 
   return (
-    <Layout.Screen>
+    <Layout.Screen testID="postQuotesScreen" ecwMode="workbench">
       <Layout.Header.Outer>
         <Layout.Header.BackButton />
         <Layout.Header.Content>

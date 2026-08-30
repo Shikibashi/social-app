@@ -195,6 +195,48 @@ function DesktopWorkbenchInspector({routeName}: {routeName: string}) {
         action: _(msg`Inspect providers`),
       }
       break
+    case 'PostLikedBy':
+      context = {
+        route: _(msg`Liked by`),
+        source: _(msg`Post record and engagement read provider`),
+        rule: _(msg`Like records with local moderation and block boundaries`),
+        control: _(msg`Compare providers or inspect the post record`),
+        href: '/settings/services',
+        action: _(msg`Inspect engagement providers`),
+      }
+      break
+    case 'PostRepostedBy':
+      context = {
+        route: _(msg`Reposted by`),
+        source: _(msg`Post record and engagement read provider`),
+        rule: _(msg`Repost records with local moderation and block boundaries`),
+        control: _(msg`Compare providers or inspect the post record`),
+        href: '/settings/services',
+        action: _(msg`Inspect engagement providers`),
+      }
+      break
+    case 'PostQuotes':
+      context = {
+        route: _(msg`Quotes`),
+        source: _(msg`Quoted-post records and thread read providers`),
+        rule: _(
+          msg`Quote visibility with local moderation and block boundaries`,
+        ),
+        control: _(msg`Compare providers or inspect the quote records`),
+        href: '/settings/services',
+        action: _(msg`Inspect thread providers`),
+      }
+      break
+    case 'CustomFeedLikedBy':
+      context = {
+        route: _(msg`Feed liked by`),
+        source: _(msg`Feed generator record and engagement read provider`),
+        rule: _(msg`Like records for this feed with local moderation`),
+        control: _(msg`Compare providers or inspect the feed record`),
+        href: '/settings/services',
+        action: _(msg`Inspect engagement providers`),
+      }
+      break
     case 'Moderation':
     case 'ModerationInbox':
       context = {
