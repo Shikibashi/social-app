@@ -131,7 +131,35 @@ This iteration does not rename ATProto protocol namespaces or external provider
 identifiers. A visible provider name such as Bluesky remains when it identifies
 an external service or reference URL rather than Plumbline product branding.
 
-## 11. Remaining concentrations worth attacking next
+## 11. Iteration 5 — canonical profile invites and starter-pack links
+
+The canonical-origin boundary now covers the remaining user-facing profile
+invite and starter-pack share generators. New QR payloads, copied invite
+links, starter-pack share links, and their displayed URLs use the runtime
+Plumbline origin. Existing `bsky.app` links remain accepted by the shared
+parsers so interoperability is preserved rather than silently redirecting
+legacy input.
+
+### Implementation and verification evidence
+
+- `src/features/inviteFriends/urls.ts` derives share and display URLs from
+  `getRuntimePublicWebOrigin()`; the displayed value and copied value remain
+  the same URL apart from the scheme label.
+- `src/lib/routes/links.ts` uses the same runtime origin for starter-pack
+  share links, including links created from a starter-pack view.
+- `src/features/inviteFriends/urls.test.ts` and
+  `src/lib/routes/links.test.ts` cover canonical output, custom handles,
+  leading-at normalization, and view-derived starter-pack routes.
+- The focused suites pass 13/13 tests; targeted Oxlint, Prettier,
+  `git diff --check`, and `pnpm run typecheck:web` pass.
+- `pnpm run build-web` completed with the existing bundle-size warnings and
+  produced the exact export that is ready for Pages deployment. Deployment
+  and public live verification remain separate steps for this iteration.
+
+This is a share-output change only. Protocol collection names, external
+provider URLs, and parsing of reference Bluesky links remain unchanged.
+
+## 12. Remaining concentrations worth attacking next
 
 1. Add a compatible, independently attributable media delivery composition contract only if it can preserve PDS blob authority and safe browser delivery; do not treat a CDN URL as a second authoritatively owned record.
 2. Add credentialed multi-provider browser fixtures for revoked grants, migration, block boundaries, and partial service support without using production credentials.

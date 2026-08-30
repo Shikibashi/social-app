@@ -1,13 +1,16 @@
+import {getRuntimePublicWebOrigin} from '#/lib/brand'
+
 /**
  * URL helpers for the Invite Friends share sheet (APP-2142).
  *
  * Every action (QR payload, share sheet, clipboard) and the displayed label
- * all derive from the same canonical `https://bsky.app/profile/{handle}` URL,
- * so what the user reads matches exactly what they copy/share. The displayed
- * label simply drops the `https://` scheme for readability.
+ * all derive from the same canonical Plumbline profile URL, so what the user
+ * reads matches exactly what they copy/share. Existing Bluesky profile URLs
+ * remain valid inputs elsewhere; new invites identify the current client.
+ * The displayed label simply drops the `https://` scheme for readability.
  *
- * Kept as a dependency-free leaf module (no #/lib/strings/url-helpers import)
- * so its unit tests stay fast and isolated from the lexicon graph.
+ * Keep this module independent from the URL parser so its unit tests stay fast
+ * and isolated from the lexicon graph.
  */
 
 function stripLeadingAt(handle: string): string {
@@ -18,7 +21,7 @@ function stripLeadingAt(handle: string): string {
 export function getInviteShareUrl(handle: string): string {
   const bare = stripLeadingAt(handle)
   if (!bare) return ''
-  return `https://bsky.app/profile/${bare}`
+  return `${getRuntimePublicWebOrigin()}/profile/${bare}`
 }
 
 /**
