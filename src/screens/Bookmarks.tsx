@@ -49,7 +49,7 @@ export function BookmarksScreen({}: Props) {
   )
 
   return (
-    <Layout.Screen testID="bookmarksScreen">
+    <Layout.Screen testID="bookmarksScreen" ecwMode="workbench">
       <Layout.Header.Outer>
         <Layout.Header.BackButton />
         <Layout.Header.Content>

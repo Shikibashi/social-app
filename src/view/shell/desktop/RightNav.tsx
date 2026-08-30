@@ -237,6 +237,36 @@ function DesktopWorkbenchInspector({routeName}: {routeName: string}) {
         action: _(msg`Configure feeds`),
       }
       break
+    case 'Lists':
+      context = {
+        route: _(msg`Lists`),
+        source: _(msg`Account repository and list read provider`),
+        rule: _(msg`Authored list records and local moderation`),
+        control: _(msg`Create, edit, compare, or remove lists`),
+        href: '/settings/services',
+        action: _(msg`Inspect list providers`),
+      }
+      break
+    case 'Bookmarks':
+      context = {
+        route: _(msg`Saved Posts`),
+        source: _(msg`Bookmark service and author repositories`),
+        rule: _(msg`Your saved-post collection and local moderation`),
+        control: _(msg`Refresh, inspect, or remove saved posts`),
+        href: '/settings/services',
+        action: _(msg`Inspect saved-post services`),
+      }
+      break
+    case 'SavedFeeds':
+      context = {
+        route: _(msg`Saved feeds`),
+        source: _(msg`Account preference repository`),
+        rule: _(msg`Pinned order and saved-feed selection`),
+        control: _(msg`Reorder, compare, or remove feed preferences`),
+        href: '/settings/saved-feeds',
+        action: _(msg`Edit saved feeds`),
+      }
+      break
     case 'Notifications':
       context = {
         route: _(msg`Notifications`),

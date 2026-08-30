@@ -104,7 +104,7 @@ function SavedFeedsInner({
   }
 
   return (
-    <Layout.Screen>
+    <Layout.Screen testID="savedFeedsScreen" ecwMode="workbench">
       <Layout.Header.Outer>
         <Layout.Header.BackButton />
         <Layout.Header.Content align="left">
@@ -295,7 +295,7 @@ function SavedFeedsA11y({
   }
 
   return (
-    <Layout.Screen>
+    <Layout.Screen testID="savedFeedsScreen" ecwMode="workbench">
       <Layout.Header.Outer>
         <Layout.Header.BackButton />
         <Layout.Header.Content align="left">
