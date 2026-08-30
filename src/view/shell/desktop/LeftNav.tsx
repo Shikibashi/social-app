@@ -836,7 +836,7 @@ export function DesktopLeftNav({routeName}: {routeName: string}) {
               }}
             />
             <NavItem
-              label={l`Backups`}
+              label="Backups"
               href="/settings/personalization"
               navItem="backups"
               minimal={leftNavMinimal}
