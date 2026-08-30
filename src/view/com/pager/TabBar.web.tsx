@@ -2,6 +2,7 @@ import {useCallback, useEffect, useRef} from 'react'
 import {type ScrollView, StyleSheet, View} from 'react-native'
 import {type SharedValue} from 'react-native-reanimated'
 
+import {PLUMBLINE_BRASS} from '#/lib/brand'
 import {atoms as a, useBreakpoints, useTheme, web} from '#/alf'
 import {Text} from '#/components/Typography'
 import {PressableWithHover} from '../util/PressableWithHover'
@@ -122,7 +123,9 @@ export function TabBar({
               style={styles.item}
               hoverStyle={t.atoms.bg_contrast_25}
               onPress={() => onPressItem(i)}
-              accessibilityRole="tab">
+              accessibilityRole="tab"
+              accessibilityState={{selected}}
+              aria-selected={selected}>
               <View style={styles.itemInner}>
                 <Text
                   emoji
@@ -136,13 +139,28 @@ export function TabBar({
                   ]}>
                   {item}
                   <View
+                    testID={testID ? `${testID}-indicator-${i}` : undefined}
                     style={[
                       styles.itemIndicator,
                       selected && {
                         backgroundColor: t.palette.primary_500,
                       },
-                    ]}
-                  />
+                    ]}>
+                    {selected ? (
+                      <View
+                        aria-hidden={true}
+                        pointerEvents="none"
+                        testID={testID ? `${testID}-marker-${i}` : undefined}
+                        style={[
+                          styles.itemMarker,
+                          {
+                            backgroundColor: PLUMBLINE_BRASS,
+                            borderColor: t.palette.contrast_975,
+                          },
+                        ]}
+                      />
+                    ) : null}
+                  </View>
                 </Text>
               </View>
             </PressableWithHover>
@@ -188,6 +206,15 @@ const desktopStyles = StyleSheet.create({
     minWidth: 45,
     width: '100%',
   },
+  itemMarker: {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    width: 7,
+    height: 7,
+    borderWidth: 1,
+    transform: [{translateX: -3.5}, {translateY: -3.5}, {rotate: '45deg'}],
+  },
   outerBottomBorder: {
     position: 'absolute',
     left: 0,
@@ -230,6 +257,15 @@ const mobileStyles = StyleSheet.create({
     transform: 'translateX(-50%)',
     minWidth: 45,
     width: '100%',
+  },
+  itemMarker: {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    width: 7,
+    height: 7,
+    borderWidth: 1,
+    transform: [{translateX: -3.5}, {translateY: -3.5}, {rotate: '45deg'}],
   },
   outerBottomBorder: {
     position: 'absolute',
