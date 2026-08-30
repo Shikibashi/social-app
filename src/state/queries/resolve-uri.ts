@@ -9,6 +9,7 @@ import {
   resolveIdentityClaims,
   type ResolverProvider,
 } from '#/lib/identity-runtime'
+import {PROVIDER_COMPOSITION_QUERY_META} from '#/lib/provider-composition'
 import {STALE} from '#/state/queries'
 import {useSession} from '#/state/session'
 import {getPublicAppviewClient} from '#/state/session/clients'
@@ -37,6 +38,7 @@ const resolvedDidQueryOptions = (
 ) =>
   queryOptions({
     staleTime: STALE.HOURS.ONE,
+    meta: PROVIDER_COMPOSITION_QUERY_META,
     queryKey: RQKEY(didOrHandle ?? '', {
       providerIds: providers.map(provider => provider.id),
       policy,

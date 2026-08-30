@@ -3,6 +3,8 @@ import {describe, expect, it} from '@jest/globals'
 import {
   BOUNDARY_OWNED_PROVIDER_SURFACES,
   composeProviderResults,
+  isProviderCompositionQueryMeta,
+  PROVIDER_COMPOSITION_QUERY_META,
   PROVIDER_SURFACE_DETAILS,
   PROVIDER_SURFACES,
   type ProviderDescriptor,
@@ -96,6 +98,16 @@ const credentialedIntegrationFixtures: Array<{
 ]
 
 describe('provider result composition', () => {
+  it('identifies provider-backed query metadata without accepting ambient flags', () => {
+    expect(
+      isProviderCompositionQueryMeta(PROVIDER_COMPOSITION_QUERY_META),
+    ).toBe(true)
+    expect(isProviderCompositionQueryMeta({providerComposition: false})).toBe(
+      false,
+    )
+    expect(isProviderCompositionQueryMeta(undefined)).toBe(false)
+  })
+
   it('distinguishes runtime composition from boundary-owned declarations', () => {
     expect(RUNTIME_COMPOSED_PROVIDER_SURFACES).toEqual([
       'identity-resolution',
@@ -188,6 +200,21 @@ describe('provider result composition', () => {
     expect(result.status).toBe('partial')
     expect(result.selected).toEqual({answer: 'a'})
     expect(result.observations[1].status).toBe('unavailable')
+  })
+
+  it('does not promote an unverified claim under first-verified policy', async () => {
+    const result = await composeProviderResults(
+      providers,
+      provider => Promise.resolve({value: {answer: provider.id}}),
+      {surface: 'profiles', policy: {mode: 'first-verified'}},
+    )
+
+    expect(result.status).toBe('disagreement')
+    expect(result.selected).toBeUndefined()
+    expect(result.selectedProviderIds).toEqual([])
+    expect(
+      result.observations.every(item => item.verification === 'unverified'),
+    ).toBe(true)
   })
 
   it('bounds provider fan-out concurrency', async () => {

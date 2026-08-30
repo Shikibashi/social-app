@@ -27,6 +27,7 @@ import {uploadBlob} from '#/lib/api'
 import {fetchAccountProfile} from '#/lib/api/account-profile'
 import {until} from '#/lib/async/until'
 import {useToggleMutationQueue} from '#/lib/hooks/useToggleMutationQueue'
+import {PROVIDER_COMPOSITION_QUERY_META} from '#/lib/provider-composition'
 import {updateProfileShadow} from '#/state/cache/profile-shadow'
 import {type Shadow} from '#/state/cache/types'
 import {type ImageMeta} from '#/state/gallery'
@@ -98,6 +99,7 @@ export function useProfileQuery({
     // -prf
     staleTime,
     refetchOnWindowFocus: true,
+    meta: PROVIDER_COMPOSITION_QUERY_META,
     queryKey: RQKEY(did ?? ''),
     queryFn: async ({signal}) => {
       if (pdsClient && ownerAccount) {
@@ -151,6 +153,7 @@ export function useProfilesQuery({
   return useQuery({
     enabled: handles.length > 0,
     staleTime: STALE.MINUTES.FIVE,
+    meta: PROVIDER_COMPOSITION_QUERY_META,
     queryKey: profilesQueryKey(handles),
     queryFn: async ({signal}) => {
       const composed = await composeAppViewProviderRead(
@@ -182,6 +185,7 @@ export function usePrefetchProfileQuery() {
     async (did: string) => {
       await queryClient.prefetchQuery({
         staleTime: STALE.SECONDS.THIRTY,
+        meta: PROVIDER_COMPOSITION_QUERY_META,
         queryKey: RQKEY(did),
         queryFn: async ({signal}) => {
           const composed = await composeAppViewProviderRead(

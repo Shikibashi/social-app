@@ -4,6 +4,7 @@ import {type AtUriString} from '@atproto/syntax'
 import {useQuery, useQueryClient} from '@tanstack/react-query'
 
 import {fetchAccountPost} from '#/lib/api/account-posts'
+import {PROVIDER_COMPOSITION_QUERY_META} from '#/lib/provider-composition'
 import {useModerationOpts} from '#/state/preferences/moderation-opts'
 import {useThreadPreferences} from '#/state/queries/preferences/useThreadPreferences'
 import {
@@ -159,6 +160,7 @@ export function usePostThread({anchor}: {anchor?: string}) {
 
   const query = useQuery<UsePostThreadQueryResult>({
     enabled: isThreadPreferencesLoaded && !!anchor && !!moderationOpts,
+    meta: PROVIDER_COMPOSITION_QUERY_META,
     queryKey: postThreadQueryKey,
     async queryFn(ctx) {
       let data: app.bsky.unspecced.getPostThreadV2.$OutputBody
@@ -333,6 +335,7 @@ export function usePostThread({anchor}: {anchor?: string}) {
   const additionalQueryEnabled = hasOtherThreadItems && otherItemsVisible
   const additionalItemsQuery = useQuery({
     enabled: additionalQueryEnabled,
+    meta: PROVIDER_COMPOSITION_QUERY_META,
     queryKey: postThreadOtherQueryKey,
     async queryFn({signal}) {
       const providerClients = new Map<string, Client>()

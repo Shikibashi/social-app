@@ -1,4 +1,4 @@
-import {useEffect, useMemo, useRef, useState} from 'react'
+import {useEffect, useMemo, useRef} from 'react'
 import {AppState, type AppStateStatus} from 'react-native'
 import {createAsyncStoragePersister} from '@tanstack/query-async-storage-persister'
 import {
@@ -12,16 +12,14 @@ import {
   PersistQueryClientProvider,
 } from '@tanstack/react-query-persist-client'
 
-import {
-  clearPersistedQueryStorage,
-  createPersistedQueryStorage,
-} from '#/lib/persisted-query-storage'
+import {createPersistedQueryStorage} from '#/lib/persisted-query-storage'
 import {
   listenAppViewProviderChanged,
   listenAppViewProviderPolicyChanged,
   listenNetworkConfirmed,
   listenNetworkLost,
 } from '#/state/events'
+import {resetProviderCompositionQueries} from '#/state/queries/provider-cache'
 import {isQueryPersisted} from '#/state/queries/util'
 import * as env from '#/env'
 import {IS_NATIVE, IS_WEB} from '#/env'
@@ -184,8 +182,7 @@ function QueryProviderInner({
   }
   // We create the query client here so that it's scoped to a specific DID.
   // Do not move the query client creation outside of this component.
-  const [providerEpoch, setProviderEpoch] = useState(0)
-  const queryClient = useMemo(() => createQueryClient(), [providerEpoch])
+  const queryClient = useMemo(() => createQueryClient(), [])
   const persistOptions = useMemo(() => {
     const storage = createPersistedQueryStorage(currentDid ?? 'logged-out')
     const asyncPersister = createAsyncStoragePersister({
@@ -197,23 +194,21 @@ function QueryProviderInner({
       dehydrateOptions,
       buster: env.APP_VERSION,
     } satisfies Omit<PersistQueryClientOptions, 'queryClient'>
-  }, [currentDid, providerEpoch])
+  }, [currentDid])
   useEffect(() => {
-    const clearProviderScopedCache = () => {
-      queryClient.clear()
-      void clearPersistedQueryStorage(currentDid ?? 'logged-out')
-      setProviderEpoch(epoch => epoch + 1)
+    const resetProviderScopedCache = () => {
+      void resetProviderCompositionQueries(queryClient)
     }
     const unlistenProviderChanged = listenAppViewProviderChanged(changedDid => {
       if (changedDid === currentDid) {
-        // A provider switch is a service boundary. Remove in-memory data as
-        // well as the persisted cache so the previous provider cannot appear
-        // to be the current provider after the switch.
-        clearProviderScopedCache()
+        // A provider switch is a service boundary. Reset provider-backed
+        // reads so active screens refetch from the new provider without
+        // evicting unrelated account-local state.
+        resetProviderScopedCache()
       }
     })
     const unlistenPolicyChanged = listenAppViewProviderPolicyChanged(
-      clearProviderScopedCache,
+      resetProviderScopedCache,
     )
     return () => {
       unlistenProviderChanged()
@@ -230,7 +225,6 @@ function QueryProviderInner({
   }, [queryClient])
   return (
     <PersistQueryClientProvider
-      key={providerEpoch}
       client={queryClient}
       persistOptions={persistOptions}>
       {children}

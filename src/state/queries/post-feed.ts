@@ -37,6 +37,7 @@ import {
   type ModerationPrefs,
 } from '#/lib/moderation'
 import {
+  PROVIDER_COMPOSITION_QUERY_META,
   type ProviderCompositionStatus,
   type ProviderDescriptor,
   type ProviderIndependence,
@@ -218,6 +219,7 @@ export function usePostFeedQuery(
     RQPageParam
   >({
     enabled,
+    meta: PROVIDER_COMPOSITION_QUERY_META,
     staleTime: STALE.INFINITY,
     retry: (failureCount, error) =>
       failureCount < 2 && shouldRetryPostFeedError(error),

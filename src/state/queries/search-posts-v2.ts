@@ -8,6 +8,7 @@ import {
 } from '@tanstack/react-query'
 
 import {moderatePost} from '#/lib/moderation'
+import {PROVIDER_COMPOSITION_QUERY_META} from '#/lib/provider-composition'
 import {useModerationOpts} from '#/state/preferences/moderation-opts'
 import {
   composeAppViewProviderRead,
@@ -73,6 +74,7 @@ export function useSearchPostsV2Query({
     QueryKey,
     string | undefined
   >({
+    meta: PROVIDER_COMPOSITION_QUERY_META,
     queryKey: searchPostsV2QueryKey({query, sort, filters}),
     queryFn: async ({pageParam, signal}) => {
       /*

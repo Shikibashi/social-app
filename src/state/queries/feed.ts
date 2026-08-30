@@ -15,6 +15,7 @@ import {
 
 import {DISCOVER_FEED_URI, DISCOVER_SAVED_FEED} from '#/lib/constants'
 import {moderateFeedGenerator} from '#/lib/moderation'
+import {PROVIDER_COMPOSITION_QUERY_META} from '#/lib/provider-composition'
 import {sanitizeDisplayName} from '#/lib/strings/display-names'
 import {sanitizeHandle} from '#/lib/strings/handles'
 import {GCTIME, STALE} from '#/state/queries'
@@ -199,6 +200,7 @@ export function useFeedSourceInfoQuery({uri}: {uri: string}) {
 
   return useQuery({
     staleTime: STALE.INFINITY,
+    meta: PROVIDER_COMPOSITION_QUERY_META,
     queryKey: feedSourceInfoQueryKey({uri}),
     queryFn: async ({signal}) => {
       let view: FeedSourceInfo
@@ -330,6 +332,7 @@ export function useGetPopularFeedsQuery(options?: GetPopularFeedsOptions) {
 
   const query = useInfiniteQuery({
     enabled: Boolean(moderationOpts) && options?.enabled !== false,
+    meta: PROVIDER_COMPOSITION_QUERY_META,
     queryKey: createGetPopularFeedsQueryKey(options),
     queryFn: async ({pageParam, signal}) => {
       let data = requireComposedProviderValue(
@@ -484,6 +487,7 @@ export function usePopularFeedsSearch({
 
   return useInfiniteQuery({
     enabled: enabledInner,
+    meta: PROVIDER_COMPOSITION_QUERY_META,
     queryKey: createPopularFeedsSearchQueryKey(query),
     queryFn: async ({pageParam, signal}) => {
       const data = requireComposedProviderValue(
@@ -803,6 +807,7 @@ export function useFeedInfo(feedUri: string | undefined) {
 
   return useQuery({
     staleTime: STALE.INFINITY,
+    meta: PROVIDER_COMPOSITION_QUERY_META,
     queryKey: [feedInfoQueryKeyRoot, feedUri],
     queryFn: async ({signal}) => {
       if (!feedUri) {

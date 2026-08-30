@@ -17,6 +17,7 @@ import {
 import {fetchAccountPost} from '#/lib/api/account-posts'
 import {useToggleMutationQueue} from '#/lib/hooks/useToggleMutationQueue'
 import {getKnownAccountDidForHandle} from '#/lib/identity-runtime'
+import {PROVIDER_COMPOSITION_QUERY_META} from '#/lib/provider-composition'
 import {updatePostShadow} from '#/state/cache/post-shadow'
 import {type Shadow} from '#/state/cache/types'
 import {RQKEY_ROOT as POST_FEED_RQKEY_ROOT} from '#/state/queries/post-feed'
@@ -80,6 +81,7 @@ export function usePostQuery(
   const {currentAccount} = useSession()
   const allowPublicFallback = opts.allowPublicFallback === true
   return useQuery<app.bsky.feed.defs.PostView>({
+    meta: PROVIDER_COMPOSITION_QUERY_META,
     queryKey: RQKEY(uri || '', allowPublicFallback),
     queryFn: async ({signal}) => {
       if (!uri) throw new Error('[unreachable] No URI provided')
@@ -245,6 +247,7 @@ export function useGetPost() {
   return useCallback(
     async ({uri}: {uri: string}) => {
       return queryClient.fetchQuery({
+        meta: PROVIDER_COMPOSITION_QUERY_META,
         queryKey: RQKEY(uri || ''),
         async queryFn({signal}) {
           const composed = await composeAppViewProviderRead(
@@ -276,6 +279,7 @@ export function useGetPosts() {
   return useCallback(
     async ({uris}: {uris: string[]}) => {
       return queryClient.fetchQuery({
+        meta: PROVIDER_COMPOSITION_QUERY_META,
         queryKey: RQKEY(uris.join(',') || ''),
         async queryFn({signal}) {
           const composed = await composeAppViewProviderRead(

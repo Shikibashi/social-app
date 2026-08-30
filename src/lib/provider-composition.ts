@@ -21,6 +21,22 @@ export const PROVIDER_SURFACES = [
 /** Keep provider fan-out bounded even when a user registers many services. */
 export const DEFAULT_MAX_CONCURRENT_PROVIDERS = 3
 
+/**
+ * Query metadata for reads whose result depends on the user's provider
+ * registry or reconciliation policy. Keeping this marker separate from query
+ * keys lets the cache boundary reset only provider-backed reads without
+ * disturbing PDS, chat, drafts, or other account-local state.
+ */
+export const PROVIDER_COMPOSITION_QUERY_META = Object.freeze({
+  providerComposition: true,
+} as const)
+
+export function isProviderCompositionQueryMeta(
+  meta: Record<string, unknown> | undefined,
+): boolean {
+  return meta?.providerComposition === true
+}
+
 export type ProviderSurface = (typeof PROVIDER_SURFACES)[number]
 
 export type ProviderSurfaceSupport = 'runtime-composed' | 'boundary-owned'
@@ -362,7 +378,7 @@ function selectObservations<T>(
   }
   if (policy.mode === 'first-verified') {
     const verified = usable.find(item => item.verification === 'verified')
-    return verified ? [verified] : usable.slice(0, 1)
+    return verified ? [verified] : []
   }
   if (
     status !== 'agreement' ||

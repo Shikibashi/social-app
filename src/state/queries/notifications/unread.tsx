@@ -18,6 +18,10 @@ import {EventEmitter} from 'eventemitter3'
 import BroadcastChannel from '#/lib/broadcast'
 import {resetBadgeCount} from '#/lib/notifications/notifications'
 import {logger} from '#/logger'
+import {
+  listenAppViewProviderChanged,
+  listenAppViewProviderPolicyChanged,
+} from '#/state/events'
 import {useModerationOpts} from '#/state/preferences/moderation-opts'
 import {
   composeAppViewProviderRead,
@@ -62,7 +66,7 @@ const apiContext = createContext<ApiContext>({
 apiContext.displayName = 'NotificationsUnreadApiContext'
 
 export function Provider({children}: React.PropsWithChildren<{}>) {
-  const {hasSession} = useSession()
+  const {currentAccount, hasSession} = useSession()
   const client = useAppviewClient()
   const providerClientFactory = useAppviewProviderClientFactory()
   const queryClient = useQueryClient()
@@ -77,6 +81,26 @@ export function Provider({children}: React.PropsWithChildren<{}>) {
     data: undefined,
     unreadCount: 0,
   })
+
+  useEffect(() => {
+    const reset = () => {
+      cacheRef.current = {
+        usableInFeed: false,
+        syncedAt: new Date(),
+        data: undefined,
+        unreadCount: 0,
+      }
+      setNumUnread('')
+    }
+    const unlistenProviderChanged = listenAppViewProviderChanged(changedDid => {
+      if (changedDid === currentAccount?.did) reset()
+    })
+    const unlistenPolicyChanged = listenAppViewProviderPolicyChanged(reset)
+    return () => {
+      unlistenProviderChanged()
+      unlistenPolicyChanged()
+    }
+  }, [currentAccount?.did])
 
   useEffect(() => {
     function markAsUnusable() {

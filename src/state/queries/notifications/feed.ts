@@ -27,6 +27,7 @@ import {
 } from '@tanstack/react-query'
 
 import {moderatePost} from '#/lib/moderation'
+import {PROVIDER_COMPOSITION_QUERY_META} from '#/lib/provider-composition'
 import {useModerationOpts} from '#/state/preferences/moderation-opts'
 import {STALE} from '#/state/queries'
 import {
@@ -89,6 +90,7 @@ export function useNotificationFeedQuery(opts: {
     RQPageParam
   >({
     staleTime: STALE.INFINITY,
+    meta: PROVIDER_COMPOSITION_QUERY_META,
     queryKey: RQKEY(filter),
     async queryFn({
       pageParam,

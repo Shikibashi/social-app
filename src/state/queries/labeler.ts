@@ -4,6 +4,7 @@ import {useMutation, useQuery, useQueryClient} from '@tanstack/react-query'
 import {z} from 'zod'
 
 import {MAX_LABELERS} from '#/lib/constants'
+import {PROVIDER_COMPOSITION_QUERY_META} from '#/lib/provider-composition'
 import {serviceBoundaryError} from '#/lib/service-boundary'
 import {GCTIME, STALE} from '#/state/queries'
 import {
@@ -51,6 +52,7 @@ export function useLabelerInfoQuery({
   const provider = getSelectedAppViewProvider(currentAccount?.did ?? '')
   return useQuery({
     enabled: !!did && enabled !== false,
+    meta: PROVIDER_COMPOSITION_QUERY_META,
     queryKey: labelerInfoQueryKey(did as string),
     queryFn: async ({signal}) => {
       try {
@@ -94,6 +96,7 @@ export function useLabelersInfoQuery({dids}: {dids: string[]}) {
   const provider = getSelectedAppViewProvider(currentAccount?.did ?? '')
   return useQuery({
     enabled: !!dids.length,
+    meta: PROVIDER_COMPOSITION_QUERY_META,
     queryKey: labelersInfoQueryKey(dids),
     queryFn: async ({signal}) => {
       try {
@@ -136,6 +139,7 @@ export function useLabelersDetailedInfoQuery({dids}: {dids: string[]}) {
   const provider = getSelectedAppViewProvider(currentAccount?.did ?? '')
   return useQuery({
     enabled: !!dids.length,
+    meta: PROVIDER_COMPOSITION_QUERY_META,
     queryKey: createLabelersDetailedInfoQueryKey(dids),
     gcTime: GCTIME.INFINITY,
     staleTime: STALE.MINUTES.ONE,
