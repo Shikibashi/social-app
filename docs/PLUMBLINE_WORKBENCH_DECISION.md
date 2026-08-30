@@ -1511,3 +1511,74 @@ not claim that a provider resolved or verified the record.
 
 The external Relay/AppView, short-TTL OAuth, and independent-PLC operator
 evidence gates remain separate and unresolved.
+
+## Iteration 32: expose moderation source state in the ordinary workbench
+
+The `Moderation & Reach` screen already explained the conceptual chain from a
+source assertion to a local rule and client action. Its ordinary view did not
+identify which label sources were currently configured or whether those
+sources were available, however, and it offered no direct path to the Services
+provider workbench.
+
+### Residual authority concentration and why it matters
+
+Without the source state, a user could read the screen as if moderation were a
+single Plumbline authority rather than a composition of named labelers,
+account-level relationship controls, and local presentation rules. Adding a
+second moderation registry would duplicate the existing labeler/preferences
+store. The appropriate boundary is a summary that reports the existing source
+state and links to the existing provider workbench.
+
+### Ecosystem precedent and chosen change
+
+The change follows ATProto's labeler model: labelers issue claims, while the
+client's label preferences determine how those claims are presented. The
+screen now uses the shared `PlumblineAuthoritySummary` to show configured
+label-source names when available, source loading/unavailability, and the
+local interpretation rule. An explicit `Inspect label sources in Services`
+link opens the existing provider section; no new provider is selected and no
+label semantics are changed.
+
+### Authority before versus after
+
+| Boundary | Before iteration 32 | After iteration 32 |
+| --- | --- | --- |
+| Moderation source | The screen listed labeler cards but did not summarize source availability above the tools. | The ordinary view identifies configured label sources and their current availability state. |
+| Rule ownership | The generic four-step explanation was visible, but the active local interpretation was not summarized. | The summary states that label claims are interpreted by the user's rules. |
+| Provider substitution | Provider controls were reachable indirectly through Services navigation. | A direct, addressable Services link is visible beside the summary. |
+| Authority semantics | The screen could look like one system-owned moderation policy. | Source, local rule, and client action remain visibly separate. |
+
+### Interoperability and security tradeoffs
+
+This is a presentation-only extension of the existing moderation screen. It
+preserves labeler preferences, adult-content handling, moderation lists,
+pairwise block behavior, appeals, and provider-selection boundaries. It does
+not reinterpret a label, bypass moderation, add a fallback, or transmit a
+credential. Source names are shown only from the labeler query already used by
+the screen; loading and unavailable states remain explicit.
+
+### Implementation evidence
+
+- `src/screens/Moderation/index.tsx` adds the shared
+  `moderation-reach-authority-summary` and an accessible
+  `moderation-reach-services-link`.
+- The summary derives its source and state from the existing labeler query and
+  configured preferences, while `ModerationLayers` remains the detailed
+  Source / Assertion / My rule / Client action explanation.
+
+### Verification
+
+| Check | Status | Evidence |
+| --- | --- | --- |
+| Touched-file Oxlint | PASS | `pnpm exec oxlint --quiet src/screens/Moderation/index.tsx` |
+| Touched-file formatting and whitespace | PASS | Prettier check and `git diff --check` |
+| Web TypeScript | PASS | `pnpm typecheck:web` |
+| Provider and attention tests | PASS | `pnpm exec jest src/lib/attention-ui.test.ts src/lib/provider-composition.test.ts --runInBand`; 24 tests |
+| English catalog extraction/compile | PASS | `pnpm intl:extract && pnpm intl:compile`; 3330 source messages |
+| Production web export | PASS | `EXPO_PUBLIC_ENV=production pnpm build-web`; existing bundle-size warnings remain |
+| Client code commit and push | PASS | `f801b7099` pushed to `fork/codex/spaces-alpha-integration` |
+| Pages deployment | PASS | `https://67ef54e3.social-edriffles.pages.dev` uploaded to `social-edriffles` with Node `v24.19.0` |
+| ChatGPT in-app browser inspection | PASS | `https://plumblines.uk/moderation?deployment=67ef54e3` showed the summary, four-layer explanation, and Services link with no alert; the link reached `Services — Plumbline` with `section=providers` |
+
+The external Relay/AppView, short-TTL OAuth, and independent-PLC operator
+evidence gates remain separate and unresolved.
