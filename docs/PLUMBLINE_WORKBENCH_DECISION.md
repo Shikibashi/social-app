@@ -1441,3 +1441,73 @@ changing state.
 
 The external Relay/AppView, short-TTL OAuth, and independent-PLC operator
 evidence gates remain separate and unresolved.
+
+## Iteration 31: make post records copyable from the provenance seam
+
+The post inspector already exposed a selectable `Post record` value, but the
+user still had to select the text manually before using the stable AT Protocol
+address elsewhere. That made the protocol object less usable as ordinary
+hypertext and made the boundary between a rendered post and its authored
+record harder to act on.
+
+### Residual authority concentration and why it matters
+
+This was an addressability and interaction gap, not a missing provider. The
+client already receives the post URI from the protocol-shaped post view and
+already uses it to construct the post route. Adding another resolver or
+provider would duplicate authority rather than improve user control. The
+smallest useful change is an explicit copy action at the existing provenance
+boundary.
+
+### Ecosystem precedent and chosen change
+
+The action follows ATProto's use of `at://` record URIs as stable, portable
+references and the existing client share/menu pattern for copying protocol
+addresses. When `Why this post?` is expanded, the inspector now renders an
+accessible `Copy AT URI` button beside the selectable record value. The action
+copies only the record URI, stops the surrounding post navigation, and uses the
+existing toast channel for confirmation. It does not choose an AppView, alter
+the post, or grant a new capability.
+
+### Authority before versus after
+
+| Boundary | Before iteration 31 | After iteration 31 |
+| --- | --- | --- |
+| Post address | The record URI was readable/selectable in the inspector. | The URI remains selectable and has an explicit copy action. |
+| Navigation | The surrounding post link remained the only direct interaction path. | Copying the URI is a separate, non-navigating action that preserves the parent link. |
+| Provider semantics | A rendered post could still be mistaken for the provider's object. | The inspector gives the user a portable record reference without naming a provider as owner. |
+| Exit and inspection | Manual text selection was required to carry the protocol address out. | The stable address can be exported to another client, resolver, or tool directly. |
+
+### Interoperability and security tradeoffs
+
+This is a backward-compatible web/native-compatible presentation change. It
+preserves the existing AT URI, post route, provider composition, moderation,
+and authentication boundaries. It introduces no network request and no new
+credential or clipboard data beyond the record URI the inspector already
+displayed. The copy confirmation is intentionally local UI feedback; it does
+not claim that a provider resolved or verified the record.
+
+### Implementation evidence
+
+- `src/components/Post/PostProvenance.tsx` adds the `post-provenance-copy-uri`
+  action and copies the model's stable post URI through the existing Expo
+  clipboard and toast abstractions.
+- The action exposes an accessible label and hint and calls
+  `stopPropagation()` so expanding the inspector does not accidentally open
+  the post route.
+
+### Verification
+
+| Check | Status | Evidence |
+| --- | --- | --- |
+| Touched-file Oxlint | PASS | `pnpm exec oxlint --quiet src/components/Post/PostProvenance.tsx` |
+| Touched-file formatting and whitespace | PASS | Prettier check and `git diff --check` |
+| Web TypeScript | PASS | `pnpm typecheck:web` |
+| English catalog extraction/compile | PENDING | Run before the release build so the new labels are included in the compiled catalog |
+| Production web export | PENDING | Run after catalog verification |
+| Client code commit and push | PENDING | The implementation remains uncommitted in the nested client |
+| Pages deployment | PENDING | Deploy the verified production export |
+| ChatGPT in-app browser inspection | PENDING | Expand `Why this post?` and verify the copy control is visible without a page alert |
+
+The external Relay/AppView, short-TTL OAuth, and independent-PLC operator
+evidence gates remain separate and unresolved.
