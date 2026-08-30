@@ -982,3 +982,65 @@ This iteration improves shell disclosure without making a presentation
 component an authority. The remaining concentrations are the PDS-controlled
 bootstrap email, the unresolved external PLC operator-independence gate, and
 the still-open Relay/AppView and short-TTL OAuth evidence gates.
+
+## 32. Iteration 25 — make horizontal tab selection inspectable
+
+The shared web tab bar still used the upstream blue-only underline and did
+not expose the selected tab through an explicit web attribute. That left Home
+and profile section changes visually recognizable only through inherited
+color and weight, even though these tabs define the active document surface.
+
+### Residual authority concentration
+
+This was a local presentation concentration, not a network authority. The
+client's inherited tab styling made active-surface state less inspectable and
+made the Plumbline alignment grammar stop at the side navigation. It did not
+change which provider, record, or policy supplied the content.
+
+### Ecosystem/design precedent and chosen architectural change
+
+The change extends the existing ECW tab interaction at its shared web
+composition point. Each tab now carries the platform's selected accessibility
+state and an explicit `aria-selected` value. The existing blue selection rule
+remains the semantic contrast cue; a small brass diamond is added as the
+Plumbline alignment marker. The marker is decorative, pointer-transparent,
+and available through stable test IDs for browser verification.
+
+### Authority before versus after
+
+| Boundary | Before iteration 25 | After iteration 25 |
+| --- | --- | --- |
+| Active tab | Selection was conveyed through text weight and a generic blue underline. | The same cues remain, with explicit selected state and a brass alignment marker. |
+| Accessibility state | The web tab had `accessibilityRole="tab"` without a selected-state value. | The tab exposes `accessibilityState.selected` and `aria-selected`; the decorative marker is `aria-hidden`. |
+| Provider and protocol authority | Unchanged and owned by the existing feed/profile composition. | Unchanged; this is a web-only presentation and disclosure update. |
+
+### Interoperability and security tradeoffs
+
+No route, URL, PDS/AppView selection, OAuth grant, record mutation, storage,
+provider, or protocol behavior changed. The marker uses the existing
+Plumbline brass token, is not a semantic warning or success color, and does
+not reduce the existing tab target sizes. The native tab bar is unchanged.
+
+### Implementation evidence
+
+- `src/view/com/pager/TabBar.web.tsx` adds the selected-state attributes,
+  stable indicator/marker test IDs, and the horizontal brass marker while
+  retaining the existing tab interaction and blue selection rule.
+- `src/lib/brand.ts` remains the single source for `PLUMBLINE_BRASS`.
+
+### Verification
+
+| Check | Status | Evidence |
+| --- | --- | --- |
+| Touched-file Oxlint | PASS | `pnpm exec oxlint --quiet src/view/com/pager/TabBar.web.tsx` |
+| Formatting and whitespace | PASS | Prettier check and `git diff --check` |
+| Web TypeScript | PASS | `pnpm run typecheck:web` |
+| Production web export | PASS | `EXPO_PUBLIC_ENV=production pnpm run build-web`; existing bundle-size warnings remain |
+| Client push | PASS | `80b823b95` pushed to `fork/codex/spaces-alpha-integration` |
+| Production Pages upload | PASS | `https://d15a243a.social-edriffles.pages.dev`, source `80b823b95` |
+| Home browser inspection | PASS | `https://plumblines.uk/?deployment=d15a243a`: selected `Following` tab, `aria-selected=true`, brass marker, no alert |
+| Profile browser inspection | PASS | `https://plumblines.uk/profile/edriffles.us?deployment=d15a243a`: selected `Posts` tab, `aria-selected=true`, brass marker, no alert |
+
+This iteration improves active-surface disclosure without adding a new
+authority. The external Relay/AppView, short-TTL OAuth, and independent-PLC
+operator gates remain separate and unresolved.
