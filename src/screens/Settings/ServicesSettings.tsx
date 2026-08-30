@@ -1,6 +1,7 @@
 import {type ReactNode, useEffect, useState} from 'react'
 import {Alert, TextInput, View} from 'react-native'
 import * as Clipboard from 'expo-clipboard'
+import {type MessageDescriptor} from '@lingui/core'
 import {msg} from '@lingui/core/macro'
 import {useLingui} from '@lingui/react'
 import {Trans} from '@lingui/react/macro'
@@ -9,7 +10,6 @@ import {type NativeStackScreenProps} from '@react-navigation/native-stack'
 import {type IdentityResolutionPolicy} from '#/lib/identity-runtime'
 import {
   BOUNDARY_OWNED_PROVIDER_SURFACES,
-  PROVIDER_SURFACE_DETAILS,
   PROVIDER_SURFACES,
   type ProviderReconciliationPolicy,
   type ProviderSurface,
@@ -20,7 +20,10 @@ import {
   type ServicesSettingsSection,
 } from '#/lib/routes/types'
 import {useSession, useSessionApi} from '#/state/session'
-import {type OAuthFeature} from '#/state/session/oauth-scopes'
+import {
+  getOAuthFeatureLabelMessage,
+  type OAuthFeature,
+} from '#/state/session/oauth-scopes'
 import {
   getRegisteredPlcResolvers,
   PRIMARY_PLC_RESOLVER,
@@ -65,34 +68,143 @@ const CONFIGURABLE_PROVIDER_SURFACES = PROVIDER_SURFACES.filter(
     RUNTIME_COMPOSED_PROVIDER_SURFACES.includes(surface),
 )
 
-const OAUTH_FEATURE_LABELS: Record<OAuthFeature, string> = {
-  posting: 'Posting and interactions',
-  'profile-editing': 'Profile editing',
-  'social-graph': 'Social graph',
-  'identity-recovery': 'Identity recovery and rotation',
-  appview: 'Authenticated AppView reads',
-  chat: 'Chat',
-  spaces: 'Spaces',
-  media: 'Media uploads',
-  notifications: 'Notifications',
-}
-
 const RECONCILIATION_MODES: Array<{
   id: ProviderReconciliationPolicy['mode']
-  label: string
+  label: MessageDescriptor
 }> = [
-  {id: 'require-agreement', label: 'Require agreement'},
-  {id: 'first-verified', label: 'Use first verified result'},
-  {id: 'merge', label: 'Merge attributable results'},
+  {id: 'require-agreement', label: msg`Require agreement`},
+  {id: 'first-verified', label: msg`Use first verified result`},
+  {id: 'merge', label: msg`Merge attributable results`},
 ]
 
-function providerSurfaceLabel(
+function reconciliationModeMessage(
+  mode: ProviderReconciliationPolicy['mode'],
+): MessageDescriptor {
+  switch (mode) {
+    case 'require-agreement':
+      return msg`Require agreement`
+    case 'first-verified':
+      return msg`Use first verified result`
+    case 'prefer-provider':
+      return msg`Prefer one provider`
+    case 'merge':
+      return msg`Merge attributable results`
+  }
+}
+
+function reconciliationModeActionMessage(
+  mode: ProviderReconciliationPolicy['mode'],
+  surfaceLabel: string,
+): MessageDescriptor {
+  switch (mode) {
+    case 'require-agreement':
+      return msg`Require agreement for ${surfaceLabel}`
+    case 'first-verified':
+      return msg`Use first verified result for ${surfaceLabel}`
+    case 'prefer-provider':
+      return msg`Prefer one provider for ${surfaceLabel}`
+    case 'merge':
+      return msg`Merge attributable results for ${surfaceLabel}`
+  }
+}
+
+function providerSurfaceMessage(
   surface: ProviderSurface | AppViewProviderCapability,
-): string {
-  return surface
-    .split('-')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ')
+): MessageDescriptor {
+  switch (surface) {
+    case 'public-read':
+      return msg`Public reads`
+    case 'identity-resolution':
+      return msg`Identity resolution`
+    case 'profiles':
+      return msg`Profiles`
+    case 'threads':
+      return msg`Threads`
+    case 'feeds':
+      return msg`Feeds`
+    case 'search':
+      return msg`Search`
+    case 'notifications':
+      return msg`Notifications`
+    case 'labels':
+      return msg`Labels`
+    case 'media':
+      return msg`Media`
+    case 'communities':
+      return msg`Communities`
+  }
+}
+
+function providerSurfaceAuthorityMessage(
+  surface: ProviderSurface,
+): MessageDescriptor {
+  switch (surface) {
+    case 'identity-resolution':
+      return msg`Configured identity-capable resolver providers`
+    case 'profiles':
+    case 'threads':
+    case 'search':
+      return msg`Selected AppView providers`
+    case 'feeds':
+      return msg`Selected feed/AppView providers`
+    case 'notifications':
+      return msg`Selected authenticated AppView providers`
+    case 'labels':
+      return msg`Selected labeler/AppView providers`
+    case 'media':
+      return msg`Account PDS blob and media delivery boundary`
+    case 'communities':
+      return msg`Spaces transport and Radlib community control plane`
+  }
+}
+
+function providerSurfaceDescriptionMessage(
+  surface: ProviderSurface,
+): MessageDescriptor {
+  switch (surface) {
+    case 'identity-resolution':
+      return msg`DID and handle claims are composed from the enabled identity providers.`
+    case 'profiles':
+      return msg`Profile reads retain provider observations and use the local reconciliation policy.`
+    case 'threads':
+      return msg`Post and thread reads retain provider observations and use the local reconciliation policy.`
+    case 'feeds':
+      return msg`Feed metadata and custom-feed reads retain provider provenance and outage state.`
+    case 'search':
+      return msg`Search reads retain provider observations instead of silently choosing a winner.`
+    case 'notifications':
+      return msg`Account-scoped notification reads require an explicit authenticated provider boundary.`
+    case 'labels':
+      return msg`Label assertions remain attributable to their issuer and provider source.`
+    case 'media':
+      return msg`Uploads remain on the account PDS; blob previews and CDN delivery are not AppView-composed.`
+    case 'communities':
+      return msg`Membership and community records use the declared Spaces/Radlib transport, not AppView fan-out.`
+  }
+}
+
+function identityProviderActionMessage(
+  provider: AppViewProvider,
+  enabled: boolean,
+): MessageDescriptor {
+  return enabled
+    ? msg`Remove identity resolution from ${provider.displayName}`
+    : msg`Allow identity resolution for ${provider.displayName}`
+}
+
+function identityProviderPreferenceMessage(
+  provider: AppViewProvider,
+): MessageDescriptor {
+  return msg`Prefer ${provider.displayName} for identity resolution`
+}
+
+function plcResolverToggleMessage(
+  displayName: string,
+  enabled: boolean,
+): MessageDescriptor {
+  return enabled
+    ? msg`Disable PLC resolver ${displayName}`
+    : msg`Enable PLC resolver ${displayName}`
 }
 
 type ServiceWorkbenchRow = {
@@ -121,17 +233,10 @@ type WorkbenchPanel =
   | {kind: 'identity-policy'}
   | {kind: 'resolver'; resolverId: string}
 
-function describeProviderSources(providers: readonly AppViewProvider[]): {
-  provider: string
-  state: string
-} {
-  if (providers.length === 0) {
-    return {provider: 'No provider enabled', state: 'Unavailable'}
-  }
-  return {
-    provider: providers.map(provider => provider.displayName).join(', '),
-    state: `${providers.length} enabled`,
-  }
+function describeProviderSources(
+  providers: readonly AppViewProvider[],
+): string[] {
+  return providers.map(provider => provider.displayName)
 }
 
 function readReconciliationPolicies(): Partial<
@@ -149,80 +254,78 @@ type ServicesSection = ServicesSettingsSection
 
 const SERVICES_SECTIONS: Array<{
   id: ServicesSection
-  label: string
-  description: string
+  label: MessageDescriptor
+  description: MessageDescriptor
 }> = [
   {
     id: 'overview',
-    label: 'Overview',
-    description: 'See which host and read providers are active.',
+    label: msg`Overview`,
+    description: msg`See which host and read providers are active.`,
   },
   {
     id: 'authorization',
-    label: 'Authorization',
-    description: 'Upgrade only the OAuth capabilities you choose.',
+    label: msg`Authorization`,
+    description: msg`Upgrade only the OAuth capabilities you choose.`,
   },
   {
     id: 'providers',
-    label: 'Providers',
-    description: 'Register and select replaceable read services.',
+    label: msg`Providers`,
+    description: msg`Register and select replaceable read services.`,
   },
   {
     id: 'policies',
-    label: 'Policies',
-    description: 'Choose how provider claims are reconciled locally.',
+    label: msg`Policies`,
+    description: msg`Choose how provider claims are reconciled locally.`,
   },
   {
     id: 'identity',
-    label: 'Identity',
-    description: 'Control resolver participation and disagreement handling.',
+    label: msg`Identity`,
+    description: msg`Control resolver participation and disagreement handling.`,
   },
   {
     id: 'resolvers',
-    label: 'PLC resolvers',
-    description: 'Inspect and manage independently declared resolver sources.',
+    label: msg`PLC resolvers`,
+    description: msg`Inspect and manage independently declared resolver sources.`,
   },
 ]
 
 const SERVICES_INSPECTOR_COPY: Record<
   ServicesSection,
-  {source: string; rule: string; control: string}
+  {
+    source: MessageDescriptor
+    rule: MessageDescriptor
+    control: MessageDescriptor
+  }
 > = {
   overview: {
-    source: 'Current account session and local provider registry',
-    rule: 'The PDS remains the write and account authority; read providers do not become identity authorities.',
-    control:
-      'Choose a read provider or open another section without changing the account host.',
+    source: msg`Current account session and local provider registry`,
+    rule: msg`The PDS remains the write and account authority; read providers do not become identity authorities.`,
+    control: msg`Choose a read provider or open another section without changing the account host.`,
   },
   authorization: {
-    source: 'The current OAuth session and its granted feature groups',
-    rule: 'A requested permission is not a grant. Each missing feature opens an explicit reauthorization step.',
-    control:
-      'Upgrade one capability at a time, or leave the session unchanged.',
+    source: msg`The current OAuth session and its granted feature groups`,
+    rule: msg`A requested permission is not a grant. Each missing feature opens an explicit reauthorization step.`,
+    control: msg`Upgrade one capability at a time, or leave the session unchanged.`,
   },
   providers: {
-    source: 'Registered AppView descriptors and their declared capabilities',
-    rule: 'Registration identifies a service; it does not prove operator independence or grant private authority.',
-    control:
-      'Add, select, or revoke a provider surface locally. No hidden fallback is performed.',
+    source: msg`Registered AppView descriptors and their declared capabilities`,
+    rule: msg`Registration identifies a service; it does not prove operator independence or grant private authority.`,
+    control: msg`Add, select, or revoke a provider surface locally. No hidden fallback is performed.`,
   },
   policies: {
-    source: 'Per-surface provider observations and local reconciliation policy',
-    rule: 'Agreement, disagreement, outage, and partial results remain attributable to their sources.',
-    control:
-      'Export, import, or reset provider policy without exporting credentials or adding a host.',
+    source: msg`Per-surface provider observations and local reconciliation policy`,
+    rule: msg`Agreement, disagreement, outage, and partial results remain attributable to their sources.`,
+    control: msg`Export, import, or reset provider policy without exporting credentials or adding a host.`,
   },
   identity: {
-    source: 'Identity-capable provider declarations and resolver policy',
-    rule: 'A resolver may make a claim about identity but cannot acquire ownership of the DID.',
-    control:
-      'Allow or revoke identity resolution independently from ordinary public reads.',
+    source: msg`Identity-capable provider declarations and resolver policy`,
+    rule: msg`A resolver may make a claim about identity but cannot acquire ownership of the DID.`,
+    control: msg`Allow or revoke identity resolution independently from ordinary public reads.`,
   },
   resolvers: {
-    source: 'PLC resolver declarations and cryptographic history verification',
-    rule: 'An endpoint or operator label is not proof of independent control; verified histories and disagreement stay visible.',
-    control:
-      'Enable or disable a declared resolver and add another public HTTPS source for comparison.',
+    source: msg`PLC resolver declarations and cryptographic history verification`,
+    rule: msg`An endpoint or operator label is not proof of independent control; verified histories and disagreement stay visible.`,
+    control: msg`Enable or disable a declared resolver and add another public HTTPS source for comparison.`,
   },
 }
 
@@ -235,6 +338,7 @@ function ServiceWorkbenchMatrix({
   onInspect: (target: ServiceWorkbenchTarget) => void
   compact: boolean
 }) {
+  const {_} = useLingui()
   const t = useTheme()
 
   return (
@@ -252,7 +356,7 @@ function ServiceWorkbenchMatrix({
       <View style={[a.gap_2xs, a.pb_xs]}>
         <SettingsList.ItemText
           style={[{paddingHorizontal: 0}, a.font_semi_bold]}>
-          Capability map
+          {_(msg`Capability map`)}
         </SettingsList.ItemText>
         <SettingsList.ItemText
           style={[
@@ -260,9 +364,9 @@ function ServiceWorkbenchMatrix({
             a.text_sm,
             t.atoms.text_contrast_medium,
           ]}>
-          Each service has a named source, a visible state, and an ordinary
-          inspection path. A default provider is a convenience choice, not a
-          universal authority.
+          {_(
+            msg`Each service has a named source, a visible state, and an ordinary inspection path. A default provider is a convenience choice, not a universal authority.`,
+          )}
         </SettingsList.ItemText>
       </View>
 
@@ -278,7 +382,7 @@ function ServiceWorkbenchMatrix({
               a.font_semi_bold,
               t.atoms.text_contrast_medium,
             ]}>
-            CAPABILITY
+            {_(msg`CAPABILITY`)}
           </SettingsList.ItemText>
           <SettingsList.ItemText
             style={[
@@ -288,7 +392,7 @@ function ServiceWorkbenchMatrix({
               a.font_semi_bold,
               t.atoms.text_contrast_medium,
             ]}>
-            CURRENT SOURCE
+            {_(msg`CURRENT SOURCE`)}
           </SettingsList.ItemText>
           <SettingsList.ItemText
             style={[
@@ -298,7 +402,7 @@ function ServiceWorkbenchMatrix({
               a.font_semi_bold,
               t.atoms.text_contrast_medium,
             ]}>
-            STATE
+            {_(msg`STATE`)}
           </SettingsList.ItemText>
           <View style={{width: 66}} />
         </View>
@@ -360,13 +464,13 @@ function ServiceWorkbenchMatrix({
           </View>
           <View style={{width: 66, alignItems: 'flex-end'}}>
             <Button
-              label={`Inspect ${row.label} service`}
+              label={_(msg`Inspect ${row.label} service`)}
               size="small"
               color="secondary"
               variant="outline"
               shape="rectangular"
               onPress={() => onInspect(row.target)}>
-              <ButtonText>Inspect</ButtonText>
+              <ButtonText>{_(msg`Inspect`)}</ButtonText>
             </Button>
           </View>
         </View>
@@ -429,16 +533,21 @@ function ProviderSurfaceActionPanel({
   onBack: () => void
   onClose: () => void
 }) {
+  const {_, i18n} = useLingui()
   const t = useTheme()
 
   return (
     <WorkbenchActionPanel
       testID="service-workbench-provider-surfaces-panel"
-      title={`${provider.displayName} read surfaces`}
-      description="Each surface is an independent local capability declaration. Removing a surface stops this provider from receiving that class of read request; it does not delete the provider or alter your account host.">
+      title={`${provider.displayName} ${_(msg`read surfaces`)}`}
+      description={_(
+        msg`Each surface is an independent local capability declaration. Removing a surface stops this provider from receiving that class of read request; it does not delete the provider or alter your account host.`,
+      )}>
       <View style={[a.gap_xs]}>
         {CONFIGURABLE_PROVIDER_SURFACES.map(surface => {
           const enabled = provider.capabilities?.includes(surface)
+          const surfaceLabel = i18n._(providerSurfaceMessage(surface))
+          const actionLabel = enabled ? _(msg`Remove`) : _(msg`Allow`)
           return (
             <View
               key={surface}
@@ -454,7 +563,7 @@ function ProviderSurfaceActionPanel({
               <View style={[a.flex_1, {minWidth: 0}]}>
                 <SettingsList.ItemText
                   style={[{paddingHorizontal: 0}, a.font_semi_bold]}>
-                  {providerSurfaceLabel(surface)}
+                  {surfaceLabel}
                 </SettingsList.ItemText>
                 <SettingsList.ItemText
                   style={[
@@ -463,18 +572,22 @@ function ProviderSurfaceActionPanel({
                     t.atoms.text_contrast_medium,
                   ]}>
                   {enabled
-                    ? 'This provider may answer this surface.'
-                    : 'This provider is excluded from this surface.'}
+                    ? _(msg`This provider may answer this surface.`)
+                    : _(msg`This provider is excluded from this surface.`)}
                 </SettingsList.ItemText>
               </View>
               <Button
-                label={`${enabled ? 'Remove' : 'Allow'} ${providerSurfaceLabel(surface)} surface for ${provider.displayName}`}
+                label={_(
+                  msg`${actionLabel} ${surfaceLabel} surface for ${provider.displayName}`,
+                )}
                 onPress={() => onToggle(surface)}
                 size="small"
                 color={enabled ? 'primary' : 'secondary'}
                 variant={enabled ? 'solid' : 'outline'}
                 shape="rectangular">
-                <ButtonText>{enabled ? 'Allowed' : 'Allow'}</ButtonText>
+                <ButtonText>
+                  {enabled ? _(msg`Allowed`) : _(msg`Allow`)}
+                </ButtonText>
               </Button>
             </View>
           )
@@ -482,22 +595,22 @@ function ProviderSurfaceActionPanel({
       </View>
       <View style={[a.flex_row, a.flex_wrap, a.gap_xs]}>
         <Button
-          label={`Inspect ${provider.displayName} provider`}
+          label={_(msg`Inspect ${provider.displayName} provider`)}
           onPress={onBack}
           size="small"
           color="secondary"
           variant="outline"
           shape="rectangular">
-          <ButtonText>Back to provider</ButtonText>
+          <ButtonText>{_(msg`Back to provider`)}</ButtonText>
         </Button>
         <Button
-          label="Close provider surfaces inspector"
+          label={_(msg`Close provider surfaces inspector`)}
           onPress={onClose}
           size="small"
           color="secondary"
           variant="outline"
           shape="rectangular">
-          <ButtonText>Close</ButtonText>
+          <ButtonText>{_(msg`Close`)}</ButtonText>
         </Button>
       </View>
     </WorkbenchActionPanel>
@@ -506,7 +619,7 @@ function ProviderSurfaceActionPanel({
 
 export function ServicesSettingsScreen({route, navigation}: Props) {
   const {currentAccount} = useSession()
-  const {_} = useLingui()
+  const {_, i18n} = useLingui()
   const t = useTheme()
   const {gtMobile, gtTablet} = useBreakpoints()
   const {logoutCurrentAccount, switchAppViewProvider, upgradeOAuthFeature} =
@@ -560,12 +673,14 @@ export function ServicesSettingsScreen({route, navigation}: Props) {
     try {
       await upgradeOAuthFeature(feature)
       Alert.alert(
-        'Permission updated',
-        `${OAUTH_FEATURE_LABELS[feature]} is now available to this client.`,
+        _(msg`Permission updated`),
+        _(
+          msg`${i18n._(getOAuthFeatureLabelMessage(feature))} is now available to this client.`,
+        ),
       )
     } catch (error) {
       Alert.alert(
-        'Permission not updated',
+        _(msg`Permission not updated`),
         error instanceof Error ? error.message : String(error),
       )
     } finally {
@@ -575,12 +690,14 @@ export function ServicesSettingsScreen({route, navigation}: Props) {
 
   function revokeOAuthSession() {
     Alert.alert(
-      'Revoke OAuth session?',
-      'This signs out the current account and revokes the complete OAuth session. It does not revoke one feature independently.',
+      _(msg`Revoke OAuth session?`),
+      _(
+        msg`This signs out the current account and revokes the complete OAuth session. It does not revoke one feature independently.`,
+      ),
       [
-        {text: 'Cancel', style: 'cancel'},
+        {text: _(msg`Cancel`), style: 'cancel'},
         {
-          text: 'Revoke session',
+          text: _(msg`Revoke session`),
           style: 'destructive',
           onPress: () => logoutCurrentAccount('Settings'),
         },
@@ -594,7 +711,7 @@ export function ServicesSettingsScreen({route, navigation}: Props) {
       setIdentityPolicy(policy)
     } catch (error) {
       Alert.alert(
-        'Identity policy not saved',
+        _(msg`Identity policy not saved`),
         error instanceof Error ? error.message : String(error),
       )
     }
@@ -619,7 +736,7 @@ export function ServicesSettingsScreen({route, navigation}: Props) {
       setIdentityPolicy(getIdentityResolutionPolicy())
     } catch (error) {
       Alert.alert(
-        'Identity provider not changed',
+        _(msg`Identity provider not changed`),
         error instanceof Error ? error.message : String(error),
       )
     }
@@ -640,7 +757,7 @@ export function ServicesSettingsScreen({route, navigation}: Props) {
       setProviders(getAppViewProviders())
     } catch (error) {
       Alert.alert(
-        'Provider capability not changed',
+        _(msg`Provider capability not changed`),
         error instanceof Error ? error.message : String(error),
       )
     }
@@ -659,7 +776,7 @@ export function ServicesSettingsScreen({route, navigation}: Props) {
       setReconciliationPolicies(previous => ({...previous, [surface]: policy}))
     } catch (error) {
       Alert.alert(
-        'Reconciliation policy not saved',
+        _(msg`Reconciliation policy not saved`),
         error instanceof Error ? error.message : String(error),
       )
     }
@@ -677,8 +794,10 @@ export function ServicesSettingsScreen({route, navigation}: Props) {
   async function copyProviderPolicy() {
     await Clipboard.setStringAsync(exportAppViewPolicy())
     Alert.alert(
-      'Provider policy copied',
-      'The export contains provider IDs, capabilities, and local reconciliation choices, but no endpoints, tokens, or service-auth material.',
+      _(msg`Provider policy copied`),
+      _(
+        msg`The export contains provider IDs, capabilities, and local reconciliation choices, but no endpoints, tokens, or service-auth material.`,
+      ),
     )
   }
 
@@ -689,12 +808,14 @@ export function ServicesSettingsScreen({route, navigation}: Props) {
       setIdentityPolicy(getIdentityResolutionPolicy())
       setReconciliationPolicies(readReconciliationPolicies())
       Alert.alert(
-        'Provider policy imported',
-        'Only already-registered providers were changed. Imports cannot add a host or credential.',
+        _(msg`Provider policy imported`),
+        _(
+          msg`Only already-registered providers were changed. Imports cannot add a host or credential.`,
+        ),
       )
     } catch (error) {
       Alert.alert(
-        'Provider policy rejected',
+        _(msg`Provider policy rejected`),
         error instanceof Error ? error.message : String(error),
       )
     }
@@ -702,12 +823,14 @@ export function ServicesSettingsScreen({route, navigation}: Props) {
 
   function resetProviderPolicyWithConfirmation() {
     Alert.alert(
-      'Reset provider policy?',
-      'This revokes optional provider surface capabilities and clears selections and reconciliation choices. Registered endpoints remain available for a later explicit re-enable.',
+      _(msg`Reset provider policy?`),
+      _(
+        msg`This revokes optional provider surface capabilities and clears selections and reconciliation choices. Registered endpoints remain available for a later explicit re-enable.`,
+      ),
       [
-        {text: 'Cancel', style: 'cancel'},
+        {text: _(msg`Cancel`), style: 'cancel'},
         {
-          text: 'Reset',
+          text: _(msg`Reset`),
           style: 'destructive',
           onPress: () =>
             void resetAppViewPolicy().then(() => {
@@ -727,8 +850,10 @@ export function ServicesSettingsScreen({route, navigation}: Props) {
       !resolverOperatorId.trim()
     ) {
       Alert.alert(
-        'Resolver details required',
-        'Enter a name, public HTTPS endpoint, and declared operator ID before adding a resolver.',
+        _(msg`Resolver details required`),
+        _(
+          msg`Enter a name, public HTTPS endpoint, and declared operator ID before adding a resolver.`,
+        ),
       )
       return
     }
@@ -752,12 +877,14 @@ export function ServicesSettingsScreen({route, navigation}: Props) {
       setResolverEndpoint('')
       setResolverOperatorId('')
       Alert.alert(
-        'PLC resolver added',
-        `${resolver.displayName} will be queried alongside ${PRIMARY_PLC_RESOLVER.displayName}. Its history must verify cryptographically before it can be selected.`,
+        _(msg`PLC resolver added`),
+        _(
+          msg`${resolver.displayName} will be queried alongside ${PRIMARY_PLC_RESOLVER.displayName}. Its history must verify cryptographically before it can be selected.`,
+        ),
       )
     } catch (error) {
       Alert.alert(
-        'PLC resolver not added',
+        _(msg`PLC resolver not added`),
         error instanceof Error ? error.message : String(error),
       )
     } finally {
@@ -771,7 +898,7 @@ export function ServicesSettingsScreen({route, navigation}: Props) {
       setPlcResolvers(getRegisteredPlcResolvers())
     } catch (error) {
       Alert.alert(
-        'PLC resolver not changed',
+        _(msg`PLC resolver not changed`),
         error instanceof Error ? error.message : String(error),
       )
     }
@@ -779,14 +906,16 @@ export function ServicesSettingsScreen({route, navigation}: Props) {
 
   const identityPolicyLabel =
     identityPolicy.mode === 'require-agreement'
-      ? 'Require agreement from all identity providers'
+      ? _(msg`Require agreement from all identity providers`)
       : identityPolicy.mode === 'first-verified'
-        ? 'Use the first verified provider result'
-        : `Prefer ${
-            providers.find(
-              provider => provider.id === identityPolicy.preferredProviderId,
-            )?.displayName ?? identityPolicy.preferredProviderId
-          }`
+        ? _(msg`Use the first verified provider result`)
+        : _(
+            msg`Prefer ${
+              providers.find(
+                provider => provider.id === identityPolicy.preferredProviderId,
+              )?.displayName ?? identityPolicy.preferredProviderId
+            }`,
+          )
 
   const selectedProvider = providers.find(provider => provider.id === selected)
   const activeSectionSpec = SERVICES_SECTIONS.find(
@@ -805,98 +934,130 @@ export function ServicesSettingsScreen({route, navigation}: Props) {
   const searchProviderSources = describeProviderSources(
     getAppViewProvidersForSurface('search'),
   )
+  function localizeProviderSources(providerNames: readonly string[]) {
+    return {
+      provider:
+        providerNames.length > 0
+          ? providerNames.join(', ')
+          : _(msg`No provider enabled`),
+      state:
+        providerNames.length > 0
+          ? _(msg`${providerNames.length} enabled`)
+          : _(msg`Unavailable`),
+    }
+  }
+  const localizedFeedProviderSources =
+    localizeProviderSources(feedProviderSources)
+  const localizedNotificationProviderSources = localizeProviderSources(
+    notificationProviderSources,
+  )
+  const localizedLabelProviderSources =
+    localizeProviderSources(labelProviderSources)
+  const localizedSearchProviderSources = localizeProviderSources(
+    searchProviderSources,
+  )
   const serviceWorkbenchRows: ServiceWorkbenchRow[] = [
     {
       id: 'identity',
-      label: 'Identity',
-      provider: currentAccount?.did ?? 'No active account',
-      state: currentAccount ? 'Active' : 'Not signed in',
-      detail: `DID-backed account; ${identityPolicy.mode} resolver policy`,
+      label: _(msg`Identity`),
+      provider: currentAccount?.did ?? _(msg`No active account`),
+      state: currentAccount ? _(msg`Active`) : _(msg`Not signed in`),
+      detail: _(msg`DID-backed account; ${identityPolicyLabel}`),
       target: {kind: 'services', section: 'identity'},
     },
     {
       id: 'pds',
-      label: 'Personal Data Server',
-      provider: currentAccount?.pdsUrl ?? 'No repository PDS',
-      state: currentAccount?.pdsUrl ? 'Write host' : 'Unavailable',
-      detail:
-        'Account records, writes, and profile media remain on the account host.',
+      label: _(msg`Personal Data Server`),
+      provider: currentAccount?.pdsUrl ?? _(msg`No repository PDS`),
+      state: currentAccount?.pdsUrl ? _(msg`Write host`) : _(msg`Unavailable`),
+      detail: _(
+        msg`Account records, writes, and profile media remain on the account host.`,
+      ),
       target: {kind: 'route', route: 'IdentitySovereigntySettings'},
     },
     {
       id: 'appview',
-      label: 'AppView reads',
-      provider: selectedProvider?.displayName ?? 'No provider selected',
-      state: selectedProvider ? 'Active' : 'Not selected',
-      detail: selectedProvider?.endpoint ?? 'Choose an explicit read provider.',
+      label: _(msg`AppView reads`),
+      provider: selectedProvider?.displayName ?? _(msg`No provider selected`),
+      state: selectedProvider ? _(msg`Active`) : _(msg`Not selected`),
+      detail:
+        selectedProvider?.endpoint ?? _(msg`Choose an explicit read provider.`),
       target: {kind: 'services', section: 'providers'},
     },
     {
       id: 'feeds',
-      label: 'Feeds',
-      provider: feedProviderSources.provider,
-      state: feedProviderSources.state,
-      detail: 'Feed results retain source and reconciliation state.',
+      label: _(msg`Feeds`),
+      provider: localizedFeedProviderSources.provider,
+      state: localizedFeedProviderSources.state,
+      detail: _(msg`Feed results retain source and reconciliation state.`),
       target: {kind: 'services', section: 'providers'},
     },
     {
       id: 'moderation-reach',
-      label: 'Moderation & Reach',
-      provider: labelProviderSources.provider,
-      state: 'Local policy',
-      detail:
-        'Labels are claims; local rules decide warning, hiding, or ranking.',
+      label: _(msg`Moderation & Reach`),
+      provider: localizedLabelProviderSources.provider,
+      state: _(msg`Local policy`),
+      detail: _(
+        msg`Labels are claims; local rules decide warning, hiding, or ranking.`,
+      ),
       target: {kind: 'route', route: 'Moderation'},
     },
     {
       id: 'search',
-      label: 'Search',
-      provider: searchProviderSources.provider,
-      state: searchProviderSources.state,
-      detail: 'Search results remain attributable to their read provider.',
+      label: _(msg`Search`),
+      provider: localizedSearchProviderSources.provider,
+      state: localizedSearchProviderSources.state,
+      detail: _(
+        msg`Search results remain attributable to their read provider.`,
+      ),
       target: {kind: 'services', section: 'providers'},
     },
     {
       id: 'notifications',
-      label: 'Notifications',
-      provider: notificationProviderSources.provider,
-      state: notificationProviderSources.state,
-      detail:
-        'Account-scoped reads use an explicit authenticated provider boundary.',
+      label: _(msg`Notifications`),
+      provider: localizedNotificationProviderSources.provider,
+      state: localizedNotificationProviderSources.state,
+      detail: _(
+        msg`Account-scoped reads use an explicit authenticated provider boundary.`,
+      ),
       target: {kind: 'services', section: 'authorization'},
     },
     {
       id: 'authorization',
-      label: 'Authorization',
-      provider: currentAccount?.service ?? 'No login service',
-      state: currentAccount ? 'Delegated' : 'Not signed in',
-      detail:
-        'Feature-scoped session permissions can be inspected and upgraded.',
+      label: _(msg`Authorization`),
+      provider: currentAccount?.service ?? _(msg`No login service`),
+      state: currentAccount ? _(msg`Delegated`) : _(msg`Not signed in`),
+      detail: _(
+        msg`Feature-scoped session permissions can be inspected and upgraded.`,
+      ),
       target: {kind: 'services', section: 'authorization'},
     },
     {
       id: 'media',
-      label: 'Media',
-      provider: currentAccount?.pdsUrl ?? 'Account PDS',
-      state: currentAccount?.pdsUrl ? 'Boundary-owned' : 'Unavailable',
-      detail: PROVIDER_SURFACE_DETAILS.media.description,
+      label: _(msg`Media`),
+      provider: currentAccount?.pdsUrl ?? _(msg`Account PDS`),
+      state: currentAccount?.pdsUrl
+        ? _(msg`Boundary-owned`)
+        : _(msg`Unavailable`),
+      detail: i18n._(providerSurfaceDescriptionMessage('media')),
       target: {kind: 'route', route: 'ContentAndMediaSettings'},
     },
     {
       id: 'communities',
-      label: 'Communities',
-      provider: 'Spaces transport and community authority',
-      state: 'Boundary-owned',
-      detail: PROVIDER_SURFACE_DETAILS.communities.description,
+      label: _(msg`Communities`),
+      provider: _(msg`Spaces transport and community authority`),
+      state: _(msg`Boundary-owned`),
+      detail: i18n._(providerSurfaceDescriptionMessage('communities')),
       target: {kind: 'route', route: 'PermissionedSpacesSettings'},
     },
     {
       id: 'exit-backups',
-      label: 'Exit & backups',
-      provider: 'Local account controls',
-      state: 'Available',
-      detail:
-        'Export repository data and portable policy without exporting credentials.',
+      label: _(msg`Exit & backups`),
+      provider: _(msg`Local account controls`),
+      state: _(msg`Available`),
+      detail: _(
+        msg`Export repository data and portable policy without exporting credentials.`,
+      ),
       target: {kind: 'route', route: 'IdentitySovereigntySettings'},
     },
   ]
@@ -916,18 +1077,30 @@ export function ServicesSettingsScreen({route, navigation}: Props) {
   }
   const activeState =
     activeSection === 'overview'
-      ? `${providers.length} registered read provider${providers.length === 1 ? '' : 's'}; ${selectedProvider?.displayName ?? 'no provider selected'}`
+      ? _(
+          msg`${providers.length} registered read provider${providers.length === 1 ? '' : 's'}; ${selectedProvider?.displayName ?? _(msg`no provider selected`)}`,
+        )
       : activeSection === 'authorization'
         ? currentAccount?.authType === 'oauth'
-          ? 'Feature-scoped OAuth upgrades are available for this session.'
-          : 'Sign in with OAuth to request feature-scoped upgrades.'
+          ? _(
+              msg`Feature-scoped OAuth upgrades are available for this session.`,
+            )
+          : _(msg`Sign in with OAuth to request feature-scoped upgrades.`)
         : activeSection === 'providers'
-          ? `${providers.filter(provider => provider.enabled).length} enabled provider${providers.length === 1 ? '' : 's'}`
+          ? _(
+              msg`${providers.filter(provider => provider.enabled).length} enabled provider${providers.filter(provider => provider.enabled).length === 1 ? '' : 's'}`,
+            )
           : activeSection === 'policies'
-            ? `${CONFIGURABLE_PROVIDER_SURFACES.filter(surface => reconciliationPolicies[surface] !== undefined).length} runtime-composed policies stored locally`
+            ? _(
+                msg`${CONFIGURABLE_PROVIDER_SURFACES.filter(surface => reconciliationPolicies[surface] !== undefined).length} runtime-composed policies stored locally`,
+              )
             : activeSection === 'identity'
-              ? `${getAppViewProvidersForCapability('identity-resolution').length} identity provider${getAppViewProvidersForCapability('identity-resolution').length === 1 ? '' : 's'} enabled`
-              : `${plcResolvers.filter(resolver => resolver.enabled).length} declared PLC resolver${plcResolvers.filter(resolver => resolver.enabled).length === 1 ? '' : 's'} enabled`
+              ? _(
+                  msg`${getAppViewProvidersForCapability('identity-resolution').length} identity provider${getAppViewProvidersForCapability('identity-resolution').length === 1 ? '' : 's'} enabled`,
+                )
+              : _(
+                  msg`${plcResolvers.filter(resolver => resolver.enabled).length} declared PLC resolver${plcResolvers.filter(resolver => resolver.enabled).length === 1 ? '' : 's'} enabled`,
+                )
 
   const panelProviderId =
     openPanel?.kind === 'provider' || openPanel?.kind === 'provider-surfaces'
@@ -1112,7 +1285,7 @@ export function ServicesSettingsScreen({route, navigation}: Props) {
             ]}>
             <SettingsList.ItemText
               style={[{paddingHorizontal: 0}, a.font_semi_bold]}>
-              Navigator
+              {_(msg`Navigator`)}
             </SettingsList.ItemText>
             <SettingsList.ItemText
               style={[
@@ -1120,8 +1293,9 @@ export function ServicesSettingsScreen({route, navigation}: Props) {
                 a.text_sm,
                 t.atoms.text_contrast_medium,
               ]}>
-              Choose an authority surface to inspect. The workspace below is the
-              only place where a provider choice is changed.
+              {_(
+                msg`Choose an authority surface to inspect. The workspace below is the only place where a provider choice is changed.`,
+              )}
             </SettingsList.ItemText>
             <View style={[a.flex_row, a.flex_wrap, a.gap_xs, a.pt_xs]}>
               {SERVICES_SECTIONS.map(section => {
@@ -1129,14 +1303,14 @@ export function ServicesSettingsScreen({route, navigation}: Props) {
                 return (
                   <Button
                     key={section.id}
-                    label={`Open ${section.label}`}
+                    label={_(msg`Open ${i18n._(section.label)}`)}
                     accessibilityState={{selected: isActive}}
                     size="small"
                     shape="rectangular"
                     color={isActive ? 'primary' : 'secondary'}
                     variant={isActive ? 'solid' : 'outline'}
                     onPress={() => selectSection(section.id)}>
-                    <ButtonText>{section.label}</ButtonText>
+                    <ButtonText>{i18n._(section.label)}</ButtonText>
                   </Button>
                 )
               })}
@@ -1160,7 +1334,7 @@ export function ServicesSettingsScreen({route, navigation}: Props) {
                 ]}>
                 <SettingsList.ItemText
                   style={[{paddingHorizontal: 0}, a.font_semi_bold]}>
-                  {activeSectionSpec.label}
+                  {i18n._(activeSectionSpec.label)}
                 </SettingsList.ItemText>
                 <SettingsList.ItemText
                   style={[
@@ -1168,7 +1342,7 @@ export function ServicesSettingsScreen({route, navigation}: Props) {
                     a.text_sm,
                     t.atoms.text_contrast_medium,
                   ]}>
-                  {activeSectionSpec.description}
+                  {i18n._(activeSectionSpec.description)}
                 </SettingsList.ItemText>
               </View>
 
@@ -1177,29 +1351,31 @@ export function ServicesSettingsScreen({route, navigation}: Props) {
                   <>
                     <SettingsList.Item>
                       <SettingsList.ItemText>
-                        Account service (login)
+                        {_(msg`Account service (login)`)}
                       </SettingsList.ItemText>
                       <SettingsList.BadgeText>
                         {currentAccount
                           ? currentAccount.service
-                          : 'No active account'}
+                          : _(msg`No active account`)}
                       </SettingsList.BadgeText>
                     </SettingsList.Item>
                     <SettingsList.Item>
                       <SettingsList.ItemText>
-                        Repository PDS
+                        {_(msg`Repository PDS`)}
                       </SettingsList.ItemText>
                       <SettingsList.BadgeText>
                         {currentAccount?.pdsUrl ??
-                          'Not available from the DID-backed session state'}
+                          _(
+                            msg`Not available from the DID-backed session state`,
+                          )}
                       </SettingsList.BadgeText>
                     </SettingsList.Item>
                     <SettingsList.Item>
                       <SettingsList.ItemText>
-                        Current read provider
+                        {_(msg`Current read provider`)}
                       </SettingsList.ItemText>
                       <SettingsList.BadgeText>
-                        {selectedProvider?.displayName ?? 'Not selected'}
+                        {selectedProvider?.displayName ?? _(msg`Not selected`)}
                       </SettingsList.BadgeText>
                     </SettingsList.Item>
                     <SettingsList.Item>
@@ -1212,7 +1388,7 @@ export function ServicesSettingsScreen({route, navigation}: Props) {
                     <SettingsList.Item>
                       <View style={[a.flex_1, a.gap_sm]}>
                         <SettingsList.ItemText style={[{paddingHorizontal: 0}]}>
-                          Authority map
+                          {_(msg`Authority map`)}
                         </SettingsList.ItemText>
                         <SettingsList.ItemText
                           style={[
@@ -1220,10 +1396,9 @@ export function ServicesSettingsScreen({route, navigation}: Props) {
                             a.text_sm,
                             t.atoms.text_contrast_medium,
                           ]}>
-                          Your PDS handles account writes and session state.
-                          AppViews answer selected public-read surfaces. The
-                          client records which provider answered instead of
-                          silently promoting one service to a universal source.
+                          {_(
+                            msg`Your PDS handles account writes and session state. AppViews answer selected public-read surfaces. The client records which provider answered instead of silently promoting one service to a universal source.`,
+                          )}
                         </SettingsList.ItemText>
                       </View>
                     </SettingsList.Item>
@@ -1238,7 +1413,7 @@ export function ServicesSettingsScreen({route, navigation}: Props) {
                           <View style={[a.flex_1, a.gap_sm]}>
                             <SettingsList.ItemText
                               style={[{paddingHorizontal: 0}]}>
-                              OAuth permission upgrades
+                              {_(msg`OAuth permission upgrades`)}
                             </SettingsList.ItemText>
                             <SettingsList.ItemText
                               style={[
@@ -1246,11 +1421,9 @@ export function ServicesSettingsScreen({route, navigation}: Props) {
                                 a.text_sm,
                                 t.atoms.text_contrast_medium,
                               ]}>
-                              New sessions request only the feature groups
-                              needed for ordinary use. Each missing capability
-                              opens a separate consent upgrade; existing
-                              posting, likes, profile editing, chat, and Spaces
-                              grants are retained.
+                              {_(
+                                msg`New sessions request only the feature groups needed for ordinary use. Each missing capability opens a separate consent upgrade; existing posting, likes, profile editing, chat, and Spaces grants are retained.`,
+                              )}
                             </SettingsList.ItemText>
                           </View>
                         </SettingsList.Item>
@@ -1266,8 +1439,9 @@ export function ServicesSettingsScreen({route, navigation}: Props) {
                     ) : (
                       <SettingsList.Item>
                         <SettingsList.ItemText>
-                          Feature-scoped upgrades are available after signing in
-                          with OAuth.
+                          {_(
+                            msg`Feature-scoped upgrades are available after signing in with OAuth.`,
+                          )}
                         </SettingsList.ItemText>
                       </SettingsList.Item>
                     )}
@@ -1279,7 +1453,7 @@ export function ServicesSettingsScreen({route, navigation}: Props) {
                     {providers.map(provider => (
                       <SettingsList.PressableItem
                         key={provider.id}
-                        label={`Inspect ${provider.displayName} provider`}
+                        label={_(msg`Inspect ${provider.displayName} provider`)}
                         onPress={() =>
                           setOpenPanel({
                             kind: 'provider',
@@ -1291,8 +1465,12 @@ export function ServicesSettingsScreen({route, navigation}: Props) {
                         </SettingsList.ItemText>
                         <SettingsList.BadgeText>
                           {selected === provider.id
-                            ? `Selected read provider · ${provider.serviceDid}`
-                            : `${provider.enabled ? 'Enabled' : 'Disabled'} · ${provider.serviceDid}`}
+                            ? _(
+                                msg`Selected read provider · ${provider.serviceDid}`,
+                              )
+                            : _(
+                                msg`${provider.enabled ? _(msg`Enabled`) : _(msg`Disabled`)} · ${provider.serviceDid}`,
+                              )}
                         </SettingsList.BadgeText>
                       </SettingsList.PressableItem>
                     ))}
@@ -1300,29 +1478,38 @@ export function ServicesSettingsScreen({route, navigation}: Props) {
                       <SettingsList.Item>
                         <WorkbenchActionPanel
                           testID="service-workbench-provider-panel"
-                          title={`${panelProvider.displayName} provider`}
-                          description="Inspect the service identity and endpoint before choosing it for new reads. This choice never moves account writes away from the repository PDS.">
+                          title={`${panelProvider.displayName} ${_(msg`provider`)}`}
+                          description={_(
+                            msg`Inspect the service identity and endpoint before choosing it for new reads. This choice never moves account writes away from the repository PDS.`,
+                          )}>
                           <SettingsList.ItemText
                             selectable
                             style={[{paddingHorizontal: 0}, a.text_sm]}>
-                            Service DID: {panelProvider.serviceDid}
+                            {_(msg`Service DID: ${panelProvider.serviceDid}`)}
                           </SettingsList.ItemText>
                           <SettingsList.ItemText
                             selectable
                             style={[{paddingHorizontal: 0}, a.text_sm]}>
-                            HTTPS endpoint: {panelProvider.endpoint}
+                            {_(msg`HTTPS endpoint: ${panelProvider.endpoint}`)}
                           </SettingsList.ItemText>
                           <SettingsList.ItemText
                             style={[{paddingHorizontal: 0}, a.text_sm]}>
-                            Declared surfaces:{' '}
-                            {(panelProvider.capabilities ?? ['public-read'])
-                              .map(providerSurfaceLabel)
-                              .join(', ')}
+                            {_(
+                              msg`Declared surfaces: ${(
+                                panelProvider.capabilities ?? ['public-read']
+                              )
+                                .map(surface =>
+                                  i18n._(providerSurfaceMessage(surface)),
+                                )
+                                .join(', ')}`,
+                            )}
                           </SettingsList.ItemText>
                           <View style={[a.flex_row, a.flex_wrap, a.gap_xs]}>
                             <Button
                               testID="service-workbench-use-provider"
-                              label={`Use ${panelProvider.displayName} for new reads`}
+                              label={_(
+                                msg`Use ${panelProvider.displayName} for new reads`,
+                              )}
                               onPress={() => void choose(panelProvider)}
                               disabled={
                                 !currentAccount || selected === panelProvider.id
@@ -1331,13 +1518,15 @@ export function ServicesSettingsScreen({route, navigation}: Props) {
                               shape="rectangular">
                               <ButtonText>
                                 {selected === panelProvider.id
-                                  ? 'Selected for new reads'
-                                  : 'Use for new reads'}
+                                  ? _(msg`Selected for new reads`)
+                                  : _(msg`Use for new reads`)}
                               </ButtonText>
                             </Button>
                             <Button
                               testID="service-workbench-configure-provider"
-                              label={`Configure read surfaces for ${panelProvider.displayName}`}
+                              label={_(
+                                msg`Configure read surfaces for ${panelProvider.displayName}`,
+                              )}
                               onPress={() =>
                                 chooseProviderSurfaces(panelProvider)
                               }
@@ -1345,12 +1534,16 @@ export function ServicesSettingsScreen({route, navigation}: Props) {
                               color="secondary"
                               variant="outline"
                               shape="rectangular">
-                              <ButtonText>Configure surfaces</ButtonText>
+                              <ButtonText>
+                                {_(msg`Configure surfaces`)}
+                              </ButtonText>
                             </Button>
                             {!panelProvider.builtin && (
                               <Button
                                 testID="service-workbench-remove-provider"
-                                label={`Remove ${panelProvider.displayName} from this device`}
+                                label={_(
+                                  msg`Remove ${panelProvider.displayName} from this device`,
+                                )}
                                 onPress={() =>
                                   requestProviderRemoval(panelProvider)
                                 }
@@ -1358,17 +1551,19 @@ export function ServicesSettingsScreen({route, navigation}: Props) {
                                 variant="outline"
                                 shape="rectangular"
                                 size="small">
-                                <ButtonText>Remove from device</ButtonText>
+                                <ButtonText>
+                                  {_(msg`Remove from device`)}
+                                </ButtonText>
                               </Button>
                             )}
                             <Button
-                              label="Close provider inspector"
+                              label={_(msg`Close provider inspector`)}
                               onPress={() => setOpenPanel(undefined)}
                               size="small"
                               color="secondary"
                               variant="outline"
                               shape="rectangular">
-                              <ButtonText>Close</ButtonText>
+                              <ButtonText>{_(msg`Close`)}</ButtonText>
                             </Button>
                           </View>
                         </WorkbenchActionPanel>
@@ -1395,7 +1590,7 @@ export function ServicesSettingsScreen({route, navigation}: Props) {
                     <SettingsList.Item>
                       <View style={[a.flex_1, a.gap_sm]}>
                         <SettingsList.ItemText style={[{paddingHorizontal: 0}]}>
-                          Identity resolver providers
+                          {_(msg`Identity resolver providers`)}
                         </SettingsList.ItemText>
                         <SettingsList.ItemText
                           style={[
@@ -1403,22 +1598,23 @@ export function ServicesSettingsScreen({route, navigation}: Props) {
                             a.text_sm,
                             t.atoms.text_contrast_medium,
                           ]}>
-                          Providers start with public-read only. Public profile
-                          links can use an anonymous handle lookup from those
-                          providers; allowing identity resolution separately
-                          opts a provider into broader identity claims and
-                          remains revocable on this device.
+                          {_(
+                            msg`Providers start with public-read only. Public profile links can use an anonymous handle lookup from those providers; allowing identity resolution separately opts a provider into broader identity claims and remains revocable on this device.`,
+                          )}
                         </SettingsList.ItemText>
                       </View>
                     </SettingsList.Item>
                     {providers.map(provider => (
                       <SettingsList.PressableItem
                         key={`identity-${provider.id}`}
-                        label={`${
-                          provider.capabilities?.includes('identity-resolution')
-                            ? 'Remove identity resolution from'
-                            : 'Allow identity resolution for'
-                        } ${provider.displayName}`}
+                        label={i18n._(
+                          identityProviderActionMessage(
+                            provider,
+                            provider.capabilities?.includes(
+                              'identity-resolution',
+                            ) ?? false,
+                          ),
+                        )}
                         onPress={() => void toggleIdentityProvider(provider)}>
                         <SettingsList.ItemText>
                           {provider.displayName}
@@ -1427,8 +1623,8 @@ export function ServicesSettingsScreen({route, navigation}: Props) {
                           {provider.capabilities?.includes(
                             'identity-resolution',
                           )
-                            ? 'Identity resolution allowed'
-                            : 'Public reads only'}
+                            ? _(msg`Identity resolution allowed`)
+                            : _(msg`Public reads only`)}
                         </SettingsList.BadgeText>
                       </SettingsList.PressableItem>
                     ))}
@@ -1436,7 +1632,7 @@ export function ServicesSettingsScreen({route, navigation}: Props) {
                     <SettingsList.Item>
                       <View style={[a.flex_1, a.gap_sm]}>
                         <SettingsList.ItemText style={[{paddingHorizontal: 0}]}>
-                          Add a read provider
+                          {_(msg`Add a read provider`)}
                         </SettingsList.ItemText>
                         <SettingsList.ItemText
                           style={[
@@ -1444,10 +1640,9 @@ export function ServicesSettingsScreen({route, navigation}: Props) {
                             a.text_sm,
                             t.atoms.text_contrast_medium,
                           ]}>
-                          Register an AppView read provider by its own endpoint.
-                          The endpoint is checked first; new providers start
-                          with public-read only. Identity resolution is a
-                          separate, revocable choice.
+                          {_(
+                            msg`Register an AppView read provider by its own endpoint. The endpoint is checked first; new providers start with public-read only. Identity resolution is a separate, revocable choice.`,
+                          )}
                         </SettingsList.ItemText>
                         <TextInput
                           accessibilityLabel={_(msg`Provider name`)}
@@ -1570,13 +1765,17 @@ export function ServicesSettingsScreen({route, navigation}: Props) {
                     {providers.map(provider => (
                       <SettingsList.PressableItem
                         key={`surfaces-${provider.id}`}
-                        label={`Configure read surfaces for ${provider.displayName}`}
+                        label={_(
+                          msg`Configure read surfaces for ${provider.displayName}`,
+                        )}
                         onPress={() => chooseProviderSurfaces(provider)}>
                         <SettingsList.ItemText>
-                          {provider.displayName} surface permissions
+                          {_(msg`${provider.displayName} surface permissions`)}
                         </SettingsList.ItemText>
                         <SettingsList.BadgeText>
-                          {`${CONFIGURABLE_PROVIDER_SURFACES.filter(surface => provider.capabilities?.includes(surface)).length} runtime surfaces enabled`}
+                          {_(
+                            msg`${CONFIGURABLE_PROVIDER_SURFACES.filter(surface => provider.capabilities?.includes(surface)).length} runtime surfaces enabled`,
+                          )}
                         </SettingsList.BadgeText>
                       </SettingsList.PressableItem>
                     ))}
@@ -1601,7 +1800,7 @@ export function ServicesSettingsScreen({route, navigation}: Props) {
                     <SettingsList.Item>
                       <View style={[a.flex_1, a.gap_sm]}>
                         <SettingsList.ItemText style={[{paddingHorizontal: 0}]}>
-                          Boundary-owned surfaces
+                          {_(msg`Boundary-owned surfaces`)}
                         </SettingsList.ItemText>
                         <SettingsList.ItemText
                           style={[
@@ -1609,10 +1808,9 @@ export function ServicesSettingsScreen({route, navigation}: Props) {
                             a.text_sm,
                             t.atoms.text_contrast_medium,
                           ]}>
-                          These surfaces are intentionally not presented as
-                          AppView provider choices until a compatible read
-                          contract is wired at their existing authority
-                          boundary.
+                          {_(
+                            msg`These surfaces are intentionally not presented as AppView provider choices until a compatible read contract is wired at their existing authority boundary.`,
+                          )}
                         </SettingsList.ItemText>
                       </View>
                     </SettingsList.Item>
@@ -1621,10 +1819,12 @@ export function ServicesSettingsScreen({route, navigation}: Props) {
                         <View style={[a.flex_1, a.gap_xs]}>
                           <SettingsList.ItemText
                             style={[{paddingHorizontal: 0}]}>
-                            {providerSurfaceLabel(surface)}
+                            {i18n._(providerSurfaceMessage(surface))}
                           </SettingsList.ItemText>
                           <SettingsList.BadgeText>
-                            {`${PROVIDER_SURFACE_DETAILS[surface].authority} · not AppView-composed`}
+                            {_(
+                              msg`${i18n._(providerSurfaceAuthorityMessage(surface))} · ${_(msg`not AppView-composed`)}`,
+                            )}
                           </SettingsList.BadgeText>
                           <SettingsList.ItemText
                             style={[
@@ -1632,30 +1832,38 @@ export function ServicesSettingsScreen({route, navigation}: Props) {
                               a.text_sm,
                               t.atoms.text_contrast_medium,
                             ]}>
-                            {PROVIDER_SURFACE_DETAILS[surface].description}
+                            {i18n._(providerSurfaceDescriptionMessage(surface))}
                           </SettingsList.ItemText>
                         </View>
                       </SettingsList.Item>
                     ))}
                     <SettingsList.PressableItem
-                      label="Choose provider reconciliation policy"
+                      label={_(msg`Choose provider reconciliation policy`)}
                       onPress={chooseAnySurfacePolicy}>
                       <SettingsList.ItemText>
-                        Reconciliation policies
+                        {_(msg`Reconciliation policies`)}
                       </SettingsList.ItemText>
                       <SettingsList.BadgeText>
-                        {`${Object.keys(reconciliationPolicies).length} surfaces configured`}
+                        {_(
+                          msg`${Object.keys(reconciliationPolicies).length} surfaces configured`,
+                        )}
                       </SettingsList.BadgeText>
                     </SettingsList.PressableItem>
                     {panelPolicySurface && panelPolicy && (
                       <SettingsList.Item>
                         <WorkbenchActionPanel
                           testID="service-workbench-reconciliation-panel"
-                          title={`${providerSurfaceLabel(panelPolicySurface)} reconciliation`}
-                          description="This is a local reconciliation rule for this read surface. Provider disagreement, outage, and partial results remain attributable; selecting a preference does not make a provider universally authoritative.">
+                          title={_(
+                            msg`${i18n._(providerSurfaceMessage(panelPolicySurface))} reconciliation`,
+                          )}
+                          description={_(
+                            msg`This is a local reconciliation rule for this read surface. Provider disagreement, outage, and partial results remain attributable; selecting a preference does not make a provider universally authoritative.`,
+                          )}>
                           <SettingsList.ItemText
                             style={[{paddingHorizontal: 0}, a.text_sm]}>
-                            Current policy: {panelPolicy.mode}
+                            {_(
+                              msg`Current policy: ${i18n._(reconciliationModeMessage(panelPolicy.mode))}`,
+                            )}
                             {panelPolicy.preferredProviderId
                               ? ` · ${
                                   panelPolicyProviders.find(
@@ -1670,19 +1878,22 @@ export function ServicesSettingsScreen({route, navigation}: Props) {
                           <View style={[a.flex_row, a.flex_wrap, a.gap_xs]}>
                             {CONFIGURABLE_PROVIDER_SURFACES.map(surface => {
                               const isActive = surface === panelPolicySurface
+                              const surfaceLabel = i18n._(
+                                providerSurfaceMessage(surface),
+                              )
                               return (
                                 <Button
                                   key={surface}
-                                  label={`Inspect ${providerSurfaceLabel(surface)} reconciliation policy`}
+                                  label={_(
+                                    msg`Inspect ${surfaceLabel} reconciliation policy`,
+                                  )}
                                   accessibilityState={{selected: isActive}}
                                   onPress={() => chooseSurfacePolicy(surface)}
                                   size="small"
                                   color={isActive ? 'primary' : 'secondary'}
                                   variant={isActive ? 'solid' : 'outline'}
                                   shape="rectangular">
-                                  <ButtonText>
-                                    {providerSurfaceLabel(surface)}
-                                  </ButtonText>
+                                  <ButtonText>{surfaceLabel}</ButtonText>
                                 </Button>
                               )
                             })}
@@ -1690,10 +1901,18 @@ export function ServicesSettingsScreen({route, navigation}: Props) {
                           <View style={[a.flex_row, a.flex_wrap, a.gap_xs]}>
                             {RECONCILIATION_MODES.map(mode => {
                               const isActive = panelPolicy.mode === mode.id
+                              const surfaceLabel = i18n._(
+                                providerSurfaceMessage(panelPolicySurface),
+                              )
                               return (
                                 <Button
                                   key={mode.id}
-                                  label={`Set ${mode.label.toLowerCase()} for ${providerSurfaceLabel(panelPolicySurface)}`}
+                                  label={i18n._(
+                                    reconciliationModeActionMessage(
+                                      mode.id,
+                                      surfaceLabel,
+                                    ),
+                                  )}
                                   accessibilityState={{selected: isActive}}
                                   onPress={() =>
                                     void saveSurfacePolicy(panelPolicySurface, {
@@ -1704,7 +1923,7 @@ export function ServicesSettingsScreen({route, navigation}: Props) {
                                   color={isActive ? 'primary' : 'secondary'}
                                   variant={isActive ? 'solid' : 'outline'}
                                   shape="rectangular">
-                                  <ButtonText>{mode.label}</ButtonText>
+                                  <ButtonText>{i18n._(mode.label)}</ButtonText>
                                 </Button>
                               )
                             })}
@@ -1716,7 +1935,7 @@ export function ServicesSettingsScreen({route, navigation}: Props) {
                                 a.text_sm,
                                 a.font_semi_bold,
                               ]}>
-                              Explicit provider preference
+                              {_(msg`Explicit provider preference`)}
                             </SettingsList.ItemText>
                             <SettingsList.ItemText
                               style={[
@@ -1724,8 +1943,9 @@ export function ServicesSettingsScreen({route, navigation}: Props) {
                                 a.text_xs,
                                 t.atoms.text_contrast_medium,
                               ]}>
-                              Choose a provider only when you want a local
-                              preference for incomplete or disagreeing results.
+                              {_(
+                                msg`Choose a provider only when you want a local preference for incomplete or disagreeing results.`,
+                              )}
                             </SettingsList.ItemText>
                             {panelPolicyProviders.length === 0 ? (
                               <SettingsList.ItemText
@@ -1734,7 +1954,9 @@ export function ServicesSettingsScreen({route, navigation}: Props) {
                                   a.text_sm,
                                   t.atoms.text_contrast_medium,
                                 ]}>
-                                No provider is enabled for this surface.
+                                {_(
+                                  msg`No provider is enabled for this surface.`,
+                                )}
                               </SettingsList.ItemText>
                             ) : (
                               <View style={[a.flex_row, a.flex_wrap, a.gap_xs]}>
@@ -1746,7 +1968,9 @@ export function ServicesSettingsScreen({route, navigation}: Props) {
                                   return (
                                     <Button
                                       key={provider.id}
-                                      label={`Prefer ${provider.displayName} for ${providerSurfaceLabel(panelPolicySurface)}`}
+                                      label={_(
+                                        msg`Prefer ${provider.displayName} for ${i18n._(providerSurfaceMessage(panelPolicySurface))}`,
+                                      )}
                                       accessibilityState={{selected: isActive}}
                                       onPress={() =>
                                         void saveSurfacePolicy(
@@ -1771,46 +1995,46 @@ export function ServicesSettingsScreen({route, navigation}: Props) {
                             )}
                           </View>
                           <Button
-                            label="Close reconciliation inspector"
+                            label={_(msg`Close reconciliation inspector`)}
                             onPress={() => setOpenPanel(undefined)}
                             size="small"
                             color="secondary"
                             variant="outline"
                             shape="rectangular">
-                            <ButtonText>Close</ButtonText>
+                            <ButtonText>{_(msg`Close`)}</ButtonText>
                           </Button>
                         </WorkbenchActionPanel>
                       </SettingsList.Item>
                     )}
                     <SettingsList.PressableItem
-                      label="Export provider policy"
+                      label={_(msg`Export provider policy`)}
                       onPress={() => void copyProviderPolicy()}>
                       <SettingsList.ItemText>
-                        Export provider policy
+                        {_(msg`Export provider policy`)}
                       </SettingsList.ItemText>
                       <SettingsList.BadgeText>
-                        Clipboard; no credentials
+                        {_(msg`Clipboard; no credentials`)}
                       </SettingsList.BadgeText>
                     </SettingsList.PressableItem>
                     <SettingsList.PressableItem
-                      label="Import provider policy from clipboard"
+                      label={_(msg`Import provider policy from clipboard`)}
                       onPress={() => void importProviderPolicyFromClipboard()}>
                       <SettingsList.ItemText>
-                        Import provider policy
+                        {_(msg`Import provider policy`)}
                       </SettingsList.ItemText>
                       <SettingsList.BadgeText>
-                        Existing provider IDs only
+                        {_(msg`Existing provider IDs only`)}
                       </SettingsList.BadgeText>
                     </SettingsList.PressableItem>
                     <SettingsList.PressableItem
-                      label="Reset provider policy"
+                      label={_(msg`Reset provider policy`)}
                       onPress={resetProviderPolicyWithConfirmation}
                       destructive>
                       <SettingsList.ItemText>
-                        Reset provider policy
+                        {_(msg`Reset provider policy`)}
                       </SettingsList.ItemText>
                       <SettingsList.BadgeText>
-                        Revoke optional surfaces
+                        {_(msg`Revoke optional surfaces`)}
                       </SettingsList.BadgeText>
                     </SettingsList.PressableItem>
                   </>
@@ -1821,7 +2045,7 @@ export function ServicesSettingsScreen({route, navigation}: Props) {
                     <SettingsList.Item>
                       <View style={[a.flex_1, a.gap_sm]}>
                         <SettingsList.ItemText style={[{paddingHorizontal: 0}]}>
-                          Identity resolution policy
+                          {_(msg`Identity resolution policy`)}
                         </SettingsList.ItemText>
                         <SettingsList.ItemText
                           style={[
@@ -1829,18 +2053,17 @@ export function ServicesSettingsScreen({route, navigation}: Props) {
                             a.text_sm,
                             t.atoms.text_contrast_medium,
                           ]}>
-                          Every enabled identity provider is queried according
-                          to this local rule. The rule controls how the client
-                          handles disagreement; it does not grant a provider
-                          ownership of your DID.
+                          {_(
+                            msg`Every enabled identity provider is queried according to this local rule. The rule controls how the client handles disagreement; it does not grant a provider ownership of your DID.`,
+                          )}
                         </SettingsList.ItemText>
                       </View>
                     </SettingsList.Item>
                     <SettingsList.PressableItem
-                      label="Identity resolution policy"
+                      label={_(msg`Identity resolution policy`)}
                       onPress={chooseIdentityPolicy}>
                       <SettingsList.ItemText>
-                        Current identity policy
+                        {_(msg`Current identity policy`)}
                       </SettingsList.ItemText>
                       <SettingsList.BadgeText>
                         {identityPolicyLabel}
@@ -1850,15 +2073,19 @@ export function ServicesSettingsScreen({route, navigation}: Props) {
                       <SettingsList.Item>
                         <WorkbenchActionPanel
                           testID="service-workbench-identity-policy-panel"
-                          title="Identity resolution policy"
-                          description="Enabled identity providers may make claims about a handle or DID. This local rule controls disagreement handling; it does not grant a resolver ownership of identity continuity.">
+                          title={_(msg`Identity resolution policy`)}
+                          description={_(
+                            msg`Enabled identity providers may make claims about a handle or DID. This local rule controls disagreement handling; it does not grant a resolver ownership of identity continuity.`,
+                          )}>
                           <SettingsList.ItemText
                             style={[{paddingHorizontal: 0}, a.text_sm]}>
-                            Current policy: {identityPolicyLabel}
+                            {_(msg`Current policy: ${identityPolicyLabel}`)}
                           </SettingsList.ItemText>
                           <View style={[a.flex_row, a.flex_wrap, a.gap_xs]}>
                             <Button
-                              label="Require agreement from all identity providers"
+                              label={_(
+                                msg`Require agreement from all identity providers`,
+                              )}
                               accessibilityState={{
                                 selected:
                                   identityPolicy.mode === 'require-agreement',
@@ -1880,10 +2107,14 @@ export function ServicesSettingsScreen({route, navigation}: Props) {
                                   : 'outline'
                               }
                               shape="rectangular">
-                              <ButtonText>Require agreement</ButtonText>
+                              <ButtonText>
+                                {_(msg`Require agreement`)}
+                              </ButtonText>
                             </Button>
                             <Button
-                              label="Use the first verified identity provider result"
+                              label={_(
+                                msg`Use the first verified identity provider result`,
+                              )}
                               accessibilityState={{
                                 selected:
                                   identityPolicy.mode === 'first-verified',
@@ -1905,7 +2136,9 @@ export function ServicesSettingsScreen({route, navigation}: Props) {
                                   : 'outline'
                               }
                               shape="rectangular">
-                              <ButtonText>First verified result</ButtonText>
+                              <ButtonText>
+                                {_(msg`First verified result`)}
+                              </ButtonText>
                             </Button>
                           </View>
                           <View style={[a.gap_xs]}>
@@ -1915,7 +2148,7 @@ export function ServicesSettingsScreen({route, navigation}: Props) {
                                 a.text_sm,
                                 a.font_semi_bold,
                               ]}>
-                              Prefer one provider
+                              {_(msg`Prefer one provider`)}
                             </SettingsList.ItemText>
                             {panelIdentityProviders.length === 0 ? (
                               <SettingsList.ItemText
@@ -1924,7 +2157,7 @@ export function ServicesSettingsScreen({route, navigation}: Props) {
                                   a.text_sm,
                                   t.atoms.text_contrast_medium,
                                 ]}>
-                                No identity provider is enabled.
+                                {_(msg`No identity provider is enabled.`)}
                               </SettingsList.ItemText>
                             ) : (
                               <View style={[a.flex_row, a.flex_wrap, a.gap_xs]}>
@@ -1936,7 +2169,11 @@ export function ServicesSettingsScreen({route, navigation}: Props) {
                                   return (
                                     <Button
                                       key={provider.id}
-                                      label={`Prefer ${provider.displayName} for identity resolution`}
+                                      label={i18n._(
+                                        identityProviderPreferenceMessage(
+                                          provider,
+                                        ),
+                                      )}
                                       accessibilityState={{selected: isActive}}
                                       onPress={() =>
                                         void saveIdentityPolicy({
@@ -1958,13 +2195,13 @@ export function ServicesSettingsScreen({route, navigation}: Props) {
                             )}
                           </View>
                           <Button
-                            label="Close identity policy inspector"
+                            label={_(msg`Close identity policy inspector`)}
                             onPress={() => setOpenPanel(undefined)}
                             size="small"
                             color="secondary"
                             variant="outline"
                             shape="rectangular">
-                            <ButtonText>Close</ButtonText>
+                            <ButtonText>{_(msg`Close`)}</ButtonText>
                           </Button>
                         </WorkbenchActionPanel>
                       </SettingsList.Item>
@@ -1977,7 +2214,7 @@ export function ServicesSettingsScreen({route, navigation}: Props) {
                     <SettingsList.Item>
                       <View style={[a.flex_1, a.gap_sm]}>
                         <SettingsList.ItemText style={[{paddingHorizontal: 0}]}>
-                          PLC resolver plurality
+                          {_(msg`PLC resolver plurality`)}
                         </SettingsList.ItemText>
                         <SettingsList.ItemText
                           style={[
@@ -1985,13 +2222,15 @@ export function ServicesSettingsScreen({route, navigation}: Props) {
                             a.text_sm,
                             t.atoms.text_contrast_medium,
                           ]}>
-                          {`Histories are verified against signed PLC operations before selection. ${PRIMARY_PLC_RESOLVER.displayName} remains the compatibility resolver; a resolver URL or operator label alone does not prove independent control.`}
+                          {_(
+                            msg`Histories are verified against signed PLC operations before selection. ${PRIMARY_PLC_RESOLVER.displayName} remains the compatibility resolver; a resolver URL or operator label alone does not prove independent control.`,
+                          )}
                         </SettingsList.ItemText>
                       </View>
                     </SettingsList.Item>
                     <SettingsList.Item>
                       <SettingsList.ItemText>
-                        Primary resolver
+                        {_(msg`Primary resolver`)}
                       </SettingsList.ItemText>
                       <SettingsList.BadgeText>
                         {PRIMARY_PLC_RESOLVER.endpoint}
@@ -2000,7 +2239,9 @@ export function ServicesSettingsScreen({route, navigation}: Props) {
                     {plcResolvers.map(resolver => (
                       <SettingsList.PressableItem
                         key={`plc-resolver-${resolver.id}`}
-                        label={`Inspect PLC resolver ${resolver.displayName}`}
+                        label={_(
+                          msg`Inspect PLC resolver ${resolver.displayName}`,
+                        )}
                         onPress={() =>
                           setOpenPanel({
                             kind: 'resolver',
@@ -2011,7 +2252,9 @@ export function ServicesSettingsScreen({route, navigation}: Props) {
                           {resolver.displayName}
                         </SettingsList.ItemText>
                         <SettingsList.BadgeText>
-                          {`${resolver.enabled ? 'Enabled' : 'Disabled'} · ${resolver.operatorId}`}
+                          {_(
+                            msg`${resolver.enabled ? _(msg`Enabled`) : _(msg`Disabled`)} · ${resolver.operatorId}`,
+                          )}
                         </SettingsList.BadgeText>
                       </SettingsList.PressableItem>
                     ))}
@@ -2019,26 +2262,36 @@ export function ServicesSettingsScreen({route, navigation}: Props) {
                       <SettingsList.Item>
                         <WorkbenchActionPanel
                           testID="service-workbench-resolver-panel"
-                          title={`${panelResolver.displayName} resolver`}
-                          description="A resolver is a replaceable source of identity claims. The endpoint and operator declaration are inspectable inputs; cryptographic history verification is still required before a result can be trusted.">
+                          title={`${panelResolver.displayName} ${_(msg`resolver`)}`}
+                          description={_(
+                            msg`A resolver is a replaceable source of identity claims. The endpoint and operator declaration are inspectable inputs; cryptographic history verification is still required before a result can be trusted.`,
+                          )}>
                           <SettingsList.ItemText
                             selectable
                             style={[{paddingHorizontal: 0}, a.text_sm]}>
-                            HTTPS endpoint: {panelResolver.endpoint}
+                            {_(msg`HTTPS endpoint: ${panelResolver.endpoint}`)}
                           </SettingsList.ItemText>
                           <SettingsList.ItemText
                             selectable
                             style={[{paddingHorizontal: 0}, a.text_sm]}>
-                            Declared operator: {panelResolver.operatorId}
+                            {_(
+                              msg`Declared operator: ${panelResolver.operatorId}`,
+                            )}
                           </SettingsList.ItemText>
                           <SettingsList.ItemText
                             style={[{paddingHorizontal: 0}, a.text_sm]}>
-                            State:{' '}
-                            {panelResolver.enabled ? 'Enabled' : 'Disabled'}
+                            {_(
+                              msg`State: ${panelResolver.enabled ? _(msg`Enabled`) : _(msg`Disabled`)}`,
+                            )}
                           </SettingsList.ItemText>
                           <View style={[a.flex_row, a.flex_wrap, a.gap_xs]}>
                             <Button
-                              label={`${panelResolver.enabled ? 'Disable' : 'Enable'} PLC resolver ${panelResolver.displayName}`}
+                              label={i18n._(
+                                plcResolverToggleMessage(
+                                  panelResolver.displayName,
+                                  panelResolver.enabled,
+                                ),
+                              )}
                               onPress={() =>
                                 void togglePlcResolver(
                                   panelResolver.id,
@@ -2049,18 +2302,18 @@ export function ServicesSettingsScreen({route, navigation}: Props) {
                               shape="rectangular">
                               <ButtonText>
                                 {panelResolver.enabled
-                                  ? 'Disable resolver'
-                                  : 'Enable resolver'}
+                                  ? _(msg`Disable resolver`)
+                                  : _(msg`Enable resolver`)}
                               </ButtonText>
                             </Button>
                             <Button
-                              label="Close resolver inspector"
+                              label={_(msg`Close resolver inspector`)}
                               onPress={() => setOpenPanel(undefined)}
                               size="small"
                               color="secondary"
                               variant="outline"
                               shape="rectangular">
-                              <ButtonText>Close</ButtonText>
+                              <ButtonText>{_(msg`Close`)}</ButtonText>
                             </Button>
                           </View>
                         </WorkbenchActionPanel>
@@ -2069,12 +2322,14 @@ export function ServicesSettingsScreen({route, navigation}: Props) {
                     <SettingsList.Item>
                       <View style={[a.flex_1, a.gap_sm]}>
                         <SettingsList.ItemText style={[{paddingHorizontal: 0}]}>
-                          Add a PLC mirror or resolver declaration
+                          {_(msg`Add a PLC mirror or resolver declaration`)}
                         </SettingsList.ItemText>
                         <TextInput
-                          accessibilityLabel="PLC resolver name"
-                          accessibilityHint="Enter a display name for this public PLC resolver."
-                          placeholder="Resolver name"
+                          accessibilityLabel={_(msg`PLC resolver name`)}
+                          accessibilityHint={_(
+                            msg`Enter a display name for this public PLC resolver.`,
+                          )}
+                          placeholder={_(msg`Resolver name`)}
                           value={resolverName}
                           onChangeText={setResolverName}
                           style={[
@@ -2086,8 +2341,12 @@ export function ServicesSettingsScreen({route, navigation}: Props) {
                           ]}
                         />
                         <TextInput
-                          accessibilityLabel="PLC resolver HTTPS endpoint"
-                          accessibilityHint="Enter a public HTTPS origin for the resolver."
+                          accessibilityLabel={_(
+                            msg`PLC resolver HTTPS endpoint`,
+                          )}
+                          accessibilityHint={_(
+                            msg`Enter a public HTTPS origin for the resolver.`,
+                          )}
                           placeholder="https://resolver.example"
                           autoCapitalize="none"
                           autoCorrect={false}
@@ -2103,9 +2362,11 @@ export function ServicesSettingsScreen({route, navigation}: Props) {
                           ]}
                         />
                         <TextInput
-                          accessibilityLabel="PLC resolver operator ID"
-                          accessibilityHint="Enter the operator identity declared by this resolver."
-                          placeholder="Declared operator ID"
+                          accessibilityLabel={_(msg`PLC resolver operator ID`)}
+                          accessibilityHint={_(
+                            msg`Enter the operator identity declared by this resolver.`,
+                          )}
+                          placeholder={_(msg`Declared operator ID`)}
                           autoCapitalize="none"
                           autoCorrect={false}
                           value={resolverOperatorId}
@@ -2119,7 +2380,7 @@ export function ServicesSettingsScreen({route, navigation}: Props) {
                           ]}
                         />
                         <Button
-                          label="Register PLC resolver"
+                          label={_(msg`Register PLC resolver`)}
                           onPress={() => void addPlcResolver()}
                           disabled={isRegisteringResolver}>
                           {({pressed}) => (
@@ -2132,8 +2393,8 @@ export function ServicesSettingsScreen({route, navigation}: Props) {
                                 },
                               ]}>
                               {isRegisteringResolver
-                                ? 'Checking resolver…'
-                                : 'Register PLC resolver'}
+                                ? _(msg`Checking resolver…`)
+                                : _(msg`Register PLC resolver`)}
                             </ButtonText>
                           )}
                         </Button>
@@ -2155,11 +2416,11 @@ export function ServicesSettingsScreen({route, navigation}: Props) {
               ]}>
               <SettingsList.ItemText
                 style={[{paddingHorizontal: 0}, a.font_semi_bold]}>
-                Inspector
+                {_(msg`Inspector`)}
               </SettingsList.ItemText>
               <SettingsList.ItemText
                 style={[{paddingHorizontal: 0}, a.text_sm, a.font_semi_bold]}>
-                Source
+                {_(msg`Source`)}
               </SettingsList.ItemText>
               <SettingsList.ItemText
                 style={[
@@ -2167,11 +2428,11 @@ export function ServicesSettingsScreen({route, navigation}: Props) {
                   a.text_sm,
                   t.atoms.text_contrast_medium,
                 ]}>
-                {activeInspector.source}
+                {i18n._(activeInspector.source)}
               </SettingsList.ItemText>
               <SettingsList.ItemText
                 style={[{paddingHorizontal: 0}, a.text_sm, a.font_semi_bold]}>
-                Rule
+                {_(msg`Rule`)}
               </SettingsList.ItemText>
               <SettingsList.ItemText
                 style={[
@@ -2179,11 +2440,11 @@ export function ServicesSettingsScreen({route, navigation}: Props) {
                   a.text_sm,
                   t.atoms.text_contrast_medium,
                 ]}>
-                {activeInspector.rule}
+                {i18n._(activeInspector.rule)}
               </SettingsList.ItemText>
               <SettingsList.ItemText
                 style={[{paddingHorizontal: 0}, a.text_sm, a.font_semi_bold]}>
-                User control
+                {_(msg`User control`)}
               </SettingsList.ItemText>
               <SettingsList.ItemText
                 style={[
@@ -2191,11 +2452,11 @@ export function ServicesSettingsScreen({route, navigation}: Props) {
                   a.text_sm,
                   t.atoms.text_contrast_medium,
                 ]}>
-                {activeInspector.control}
+                {i18n._(activeInspector.control)}
               </SettingsList.ItemText>
               <SettingsList.ItemText
                 style={[{paddingHorizontal: 0}, a.text_sm, a.font_semi_bold]}>
-                Current state
+                {_(msg`Current state`)}
               </SettingsList.ItemText>
               <SettingsList.ItemText
                 style={[
