@@ -312,7 +312,6 @@ function DesktopWorkbenchInspector({routeName}: {routeName: string}) {
       }
       break
     case 'ServicesSettings':
-    case 'IdentitySovereigntySettings':
       context = {
         route: _(msg`Services`),
         source: _(msg`Declared providers and identity services`),
@@ -320,6 +319,30 @@ function DesktopWorkbenchInspector({routeName}: {routeName: string}) {
         control: _(msg`Inspect, change, export, or reset a boundary`),
         href: '/settings/services',
         action: _(msg`Open service workbench`),
+      }
+      break
+    case 'IdentitySovereigntySettings':
+      context = {
+        route: _(msg`Identity & recovery`),
+        source: _(msg`DID record, repository PDS, and recovery custody`),
+        rule: _(
+          msg`Identity continuity is distinct from repository hosting; local custody and session authority remain explicit`,
+        ),
+        control: _(msg`Export, back up, migrate, or revoke sessions`),
+        href: '/settings/identity-sovereignty',
+        action: _(msg`Inspect identity and recovery`),
+      }
+      break
+    case 'PersonalizationSettings':
+      context = {
+        route: _(msg`Attention & policy`),
+        source: _(msg`Local attention policy and portable preferences`),
+        rule: _(
+          msg`Your explicit choices outrank bounded local inference and provider defaults`,
+        ),
+        control: _(msg`Export, import, reset, or replace policy`),
+        href: '/settings/personalization',
+        action: _(msg`Inspect attention policy`),
       }
       break
     case 'Search':
