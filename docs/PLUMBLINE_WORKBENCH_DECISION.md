@@ -1582,3 +1582,74 @@ the screen; loading and unavailable states remain explicit.
 
 The external Relay/AppView, short-TTL OAuth, and independent-PLC operator
 evidence gates remain separate and unresolved.
+
+## Iteration 33: align notification records with the document stream
+
+### Intent
+
+Keep notifications readable as a continuous activity record rather than a
+collection of floating cards. Unread state should remain visible as a local
+state boundary, while embedded feed and starter-pack records should follow
+Plumbline's square, rule-based geometry.
+
+### Residual authority concentration and why it matters
+
+The notification provider and reconciliation boundary were already exposed by
+the existing `ProviderCompositionProvenance` component. The remaining issue
+was presentation: rounded embedded records and a full-row unread treatment
+made the activity stream look like provider-owned cards and obscured where
+the user's unread state began. Adding another notification or provider layer
+would duplicate existing contracts; the correct boundary is the notification
+record renderer itself.
+
+### Ecosystem precedent and chosen change
+
+The change follows the existing client notification renderer and the
+Plumbline document-stream rule: preserve the notification's existing link,
+author grouping, action, moderation, and provider data, then use printer-like
+rules and square embedded records for presentation. Unread records now have a
+semantic primary-color left boundary in addition to their existing subtle
+background. Feed-source and starter-pack embeds no longer add rounded card
+corners. No provider, feed, moderation, or authorization behavior changed.
+
+### Authority before versus after
+
+| Boundary | Before iteration 33 | After iteration 33 |
+| --- | --- | --- |
+| Notification source | Existing provider composition was already available above the stream. | The same source boundary is retained; no new provider is introduced. |
+| Unread state | Unread state used a background and border change across the row. | Unread state also has a clear left rule, making the state boundary legible without implying provider ownership. |
+| Embedded records | Feed-source and starter-pack records used rounded card geometry. | Embedded records use square geometry so the surrounding activity stream reads continuously. |
+| Notification copy | Repost-via-repost rendering retained the intended single phrase. | The renderer remains behavior-compatible and keeps the single phrase without changing the underlying event. |
+
+### Interoperability and security tradeoffs
+
+This is a presentation-only change in the shared web/native notification
+renderer. It preserves ATProto notification types, record links, author
+grouping, moderation decisions, unread semantics, and provider composition.
+The primary color is the existing semantic unread color; Plumbline brass is
+not used for unread state, so brand identity does not replace status meaning.
+No network request, credential, cache, or permission behavior changed.
+
+### Implementation evidence
+
+- `src/view/com/notifications/NotificationFeedItem.tsx` adds a primary-color
+  left boundary for unread records.
+- The same renderer removes rounded corners from feed-source and starter-pack
+  embeds while preserving their borders, spacing, and actions.
+- The notification provider provenance, navigation, and record data paths are
+  unchanged.
+
+### Verification
+
+| Check | Status | Evidence |
+| --- | --- | --- |
+| Touched-file Oxlint | PASS | `pnpm exec oxlint --quiet src/view/com/notifications/NotificationFeedItem.tsx` |
+| Touched-file formatting and whitespace | PASS | Prettier check and `git diff --check` |
+| Web TypeScript | PASS | `pnpm run typecheck:web` |
+| Production web export | PASS | `EXPO_PUBLIC_ENV=production pnpm build-web` with Node `v24.19.0`; existing bundle-size warnings remain |
+| Contract validation | PASS | Root `python3 scripts/validate_contract.py`; 144 files, 29 blocking rows, 6 feed cases |
+| Client code commit and push | PASS | `dbbe66fd8` pushed to `fork/codex/spaces-alpha-integration` |
+| Pages deployment and browser inspection | NOT RUN | No deployment was requested in this iteration; production runtime evidence remains from prior deployments only |
+
+The external Relay/AppView, short-TTL OAuth, and independent-PLC operator
+evidence gates remain separate and unresolved.
