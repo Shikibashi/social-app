@@ -681,6 +681,9 @@ authority elsewhere in the workbench.
 | Targeted Oxlint | PASS | All five touched TypeScript/TSX files |
 | Web TypeScript | PASS | `pnpm run typecheck:web` |
 | Production-shaped web export | PASS | `pnpm run build-web`; completed with existing bundle-size warnings |
+| Client commit and fork push | PASS | `168a70986 ui: expose delegated oauth authority`; pushed to `https://github.com/Shikibashi/social-app` branch `codex/spaces-alpha-integration` |
+| Hosted anonymous/home check | PASS | Wrangler Pages deployment `https://53c2d93b.social-edriffles.pages.dev`; canonical `https://plumblines.uk/?deployment=53c2d93b` rendered Plumbline branding, feed posts, and no application error in the in-app browser |
+| Hosted Authorization workbench check | PASS | `https://plumblines.uk/settings/services?section=authorization&deployment=53c2d93b` exposed and expanded delegated authority, requested scopes, feature upgrades, and whole-session revocation text without an application error |
 
 This is a UI/provenance slice, not an action-level permission enforcement
 claim. Posting, likes, profile editing, chat, and Spaces behavior remains on
