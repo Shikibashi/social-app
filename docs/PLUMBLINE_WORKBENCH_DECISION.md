@@ -1369,3 +1369,75 @@ silently hidden.
 The client code remains compatible with the existing provider composition
 architecture. The external Relay/AppView, short-TTL OAuth, and independent-PLC
 operator evidence gates remain separate and unresolved.
+
+## Iteration 30: make Services controls inline and inspectable
+
+The Services workbench already exposed provider, surface, reconciliation,
+identity, and resolver state, but several changes still opened native alert
+menus. That hid the available alternatives on the web and made the primary
+provider-control path less inspectable than the surrounding workbench.
+
+### Residual authority concentration and why it matters
+
+The issue was an interaction concentration in the client UI, not a new
+provider-authority problem. Alert menus made a local choice look like an
+implicit command and obscured the endpoint, service identity, current state,
+and reversible alternatives. Replacing the existing provider registry or
+policy store would increase machinery without dispersing authority.
+
+### Ecosystem precedent and chosen change
+
+The change follows the existing ATProto client pattern of keeping service
+descriptors and local policy separate from account writes. The existing
+Services workbench now renders inline action panels for provider inspection and
+selection, per-surface capability declarations, reconciliation modes and
+explicit provider preferences, identity-resolution policy, and PLC resolver
+state. The panels expose selectable endpoint/DID values, selected states, and
+ordinary close/back actions. Existing persistence and probing functions remain
+the only mutation boundary.
+
+### Authority before versus after
+
+| Boundary | Before iteration 30 | After iteration 30 |
+| --- | --- | --- |
+| Provider selection | A provider row immediately opened an alert-driven choice path. | A provider row opens an inline inspector showing DID, endpoint, capabilities, selected state, and an explicit `Use for new reads` action. |
+| Provider surfaces | Surface changes were hidden in an alert menu. | Each runtime surface has its own visible allow/remove control and explanation. |
+| Reconciliation | The user selected a surface and mode through nested alerts. | Surface tabs, reconciliation modes, and provider preferences remain visible in the workspace with selected state. |
+| Identity and PLC controls | Identity policy and resolver rows relied on alert or immediate toggle behavior. | Identity policy and resolver rows open inspectable panels with the current rule, provider/operator evidence, and reversible controls. |
+| Account authority | UI choices could be mistaken for host changes. | The panels state that PDS writes and identity continuity remain outside the read-provider choice. |
+
+### Interoperability and security tradeoffs
+
+This is a web/native-compatible presentation change. It preserves the existing
+provider descriptors, capability names, local reconciliation schema, PLC
+resolver declarations, OAuth/session boundary, and PDS write path. It adds no
+credential handling, no fallback provider, and no authority claim based on a
+service's position in the UI. The tradeoff is additional vertical space in
+the workbench when an inspector is open; the panel can be closed without
+changing state.
+
+### Implementation evidence
+
+- `src/screens/Settings/ServicesSettings.tsx` adds the reusable inline
+  `WorkbenchActionPanel` and `ProviderSurfaceActionPanel` and wires them to
+  the existing provider, policy, identity, and resolver actions.
+- Provider rows now inspect before selection; current source and selected
+  state remain visible in the list.
+- Per-surface controls preserve independent capability decisions and expose
+  browser-visible selected states.
+- `246e3c5fd` (`feat(web): make services controls inspectable`) contains only
+  the client UI implementation for this iteration.
+
+### Verification
+
+| Check | Status | Evidence |
+| --- | --- | --- |
+| Touched-file Oxlint | PASS | `pnpm exec oxlint --quiet src/screens/Settings/ServicesSettings.tsx` |
+| Touched-file formatting and whitespace | PASS | Prettier check and `git diff --check` |
+| Web TypeScript | PASS | `pnpm typecheck:web` |
+| Production web export | PASS | `EXPO_PUBLIC_ENV=production pnpm build-web`; existing bundle-size warnings remain |
+| Client code commit and push | PASS | `246e3c5fd` pushed to `fork/codex/spaces-alpha-integration` |
+| Pages deployment | PENDING | Deployment and canonical browser inspection are the next release steps |
+
+The external Relay/AppView, short-TTL OAuth, and independent-PLC operator
+evidence gates remain separate and unresolved.
