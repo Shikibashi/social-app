@@ -520,7 +520,43 @@ intentional `plumblines.uk` OAuth entryway or weakening DID/PDS authority
 checks. It does not prove credentialed write flows, independent PLC operator
 control, or the external Relay/AppView and short-TTL OAuth gates.
 
-## 22. Remaining concentrations worth attacking next
+## 23. Iteration 16 — make the service authority map inspectable
+
+The Services workbench already exposed provider registration and policy
+controls, but the overview required users to infer the relationship between
+identity, hosting, read providers, authorization, moderation, media, and
+communities from separate rows and sections. This iteration adds a compact
+capability map to the existing overview. It keeps the current session and
+provider registry as the sources of truth; it does not add a new service or
+make the bundled AppView authoritative.
+
+### Implementation and verification evidence
+
+- `src/screens/Settings/ServicesSettings.tsx` now presents an explicit
+  capability map for Identity, Personal Data Server, AppView reads, Feeds,
+  Moderation & Reach, Search, Notifications, Authorization, Media,
+  Communities, and Exit & backups. Each row identifies the current source,
+  state, explanation, and an `Inspect` action into the existing workbench
+  section.
+- Boundary-owned media and community services remain labeled as such instead
+  of being exposed as AppView choices. Provider names and endpoints are still
+  rendered as inspectable values, and no account credential is moved across a
+  provider boundary by this UI change.
+- The map keeps a wide table-like layout only at the wide-tablet breakpoint;
+  narrower workspaces stack source and state details so the Inspector does not
+  make the primary service surface unreadable.
+- Targeted Prettier, Oxlint, and web TypeScript checks pass. The production web
+  export completes with the existing bundle-size warnings and was deployed to
+  `https://177916bd.social-edriffles.pages.dev` behind the canonical
+  `https://plumblines.uk` host. The credential-free in-app-browser check found
+  all eleven rows, no error state, and a working Identity inspection action.
+
+This makes the service seams legible in one place while preserving the existing
+authority boundaries. It does not establish independent operator control,
+close the external Relay/AppView or short-TTL OAuth gates, or prove
+credentialed write behavior.
+
+## 24. Remaining concentrations worth attacking next
 
 1. Add a compatible, independently attributable media delivery composition contract only if it can preserve PDS blob authority and safe browser delivery; do not treat a CDN URL as a second authoritatively owned record.
 2. Add credentialed multi-provider browser fixtures for revoked grants, migration, block boundaries, and partial service support without using production credentials.
