@@ -723,3 +723,13 @@ This is a bounded mutation slice rather than a claim that every settings or
 chat-administration RPC has a feature preflight. Credentialed browser writes,
 external Relay/AppView privacy evidence, short-TTL OAuth expiry evidence, and
 independent PLC operator evidence remain separate gates.
+
+### Hosted release evidence
+
+| Check | Status | Evidence |
+| --- | --- | --- |
+| Production-shaped export | PASS | `pnpm run build-web` from client revision `d1f8c0d52`; only the existing bundle-size warnings were emitted |
+| Canonical home | PASS | Wrangler deployment `https://68880dc6.social-edriffles.pages.dev`, inspected at `https://plumblines.uk/?deployment=68880dc6`; title `Following — Plumbline`, posts present, no application error |
+| Branding asset | PASS | Published document advertises `/plumbline-mark.svg` as the favicon |
+| Authorization workbench | PASS | The deployed `settings/services?section=authorization` route expanded the delegated-authority inspector with feature authority, upgrades, and whole-session revocation text |
+| Credentialed mutation walkthrough | NOT RUN | The browser check was read-only; no credential or live social mutation was used |
