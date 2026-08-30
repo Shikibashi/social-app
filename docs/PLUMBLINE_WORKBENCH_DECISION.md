@@ -327,7 +327,45 @@ This makes export and portable policy controls directly discoverable from the
 identity boundary. It does not claim that an authenticated export was run in
 the browser or that PDS migration is available when the upstream API is not.
 
-## 17. Remaining concentrations worth attacking next
+## 17. Iteration 11 — carry provider provenance into post inspection
+
+The feed query already retained provider provenance, composition status, and
+the limits of declared operator identity, but the evidence stopped at the
+feed-level workbench. This iteration carries that typed metadata with each
+feed slice and transient post source so the post's `Why this post?` inspector
+can identify the read provider(s), endpoint, service DID, declared operator,
+composition status, and whether independent control has actually been proven.
+
+### Implementation and verification evidence
+
+- `src/state/queries/post-feed.ts` attaches page-level provider metadata to
+  each `FeedPostSlice`; `PostFeed` and `PostFeedItem` preserve it for the
+  rendered post and the post-thread transition.
+- `src/components/Post/PostProvenance.tsx` and `src/lib/attention-ui.ts`
+  expose bounded provider identifiers and endpoints, composition status, and
+  the explicit `independent control not proven` limitation. The data remains
+  inspectable and does not promote a provider merely because it was selected.
+- `src/state/unstable-post-source.tsx` and
+  `src/screens/PostThread/components/ThreadItemAnchor.tsx` preserve the same
+  evidence when a user opens a post detail view.
+- The focused attention/provider/identity/PLC/OAuth suite passes (39 tests),
+  targeted Oxlint and Prettier pass, web TypeScript passes, and the production
+  web export contains the new post-inspector labels.
+- Client commit `586491ade` was pushed to
+  `fork/codex/spaces-alpha-integration`.
+- Wrangler deployed the exact export at
+  `https://91b75138.social-edriffles.pages.dev`; the preview and canonical
+  `https://plumblines.uk/` return HTTP 200, the Plumbline title, and
+  `main.d4df7bec.js`.
+- The credential-free ChatGPT in-app-browser smoke check loaded the canonical
+  shell with the Plumbline title, feed tabs, and post-provenance affordance,
+  with no error state. No credentials were read and no mutation was performed.
+
+This closes a provenance visibility gap in the client UI. It does not prove
+authenticated provider switching, independent operator control, or the
+external Relay/AppView and short-TTL OAuth gates.
+
+## 18. Remaining concentrations worth attacking next
 
 1. Add a compatible, independently attributable media delivery composition contract only if it can preserve PDS blob authority and safe browser delivery; do not treat a CDN URL as a second authoritatively owned record.
 2. Add credentialed multi-provider browser fixtures for revoked grants, migration, block boundaries, and partial service support without using production credentials.
