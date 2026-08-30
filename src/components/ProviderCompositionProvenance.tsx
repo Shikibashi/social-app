@@ -2,11 +2,13 @@ import {useState} from 'react'
 import {Pressable, StyleSheet, View} from 'react-native'
 import {msg} from '@lingui/core/macro'
 import {useLingui} from '@lingui/react'
+import {useNavigation} from '@react-navigation/native'
 
 import {
   ProviderCompositionError,
   type ProviderCompositionResult,
 } from '#/lib/provider-composition'
+import {type NavigationProp} from '#/lib/routes/types'
 import {useTheme} from '#/alf'
 import {Text} from '#/components/Typography'
 
@@ -25,6 +27,7 @@ export function ProviderCompositionProvenance({
 }) {
   const {_} = useLingui()
   const t = useTheme()
+  const navigation = useNavigation<NavigationProp>()
   const [expanded, setExpanded] = useState(false)
 
   if (!composition) return null
@@ -104,6 +107,27 @@ export function ProviderCompositionProvenance({
                 observation={observation}
               />
             ))}
+          </View>
+
+          <View style={styles.actions}>
+            <Pressable
+              testID={`provider-composition-change-${composition.surface}`}
+              accessibilityRole="button"
+              accessibilityLabel={_(msg`Change read provider`)}
+              accessibilityHint={_(
+                msg`Open Services to choose which providers can answer this surface`,
+              )}
+              onPress={() => navigation.navigate('ServicesSettings')}
+              style={({pressed}) => [
+                styles.action,
+                {borderColor: t.palette.contrast_200},
+                pressed && styles.pressed,
+              ]}>
+              <Text
+                style={[styles.actionText, {color: t.atoms.text_link.color}]}>
+                {_(msg`Change read provider`)}
+              </Text>
+            </Pressable>
           </View>
         </View>
       ) : null}
@@ -220,6 +244,19 @@ const styles = StyleSheet.create({
     paddingTop: 3,
   },
   sectionTitle: {
+    fontWeight: '600',
+  },
+  actions: {
+    paddingTop: 5,
+  },
+  action: {
+    alignSelf: 'flex-start',
+    borderWidth: 1,
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+  },
+  actionText: {
+    fontSize: 12,
     fontWeight: '600',
   },
   observation: {
