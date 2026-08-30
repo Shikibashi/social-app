@@ -365,7 +365,46 @@ This closes a provenance visibility gap in the client UI. It does not prove
 authenticated provider switching, independent operator control, or the
 external Relay/AppView and short-TTL OAuth gates.
 
-## 18. Remaining concentrations worth attacking next
+## 18. Iteration 12 — make policy ownership explicit in settings
+
+The settings UI previously sent users directly to provider-owned policy URLs
+from the About and Privacy & Security screens. That made the browser destination
+look like an implicit Plumbline policy and left the source boundary unclear.
+This iteration routes those actions through the existing local support screens,
+which identify the hosting provider as the policy owner before exposing the
+external document. Takedown, community-guideline, and copyright copy now uses
+the same source-explicit language.
+
+### Implementation and verification evidence
+
+- `src/screens/Settings/AboutSettings.tsx` now exposes `Provider Terms of
+  Service` and `Provider Privacy Policy` through the existing `/support/tos`
+  and `/support/privacy` routes.
+- `src/screens/Settings/PrivacyAndSecuritySettings.tsx` now labels its policy
+  link as the hosting provider's privacy policy and uses the same internal
+  support route. `src/screens/Takendown.tsx`,
+  `src/view/screens/CommunityGuidelines.tsx`, and
+  `src/view/screens/CopyrightPolicy.tsx` explicitly identify provider
+  ownership without inventing a Plumbline legal policy.
+- The focused attention/provider/identity/PLC/OAuth suite passes (39 tests),
+  targeted Oxlint and Prettier pass, web TypeScript passes, and the web export
+  completes with only the existing bundle-size warnings.
+- Client commit `4f87b2880` was pushed to
+  `fork/codex/spaces-alpha-integration`.
+- Wrangler deployed the exact export at
+  `https://b41a65f2.social-edriffles.pages.dev`; the preview and canonical
+  `https://plumblines.uk/` return HTTP 200 and the export uses
+  `main.94d5b092.js`.
+- The credential-free ChatGPT in-app-browser smoke check verified the
+  Plumbline home shell, the provider-labelled About links, and the provider
+  privacy support route without an error state. No credentials were read and
+  no mutation was performed.
+
+This reduces a user-facing authority ambiguity. It does not change the
+hosting provider's legal documents, establish independent policy authority, or
+close the external Relay/AppView, short-TTL OAuth, or PLC-operator gates.
+
+## 19. Remaining concentrations worth attacking next
 
 1. Add a compatible, independently attributable media delivery composition contract only if it can preserve PDS blob authority and safe browser delivery; do not treat a CDN URL as a second authoritatively owned record.
 2. Add credentialed multi-provider browser fixtures for revoked grants, migration, block boundaries, and partial service support without using production credentials.
