@@ -4,7 +4,10 @@ import {useMutation, useQuery, useQueryClient} from '@tanstack/react-query'
 import {z} from 'zod'
 
 import {MAX_LABELERS} from '#/lib/constants'
-import {PROVIDER_COMPOSITION_QUERY_META} from '#/lib/provider-composition'
+import {
+  PROVIDER_COMPOSITION_QUERY_META,
+  type ProviderCompositionResult,
+} from '#/lib/provider-composition'
 import {serviceBoundaryError} from '#/lib/service-boundary'
 import {GCTIME, STALE} from '#/state/queries'
 import {
@@ -40,6 +43,10 @@ export const labelersInfoQueryKey = (dids: string[]) => [
 const createLabelersDetailedInfoQueryKey = (dids: string[]) =>
   createQueryKey('labelers-detailed-info', {dids}, {persistedVersion: 1})
 
+export type LabelerInfoQueryData = app.bsky.labeler.defs.LabelerViewDetailed & {
+  providerComposition?: ProviderCompositionResult<app.bsky.labeler.getServices.$OutputBody>
+}
+
 export function useLabelerInfoQuery({
   did,
   enabled,
@@ -50,32 +57,34 @@ export function useLabelerInfoQuery({
   const providerClientFactory = useAppviewProviderClientFactory()
   const {currentAccount} = useSession()
   const provider = getSelectedAppViewProvider(currentAccount?.did ?? '')
-  return useQuery({
+  return useQuery<LabelerInfoQueryData>({
     enabled: !!did && enabled !== false,
     meta: PROVIDER_COMPOSITION_QUERY_META,
     queryKey: labelerInfoQueryKey(did as string),
     queryFn: async ({signal}) => {
       try {
-        const res = requireComposedProviderValue(
-          await composeAppViewProviderRead(
-            'labels',
-            (providerClient, _provider, context) =>
-              providerClient.call(
-                app.bsky.labeler.getServices,
-                {
-                  dids: [did! as DidString],
-                  detailed: true,
-                },
-                {signal: context.signal},
-              ),
-            {
-              access: 'account-scoped',
-              clientForProvider: providerClientFactory,
-              signal,
-            },
-          ),
+        const composed = await composeAppViewProviderRead(
+          'labels',
+          (providerClient, _provider, context) =>
+            providerClient.call(
+              app.bsky.labeler.getServices,
+              {
+                dids: [did! as DidString],
+                detailed: true,
+              },
+              {signal: context.signal},
+            ),
+          {
+            access: 'account-scoped',
+            clientForProvider: providerClientFactory,
+            signal,
+          },
         )
-        return res.views[0] as app.bsky.labeler.defs.LabelerViewDetailed
+        const res = requireComposedProviderValue(composed)
+        return {
+          ...(res.views[0] as app.bsky.labeler.defs.LabelerViewDetailed),
+          providerComposition: composed,
+        }
       } catch (error) {
         throw serviceBoundaryError(
           {

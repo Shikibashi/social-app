@@ -1,15 +1,16 @@
 import {useCallback, useEffect, useImperativeHandle, useMemo} from 'react'
 import {type ListRenderItemInfo, View} from 'react-native'
+import {msg} from '@lingui/core/macro'
+import {useLingui} from '@lingui/react'
+import {Trans} from '@lingui/react/macro'
+
 import {
   type InterpretedLabelValueDefinition,
   interpretLabelValueDefinitions,
   type ModerationOpts,
 } from '#/lib/moderation'
-import {msg} from '@lingui/core/macro'
-import {useLingui} from '@lingui/react'
-import {Trans} from '@lingui/react/macro'
-
 import {isLabelerSubscribed, lookupLabelValueDefinition} from '#/lib/moderation'
+import {type LabelerInfoQueryData} from '#/state/queries/labeler'
 import {hasDirectViewerBlock} from '#/state/queries/public-visibility'
 import {List, type ListRef} from '#/view/com/util/List'
 import {findListNativeTag} from '#/view/com/util/listNativeTag'
@@ -19,16 +20,16 @@ import {CircleInfo_Stroke2_Corner0_Rounded as CircleInfo} from '#/components/ico
 import {ListFooter} from '#/components/Lists'
 import {Loader} from '#/components/Loader'
 import {LabelerLabelPreference} from '#/components/moderation/LabelPreference'
+import {ProviderCompositionProvenance} from '#/components/ProviderCompositionProvenance'
 import {Text} from '#/components/Typography'
 import {IS_IOS, IS_NATIVE} from '#/env'
-import {type app} from '#/lexicons'
 import {ErrorState} from '../ErrorState'
 import {type SectionRef} from './types'
 
 interface LabelsSectionProps {
   ref: React.Ref<SectionRef>
   isLabelerLoading: boolean
-  labelerInfo: app.bsky.labeler.defs.LabelerViewDetailed | undefined
+  labelerInfo: LabelerInfoQueryData | undefined
   labelerError: Error | null
   moderationOpts: ModerationOpts
   scrollElRef: ListRef
@@ -162,7 +163,7 @@ export function LabelerListHeader({
 }: {
   isLabelerLoading: boolean
   labelerError?: Error | null
-  labelerInfo?: app.bsky.labeler.defs.LabelerViewDetailed
+  labelerInfo?: LabelerInfoQueryData
   hasValues: boolean
   isSubscribed: boolean
 }) {
@@ -192,6 +193,10 @@ export function LabelerListHeader({
 
   return (
     <View style={[a.py_xl]}>
+      <ProviderCompositionProvenance
+        surfaceLabel={_(msg`Label service`)}
+        composition={labelerInfo.providerComposition}
+      />
       <Text style={[t.atoms.text_contrast_high, a.leading_snug, a.text_sm]}>
         <Trans>
           Labels are annotations on users and content. They can be used to hide,
