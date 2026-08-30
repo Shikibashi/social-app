@@ -2,6 +2,7 @@ import {StyleSheet, View} from 'react-native'
 import {msg} from '@lingui/core/macro'
 import {useLingui} from '@lingui/react'
 
+import {PLUMBLINE_BRASS} from '#/lib/brand'
 import {useTheme} from '#/alf'
 import {Text} from '#/components/Typography'
 
@@ -31,6 +32,21 @@ export function PlumblineAuthoritySummary({
       testID={testID}
       accessibilityRole="text"
       style={[styles.container, {borderLeftColor: t.palette.contrast_200}]}>
+      <View
+        aria-hidden={true}
+        pointerEvents="none"
+        testID={`${testID}-marker`}
+        style={[styles.marker, {backgroundColor: t.palette.contrast_200}]}>
+        <View
+          style={[
+            styles.bob,
+            {
+              backgroundColor: PLUMBLINE_BRASS,
+              borderColor: t.palette.contrast_975,
+            },
+          ]}
+        />
+      </View>
       {title ? (
         <Text style={styles.title} numberOfLines={1}>
           {title}
@@ -61,6 +77,23 @@ const styles = StyleSheet.create({
     gap: 2,
     marginBottom: 4,
     paddingLeft: 8,
+    position: 'relative',
+  },
+  marker: {
+    bottom: 4,
+    left: -2,
+    position: 'absolute',
+    top: 4,
+    width: 2,
+  },
+  bob: {
+    borderWidth: 1,
+    height: 8,
+    left: -3,
+    position: 'absolute',
+    top: 12,
+    transform: [{rotate: '45deg'}],
+    width: 8,
   },
   title: {
     fontWeight: '600',

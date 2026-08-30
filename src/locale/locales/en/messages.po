@@ -1084,6 +1084,10 @@ msgstr ""
 msgid "A collection of popular feeds you can find on Plumbline, including News, Booksky, Game Dev, Blacksky, and Fountain Pens"
 msgstr "A collection of popular feeds you can find on Plumbline, including News, Booksky, Game Dev, Blacksky, and Fountain Pens"
 
+#: src/screens/Moderation/index.tsx:190
+msgid "A labeler, host, account, or other named actor"
+msgstr "A labeler, host, account, or other named actor"
+
 #. If last message does not contain text, fall back to "{user} reacted to {a message}"
 #: src/components/dms/getReactionInfo.ts:58
 msgid "a message"
@@ -1155,7 +1159,7 @@ msgstr "A screenshot of the post composer with a new button next to the post but
 msgid "A selected recipient is not followed by the sender."
 msgstr "A selected recipient is not followed by the sender."
 
-#: src/screens/Moderation/index.tsx:201
+#: src/screens/Moderation/index.tsx:222
 msgid "A service makes an assertion, your rule interprets it, and Plumbline applies the resulting client action. These are separate authorities; changing a local rule does not erase the underlying record or label."
 msgstr "A service makes an assertion, your rule interprets it, and Plumbline applies the resulting client action. These are separate authorities; changing a local rule does not erase the underlying record or label."
 
@@ -1613,7 +1617,7 @@ msgstr ""
 msgid "Adult Content"
 msgstr ""
 
-#: src/screens/Moderation/index.tsx:533
+#: src/screens/Moderation/index.tsx:547
 msgid "Adult content can only be enabled via the Web at <0>plumblines.uk</0>."
 msgstr "Adult content can only be enabled via the Web at <0>plumblines.uk</0>."
 
@@ -1630,7 +1634,7 @@ msgstr ""
 msgid "Adult sexual abuse content"
 msgstr ""
 
-#: src/screens/Moderation/index.tsx:576
+#: src/screens/Moderation/index.tsx:590
 msgid "Advanced"
 msgstr ""
 
@@ -2256,6 +2260,10 @@ msgstr "Ask apps to hide my posts from algorithmic recommendations"
 msgid "Assertion"
 msgstr "Assertion"
 
+#: src/screens/Moderation/index.tsx:193
+msgid "Assertion / label"
+msgstr "Assertion / label"
+
 #: src/components/PostControls/PostMenu/PostMenuItems.tsx:634
 #: src/components/PostControls/PostMenu/PostMenuItems.tsx:636
 msgid "Assign topic for algo"
@@ -2577,7 +2585,7 @@ msgstr ""
 msgid "Block user and/or leave this conversation"
 msgstr "Block user and/or leave this conversation"
 
-#: src/screens/Moderation/index.tsx:455
+#: src/screens/Moderation/index.tsx:469
 msgid "Blocked accounts"
 msgstr ""
 
@@ -3342,6 +3350,10 @@ msgstr ""
 msgid "Click to retry failed message"
 msgstr ""
 
+#: src/screens/Moderation/index.tsx:201
+msgid "Client action"
+msgstr "Client action"
+
 #: src/screens/Settings/ServicesSettings.tsx:2016
 msgid "Clipboard; no credentials"
 msgstr "Clipboard; no credentials"
@@ -3608,11 +3620,11 @@ msgstr "Configured identity-capable resolver providers"
 msgid "Configured in <0>moderation settings</0>."
 msgstr ""
 
-#: src/screens/Moderation/index.tsx:299
+#: src/screens/Moderation/index.tsx:313
 msgid "Configured label sources"
 msgstr "Configured label sources"
 
-#: src/screens/Moderation/index.tsx:304
+#: src/screens/Moderation/index.tsx:318
 msgid "Configured label sources available"
 msgstr "Configured label sources available"
 
@@ -3688,7 +3700,7 @@ msgstr ""
 msgid "Content Blocked"
 msgstr ""
 
-#: src/screens/Moderation/index.tsx:487
+#: src/screens/Moderation/index.tsx:501
 msgid "Content filters"
 msgstr ""
 
@@ -4615,7 +4627,7 @@ msgstr "Disable this invite link?"
 #: src/lib/moderation/useLabelBehaviorDescription.ts:36
 #: src/lib/moderation/useLabelBehaviorDescription.ts:46
 #: src/lib/moderation/useLabelBehaviorDescription.ts:72
-#: src/screens/Moderation/index.tsx:523
+#: src/screens/Moderation/index.tsx:537
 #: src/screens/Settings/ServicesSettings.tsx:1472
 #: src/screens/Settings/ServicesSettings.tsx:2256
 #: src/screens/Settings/ServicesSettings.tsx:2284
@@ -5122,7 +5134,7 @@ msgstr ""
 msgid "Enable {0} only"
 msgstr ""
 
-#: src/screens/Moderation/index.tsx:508
+#: src/screens/Moderation/index.tsx:522
 msgid "Enable adult content"
 msgstr ""
 
@@ -5188,7 +5200,7 @@ msgstr ""
 msgid "Enable trending videos in your Discover feed"
 msgstr ""
 
-#: src/screens/Moderation/index.tsx:521
+#: src/screens/Moderation/index.tsx:535
 #: src/screens/Settings/ServicesSettings.tsx:1472
 #: src/screens/Settings/ServicesSettings.tsx:2256
 #: src/screens/Settings/ServicesSettings.tsx:2284
@@ -7150,7 +7162,7 @@ msgstr "Hosting provider: {PRODUCT_NAME}"
 msgid "hosting provider's Terms of Service"
 msgstr "hosting provider's Terms of Service"
 
-#: src/screens/Moderation/index.tsx:198
+#: src/screens/Moderation/index.tsx:219
 msgid "How a moderation decision reaches your screen"
 msgstr "How a moderation decision reaches your screen"
 
@@ -7545,8 +7557,8 @@ msgstr "Inspect authorization settings"
 msgid "Inspect delegated authority"
 msgstr "Inspect delegated authority"
 
-#: src/screens/Moderation/index.tsx:333
-#: src/screens/Moderation/index.tsx:350
+#: src/screens/Moderation/index.tsx:347
+#: src/screens/Moderation/index.tsx:364
 msgid "Inspect label sources in Services"
 msgstr "Inspect label sources in Services"
 
@@ -7592,7 +7604,7 @@ msgstr "Inspector"
 msgid "Interaction limited"
 msgstr ""
 
-#: src/screens/Moderation/index.tsx:395
+#: src/screens/Moderation/index.tsx:409
 msgid "Interaction settings"
 msgstr ""
 
@@ -7867,7 +7879,7 @@ msgstr ""
 msgid "Labels are claims; local rules decide warning, hiding, or ranking."
 msgstr "Labels are claims; local rules decide warning, hiding, or ranking."
 
-#: src/screens/Moderation/index.tsx:328
+#: src/screens/Moderation/index.tsx:342
 msgid "Labels are claims; your rules determine warning, hiding, filtering, or allowing."
 msgstr "Labels are claims; your rules determine warning, hiding, filtering, or allowing."
 
@@ -8303,7 +8315,7 @@ msgctxt "placeholder"
 msgid "Loading chat…"
 msgstr "Loading chat…"
 
-#: src/screens/Moderation/index.tsx:301
+#: src/screens/Moderation/index.tsx:315
 msgid "Loading label sources"
 msgstr "Loading label sources"
 
@@ -8407,7 +8419,7 @@ msgstr "Manage follows, blocks, mutes, lists, and starter packs."
 msgid "Manage saved feeds"
 msgstr ""
 
-#: src/screens/Moderation/index.tsx:465
+#: src/screens/Moderation/index.tsx:479
 msgid "Manage verification settings"
 msgstr ""
 
@@ -8637,7 +8649,7 @@ msgstr ""
 
 #: src/Navigation.tsx:188
 #: src/screens/Moderation/index.tsx:98
-#: src/screens/Moderation/index.tsx:326
+#: src/screens/Moderation/index.tsx:340
 #: src/screens/Settings/ServicesSettings.tsx:997
 #: src/screens/Settings/Settings.tsx:225
 #: src/screens/Settings/Settings.tsx:228
@@ -8650,7 +8662,7 @@ msgid "Moderation details"
 msgstr ""
 
 #: src/Navigation.tsx:193
-#: src/screens/Moderation/index.tsx:363
+#: src/screens/Moderation/index.tsx:377
 #: src/screens/ModerationInbox/index.tsx:21
 msgid "Moderation inbox"
 msgstr "Moderation inbox"
@@ -8681,7 +8693,7 @@ msgctxt "toast"
 msgid "Moderation list updated"
 msgstr ""
 
-#: src/screens/Moderation/index.tsx:425
+#: src/screens/Moderation/index.tsx:439
 msgid "Moderation lists"
 msgstr ""
 
@@ -8698,7 +8710,7 @@ msgstr ""
 msgid "Moderation states"
 msgstr ""
 
-#: src/screens/Moderation/index.tsx:380
+#: src/screens/Moderation/index.tsx:394
 msgid "Moderation tools"
 msgstr ""
 
@@ -8828,7 +8840,7 @@ msgstr "Mute, leave, or remove people anytime. It’s your chat."
 msgid "Muted"
 msgstr "Muted"
 
-#: src/screens/Moderation/index.tsx:440
+#: src/screens/Moderation/index.tsx:454
 msgid "Muted accounts"
 msgstr ""
 
@@ -8846,7 +8858,7 @@ msgstr ""
 msgid "Muted by \"{0}\""
 msgstr ""
 
-#: src/screens/Moderation/index.tsx:410
+#: src/screens/Moderation/index.tsx:424
 msgid "Muted words & tags"
 msgstr ""
 
@@ -8870,6 +8882,10 @@ msgstr "My favorite feeds and people - join me!"
 #: src/view/screens/Feeds.tsx:723
 msgid "My Feeds"
 msgstr ""
+
+#: src/screens/Moderation/index.tsx:197
+msgid "My rule"
+msgstr "My rule"
 
 #: src/screens/StarterPack/Wizard/StepDetails.tsx:49
 msgid "My starter pack"
@@ -9912,7 +9928,7 @@ msgstr "Open Moderation & Reach"
 msgid "Open moderation debug page"
 msgstr ""
 
-#: src/screens/Moderation/index.tsx:406
+#: src/screens/Moderation/index.tsx:420
 msgid "Open muted words and tags settings"
 msgstr ""
 
@@ -11652,7 +11668,7 @@ msgstr ""
 #: src/screens/Bookmarks.tsx:256
 #: src/screens/Messages/ConversationSettings/Member.tsx:162
 #: src/screens/Messages/ConversationSettings/prompts.tsx:178
-#: src/screens/Moderation/index.tsx:595
+#: src/screens/Moderation/index.tsx:609
 #: src/screens/Settings/ServicesSettings.tsx:550
 #: src/screens/Settings/Settings.tsx:727
 #: src/view/com/posts/PostFeedErrorMessage.tsx:280
@@ -11821,7 +11837,7 @@ msgstr ""
 msgid "Remove this feed from your saved feeds"
 msgstr ""
 
-#: src/screens/Moderation/index.tsx:591
+#: src/screens/Moderation/index.tsx:605
 msgid "Remove unavailable moderation services"
 msgstr ""
 
@@ -11872,7 +11888,7 @@ msgstr ""
 msgid "Removed from your feeds"
 msgstr ""
 
-#: src/screens/Moderation/index.tsx:270
+#: src/screens/Moderation/index.tsx:284
 msgid "Removed unavailable services"
 msgstr ""
 
@@ -12446,7 +12462,7 @@ msgstr "Revoke whole session"
 msgid "revoked"
 msgstr "revoked"
 
-#: src/components/PlumblineAuthoritySummary.tsx:48
+#: src/components/PlumblineAuthoritySummary.tsx:64
 #: src/screens/Settings/ServicesSettings.tsx:2435
 #: src/view/shell/desktop/RightNav.tsx:280
 msgid "Rule"
@@ -13766,7 +13782,7 @@ msgstr ""
 msgid "Some accounts could not be blocked. Review the selection and try again."
 msgstr "Some accounts could not be blocked. Review the selection and try again."
 
-#: src/screens/Moderation/index.tsx:584
+#: src/screens/Moderation/index.tsx:598
 msgid "Some moderation services in your list are no longer available."
 msgstr ""
 
@@ -13890,13 +13906,14 @@ msgid "Sort replies to the same post by:"
 msgstr ""
 
 #: src/components/moderation/ModerationDetailsDialog.tsx:316
-#: src/components/PlumblineAuthoritySummary.tsx:42
+#: src/components/PlumblineAuthoritySummary.tsx:58
+#: src/screens/Moderation/index.tsx:189
 #: src/screens/Settings/ServicesSettings.tsx:2423
 #: src/view/shell/desktop/RightNav.tsx:275
 msgid "Source"
 msgstr "Source"
 
-#: src/screens/Moderation/index.tsx:303
+#: src/screens/Moderation/index.tsx:317
 msgid "Source unavailable; local rules remain active"
 msgstr "Source unavailable; local rules remain active"
 
@@ -14018,7 +14035,7 @@ msgstr ""
 msgid "Starter Packs let you share your favorite feeds and people with your friends."
 msgstr ""
 
-#: src/components/PlumblineAuthoritySummary.tsx:51
+#: src/components/PlumblineAuthoritySummary.tsx:67
 msgid "State"
 msgstr "State"
 
@@ -14455,6 +14472,10 @@ msgstr ""
 msgid "The bundled provider cannot be removed from the client. Revoke its optional surfaces or reset provider policy instead."
 msgstr "The bundled provider cannot be removed from the client. Revoke its optional surfaces or reset provider policy instead."
 
+#: src/screens/Moderation/index.tsx:194
+msgid "The claim supplied by that source"
+msgstr "The claim supplied by that source"
+
 #: src/screens/Settings/ServicesSettings.tsx:306
 msgid "The current OAuth session and its granted feature groups"
 msgstr "The current OAuth session and its granted feature groups"
@@ -14520,7 +14541,7 @@ msgstr "The moderation service is temporarily unavailable. Please try again late
 msgid "The PDS remains the write and account authority; read providers do not become identity authorities."
 msgstr "The PDS remains the write and account authority; read providers do not become identity authorities."
 
-#: src/screens/Moderation/index.tsx:536
+#: src/screens/Moderation/index.tsx:550
 msgid "The Plumbline web application"
 msgstr "The Plumbline web application"
 
@@ -15238,7 +15259,7 @@ msgstr ""
 msgid "Today"
 msgstr ""
 
-#: src/screens/Moderation/index.tsx:511
+#: src/screens/Moderation/index.tsx:525
 msgid "Toggle to enable or disable adult content"
 msgstr ""
 
@@ -16034,7 +16055,7 @@ msgstr ""
 msgid "Verification failed, please try again."
 msgstr ""
 
-#: src/screens/Moderation/index.tsx:470
+#: src/screens/Moderation/index.tsx:484
 msgid "Verification settings"
 msgstr ""
 
@@ -16327,11 +16348,11 @@ msgstr ""
 msgid "View video"
 msgstr ""
 
-#: src/screens/Moderation/index.tsx:450
+#: src/screens/Moderation/index.tsx:464
 msgid "View your blocked accounts"
 msgstr ""
 
-#: src/screens/Moderation/index.tsx:390
+#: src/screens/Moderation/index.tsx:404
 msgid "View your default post interaction settings"
 msgstr ""
 
@@ -16340,15 +16361,15 @@ msgstr ""
 msgid "View your feeds and explore more"
 msgstr ""
 
-#: src/screens/Moderation/index.tsx:357
+#: src/screens/Moderation/index.tsx:371
 msgid "View your moderation inbox"
 msgstr "View your moderation inbox"
 
-#: src/screens/Moderation/index.tsx:420
+#: src/screens/Moderation/index.tsx:434
 msgid "View your moderation lists"
 msgstr ""
 
-#: src/screens/Moderation/index.tsx:435
+#: src/screens/Moderation/index.tsx:449
 msgid "View your muted accounts"
 msgstr ""
 
@@ -16403,6 +16424,10 @@ msgstr ""
 #: src/lib/moderation/useLabelBehaviorDescription.ts:50
 msgid "Warn content and filter from feeds"
 msgstr ""
+
+#: src/screens/Moderation/index.tsx:202
+msgid "Warn, hide, filter, downrank, or allow"
+msgstr "Warn, hide, filter, downrank, or allow"
 
 #: src/features/liveNow/components/LiveStatusDialog.tsx:187
 #: src/features/liveNow/components/LiveStatusDialog.tsx:196
@@ -16503,7 +16528,7 @@ msgstr ""
 msgid "We were unable to load your birthdate preferences. Please try again."
 msgstr ""
 
-#: src/screens/Moderation/index.tsx:609
+#: src/screens/Moderation/index.tsx:629
 msgid "We were unable to load your configured labelers at this time."
 msgstr ""
 
@@ -17521,6 +17546,10 @@ msgstr "Your rule"
 #: src/screens/Settings/InterestsSettings.tsx:64
 msgid "Your selected interests help us serve you content you care about."
 msgstr ""
+
+#: src/screens/Moderation/index.tsx:198
+msgid "Your selected response to the claim"
+msgstr "Your selected response to the claim"
 
 #: src/view/com/composer/Composer.tsx:1709
 msgid "Your thread has empty posts that will be skipped. The remaining posts will be published as a thread."

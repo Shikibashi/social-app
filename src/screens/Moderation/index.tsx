@@ -182,7 +182,26 @@ function SubItem({
 }
 
 function ModerationLayers() {
+  const {t: l} = useLingui()
   const t = useTheme()
+  const layers = [
+    {
+      label: l`Source`,
+      description: l`A labeler, host, account, or other named actor`,
+    },
+    {
+      label: l`Assertion / label`,
+      description: l`The claim supplied by that source`,
+    },
+    {
+      label: l`My rule`,
+      description: l`Your selected response to the claim`,
+    },
+    {
+      label: l`Client action`,
+      description: l`Warn, hide, filter, downrank, or allow`,
+    },
+  ]
 
   return (
     <View
@@ -194,24 +213,19 @@ function ModerationLayers() {
         t.atoms.bg_contrast_25,
         t.atoms.border_contrast_low,
       ]}>
-      <Text style={[a.font_semi_bold, t.atoms.text_contrast_high]}>
-        <Trans>How a moderation decision reaches your screen</Trans>
+      <Text
+        accessibilityRole="header"
+        style={[a.font_semi_bold, t.atoms.text_contrast_high]}>
+        {l`How a moderation decision reaches your screen`}
       </Text>
       <Text style={[a.text_sm, a.leading_snug, t.atoms.text_contrast_medium]}>
-        <Trans>
-          A service makes an assertion, your rule interprets it, and Plumbline
-          applies the resulting client action. These are separate authorities;
-          changing a local rule does not erase the underlying record or label.
-        </Trans>
+        {l`A service makes an assertion, your rule interprets it, and Plumbline applies the resulting client action. These are separate authorities; changing a local rule does not erase the underlying record or label.`}
       </Text>
       <View style={[a.gap_xs, a.pt_xs]}>
-        {[
-          ['Source', 'A labeler, host, account, or other named actor'],
-          ['Assertion / label', 'The claim supplied by that source'],
-          ['My rule', 'Your selected response to the claim'],
-          ['Client action', 'Warn, hide, filter, downrank, or allow'],
-        ].map(([label, description]) => (
-          <View key={label} style={[a.flex_row, a.align_center, a.gap_sm]}>
+        {layers.map(layer => (
+          <View
+            key={layer.label}
+            style={[a.flex_row, a.align_center, a.gap_sm]}>
             <View
               style={[
                 {
@@ -222,9 +236,9 @@ function ModerationLayers() {
               ]}
             />
             <View style={[a.flex_1, a.gap_2xs]}>
-              <Text style={[a.text_sm, a.font_semi_bold]}>{label}</Text>
+              <Text style={[a.text_sm, a.font_semi_bold]}>{layer.label}</Text>
               <Text style={[a.text_xs, t.atoms.text_contrast_medium]}>
-                {description}
+                {layer.description}
               </Text>
             </View>
           </View>
@@ -357,7 +371,7 @@ export function ModerationScreenInner({
           label={l`View your moderation inbox`}
           testID="moderationInboxBtn"
           to="/moderation/inbox"
-          style={[a.mb_2xl, a.rounded_md, a.overflow_hidden]}>
+          style={[a.mb_2xl, a.border, t.atoms.border_contrast_low]}>
           {state => (
             <SubItem
               title={l`Moderation inbox`}
@@ -382,9 +396,9 @@ export function ModerationScreenInner({
       <View
         style={[
           a.w_full,
-          a.rounded_md,
-          a.overflow_hidden,
+          a.border,
           t.atoms.bg_contrast_25,
+          t.atoms.border_contrast_low,
         ]}>
         <Link
           label={l`View your default post interaction settings`}
@@ -490,9 +504,9 @@ export function ModerationScreenInner({
         <View
           style={[
             a.w_full,
-            a.rounded_md,
-            a.overflow_hidden,
+            a.border,
             t.atoms.bg_contrast_25,
+            t.atoms.border_contrast_low,
           ]}>
           <>
             <View
@@ -604,7 +618,13 @@ export function ModerationScreenInner({
           <Loader size="xl" />
         </View>
       ) : labelersError || !labelers ? (
-        <View style={[a.p_lg, a.rounded_sm, t.atoms.bg_contrast_25]}>
+        <View
+          style={[
+            a.p_lg,
+            a.border,
+            t.atoms.bg_contrast_25,
+            t.atoms.border_contrast_low,
+          ]}>
           <Text>
             <Trans>
               We were unable to load your configured labelers at this time.
@@ -612,7 +632,12 @@ export function ModerationScreenInner({
           </Text>
         </View>
       ) : (
-        <View style={[a.rounded_sm, t.atoms.bg_contrast_25]}>
+        <View
+          style={[
+            a.border,
+            t.atoms.bg_contrast_25,
+            t.atoms.border_contrast_low,
+          ]}>
           {labelers.map((labeler, i) => {
             return (
               <Fragment key={labeler.creator.did}>
@@ -621,14 +646,6 @@ export function ModerationScreenInner({
                   {state => (
                     <LabelingService.Outer
                       style={[
-                        i === 0 && {
-                          borderTopLeftRadius: a.rounded_sm.borderRadius,
-                          borderTopRightRadius: a.rounded_sm.borderRadius,
-                        },
-                        i === labelers.length - 1 && {
-                          borderBottomLeftRadius: a.rounded_sm.borderRadius,
-                          borderBottomRightRadius: a.rounded_sm.borderRadius,
-                        },
                         (state.hovered || state.pressed) && [
                           t.atoms.bg_contrast_50,
                         ],
