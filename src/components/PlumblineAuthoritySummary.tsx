@@ -1,4 +1,6 @@
 import {StyleSheet, View} from 'react-native'
+import {msg} from '@lingui/core/macro'
+import {useLingui} from '@lingui/react'
 
 import {useTheme} from '#/alf'
 import {Text} from '#/components/Typography'
@@ -21,6 +23,7 @@ export function PlumblineAuthoritySummary({
   testID: string
   title?: string
 }) {
+  const {_} = useLingui()
   const t = useTheme()
 
   return (
@@ -36,16 +39,16 @@ export function PlumblineAuthoritySummary({
       <Text
         style={[styles.text, {color: t.atoms.text_contrast_medium.color}]}
         numberOfLines={2}>
-        <Text style={styles.label}>Source: </Text>
+        <Text style={styles.label}>{_(msg`Source`)}: </Text>
         {source}
       </Text>
       <Text
         style={[styles.text, {color: t.atoms.text_contrast_medium.color}]}
         numberOfLines={2}>
-        <Text style={styles.label}>Rule: </Text>
+        <Text style={styles.label}>{_(msg`Rule`)}: </Text>
         {rule}
         {' · '}
-        <Text style={styles.label}>State: </Text>
+        <Text style={styles.label}>{_(msg`State`)}: </Text>
         {state}
       </Text>
     </View>

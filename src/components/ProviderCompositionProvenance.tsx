@@ -1,6 +1,7 @@
 import {useState} from 'react'
 import {Pressable, StyleSheet, View} from 'react-native'
-import {msg} from '@lingui/core/macro'
+import {type I18n} from '@lingui/core'
+import {msg, plural} from '@lingui/core/macro'
 import {useLingui} from '@lingui/react'
 import {useNavigation} from '@react-navigation/native'
 
@@ -27,7 +28,7 @@ export function ProviderCompositionProvenance({
   surfaceLabel: string
   composition?: ProviderCompositionResult<unknown>
 }) {
-  const {_} = useLingui()
+  const {_, i18n} = useLingui()
   const t = useTheme()
   const navigation = useNavigation<NavigationProp>()
   const [expanded, setExpanded] = useState(false)
@@ -42,9 +43,9 @@ export function ProviderCompositionProvenance({
           ),
         ),
       ].join(', ')
-    : 'No provider answered'
-  const status = compositionStatusLabel(composition.status)
-  const rule = reconciliationLabel(composition)
+    : _(msg`No provider answered`)
+  const status = compositionStatusLabel(composition.status, i18n)
+  const rule = reconciliationLabel(composition, i18n)
 
   return (
     <View
@@ -84,15 +85,15 @@ export function ProviderCompositionProvenance({
           <Text accessibilityRole="header">{surfaceLabel}</Text>
           <Detail
             label={_(msg`Evidence status`)}
-            value={compositionStatusLabel(composition.status)}
+            value={compositionStatusLabel(composition.status, i18n)}
           />
           <Detail
             label={_(msg`Reconciliation`)}
-            value={reconciliationLabel(composition)}
+            value={reconciliationLabel(composition, i18n)}
           />
           <Detail
             label={_(msg`Claims compared`)}
-            value={providerClaimsLabel(composition)}
+            value={providerClaimsLabel(composition, i18n)}
           />
           <Detail
             label={_(msg`Selected providers`)}
@@ -180,26 +181,29 @@ function Observation({
 }: {
   observation: ProviderCompositionResult<unknown>['observations'][number]
 }) {
+  const {i18n} = useLingui()
+
   return (
     <View style={styles.observation}>
       <Text style={styles.detail} selectable>
-        {observation.provider.displayName} · {observation.status} ·{' '}
-        {observation.verification}
+        {observation.provider.displayName} ·{' '}
+        {providerObservationStatusLabel(observation.status, i18n)} ·{' '}
+        {providerVerificationLabel(observation.verification, i18n)}
       </Text>
       <Text style={styles.detail} selectable>
         {observation.provider.endpoint}
         {observation.provider.operatorId
-          ? ` · operator ${observation.provider.operatorId}`
+          ? ` · ${i18n._(msg`operator ${observation.provider.operatorId}`)}`
           : ''}
       </Text>
       {observation.retrievedAt ? (
         <Text style={styles.detail} selectable>
-          Retrieved: {observation.retrievedAt}
+          {i18n._(msg`Retrieved: ${observation.retrievedAt}`)}
         </Text>
       ) : null}
       {observation.error ? (
         <Text style={styles.detail} selectable>
-          Error: {observation.error}
+          {i18n._(msg`Error: ${observation.error}`)}
         </Text>
       ) : null}
     </View>
@@ -225,40 +229,43 @@ function Detail({
 
 function compositionStatusLabel(
   status: ProviderCompositionResult<unknown>['status'],
+  i18n: I18n,
 ): string {
   switch (status) {
     case 'agreement':
-      return 'agreement'
+      return i18n._(msg`agreement`)
     case 'disagreement':
-      return 'disagreement; provider results differ'
+      return i18n._(msg`disagreement; provider results differ`)
     case 'partial':
-      return 'partial; at least one provider did not answer'
+      return i18n._(msg`partial; at least one provider did not answer`)
     case 'unavailable':
-      return 'unavailable'
+      return i18n._(msg`unavailable`)
     case 'empty':
-      return 'empty'
+      return i18n._(msg`empty`)
   }
 }
 
 function reconciliationLabel(
   composition: ProviderCompositionResult<unknown>,
+  i18n: I18n,
 ): string {
   switch (composition.policy.mode) {
     case 'require-agreement':
-      return 'Require agreement'
+      return i18n._(msg`Require agreement`)
     case 'first-verified':
-      return 'Use first verified result'
+      return i18n._(msg`Use first verified result`)
     case 'merge':
-      return 'Merge attributable results'
+      return i18n._(msg`Merge attributable results`)
     case 'prefer-provider':
-      return `Prefer ${
-        composition.policy.preferredProviderId ?? 'provider not specified'
-      }`
+      return composition.policy.preferredProviderId
+        ? i18n._(msg`Prefer ${composition.policy.preferredProviderId}`)
+        : i18n._(msg`Prefer provider not specified`)
   }
 }
 
 function providerClaimsLabel(
   composition: ProviderCompositionResult<unknown>,
+  i18n: I18n,
 ): string {
   const {
     observedProviderCount,
@@ -268,23 +275,71 @@ function providerClaimsLabel(
   } = getProviderClaimSummary(composition)
 
   if (respondingProviderCount === 0) {
-    return `No usable claims from ${observedProviderCount} provider observation${
-      observedProviderCount === 1 ? '' : 's'
-    }`
+    const observations = i18n._(
+      plural(observedProviderCount, {
+        one: '# provider observation',
+        other: '# provider observations',
+      }),
+    )
+    return i18n._(msg`No usable claims from ${observations}`)
   }
 
+  const respondingProviders = i18n._(
+    plural(respondingProviderCount, {
+      one: '# responding provider',
+      other: '# responding providers',
+    }),
+  )
   const claimSummary =
     distinctClaimCount === 1
       ? respondingProviderCount === 1
-        ? '1 claim from 1 responding provider'
-        : `1 shared claim from ${respondingProviderCount} responding providers`
-      : `${distinctClaimCount} distinct claims from ${respondingProviderCount} responding providers`
+        ? i18n._(msg`1 claim from 1 responding provider`)
+        : i18n._(msg`1 shared claim from ${respondingProviders}`)
+      : i18n._(
+          msg`${distinctClaimCount} distinct claims from ${respondingProviders}`,
+        )
 
-  return nonClaimObservationCount === 0
-    ? claimSummary
-    : `${claimSummary}; ${nonClaimObservationCount} provider observation${
-        nonClaimObservationCount === 1 ? '' : 's'
-      } did not provide a usable claim`
+  if (nonClaimObservationCount === 0) return claimSummary
+
+  const nonClaimObservations = i18n._(
+    plural(nonClaimObservationCount, {
+      one: '# provider observation',
+      other: '# provider observations',
+    }),
+  )
+  return i18n._(
+    msg`${claimSummary}; ${nonClaimObservations} did not provide a usable claim`,
+  )
+}
+
+function providerObservationStatusLabel(
+  status: ProviderCompositionResult<unknown>['observations'][number]['status'],
+  i18n: I18n,
+): string {
+  switch (status) {
+    case 'ok':
+      return i18n._(msg`available`)
+    case 'unavailable':
+      return i18n._(msg`unavailable`)
+    case 'invalid':
+      return i18n._(msg`invalid`)
+    case 'stale':
+      return i18n._(msg`stale`)
+  }
+}
+
+function providerVerificationLabel(
+  verification: ProviderCompositionResult<unknown>['observations'][number]['verification'],
+  i18n: I18n,
+): string {
+  switch (verification) {
+    case 'verified':
+      return i18n._(msg`verified`)
+    case 'unverified':
+      return i18n._(msg`unverified`)
+    case 'invalid':
+      return i18n._(msg`invalid evidence`)
+  }
 }
 
 const styles = StyleSheet.create({

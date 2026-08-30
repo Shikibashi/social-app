@@ -1,11 +1,13 @@
 import {useState} from 'react'
 import {Pressable, StyleSheet, View} from 'react-native'
-import {msg} from '@lingui/core/macro'
+import {type I18n} from '@lingui/core'
+import {msg, plural} from '@lingui/core/macro'
 import {useLingui} from '@lingui/react'
 
 import {
   type IdentityClaimsResult,
   type IdentityDocumentEvidence,
+  type IdentityResolution,
   type IdentityResolutionPolicy,
 } from '#/lib/identity-runtime'
 import {useTheme} from '#/alf'
@@ -22,12 +24,12 @@ export function IdentityResolutionProvenance({
 }: {
   result: IdentityClaimsResult
 }) {
-  const {_} = useLingui()
+  const {_, i18n} = useLingui()
   const t = useTheme()
   const [expanded, setExpanded] = useState(false)
-  const source = identitySourceNames(result)
-  const rule = identityPolicyLabel(result.policy)
-  const state = identityStatusLabel(result.status)
+  const source = identitySourceNames(result, i18n)
+  const rule = identityPolicyLabel(result.policy, i18n)
+  const state = identityStatusLabel(result.status, i18n)
 
   return (
     <View testID="identity-resolution-provenance" style={styles.container}>
@@ -66,13 +68,15 @@ export function IdentityResolutionProvenance({
           <Detail label={_(msg`Input`)} value={result.input} selectable />
           <Detail
             label={_(msg`Evidence status`)}
-            value={identityStatusLabel(result.status)}
+            value={identityStatusLabel(result.status, i18n)}
           />
-          <Detail label="Reconciliation" value={rule} />
+          <Detail label={_(msg`Reconciliation`)} value={rule} />
           {result.selected ? (
             <Detail
               label={_(msg`Selected claim`)}
-              value={`${result.selected.providerId} · ${result.selected.did ?? 'no DID'}`}
+              value={`${result.selected.providerId} · ${
+                result.selected.did ?? _(msg`no DID`)
+              }`}
               selectable
             />
           ) : (
@@ -92,9 +96,12 @@ export function IdentityResolutionProvenance({
                   key={`${claim.providerId}-${claim.did ?? 'none'}-${index}`}
                   style={styles.detail}
                   selectable>
-                  {claim.providerId}: {claim.status} · DID{' '}
+                  {claim.providerId}:{' '}
+                  {identityClaimStatusLabel(claim.status, i18n)} · {_(msg`DID`)}{' '}
                   {claim.did ?? _(msg`not supplied`)}
-                  {claim.endpoint ? ` · PDS ${claim.endpoint}` : ''}
+                  {claim.endpoint
+                    ? ` · ${i18n._(msg`PDS ${claim.endpoint}`)}`
+                    : ''}
                 </Text>
               ))}
             </View>
@@ -137,24 +144,32 @@ export function IdentityResolutionProvenance({
 }
 
 function EvidenceBlock({evidence}: {evidence: IdentityDocumentEvidence}) {
+  const {i18n} = useLingui()
+
   return (
     <View style={styles.evidenceBlock}>
       <Text style={styles.detail}>
         {evidence.method} · {evidence.composition} ·{' '}
-        {evidence.distinctDocumentCount} distinct document state
-        {evidence.distinctDocumentCount === 1 ? '' : 's'}
+        {i18n._(
+          plural(evidence.distinctDocumentCount, {
+            one: '# distinct document state',
+            other: '# distinct document states',
+          }),
+        )}
       </Text>
       {evidence.operatorIndependence ? (
         <Text style={styles.detail}>
-          Operator independence:{' '}
+          {i18n._(msg`Operator independence`)}:{' '}
           {evidence.operatorIndependence === 'declared-distinct'
-            ? 'distinct operator IDs declared; independent control not proven'
-            : 'not established'}
+            ? i18n._(
+                msg`distinct operator IDs declared; independent control not proven`,
+              )
+            : i18n._(msg`not established`)}
         </Text>
       ) : null}
       {evidence.selectedResolverId ? (
         <Text style={styles.detail}>
-          Selected document source: {evidence.selectedResolverId}
+          {i18n._(msg`Selected document source`)}: {evidence.selectedResolverId}
         </Text>
       ) : null}
       {evidence.resolvers.map(resolver => (
@@ -162,13 +177,20 @@ function EvidenceBlock({evidence}: {evidence: IdentityDocumentEvidence}) {
           key={`${resolver.resolverId}-${resolver.retrievedAt ?? 'unknown'}`}
           style={styles.detail}
           selectable>
-          {resolver.displayName ?? resolver.resolverId}: {resolver.status}
-          {resolver.operatorId ? ` · operator ${resolver.operatorId}` : ''}
-          {resolver.verifiedOperations !== undefined
-            ? ` · ${resolver.verifiedOperations} verified operations`
+          {resolver.displayName ?? resolver.resolverId}:{' '}
+          {identityResolverStatusLabel(resolver.status, i18n)}
+          {resolver.operatorId
+            ? ` · ${i18n._(msg`operator ${resolver.operatorId}`)}`
             : ''}
-          {resolver.headCid ? ` · head ${resolver.headCid}` : ''}
-          {resolver.error ? ` · ${resolver.error}` : ''}
+          {resolver.verifiedOperations !== undefined
+            ? ` · ${i18n._(
+                msg`${resolver.verifiedOperations} verified operations`,
+              )}`
+            : ''}
+          {resolver.headCid
+            ? ` · ${i18n._(msg`head ${resolver.headCid}`)}`
+            : ''}
+          {resolver.error ? ` · ${i18n._(msg`Error: ${resolver.error}`)}` : ''}
         </Text>
       ))}
     </View>
@@ -192,20 +214,23 @@ function Detail({
   )
 }
 
-function identityStatusLabel(status: IdentityClaimsResult['status']): string {
+function identityStatusLabel(
+  status: IdentityClaimsResult['status'],
+  i18n: I18n,
+): string {
   switch (status) {
     case 'verified':
-      return 'verified'
+      return i18n._(msg`verified`)
     case 'disagreement':
-      return 'disagreement; no default claim selected'
+      return i18n._(msg`disagreement; no default claim selected`)
     case 'resolver-unavailable':
-      return 'resolver unavailable or incomplete'
+      return i18n._(msg`resolver unavailable or incomplete`)
     case 'invalid':
-      return 'invalid input'
+      return i18n._(msg`invalid input`)
   }
 }
 
-function identitySourceNames(result: IdentityClaimsResult): string {
+function identitySourceNames(result: IdentityClaimsResult, i18n: I18n): string {
   const names = [
     ...result.claims.map(claim => claim.providerId),
     ...result.evidence.flatMap(evidence =>
@@ -217,20 +242,63 @@ function identitySourceNames(result: IdentityClaimsResult): string {
   ]
   return (
     Array.from(new Set(names.filter(Boolean))).join(' · ') ||
-    'No resolver answered'
+    i18n._(msg`No resolver answered`)
   )
 }
 
-function identityPolicyLabel(policy?: IdentityResolutionPolicy): string {
+function identityPolicyLabel(
+  policy: IdentityResolutionPolicy | undefined,
+  i18n: I18n,
+): string {
   switch (policy?.mode) {
     case 'require-agreement':
-      return 'Require agreement'
+      return i18n._(msg`Require agreement`)
     case 'first-verified':
-      return 'Use first verified claim'
+      return i18n._(msg`Use first verified claim`)
     case 'prefer-provider':
-      return `Prefer ${policy.preferredProviderId}`
+      return i18n._(msg`Prefer ${policy.preferredProviderId}`)
     default:
-      return 'Configured identity policy'
+      return i18n._(msg`Configured identity policy`)
+  }
+}
+
+function identityClaimStatusLabel(
+  status: IdentityResolution['status'],
+  i18n: I18n,
+): string {
+  switch (status) {
+    case 'verified':
+      return i18n._(msg`verified`)
+    case 'unresolved':
+      return i18n._(msg`unresolved`)
+    case 'stale-cache':
+      return i18n._(msg`stale cache`)
+    case 'mismatched':
+      return i18n._(msg`mismatched`)
+    case 'resolver-unavailable':
+      return i18n._(msg`resolver unavailable`)
+    case 'invalid':
+      return i18n._(msg`invalid`)
+    case 'revoked':
+      return i18n._(msg`revoked`)
+  }
+}
+
+function identityResolverStatusLabel(
+  status: IdentityDocumentEvidence['resolvers'][number]['status'],
+  i18n: I18n,
+): string {
+  switch (status) {
+    case 'verified':
+      return i18n._(msg`verified`)
+    case 'tombstoned':
+      return i18n._(msg`tombstoned`)
+    case 'invalid':
+      return i18n._(msg`invalid`)
+    case 'empty':
+      return i18n._(msg`empty`)
+    case 'unavailable':
+      return i18n._(msg`unavailable`)
   }
 }
 
