@@ -485,7 +485,42 @@ client can discover a PDS when the DID-backed session state does not provide
 one. It does not establish independent operators, close the external
 Relay/AppView or short-TTL OAuth gates, or prove authenticated write flows.
 
-## 21. Remaining concentrations worth attacking next
+## 21. Iteration 15 — recover the repository PDS during browser OAuth initialization
+
+Hosted OAuth sessions can authenticate through an account entryway whose
+`getSession` response does not include a DID document. The browser callback
+path previously adopted that session without resolving the repository PDS,
+leaving the Services workbench with no repository host and allowing the
+pre-refresh request path to fall back to the login service. This iteration
+uses the existing DID-backed resolver at that boundary and retains the result
+through refresh and reconstruction.
+
+### Implementation and verification evidence
+
+- `src/state/session/oauth-session.ts` now resolves the repository PDS from
+  the authenticated DID when the OAuth identity response omits `didDoc`.
+  `OAuthSessionAdapter` retains the resolved or stored `pdsUrl` when rotating
+  tokens, and sessions reconstructed from persisted accounts retain the same
+  route. The login entryway remains the OAuth issuer; it is not relabeled as
+  the PDS.
+- The regression fixture covers an omitted `didDoc` response and asserts that
+  the DID document's PDS endpoint is recovered. Focused OAuth, PDS-resolution,
+  and session tests pass (23 tests), targeted Oxlint, Prettier, and web
+  TypeScript pass, and the web export completes with only the existing
+  bundle-size warnings.
+- The exact export was deployed at
+  `https://e6660482.social-edriffles.pages.dev`. The credential-free
+  ChatGPT in-app-browser check of the canonical Plumbline deployment verified
+  `Repository PDS https://pds.edriffles.us/`, a loaded home feed with posts,
+  the owner profile, and `Profile media delivery` sourced from the account
+  PDS. No credentials were read and no authenticated mutation was performed.
+
+This repairs the browser cold-start routing gap without changing the
+intentional `plumblines.uk` OAuth entryway or weakening DID/PDS authority
+checks. It does not prove credentialed write flows, independent PLC operator
+control, or the external Relay/AppView and short-TTL OAuth gates.
+
+## 22. Remaining concentrations worth attacking next
 
 1. Add a compatible, independently attributable media delivery composition contract only if it can preserve PDS blob authority and safe browser delivery; do not treat a CDN URL as a second authoritatively owned record.
 2. Add credentialed multi-provider browser fixtures for revoked grants, migration, block boundaries, and partial service support without using production credentials.
