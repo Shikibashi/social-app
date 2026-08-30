@@ -715,10 +715,7 @@ export function DesktopLeftNav({routeName}: {routeName: string}) {
       ) : null}
       {hasSession && (
         <>
-          <NavSection
-            id="workspace"
-            label={l`Workspace`}
-            minimal={leftNavMinimal}>
+          <NavSection id="workspace" label="Workspace" minimal={leftNavMinimal}>
             <NavItem
               label={l`Home`}
               href="/"
@@ -775,7 +772,7 @@ export function DesktopLeftNav({routeName}: {routeName: string}) {
           </NavSection>
           <NavSection
             id="feeds"
-            label={l`Feeds and lists`}
+            label="Feeds and lists"
             minimal={leftNavMinimal}>
             <NavItem
               label={l`Feeds`}
@@ -811,12 +808,9 @@ export function DesktopLeftNav({routeName}: {routeName: string}) {
               }}
             />
           </NavSection>
-          <NavSection
-            id="services"
-            label={l`Services`}
-            minimal={leftNavMinimal}>
+          <NavSection id="services" label="Services" minimal={leftNavMinimal}>
             <NavItem
-              label={l`Services`}
+              label="Services"
               href="/settings/services"
               navItem="services"
               minimal={leftNavMinimal}
@@ -826,7 +820,7 @@ export function DesktopLeftNav({routeName}: {routeName: string}) {
               }}
             />
             <NavItem
-              label={l`Identity`}
+              label="Identity"
               href="/settings/identity-sovereignty"
               navItem="identity"
               minimal={leftNavMinimal}
@@ -846,7 +840,7 @@ export function DesktopLeftNav({routeName}: {routeName: string}) {
               }}
             />
           </NavSection>
-          <NavSection id="account" label={l`Account`} minimal={leftNavMinimal}>
+          <NavSection id="account" label="Account" minimal={leftNavMinimal}>
             <NavItem
               label={l`Profile`}
               href={makeProfileLink(currentAccount!)}
