@@ -487,13 +487,13 @@ export function ModerationScreenInner({
                     Adult content can only be enabled via the Web at{' '}
                     <InlineLinkText
                       label={l`The Plumbline web application`}
-                      to=""
+                      to="https://plumblines.uk/"
                       onPress={evt => {
                         evt.preventDefault()
-                        void Linking.openURL('https://bsky.app/')
+                        void Linking.openURL('https://plumblines.uk/')
                         return false
                       }}>
-                      bsky.app
+                      plumblines.uk
                     </InlineLinkText>
                     .
                   </Trans>

@@ -47,6 +47,7 @@ import {PostAlerts} from '#/components/moderation/PostAlerts'
 import * as ReportDialogMetadataContext from '#/components/moderation/ReportDialog/ReportDialogMetadataContext'
 import {type AppModerationCause} from '#/components/Pills'
 import {Embed, PostEmbedViewContext} from '#/components/Post/Embed'
+import {PostProvenance} from '#/components/Post/PostProvenance'
 import {TranslatedPost} from '#/components/Post/Translated'
 import {PostControls, PostControlsSkeleton} from '#/components/PostControls'
 import {useFormatPostStatCount} from '#/components/PostControls/util'
@@ -388,6 +389,14 @@ const ThreadItemAnchorInner = memo(function ThreadItemAnchorInner({
               />
             </View>
           </View>
+          {postSource && (
+            <PostProvenance
+              postUri={post.uri}
+              feedContext={postSource.post.feedContext}
+              feedDescriptor={feedFeedback.feedDescriptor}
+              feedSourceInfo={postSource.feedSourceInfo}
+            />
+          )}
           <View style={[a.pb_sm]}>
             <ContentHider
               modui={moderation.ui('contentView')}
