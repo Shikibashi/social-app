@@ -1,5 +1,5 @@
 import {memo, useCallback, useMemo, useState} from 'react'
-import {StyleSheet, Text, View} from 'react-native'
+import {StyleSheet, View} from 'react-native'
 import {AtUri} from '@atproto/syntax'
 import {RichText as RichTextAPI} from '@bsky/sdk/richtext'
 import {useQueryClient} from '@tanstack/react-query'
@@ -44,6 +44,7 @@ import * as ReportDialogMetadataContext from '#/components/moderation/ReportDial
 import {type AppModerationCause} from '#/components/Pills'
 import {Embed} from '#/components/Post/Embed'
 import {PostEmbedViewContext} from '#/components/Post/Embed/types'
+import {PostProvenance} from '#/components/Post/PostProvenance'
 import {PostRepliedTo} from '#/components/Post/PostRepliedTo'
 import {ShowMoreTextButton} from '#/components/Post/ShowMoreTextButton'
 import {TranslatedPost} from '#/components/Post/Translated'
@@ -384,11 +385,13 @@ let FeedItemInner = ({
                 onOpenReposter={onOpenReposter}
               />
             )}
-            {localExplanation?.length ? (
-              <Text style={styles.localExplanation}>
-                Why this post? {localExplanation.join(', ')}
-              </Text>
-            ) : null}
+            <PostProvenance
+              postUri={post.uri}
+              localExplanation={localExplanation}
+              feedContext={feedContext}
+              feedDescriptor={feedDescriptor}
+              feedSourceInfo={feedSourceInfo}
+            />
           </View>
         </View>
 
@@ -614,10 +617,5 @@ const styles = StyleSheet.create({
   },
   translateLink: {
     marginBottom: 6,
-  },
-  localExplanation: {
-    fontSize: 12,
-    opacity: 0.7,
-    marginBottom: 4,
   },
 })

@@ -81,6 +81,76 @@ export function providerRankingExplanation(
     : undefined
 }
 
+export type WhyThisPostModel = {
+  postUri: string
+  localReasons: string[]
+  providerExplanation?: string
+  feed?: {
+    name: string
+    owner: string
+    uri: string
+  }
+  feedDescriptor?: string
+}
+
+/**
+ * Build the public portion of a post-placement explanation. The input may
+ * contain provider-controlled values, so this intentionally carries only
+ * bounded public reasons and inspectable identifiers. It does not expose
+ * scores, weights, private signals, or an inferred explanation.
+ */
+export function buildWhyThisPostModel({
+  postUri,
+  localExplanation,
+  feedContext,
+  feedDescriptor,
+  feedSource,
+}: {
+  postUri: string
+  localExplanation?: readonly string[]
+  feedContext?: string
+  feedDescriptor?: string
+  feedSource?: {
+    displayName: string
+    creatorHandle: string
+    uri: string
+  }
+}): WhyThisPostModel {
+  const localReasons = (localExplanation ?? [])
+    .map(reason => reason.trim().slice(0, 200))
+    .filter(Boolean)
+    .slice(0, 5)
+  const providerExplanation = providerRankingExplanation(feedContext)
+  const normalizedDescriptor = feedDescriptor?.trim()
+
+  return {
+    postUri,
+    localReasons,
+    providerExplanation,
+    feed:
+      feedSource &&
+      feedSource.displayName.trim() &&
+      feedSource.creatorHandle.trim() &&
+      feedSource.uri.trim()
+        ? {
+            name: feedSource.displayName,
+            owner: feedSource.creatorHandle,
+            uri: feedSource.uri,
+          }
+        : undefined,
+    feedDescriptor: normalizedDescriptor || undefined,
+  }
+}
+
+export function hasWhyThisPostDetails(model: WhyThisPostModel): boolean {
+  return Boolean(
+    model.localReasons.length ||
+    model.providerExplanation ||
+    model.feed ||
+    model.feedDescriptor,
+  )
+}
+
 export type WhyPostCategory =
   | 'followed'
   | 'explicit-interest'

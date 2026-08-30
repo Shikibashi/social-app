@@ -1,4 +1,6 @@
 import {
+  buildWhyThisPostModel,
+  hasWhyThisPostDetails,
   healthLabel,
   parseFeedProviderContext,
   providerRankingExplanation,
@@ -46,5 +48,48 @@ describe('attention sovereignty UI models', () => {
       ),
     ).toBe('provider supplied: provider-selected freshness branch')
     expect(providerRankingExplanation()).toBeUndefined()
+  })
+  it('builds a bounded public placement explanation', () => {
+    const model = buildWhyThisPostModel({
+      postUri: 'at://did:plc:author/app.bsky.feed.post/1',
+      localExplanation: ['fresh', '', 'followed', 'third', 'fourth', 'hidden'],
+      feedContext: JSON.stringify({
+        provider: 'did:plc:feed',
+        reason: 'provider-declared reason',
+        privateSignal: 'do not expose',
+      }),
+      feedDescriptor: 'feedgen|at://did:plc:feed/app.bsky.feed.generator/main',
+      feedSource: {
+        displayName: 'A public feed',
+        creatorHandle: 'creator.example',
+        uri: 'at://did:plc:feed/app.bsky.feed.generator/main',
+      },
+    })
+
+    expect(model.localReasons).toEqual([
+      'fresh',
+      'followed',
+      'third',
+      'fourth',
+      'hidden',
+    ])
+    expect(model.providerExplanation).toBe(
+      'provider supplied: provider-declared reason',
+    )
+    expect(model.feed?.name).toBe('A public feed')
+    expect(hasWhyThisPostDetails(model)).toBe(true)
+    expect(JSON.stringify(model)).not.toContain('privateSignal')
+  })
+
+  it('does not create a placement disclosure for empty evidence', () => {
+    const model = buildWhyThisPostModel({
+      postUri: 'at://did:plc:author/app.bsky.feed.post/1',
+      localExplanation: ['', '   '],
+      feedContext: undefined,
+      feedDescriptor: '   ',
+    })
+
+    expect(model.localReasons).toEqual([])
+    expect(hasWhyThisPostDetails(model)).toBe(false)
   })
 })
