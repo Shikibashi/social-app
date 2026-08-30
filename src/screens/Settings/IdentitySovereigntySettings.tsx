@@ -34,6 +34,7 @@ import {atoms as a, useTheme} from '#/alf'
 import {Button, ButtonText} from '#/components/Button'
 import {useDialogControl} from '#/components/Dialog'
 import * as Layout from '#/components/Layout'
+import {PlumblineAuthoritySummary} from '#/components/PlumblineAuthoritySummary'
 import * as Prompt from '#/components/Prompt'
 import {IS_WEB} from '#/env'
 import {com} from '#/lexicons'
@@ -413,6 +414,17 @@ export function IdentitySovereigntySettingsScreen() {
         <Layout.Header.Slot />
       </Layout.Header.Outer>
       <Layout.Content>
+        <PlumblineAuthoritySummary
+          testID="identity-authority-summary"
+          title="Identity authority"
+          source={resolvedPds ?? pds ?? 'DID document resolver'}
+          rule="Your DID identifies the account; the PDS hosts the repository and sessions"
+          state={
+            currentAccount
+              ? `${overview.resolutionStatus}; ${overview.migrationState}`
+              : 'signed out'
+          }
+        />
         <SettingsList.Container>
           <SettingsList.Item>
             <SettingsList.ItemText>DID</SettingsList.ItemText>
@@ -452,6 +464,18 @@ export function IdentitySovereigntySettingsScreen() {
               {overview.appview ?? 'No AppView provider selected'}
             </SettingsList.BadgeText>
           </SettingsList.Item>
+          <SettingsList.PressableItem
+            label="Inspect or change read providers"
+            onPress={() =>
+              navigation.navigate('ServicesSettings', {section: 'providers'})
+            }>
+            <SettingsList.ItemText>
+              Inspect or change read providers
+            </SettingsList.ItemText>
+            <SettingsList.BadgeText>
+              Services workbench · reversible local choice
+            </SettingsList.BadgeText>
+          </SettingsList.PressableItem>
           <SettingsList.Item>
             <SettingsList.ItemText>Migration</SettingsList.ItemText>
             <SettingsList.BadgeText>
