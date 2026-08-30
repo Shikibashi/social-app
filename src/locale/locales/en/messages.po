@@ -273,6 +273,11 @@ msgstr "{0} is blocking you"
 msgid "{0} is live"
 msgstr ""
 
+#. placeholder {0}: provider.displayName
+#: src/screens/Settings/ServicesSettings.tsx:1077
+msgid "{0} is no longer registered on this device."
+msgstr "{0} is no longer registered on this device."
+
 #. placeholder {0}: createFullHandle(draftValue, state.userDomain)
 #: src/screens/Signup/StepHandle/index.tsx:211
 msgid "{0} is not available"
@@ -284,7 +289,7 @@ msgid "{0} is not supported by your device."
 msgstr "{0} is not supported by your device."
 
 #. placeholder {0}: registered.displayName
-#: src/screens/Settings/ServicesSettings.tsx:1029
+#: src/screens/Settings/ServicesSettings.tsx:1030
 msgid "{0} is now an explicit provider choice. It will not replace your PDS or identity."
 msgstr "{0} is now an explicit provider choice. It will not replace your PDS or identity."
 
@@ -1702,8 +1707,8 @@ msgstr "An issue occurred starting the group chat, please try again."
 #: src/components/hooks/useFollowMethods.ts:52
 #: src/components/ProfileCard.tsx:509
 #: src/components/ProfileCard.tsx:531
-#: src/view/com/notifications/NotificationFeedItem.tsx:828
-#: src/view/com/notifications/NotificationFeedItem.tsx:849
+#: src/view/com/notifications/NotificationFeedItem.tsx:830
+#: src/view/com/notifications/NotificationFeedItem.tsx:851
 msgid "An issue occurred, please try again."
 msgstr ""
 
@@ -1891,11 +1896,11 @@ msgstr ""
 msgid "Approve protected access"
 msgstr "Approve protected access"
 
-#: src/screens/Settings/ServicesSettings.tsx:962
+#: src/screens/Settings/ServicesSettings.tsx:963
 msgid "AppView changed"
 msgstr "AppView changed"
 
-#: src/screens/Settings/ServicesSettings.tsx:1428
+#: src/screens/Settings/ServicesSettings.tsx:1488
 msgid "AppView service DID"
 msgstr "AppView service DID"
 
@@ -2026,7 +2031,7 @@ msgstr "AT Protocol FAQ"
 msgid "AT URI copied to clipboard"
 msgstr "AT URI copied to clipboard"
 
-#: src/screens/Settings/ServicesSettings.tsx:1448
+#: src/screens/Settings/ServicesSettings.tsx:1508
 msgid "ATProto service fragment for this AppView"
 msgstr "ATProto service fragment for this AppView"
 
@@ -2429,6 +2434,10 @@ msgstr ""
 msgid "Browse topic {displayName}"
 msgstr ""
 
+#: src/screens/Settings/ServicesSettings.tsx:1050
+msgid "Bundled provider retained"
+msgstr "Bundled provider retained"
+
 #: src/screens/Bookmarks.tsx:293
 msgid "Button to go back to the home timeline"
 msgstr ""
@@ -2539,7 +2548,8 @@ msgstr "Camera access needed"
 #: src/screens/Settings/components/ChangeHandleDialog.tsx:88
 #: src/screens/Settings/components/ChangePasswordDialog.tsx:252
 #: src/screens/Settings/components/ChangePasswordDialog.tsx:258
-#: src/screens/Settings/ServicesSettings.tsx:972
+#: src/screens/Settings/ServicesSettings.tsx:973
+#: src/screens/Settings/ServicesSettings.tsx:1063
 #: src/screens/Settings/Settings.tsx:344
 #: src/screens/Takendown.tsx:100
 #: src/screens/Takendown.tsx:103
@@ -2650,8 +2660,8 @@ msgstr ""
 msgid "Change provider"
 msgstr "Change provider"
 
-#: src/components/ProviderCompositionProvenance.tsx:135
-#: src/components/ProviderCompositionProvenance.tsx:154
+#: src/components/ProviderCompositionProvenance.tsx:140
+#: src/components/ProviderCompositionProvenance.tsx:159
 msgid "Change read provider"
 msgstr "Change read provider"
 
@@ -2807,8 +2817,8 @@ msgstr ""
 msgid "Check <0>{currentEmail}</0> for an email with the confirmation code to enter below:"
 msgstr ""
 
-#: src/screens/Settings/ServicesSettings.tsx:1464
-#: src/screens/Settings/ServicesSettings.tsx:1479
+#: src/screens/Settings/ServicesSettings.tsx:1524
+#: src/screens/Settings/ServicesSettings.tsx:1539
 msgid "Check and add provider"
 msgstr "Check and add provider"
 
@@ -2821,7 +2831,7 @@ msgstr "Check back later!"
 msgid "Check my status"
 msgstr ""
 
-#: src/screens/Settings/ServicesSettings.tsx:1477
+#: src/screens/Settings/ServicesSettings.tsx:1537
 msgid "Checking provider…"
 msgstr "Checking provider…"
 
@@ -2913,6 +2923,10 @@ msgstr ""
 #: src/view/shell/desktop/RightNav.tsx:173
 msgid "Choose, compare, or remove feeds"
 msgstr "Choose, compare, or remove feeds"
+
+#: src/components/ProviderCompositionProvenance.tsx:94
+msgid "Claims compared"
+msgstr "Claims compared"
 
 #: src/screens/Search/components/AdvancedSearchDialog/AutocompleteInput/index.native.tsx:73
 #: src/screens/Search/components/AdvancedSearchDialog/AutocompleteInput/index.tsx:110
@@ -3107,11 +3121,11 @@ msgstr ""
 msgid "Closes post composer and discards post draft"
 msgstr ""
 
-#: src/view/com/notifications/NotificationFeedItem.tsx:594
+#: src/view/com/notifications/NotificationFeedItem.tsx:596
 msgid "Collapse list of users"
 msgstr ""
 
-#: src/view/com/notifications/NotificationFeedItem.tsx:971
+#: src/view/com/notifications/NotificationFeedItem.tsx:973
 msgid "Collapses list of users for a given notification"
 msgstr ""
 
@@ -3871,7 +3885,7 @@ msgstr ""
 msgid "Declared operator"
 msgstr "Declared operator"
 
-#: src/components/ProviderCompositionProvenance.tsx:113
+#: src/components/ProviderCompositionProvenance.tsx:118
 msgid "Declared operators"
 msgstr "Declared operators"
 
@@ -4070,7 +4084,7 @@ msgstr ""
 msgid "Dialog: Set search filters"
 msgstr "Dialog: Set search filters"
 
-#: src/screens/Settings/ServicesSettings.tsx:1430
+#: src/screens/Settings/ServicesSettings.tsx:1490
 msgid "DID that identifies this AppView"
 msgstr "DID that identifies this AppView"
 
@@ -4224,7 +4238,7 @@ msgid "Display name"
 msgstr ""
 
 #: src/components/Post/PostProvenance.tsx:156
-#: src/components/ProviderCompositionProvenance.tsx:106
+#: src/components/ProviderCompositionProvenance.tsx:111
 msgid "Distinct operator IDs declared; independent control not proven"
 msgstr "Distinct operator IDs declared; independent control not proven"
 
@@ -4685,7 +4699,7 @@ msgstr "Enter a backup password first."
 msgid "Enter a community space URI"
 msgstr "Enter a community space URI"
 
-#: src/screens/Settings/ServicesSettings.tsx:996
+#: src/screens/Settings/ServicesSettings.tsx:997
 msgid "Enter a name, HTTPS endpoint, and service DID before adding a provider."
 msgstr "Enter a name, HTTPS endpoint, and service DID before adding a provider."
 
@@ -4855,7 +4869,7 @@ msgid "Everything look right?"
 msgstr "Everything look right?"
 
 #: src/components/IdentityResolutionProvenance.tsx:68
-#: src/components/ProviderCompositionProvenance.tsx:85
+#: src/components/ProviderCompositionProvenance.tsx:86
 msgid "Evidence status"
 msgstr "Evidence status"
 
@@ -4886,7 +4900,7 @@ msgstr ""
 msgid "Expand alt text"
 msgstr ""
 
-#: src/view/com/notifications/NotificationFeedItem.tsx:595
+#: src/view/com/notifications/NotificationFeedItem.tsx:597
 msgid "Expand list of users"
 msgstr ""
 
@@ -5344,7 +5358,7 @@ msgstr ""
 #. placeholder {0}: sanitizeHandle(feed.creatorHandle, '@')
 #. placeholder {0}: sanitizeHandle(view.creator.handle, '@')
 #: src/components/FeedCard.tsx:167
-#: src/state/queries/feed.ts:137
+#: src/state/queries/feed.ts:140
 #: src/view/com/feeds/FeedSourceCard.tsx:149
 msgid "Feed by {0}"
 msgstr ""
@@ -5410,6 +5424,8 @@ msgstr ""
 #: src/screens/SavedFeeds.tsx:112
 #: src/screens/SavedFeeds.tsx:303
 #: src/screens/Search/SearchResults.tsx:117
+#: src/screens/Search/SearchResults.tsx:723
+#: src/screens/Search/SearchResults.tsx:741
 #: src/screens/StarterPack/StarterPackScreen.tsx:194
 #: src/view/screens/Feeds.tsx:504
 #: src/view/screens/Profile.tsx:258
@@ -5585,8 +5601,8 @@ msgstr "Focus the search field"
 #: src/screens/PostThread/components/ThreadItemAnchorFollowButton.tsx:157
 #: src/screens/Profile/Header/ProfileHeaderStandard.tsx:415
 #: src/screens/VideoFeed/index.tsx:958
-#: src/view/com/notifications/NotificationFeedItem.tsx:887
-#: src/view/com/notifications/NotificationFeedItem.tsx:894
+#: src/view/com/notifications/NotificationFeedItem.tsx:889
+#: src/view/com/notifications/NotificationFeedItem.tsx:896
 msgid "Follow"
 msgstr ""
 
@@ -5641,8 +5657,8 @@ msgstr ""
 #: src/components/ProfileCard.tsx:543
 #: src/screens/PostThread/components/ThreadItemAnchorFollowButton.tsx:155
 #: src/screens/Profile/Header/ProfileHeaderStandard.tsx:413
-#: src/view/com/notifications/NotificationFeedItem.tsx:887
-#: src/view/com/notifications/NotificationFeedItem.tsx:894
+#: src/view/com/notifications/NotificationFeedItem.tsx:889
+#: src/view/com/notifications/NotificationFeedItem.tsx:896
 msgid "Follow back"
 msgstr ""
 
@@ -5701,8 +5717,8 @@ msgstr ""
 #: src/screens/PostThread/components/ThreadItemAnchorFollowButton.tsx:160
 #: src/screens/Profile/Header/ProfileHeaderStandard.tsx:411
 #: src/screens/VideoFeed/index.tsx:956
-#: src/view/com/notifications/NotificationFeedItem.tsx:866
-#: src/view/com/notifications/NotificationFeedItem.tsx:882
+#: src/view/com/notifications/NotificationFeedItem.tsx:868
+#: src/view/com/notifications/NotificationFeedItem.tsx:884
 msgid "Following"
 msgstr ""
 
@@ -5717,7 +5733,7 @@ msgstr ""
 #. placeholder {0}: sanitizeDisplayName( profile.displayName || profile.handle, )
 #: src/components/ProfileCard.tsx:499
 #: src/screens/Profile/Header/ProfileHeaderStandard.tsx:255
-#: src/view/com/notifications/NotificationFeedItem.tsx:821
+#: src/view/com/notifications/NotificationFeedItem.tsx:823
 msgid "Following {0}"
 msgstr ""
 
@@ -6290,13 +6306,13 @@ msgstr ""
 msgid "Hide"
 msgstr ""
 
-#: src/view/com/notifications/NotificationFeedItem.tsx:977
+#: src/view/com/notifications/NotificationFeedItem.tsx:979
 msgctxt "action"
 msgid "Hide"
 msgstr ""
 
-#: src/components/ProviderCompositionProvenance.tsx:63
-#: src/components/ProviderCompositionProvenance.tsx:74
+#: src/components/ProviderCompositionProvenance.tsx:64
+#: src/components/ProviderCompositionProvenance.tsx:75
 msgid "Hide {surfaceLabel} source details"
 msgstr "Hide {surfaceLabel} source details"
 
@@ -6379,7 +6395,7 @@ msgstr "Hide trending topics?"
 msgid "Hide trending videos?"
 msgstr ""
 
-#: src/view/com/notifications/NotificationFeedItem.tsx:970
+#: src/view/com/notifications/NotificationFeedItem.tsx:972
 msgid "Hide user list"
 msgstr ""
 
@@ -6488,7 +6504,7 @@ msgstr ""
 msgid "How we use your number:"
 msgstr ""
 
-#: src/screens/Settings/ServicesSettings.tsx:1411
+#: src/screens/Settings/ServicesSettings.tsx:1471
 msgid "HTTPS origin checked before registration"
 msgstr "HTTPS origin checked before registration"
 
@@ -6523,7 +6539,7 @@ msgstr "I understand this does not unlink my identity"
 msgid "I'm on Plumbline as {0} - come find me!"
 msgstr "I'm on Plumbline as {0} - come find me!"
 
-#: src/screens/Settings/IdentitySovereigntySettings.tsx:410
+#: src/screens/Settings/IdentitySovereigntySettings.tsx:411
 msgid "Identity & recovery"
 msgstr "Identity & recovery"
 
@@ -6775,7 +6791,7 @@ msgstr ""
 msgid "Input new password"
 msgstr ""
 
-#: src/components/ProviderCompositionProvenance.tsx:75
+#: src/components/ProviderCompositionProvenance.tsx:76
 msgid "Inspect {surfaceLabel} sources"
 msgstr "Inspect {surfaceLabel} sources"
 
@@ -8038,7 +8054,7 @@ msgstr "My starter pack"
 msgid "Name"
 msgstr ""
 
-#: src/screens/Settings/ServicesSettings.tsx:1395
+#: src/screens/Settings/ServicesSettings.tsx:1455
 msgid "Name shown for this read provider"
 msgstr "Name shown for this read provider"
 
@@ -8213,7 +8229,7 @@ msgid "New posts from {firstAuthorName} and {additionalAuthorsCount, plural, one
 msgstr ""
 
 #. placeholder {0}: provider.displayName
-#: src/screens/Settings/ServicesSettings.tsx:964
+#: src/screens/Settings/ServicesSettings.tsx:965
 msgid "New reads will use {0}. PDS writes remain on your account host."
 msgstr "New reads will use {0}. PDS writes remain on your account host."
 
@@ -8368,7 +8384,7 @@ msgstr ""
 #. placeholder {0}: sanitizeDisplayName( profile.displayName || profile.handle, )
 #: src/components/ProfileCard.tsx:522
 #: src/screens/Profile/Header/ProfileHeaderStandard.tsx:281
-#: src/view/com/notifications/NotificationFeedItem.tsx:842
+#: src/view/com/notifications/NotificationFeedItem.tsx:844
 msgid "No longer following {0}"
 msgstr ""
 
@@ -8558,7 +8574,7 @@ msgstr "None"
 msgid "None of these words"
 msgstr "None of these words"
 
-#: src/components/ProviderCompositionProvenance.tsx:97
+#: src/components/ProviderCompositionProvenance.tsx:102
 msgid "None; no provider result was promoted"
 msgstr "None; no provider result was promoted"
 
@@ -8576,7 +8592,7 @@ msgid "Not available on this platform."
 msgstr ""
 
 #: src/components/Post/PostProvenance.tsx:158
-#: src/components/ProviderCompositionProvenance.tsx:108
+#: src/components/ProviderCompositionProvenance.tsx:113
 msgid "Not established"
 msgstr "Not established"
 
@@ -8593,7 +8609,7 @@ msgstr "Not following"
 msgid "Not Found"
 msgstr ""
 
-#: src/screens/Settings/ServicesSettings.tsx:1033
+#: src/screens/Settings/ServicesSettings.tsx:1034
 msgid "Not now"
 msgstr "Not now"
 
@@ -8965,7 +8981,7 @@ msgstr "Open service workbench"
 msgid "Open Services"
 msgstr "Open Services"
 
-#: src/components/ProviderCompositionProvenance.tsx:137
+#: src/components/ProviderCompositionProvenance.tsx:142
 msgid "Open Services to choose which providers can answer this surface"
 msgstr "Open Services to choose which providers can answer this surface"
 
@@ -9151,7 +9167,7 @@ msgid "Opens your private PDS feed"
 msgstr "Opens your private PDS feed"
 
 #: src/components/Post/PostProvenance.tsx:152
-#: src/components/ProviderCompositionProvenance.tsx:102
+#: src/components/ProviderCompositionProvenance.tsx:107
 msgid "Operator independence"
 msgstr "Operator independence"
 
@@ -9298,6 +9314,8 @@ msgstr ""
 
 #: src/screens/ProfileList/index.tsx:164
 #: src/screens/Search/SearchResults.tsx:111
+#: src/screens/Search/SearchResults.tsx:602
+#: src/screens/Search/SearchResults.tsx:620
 #: src/screens/StarterPack/StarterPackScreen.tsx:193
 msgid "People"
 msgstr ""
@@ -10037,7 +10055,7 @@ msgstr "Protected accounts are unavailable on this PDS. No private account state
 msgid "Protocol method"
 msgstr "Protocol method"
 
-#: src/screens/Settings/ServicesSettings.tsx:1027
+#: src/screens/Settings/ServicesSettings.tsx:1028
 msgid "Provider added"
 msgstr "Provider added"
 
@@ -10045,24 +10063,28 @@ msgstr "Provider added"
 msgid "Provider composition"
 msgstr "Provider composition"
 
-#: src/screens/Settings/ServicesSettings.tsx:994
+#: src/screens/Settings/ServicesSettings.tsx:995
 msgid "Provider details required"
 msgstr "Provider details required"
 
-#: src/screens/Settings/ServicesSettings.tsx:1409
+#: src/screens/Settings/ServicesSettings.tsx:1469
 msgid "Provider HTTPS endpoint"
 msgstr "Provider HTTPS endpoint"
 
-#: src/screens/Settings/ServicesSettings.tsx:1393
-#: src/screens/Settings/ServicesSettings.tsx:1397
+#: src/screens/Settings/ServicesSettings.tsx:1453
+#: src/screens/Settings/ServicesSettings.tsx:1457
 msgid "Provider name"
 msgstr "Provider name"
 
-#: src/screens/Settings/ServicesSettings.tsx:1038
+#: src/screens/Settings/ServicesSettings.tsx:1039
 msgid "Provider not added"
 msgstr "Provider not added"
 
-#: src/components/ProviderCompositionProvenance.tsx:121
+#: src/screens/Settings/ServicesSettings.tsx:1083
+msgid "Provider not removed"
+msgstr "Provider not removed"
+
+#: src/components/ProviderCompositionProvenance.tsx:126
 msgid "Provider observations"
 msgstr "Provider observations"
 
@@ -10072,7 +10094,11 @@ msgstr "Provider observations"
 msgid "Provider Privacy Policy"
 msgstr "Provider Privacy Policy"
 
-#: src/screens/Settings/ServicesSettings.tsx:1446
+#: src/screens/Settings/ServicesSettings.tsx:1075
+msgid "Provider removed"
+msgstr "Provider removed"
+
+#: src/screens/Settings/ServicesSettings.tsx:1506
 msgid "Provider service fragment"
 msgstr "Provider service fragment"
 
@@ -10082,7 +10108,7 @@ msgstr "Provider service fragment"
 msgid "Provider Terms of Service"
 msgstr "Provider Terms of Service"
 
-#: src/screens/Settings/ServicesSettings.tsx:969
+#: src/screens/Settings/ServicesSettings.tsx:970
 msgid "Provider unavailable"
 msgstr "Provider unavailable"
 
@@ -10318,7 +10344,7 @@ msgstr "Recent searches"
 msgid "Recently used"
 msgstr ""
 
-#: src/components/ProviderCompositionProvenance.tsx:89
+#: src/components/ProviderCompositionProvenance.tsx:90
 msgid "Reconciliation"
 msgstr "Reconciliation"
 
@@ -10517,6 +10543,14 @@ msgstr ""
 #: src/screens/Search/components/SearchHistory.tsx:243
 msgid "Remove profile"
 msgstr ""
+
+#: src/screens/Settings/ServicesSettings.tsx:1065
+msgid "Remove provider"
+msgstr "Remove provider"
+
+#: src/screens/Settings/ServicesSettings.tsx:1058
+msgid "Remove provider from this device?"
+msgstr "Remove provider from this device?"
 
 #: src/components/PostControls/RepostButton.tsx:161
 #: src/components/PostControls/RepostButton.tsx:171
@@ -11185,8 +11219,8 @@ msgid "Saved-feed order and moderation policy"
 msgstr "Saved-feed order and moderation policy"
 
 #: src/components/NewskieDialog.tsx:142
-#: src/view/com/notifications/NotificationFeedItem.tsx:935
-#: src/view/com/notifications/NotificationFeedItem.tsx:943
+#: src/view/com/notifications/NotificationFeedItem.tsx:937
+#: src/view/com/notifications/NotificationFeedItem.tsx:945
 msgid "Say hello!"
 msgstr ""
 
@@ -11605,7 +11639,7 @@ msgstr "Selected claim"
 msgid "Selected feed"
 msgstr "Selected feed"
 
-#: src/components/ProviderCompositionProvenance.tsx:93
+#: src/components/ProviderCompositionProvenance.tsx:98
 msgid "Selected providers"
 msgstr "Selected providers"
 
@@ -11696,12 +11730,12 @@ msgstr ""
 msgid "Service DID"
 msgstr "Service DID"
 
-#: src/screens/Settings/ServicesSettings.tsx:1450
+#: src/screens/Settings/ServicesSettings.tsx:1510
 msgid "Service fragment"
 msgstr "Service fragment"
 
 #: src/Navigation.tsx:428
-#: src/screens/Settings/ServicesSettings.tsx:1052
+#: src/screens/Settings/ServicesSettings.tsx:1098
 #: src/screens/Settings/Settings.tsx:195
 #: src/screens/Settings/Settings.tsx:198
 #: src/view/shell/desktop/RightNav.tsx:212
@@ -11931,7 +11965,7 @@ msgstr ""
 msgid "Show"
 msgstr ""
 
-#: src/components/ProviderCompositionProvenance.tsx:64
+#: src/components/ProviderCompositionProvenance.tsx:65
 msgid "Show {surfaceLabel} source details"
 msgstr "Show {surfaceLabel} source details"
 
@@ -12048,7 +12082,7 @@ msgstr ""
 msgid "Show profile media source details"
 msgstr "Show profile media source details"
 
-#: src/components/ProviderCompositionProvenance.tsx:67
+#: src/components/ProviderCompositionProvenance.tsx:68
 msgid "Show provider observations and the local reconciliation policy"
 msgstr "Show provider observations and the local reconciliation policy"
 
@@ -12940,6 +12974,10 @@ msgstr ""
 msgid "The birthdate you've entered means you are under 18 years old. Certain content and features may be unavailable to you."
 msgstr ""
 
+#: src/screens/Settings/ServicesSettings.tsx:1052
+msgid "The bundled provider cannot be removed from the client. Revoke its optional surfaces or reset provider policy instead."
+msgstr "The bundled provider cannot be removed from the client. Revoke its optional surfaces or reset provider policy instead."
+
 #: src/view/com/posts/FeedShutdownMsg.tsx:108
 msgid "The Discover feed"
 msgstr ""
@@ -13510,6 +13548,11 @@ msgstr ""
 #: src/screens/Settings/components/ProtectedAccountToggle.tsx:52
 msgid "This records your protected-account policy on a compatible PDS. The public profile shell and existing public posts remain public. The current client will not silently turn an ordinary composer post or media upload private; private posting is only available after a permissioned composer is enabled."
 msgstr "This records your protected-account policy on a compatible PDS. The public profile shell and existing public posts remain public. The current client will not silently turn an ordinary composer post or media upload private; private posting is only available after a permissioned composer is enabled."
+
+#. placeholder {0}: provider.displayName
+#: src/screens/Settings/ServicesSettings.tsx:1060
+msgid "This removes {0} and clears local selections, fallbacks, and reconciliation preferences that point to it. It does not delete the provider's service or change your account PDS."
+msgstr "This removes {0} and clears local selections, fallbacks, and reconciliation preferences that point to it. It does not delete the provider's service or change your account PDS."
 
 #: src/components/PostControls/PostMenu/PostMenuItems.tsx:880
 msgid "This reply will be sorted into a hidden section at the bottom of your thread and will mute notifications for subsequent replies - both for yourself and others."
@@ -14232,7 +14275,7 @@ msgid "Uploading video..."
 msgstr ""
 
 #. placeholder {0}: candidate.displayName
-#: src/screens/Settings/ServicesSettings.tsx:976
+#: src/screens/Settings/ServicesSettings.tsx:977
 msgid "Use {0}"
 msgstr "Use {0}"
 
@@ -14270,7 +14313,7 @@ msgstr ""
 msgid "Use in-app browser to open links"
 msgstr ""
 
-#: src/screens/Settings/ServicesSettings.tsx:1032
+#: src/screens/Settings/ServicesSettings.tsx:1033
 msgid "Use it now"
 msgstr "Use it now"
 
@@ -14334,7 +14377,7 @@ msgid "User list by {0}"
 msgstr ""
 
 #. placeholder {0}: sanitizeHandle(view.creator.handle, '@')
-#: src/state/queries/feed.ts:183
+#: src/state/queries/feed.ts:186
 msgid "User List by {0}"
 msgstr ""
 
@@ -14468,7 +14511,7 @@ msgid "Version {0}"
 msgstr ""
 
 #. When the source of a follow is a starter pack, i.e., 'via starter pack {starterPackName}'.
-#: src/view/com/notifications/NotificationFeedItem.tsx:739
+#: src/view/com/notifications/NotificationFeedItem.tsx:741
 msgid "via starter pack <0/><1>{starterPackName}</1>"
 msgstr "via starter pack <0/><1>{starterPackName}</1>"
 
@@ -14557,7 +14600,7 @@ msgstr ""
 #: src/screens/CustomFeed/components/CustomFeedHeader.tsx:506
 #: src/screens/Search/components/SearchProfileCard.tsx:37
 #: src/screens/VideoFeed/index.tsx:901
-#: src/view/com/notifications/NotificationFeedItem.tsx:601
+#: src/view/com/notifications/NotificationFeedItem.tsx:603
 msgid "View {0}'s profile"
 msgstr ""
 
@@ -14912,15 +14955,23 @@ msgstr ""
 msgid "We're sorry, but we weren't able to load your muted words at this time. Please try again."
 msgstr ""
 
+#: src/screens/Search/SearchResults.tsx:730
+msgid "We’re sorry, but your feed search could not be completed."
+msgstr "We’re sorry, but your feed search could not be completed."
+
+#: src/screens/Search/SearchResults.tsx:729
+msgid "We’re sorry, but your feed search could not be completed. Please try again in a few minutes."
+msgstr "We’re sorry, but your feed search could not be completed. Please try again in a few minutes."
+
 #: src/screens/Search/SearchResults.tsx:452
-#: src/screens/Search/SearchResults.tsx:601
-#: src/screens/Search/SearchResults.tsx:819
+#: src/screens/Search/SearchResults.tsx:609
+#: src/screens/Search/SearchResults.tsx:859
 msgid "We’re sorry, but your search could not be completed."
 msgstr "We’re sorry, but your search could not be completed."
 
 #: src/screens/Search/SearchResults.tsx:451
-#: src/screens/Search/SearchResults.tsx:600
-#: src/screens/Search/SearchResults.tsx:818
+#: src/screens/Search/SearchResults.tsx:608
+#: src/screens/Search/SearchResults.tsx:858
 msgid "We’re sorry, but your search could not be completed. Please try again in a few minutes."
 msgstr "We’re sorry, but your search could not be completed. Please try again in a few minutes."
 
