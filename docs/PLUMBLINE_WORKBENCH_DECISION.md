@@ -1503,11 +1503,11 @@ not claim that a provider resolved or verified the record.
 | Touched-file Oxlint | PASS | `pnpm exec oxlint --quiet src/components/Post/PostProvenance.tsx` |
 | Touched-file formatting and whitespace | PASS | Prettier check and `git diff --check` |
 | Web TypeScript | PASS | `pnpm typecheck:web` |
-| English catalog extraction/compile | PENDING | Run before the release build so the new labels are included in the compiled catalog |
-| Production web export | PENDING | Run after catalog verification |
-| Client code commit and push | PENDING | The implementation remains uncommitted in the nested client |
-| Pages deployment | PENDING | Deploy the verified production export |
-| ChatGPT in-app browser inspection | PENDING | Expand `Why this post?` and verify the copy control is visible without a page alert |
+| English catalog extraction/compile | PASS | `pnpm intl:extract && pnpm intl:compile`; 3324 source messages |
+| Production web export | PASS | `EXPO_PUBLIC_ENV=production pnpm build-web`; existing bundle-size warnings remain |
+| Client code commit and push | PASS | `e3d4ce3c0` and `469314890` pushed to `fork/codex/spaces-alpha-integration` |
+| Pages deployment | PASS | `https://470139e7.social-edriffles.pages.dev` uploaded to `social-edriffles` with Node `v24.19.0` |
+| ChatGPT in-app browser inspection | PASS | `https://plumblines.uk/?deployment=470139e7` showed 32 provenance controls; expanded details exposed the copy action and a read-only click retained the route without an alert |
 
 The external Relay/AppView, short-TTL OAuth, and independent-PLC operator
 evidence gates remain separate and unresolved.
