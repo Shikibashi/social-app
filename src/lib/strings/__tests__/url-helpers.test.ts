@@ -2,6 +2,7 @@ import {getRuntimePublicWebOrigin} from '#/lib/brand'
 import {
   isBskyChatInviteUrl,
   isBskyPostUrl,
+  isBskyRSSUrl,
   isExternalUrl,
   isTrustedUrl,
   toShareUrl,
@@ -27,6 +28,7 @@ describe('share URL resolution', () => {
     const origin = getRuntimePublicWebOrigin()
 
     expect(isBskyPostUrl(`${origin}/profile/example.test/post/3abc`)).toBe(true)
+    expect(isBskyRSSUrl(`${origin}/profile/example.test/rss`)).toBe(true)
     expect(isBskyChatInviteUrl(`${origin}/chat/ABC1234`)).toBe(true)
     expect(isExternalUrl(`${origin}/profile/example.test/post/3abc`)).toBe(
       false,
@@ -39,6 +41,7 @@ describe('share URL resolution', () => {
       isBskyPostUrl('https://bsky.app/profile/example.test/post/3abc'),
     ).toBe(true)
     expect(isBskyChatInviteUrl('https://bsky.app/chat/ABC1234')).toBe(true)
+    expect(isBskyRSSUrl('https://bsky.app/profile/example.test/rss')).toBe(true)
     expect(
       isBskyPostUrl(
         'https://plumblines.uk.example.test/profile/example.test/post/3abc',

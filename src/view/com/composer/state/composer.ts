@@ -11,7 +11,7 @@ import {shortenLinks} from '#/lib/strings/rich-text-manip'
 import {
   isBskyPostUrl,
   postUriToRelativePath,
-  toBskyAppUrl,
+  toShareUrl,
 } from '#/lib/strings/url-helpers'
 import {logger} from '#/logger'
 import {type ComposerImage, createInitialImages} from '#/state/gallery'
@@ -644,7 +644,7 @@ export function createComposerState({
     if (path) {
       quote = {
         type: 'link',
-        uri: toBskyAppUrl(path) as UriString,
+        uri: toShareUrl(path) as UriString,
       }
     }
   }

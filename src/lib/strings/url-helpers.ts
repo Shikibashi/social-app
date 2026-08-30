@@ -105,10 +105,6 @@ export function toShareUrl(url: string): string {
   return new URL(url, getRuntimePublicWebOrigin()).toString()
 }
 
-export function toBskyAppUrl(url: string): string {
-  return new URL(url, BSKY_APP_HOST).toString()
-}
-
 export function toNiceHostingUrl(url: string): string {
   try {
     const urlp = new URL(url)
@@ -156,10 +152,7 @@ export function isRelativeUrl(url: string): boolean {
 }
 
 export function isBskyRSSUrl(url: string): boolean {
-  return (
-    (url.startsWith('https://bsky.app/') || isRelativeUrl(url)) &&
-    /\/rss\/?$/.test(url)
-  )
+  return (isBskyAppUrl(url) || isRelativeUrl(url)) && /\/rss\/?$/.test(url)
 }
 
 export function isExternalUrl(url: string): boolean {
@@ -393,11 +386,6 @@ export function splitApexDomain(hostname: string): [string, string] {
     hostnamep.subdomain ? `${hostnamep.subdomain}.` : '',
     hostnamep.domain,
   ]
-}
-
-export function createBskyAppAbsoluteUrl(path: string): string {
-  const sanitizedPath = path.replace(BSKY_APP_HOST, '').replace(/^\/+/, '')
-  return `${BSKY_APP_HOST.replace(/\/$/, '')}/${sanitizedPath}`
 }
 
 export function createProxiedUrl(url: string): string {

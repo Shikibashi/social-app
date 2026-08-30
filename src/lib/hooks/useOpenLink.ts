@@ -3,12 +3,12 @@ import {Linking} from 'react-native'
 import * as WebBrowser from 'expo-web-browser'
 
 import {
-  createBskyAppAbsoluteUrl,
   createProxiedUrl,
   isBskyAppUrl,
   isBskyRSSUrl,
   isRelativeUrl,
   toNiceDomain,
+  toShareUrl,
 } from '#/lib/strings/url-helpers'
 import {logger} from '#/logger'
 import {useInAppBrowser} from '#/state/preferences/in-app-browser'
@@ -28,7 +28,7 @@ export function useOpenLink() {
   const openLink = useCallback(
     (url: string, override?: boolean, shouldProxy?: boolean) => {
       if (isBskyRSSUrl(url) && isRelativeUrl(url)) {
-        url = createBskyAppAbsoluteUrl(url)
+        url = toShareUrl(url)
       }
 
       if (!isBskyAppUrl(url)) {

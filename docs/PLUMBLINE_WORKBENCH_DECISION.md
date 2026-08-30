@@ -159,7 +159,37 @@ legacy input.
 This is a share-output change only. Protocol collection names, external
 provider URLs, and parsing of reference Bluesky links remain unchanged.
 
-## 12. Remaining concentrations worth attacking next
+## 12. Iteration 6 — canonical quote, draft, chat, and RSS paths
+
+The remaining internal post-link generators now use the shared runtime-origin
+helper. Quote composition, draft restoration, embedded-post chat previews,
+and relative RSS opening therefore stay on Plumbline for new internal links.
+The URL classifier recognizes canonical Plumbline RSS links as internal while
+continuing to accept reference Bluesky paths and external HTTP(S) URLs.
+
+### Implementation and verification evidence
+
+- `src/state/shell/composer/index.tsx` and
+  `src/view/com/composer/state/composer.ts` use the runtime share helper when
+  precaching or creating quote embeds.
+- `src/view/com/composer/drafts/state/api.ts` uses the same helper while
+  restoring a quote from a persisted draft.
+- `src/components/dms/getMessageInfo.ts` keeps embedded post previews on the
+  current Plumbline origin, and `src/lib/hooks/useOpenLink.ts` resolves
+  relative RSS paths through that boundary.
+- The obsolete internal `toBskyAppUrl` and
+  `createBskyAppAbsoluteUrl` generators were removed after all repository
+  callers moved to `toShareUrl`.
+- `src/lib/strings/__tests__/url-helpers.test.ts` now covers canonical and
+  reference RSS classification. The focused URL/route suites pass 17/17
+  tests; targeted Oxlint, Prettier, `git diff --check`, and
+  `pnpm run typecheck:web` pass.
+
+This preserves ATProto collection names and external provider URLs. It only
+changes the destination used for new internal application links and keeps
+legacy reference links interoperable.
+
+## 13. Remaining concentrations worth attacking next
 
 1. Add a compatible, independently attributable media delivery composition contract only if it can preserve PDS blob authority and safe browser delivery; do not treat a CDN URL as a second authoritatively owned record.
 2. Add credentialed multi-provider browser fixtures for revoked grants, migration, block boundaries, and partial service support without using production credentials.

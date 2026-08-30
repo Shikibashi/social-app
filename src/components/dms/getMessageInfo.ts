@@ -5,7 +5,7 @@ import {isBlockedOrBlocking} from '#/lib/moderation/blocked-and-muted'
 import {createSanitizedDisplayName} from '#/lib/moderation/create-sanitized-display-name'
 import {
   postUriToRelativePath,
-  toBskyAppUrl,
+  toShareUrl,
   toShortUrl,
 } from '#/lib/strings/url-helpers'
 import {app, chat} from '#/lexicons'
@@ -108,7 +108,7 @@ export function getMessageInfo({
         const path = postUriToRelativePath(record.uri, {
           handle: record.author.handle,
         })
-        const href = path ? toBskyAppUrl(path) : undefined
+        const href = path ? toShareUrl(path) : undefined
         const short = href ? toShortUrl(href) : defaultEmbeddedContentMessage
         message = prefix(short)
       } else {

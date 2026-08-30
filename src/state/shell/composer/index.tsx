@@ -1,11 +1,11 @@
 import {createContext, useContext, useMemo, useState} from 'react'
-import {type ModerationDecision} from '#/lib/moderation'
 import {msg} from '@lingui/core/macro'
 import {useLingui} from '@lingui/react'
 import {useQueryClient} from '@tanstack/react-query'
 
 import {useNonReactiveCallback} from '#/lib/hooks/useNonReactiveCallback'
-import {postUriToRelativePath, toBskyAppUrl} from '#/lib/strings/url-helpers'
+import {type ModerationDecision} from '#/lib/moderation'
+import {postUriToRelativePath, toShareUrl} from '#/lib/strings/url-helpers'
 import {purgeTemporaryImageFiles} from '#/state/gallery'
 import {hasViewerInteractionBoundary} from '#/state/queries/public-visibility'
 import {
@@ -74,7 +74,7 @@ export function Provider({children}: React.PropsWithChildren<{}>) {
     if (opts.quote) {
       const path = postUriToRelativePath(opts.quote.uri)
       if (path) {
-        const appUrl = toBskyAppUrl(path)
+        const appUrl = toShareUrl(path)
         precacheResolveLinkQuery(queryClient, appUrl, {
           type: 'record',
           kind: 'post',

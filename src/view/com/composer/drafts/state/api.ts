@@ -11,6 +11,7 @@ import {getDeviceName} from '#/lib/deviceName'
 import {getImageDim} from '#/lib/media/manip'
 import {mimeToExt} from '#/lib/media/video/util'
 import {shortenLinks} from '#/lib/strings/rich-text-manip'
+import {toShareUrl} from '#/lib/strings/url-helpers'
 import {type ComposerImage} from '#/state/gallery'
 import {threadgateAllowUISettingToAllowRecordValue} from '#/state/queries/threadgate/util'
 import {
@@ -607,7 +608,7 @@ export async function draftToComposerPosts(
       if (post.embedRecords && post.embedRecords.length > 0) {
         const record = post.embedRecords[0]
         const urip = new AtUri(record.record.uri)
-        const url = `https://bsky.app/profile/${urip.host}/post/${urip.rkey}`
+        const url = toShareUrl(`/profile/${urip.host}/post/${urip.rkey}`)
         embed.quote = {type: 'link', uri: url as UriString}
       }
 
