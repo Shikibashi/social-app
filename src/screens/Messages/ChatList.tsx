@@ -576,7 +576,7 @@ export function Header({
                     label={l`Chat options`}
                     size="small"
                     color="secondary"
-                    shape="round"
+                    shape="square"
                     style={[a.justify_center]}>
                     <ButtonIcon icon={SettingsIcon} />
                   </Button>
@@ -587,7 +587,7 @@ export function Header({
                   label={l`New chat`}
                   color="primary"
                   size="small"
-                  shape="round"
+                  shape="square"
                   onPress={wrappedOpenChatControl}>
                   <ButtonIcon icon={NewChatIcon} />
                 </Button>
@@ -615,7 +615,7 @@ export function Header({
                       size="small"
                       variant="ghost"
                       color="secondary"
-                      shape="round"
+                      shape="square"
                       style={[a.justify_center]}>
                       <ButtonIcon icon={SettingsIcon} size="lg" />
                     </Button>

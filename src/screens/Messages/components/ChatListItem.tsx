@@ -1,16 +1,16 @@
 import {useCallback, useMemo, useState} from 'react'
 import {type GestureResponderEvent, View} from 'react-native'
-import {
-  moderateProfile,
-  type ModerationDecision,
-  type ModerationOpts,
-} from '#/lib/moderation'
 import {plural} from '@lingui/core/macro'
 import {useLingui} from '@lingui/react/macro'
 import {useQueryClient} from '@tanstack/react-query'
 
 import {GestureActionView} from '#/lib/custom-animations/GestureActionView'
 import {useHaptics} from '#/lib/haptics'
+import {
+  moderateProfile,
+  type ModerationDecision,
+  type ModerationOpts,
+} from '#/lib/moderation'
 import {createSanitizedDisplayName} from '#/lib/moderation/create-sanitized-display-name'
 import {decrementBadgeCount} from '#/lib/notifications/notifications'
 import {sanitizeHandle} from '#/lib/strings/handles'
@@ -475,7 +475,7 @@ function BaseChatItem({
           // @ts-expect-error web only
           onFocus={onFocus}
           onBlur={onMouseLeave}
-          style={[a.relative, t.atoms.bg, isWithinLeftPanel && a.mx_sm]}>
+          style={[a.relative, t.atoms.bg]}>
           <View
             style={[
               a.z_10,
@@ -522,7 +522,14 @@ function BaseChatItem({
                   a.px_lg,
                   a.py_md,
                   a.gap_md,
-                  isWithinLeftPanel && [a.rounded_sm, a.mt_2xs],
+                  isWithinLeftPanel && [
+                    a.border_t,
+                    t.atoms.border_contrast_low,
+                    hasUnread && {
+                      borderLeftColor: t.palette.primary_500,
+                      borderLeftWidth: 3,
+                    },
+                  ],
                   {
                     backgroundColor: hasUnread
                       ? t.palette.primary_25
