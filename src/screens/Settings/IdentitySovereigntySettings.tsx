@@ -2,6 +2,7 @@ import {useEffect, useState} from 'react'
 import * as Clipboard from 'expo-clipboard'
 import {Trans} from '@lingui/react/macro'
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import {useNavigation} from '@react-navigation/native'
 import {jwtDecode} from 'jwt-decode'
 
 import {
@@ -14,12 +15,15 @@ import {
   createUserHeldRotationKey,
   type UserHeldRotationKey,
 } from '#/lib/plc-key-custody'
+import {type NavigationProp} from '#/lib/routes/types'
 import {useRadlibMigrationStatusQuery} from '#/state/queries/radlib-migration'
 import {useSession, useSessionApi} from '#/state/session'
 import {resolvePdsEndpointForDid} from '#/state/session/pds-resolution'
 import {getSelectedAppViewProvider} from '#/state/session/providers'
 import {isSessionExpired} from '#/state/session/session-data'
+import {ExportCarDialog} from '#/screens/Settings/components/ExportCarDialog'
 import * as SettingsList from '#/screens/Settings/components/SettingsList'
+import {useDialogControl} from '#/components/Dialog'
 import * as Layout from '#/components/Layout'
 import * as Prompt from '#/components/Prompt'
 import {IS_WEB} from '#/env'
@@ -65,8 +69,10 @@ function accessExpiry(accessJwt?: string) {
 export function IdentitySovereigntySettingsScreen() {
   const {currentAccount} = useSession()
   const {logoutCurrentAccount, logoutEveryAccount} = useSessionApi()
+  const navigation = useNavigation<NavigationProp>()
   const endSessionControl = Prompt.usePromptControl()
   const endAllSessionsControl = Prompt.usePromptControl()
+  const exportCarControl = useDialogControl()
   const migrationQuery = useRadlibMigrationStatusQuery()
   const migration = migrationQuery.data
   const [resolvedPds, setResolvedPds] = useState<string | undefined>()
@@ -286,6 +292,33 @@ export function IdentitySovereigntySettingsScreen() {
               </SettingsList.BadgeText>
             </SettingsList.Item>
           )}
+          <SettingsList.Divider />
+          <SettingsList.Item>
+            <SettingsList.ItemText>Exit utilities</SettingsList.ItemText>
+            <SettingsList.BadgeText>
+              Keep identity; move portable state separately
+            </SettingsList.BadgeText>
+          </SettingsList.Item>
+          <SettingsList.PressableItem
+            label="Export repository and chat data"
+            onPress={() => exportCarControl.open()}>
+            <SettingsList.ItemText>
+              Export repository and chat data
+            </SettingsList.ItemText>
+            <SettingsList.BadgeText>
+              CAR / JSONL · credentials excluded
+            </SettingsList.BadgeText>
+          </SettingsList.PressableItem>
+          <SettingsList.PressableItem
+            label="Open portable policy backup"
+            onPress={() => navigation.navigate('PersonalizationSettings')}>
+            <SettingsList.ItemText>
+              Portable policy backup
+            </SettingsList.ItemText>
+            <SettingsList.BadgeText>
+              Export, import, or reset local policy
+            </SettingsList.BadgeText>
+          </SettingsList.PressableItem>
           <SettingsList.Item>
             <SettingsList.ItemText>Recovery</SettingsList.ItemText>
             <SettingsList.BadgeText>
@@ -410,6 +443,7 @@ export function IdentitySovereigntySettingsScreen() {
         confirmButtonCta="Sign out all"
         confirmButtonColor="negative"
       />
+      <ExportCarDialog control={exportCarControl} />
     </Layout.Screen>
   )
 }
