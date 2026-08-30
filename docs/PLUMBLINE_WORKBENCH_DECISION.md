@@ -1212,3 +1212,79 @@ credential material.
 This iteration removes the ambient Chat read assumption without creating a
 new sovereign intermediary. The external Relay/AppView, short-TTL OAuth, and
 independent-PLC operator gates remain separate and unresolved.
+
+## 35. Iteration 28 — make the Spaces authorization boundary explicit
+
+The Communities route still attempted to read the account/community directory
+and selected community metadata while an OAuth session lacked the separate
+Spaces permission. The resulting empty directory and generic PDS error made a
+missing delegation look like missing community data, and the create-community
+control could still open a form before the user had authorized the feature.
+
+### Residual authority concentration and why it matters
+
+This was an ambient-authority concentration at the Spaces control-plane
+boundary. A community directory or metadata provider could be contacted by
+route entry without an explicit user delegation, while the UI obscured the
+distinction between an unavailable provider and an ungranted capability.
+That weakened both progressive authorization and the user's ability to tell
+whether the community actually existed.
+
+### Ecosystem precedent and chosen change
+
+The change reuses the existing ATProto feature-scoped OAuth machinery and the
+community directory's existing provider-composition seam. Both community
+directory and selected-community queries are disabled until the Spaces grant
+is present. The directory instead renders the shared explicit authorization
+panel, `New community` is disabled, and the selected-space branch is withheld
+until authorization succeeds. The panel's explanation now identifies the
+feature-specific authority rather than hard-coding the Chat service.
+
+### Authority before versus after
+
+| Boundary | Before iteration 28 | After iteration 28 |
+| --- | --- | --- |
+| Community directory | Could contact the account/authority PDS without the Spaces grant and show an empty/unavailable result. | No directory request is made until the user has delegated Spaces. |
+| Community metadata | A deep-linked space could trigger a metadata read without the required feature grant. | Selected-space metadata is also disabled until the same grant is present. |
+| Write affordance | New community could open before authorization and fail later in the mutation. | New community is disabled and authorization is offered at the read boundary. |
+| User explanation | Generic PDS availability text hid the missing delegation. | The shared panel identifies `Spaces`, the Spaces authority, and the explicit Services path. |
+
+### Interoperability and security tradeoffs
+
+This preserves the existing Spaces OAuth scope, private Space transport,
+provider composition, record formats, and mutation assertions. It does not
+make communities public, add a fallback provider, or change membership or
+posting semantics. A user with a password session or an OAuth session that
+already has the Spaces grant keeps the existing path. A user without the
+grant must authorize it explicitly, which prevents unintended reads and
+avoids treating a provider error as a data claim.
+
+### Implementation evidence
+
+- `src/components/AuthorizationProvenance.tsx` now describes the resource
+  associated with each feature-scoped authorization prompt.
+- `src/screens/CommunityBoardScreen.tsx` gates directory and metadata reads,
+  disables the create control without Spaces authority, and uses the shared
+  Spaces authorization panel.
+- `src/locale/locales/en/messages.po` contains the extracted feature-specific
+  authorization message.
+
+### Verification
+
+| Check | Status | Evidence |
+| --- | --- | --- |
+| Touched-file Oxlint | PASS | `pnpm exec oxlint --quiet src/components/AuthorizationProvenance.tsx src/screens/CommunityBoardScreen.tsx` |
+| Touched-file formatting and whitespace | PASS | Prettier check and `git diff --check` |
+| Web TypeScript | PASS | `pnpm typecheck:web` |
+| English catalog extraction/compile | PASS | `pnpm intl:extract && pnpm intl:compile`; 3311 source messages |
+| Production web export | PASS | `EXPO_PUBLIC_ENV=production pnpm build-web`; existing bundle-size warnings remain |
+| Client commit and push | PASS | `c82c4303b` pushed to `fork/codex/spaces-alpha-integration` |
+| Pages deployment | PASS | `https://8aefbf18.social-edriffles.pages.dev` uploaded to `social-edriffles` |
+| Logged-out deployment community route | PASS | Fresh deployment showed the logged-out shell without a raw scope or community error |
+| Canonical signed-in community route | PASS | `https://plumblines.uk/community?audit=spaces-oauth-c82c4303b` showed the Spaces authorization panel, `Feature: Spaces`, `Open Services`, and a disabled `New community` control |
+| Legacy community error | PASS | The old `Communities are unavailable or not authorized on this PDS` message was absent from the canonical route |
+| Repository-wide lint | FAIL (baseline) | Existing unrelated import-sort, type, and suppression-manifest diagnostics remain outside this slice |
+
+This iteration removes the ambient Spaces read assumption without creating a
+new sovereign intermediary. The external Relay/AppView, short-TTL OAuth, and
+independent-PLC operator gates remain separate and unresolved.
