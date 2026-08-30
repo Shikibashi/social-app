@@ -418,6 +418,67 @@ export async function registerAppViewProvider(
 }
 
 /**
+ * Remove a user-registered read provider and every local choice that points
+ * at it. The bundled provider is a default implementation, not a removable
+ * user registration; its optional surfaces can be revoked with the existing
+ * capability controls or policy reset instead.
+ */
+export async function removeAppViewProvider(providerId: string): Promise<void> {
+  const provider = getAppViewProviders().find(item => item.id === providerId)
+  if (!provider) throw new Error('Unknown AppView provider')
+  if (provider.builtin) {
+    throw new Error(
+      'The bundled AppView provider cannot be removed; revoke its surfaces instead',
+    )
+  }
+
+  const providers = getAppViewProviders().filter(item => item.id !== providerId)
+  if (providers.length === 0) {
+    throw new Error('At least one AppView provider must remain available')
+  }
+
+  const selections = Object.fromEntries(
+    Object.entries(persisted.get('appviewSelections') ?? {}).filter(
+      ([, selectedProviderId]) => selectedProviderId !== providerId,
+    ),
+  )
+  const fallbacks = Object.fromEntries(
+    Object.entries(persisted.get('appviewFallbacks') ?? {})
+      .map(([did, entries]) => [
+        did,
+        Object.fromEntries(
+          Object.entries(entries).filter(
+            ([, fallbackProviderId]) => fallbackProviderId !== providerId,
+          ),
+        ),
+      ])
+      .filter(([, entries]) => Object.keys(entries).length > 0),
+  )
+  const reconciliationPolicies = Object.fromEntries(
+    Object.entries(persisted.get('appviewReconciliationPolicies') ?? {}).map(
+      ([surface, policy]) =>
+        policy.mode === 'prefer-provider' &&
+        policy.preferredProviderId === providerId
+          ? [surface, {mode: 'require-agreement' as const}]
+          : [surface, policy],
+    ),
+  )
+  const currentIdentityResolutionPolicy = getIdentityResolutionPolicy()
+  const identityResolutionPolicy =
+    currentIdentityResolutionPolicy.mode === 'prefer-provider' &&
+    currentIdentityResolutionPolicy.preferredProviderId === providerId
+      ? {mode: 'require-agreement' as const}
+      : currentIdentityResolutionPolicy
+
+  await persisted.write('appviewProviders', providers)
+  await persisted.write('appviewSelections', selections)
+  await persisted.write('appviewFallbacks', fallbacks)
+  await persisted.write('appviewReconciliationPolicies', reconciliationPolicies)
+  await persisted.write('identityResolutionPolicy', identityResolutionPolicy)
+  emitAppViewProviderPolicyChanged()
+}
+
+/**
  * Change only the local capability declaration for a registered provider.
  * Endpoint identity remains validated from the provider record, while
  * capability grants stay user-revocable and do not require a new provider

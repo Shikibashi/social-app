@@ -40,6 +40,7 @@ import {
   importAppViewPolicy,
   probeAppViewProvider,
   registerAppViewProvider,
+  removeAppViewProvider,
   resetAppViewPolicy,
   setAppViewProviderCapabilities,
   setAppViewReconciliationPolicy,
@@ -1043,6 +1044,51 @@ export function ServicesSettingsScreen({route, navigation}: Props) {
     }
   }
 
+  function requestProviderRemoval(provider: AppViewProvider) {
+    if (provider.builtin) {
+      Alert.alert(
+        _(msg`Bundled provider retained`),
+        _(
+          msg`The bundled provider cannot be removed from the client. Revoke its optional surfaces or reset provider policy instead.`,
+        ),
+      )
+      return
+    }
+    Alert.alert(
+      _(msg`Remove provider from this device?`),
+      _(
+        msg`This removes ${provider.displayName} and clears local selections, fallbacks, and reconciliation preferences that point to it. It does not delete the provider's service or change your account PDS.`,
+      ),
+      [
+        {text: _(msg`Cancel`), style: 'cancel'},
+        {
+          text: _(msg`Remove provider`),
+          style: 'destructive',
+          onPress: () =>
+            void removeAppViewProvider(provider.id)
+              .then(() => {
+                setProviders(getAppViewProviders())
+                setIdentityPolicy(getIdentityResolutionPolicy())
+                setReconciliationPolicies(readReconciliationPolicies())
+                setOpenPanel(undefined)
+                Alert.alert(
+                  _(msg`Provider removed`),
+                  _(
+                    msg`${provider.displayName} is no longer registered on this device.`,
+                  ),
+                )
+              })
+              .catch(error => {
+                Alert.alert(
+                  _(msg`Provider not removed`),
+                  error instanceof Error ? error.message : String(error),
+                )
+              }),
+        },
+      ],
+    )
+  }
+
   return (
     <Layout.Screen ecwMode="workbench">
       <Layout.Header.Outer>
@@ -1301,6 +1347,20 @@ export function ServicesSettingsScreen({route, navigation}: Props) {
                               shape="rectangular">
                               <ButtonText>Configure surfaces</ButtonText>
                             </Button>
+                            {!panelProvider.builtin && (
+                              <Button
+                                testID="service-workbench-remove-provider"
+                                label={`Remove ${panelProvider.displayName} from this device`}
+                                onPress={() =>
+                                  requestProviderRemoval(panelProvider)
+                                }
+                                color="secondary"
+                                variant="outline"
+                                shape="rectangular"
+                                size="small">
+                                <ButtonText>Remove from device</ButtonText>
+                              </Button>
+                            )}
                             <Button
                               label="Close provider inspector"
                               onPress={() => setOpenPanel(undefined)}

@@ -31,6 +31,7 @@ import {
   importAppViewPolicy,
   probeAppViewProvider,
   registerAppViewProvider,
+  removeAppViewProvider,
   resetAppViewPolicy,
   selectAppViewProvider,
   setAppViewProviderCapabilities,
@@ -202,6 +203,61 @@ describe('AppView provider validation and health probing', () => {
     ])
     await selectAppViewProvider(DID, alternate.id)
     expect(getSelectedAppViewProvider(DID).id).toBe(alternate.id)
+  })
+
+  it('removes a custom provider and clears its dependent local choices', async () => {
+    const alternate = {
+      ...DEFAULT_APPVIEW_PROVIDER,
+      id: 'alternate-appview',
+      displayName: 'Alternate AppView',
+      serviceDid:
+        'did:web:alternate.example' as typeof DEFAULT_APPVIEW_PROVIDER.serviceDid,
+      endpoint: 'https://alternate.example',
+      builtin: false,
+      capabilities: ['public-read', 'profiles', 'identity-resolution'] as const,
+    }
+    mockPersistedState.appviewProviders = [DEFAULT_APPVIEW_PROVIDER, alternate]
+    mockPersistedState.appviewSelections = {
+      [DID]: alternate.id,
+      other: DEFAULT_APPVIEW_PROVIDER.id,
+    }
+    mockPersistedState.appviewFallbacks = {
+      [DID]: {
+        'appview-selection': alternate.id,
+        other: DEFAULT_APPVIEW_PROVIDER.id,
+      },
+      other: {feature: DEFAULT_APPVIEW_PROVIDER.id},
+    }
+
+    await setAppViewReconciliationPolicy('profiles', {
+      mode: 'prefer-provider',
+      preferredProviderId: alternate.id,
+    })
+    await setIdentityResolutionPolicy({
+      mode: 'prefer-provider',
+      preferredProviderId: alternate.id,
+    })
+
+    await removeAppViewProvider(alternate.id)
+
+    expect(getAppViewProviders().map(provider => provider.id)).toEqual([
+      DEFAULT_APPVIEW_PROVIDER.id,
+    ])
+    expect(mockPersistedState.appviewSelections).toEqual({
+      other: DEFAULT_APPVIEW_PROVIDER.id,
+    })
+    expect(mockPersistedState.appviewFallbacks).toEqual({
+      [DID]: {other: DEFAULT_APPVIEW_PROVIDER.id},
+      other: {feature: DEFAULT_APPVIEW_PROVIDER.id},
+    })
+    expect(mockPersistedState.appviewReconciliationPolicies).toEqual({
+      profiles: {mode: 'require-agreement'},
+    })
+    expect(getIdentityResolutionPolicy()).toEqual({mode: 'require-agreement'})
+    expect(getSelectedAppViewProvider(DID).id).toBe(DEFAULT_APPVIEW_PROVIDER.id)
+    await expect(
+      removeAppViewProvider(DEFAULT_APPVIEW_PROVIDER.id),
+    ).rejects.toThrow('bundled AppView provider cannot be removed')
   })
 
   it('routes capabilities independently and keeps legacy providers read-only', () => {
