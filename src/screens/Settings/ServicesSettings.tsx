@@ -80,6 +80,28 @@ function providerSurfaceLabel(surface: ProviderSurface): string {
     .join(' ')
 }
 
+type ServiceWorkbenchRow = {
+  id: string
+  label: string
+  provider: string
+  state: string
+  detail: string
+  section: ServicesSection
+}
+
+function describeProviderSources(providers: readonly AppViewProvider[]): {
+  provider: string
+  state: string
+} {
+  if (providers.length === 0) {
+    return {provider: 'No provider enabled', state: 'Unavailable'}
+  }
+  return {
+    provider: providers.map(provider => provider.displayName).join(', '),
+    state: `${providers.length} enabled`,
+  }
+}
+
 function readReconciliationPolicies(): Partial<
   Record<ProviderSurface, ProviderReconciliationPolicy>
 > {
@@ -172,11 +194,160 @@ const SERVICES_INSPECTOR_COPY: Record<
   },
 }
 
+function ServiceWorkbenchMatrix({
+  rows,
+  onInspect,
+  compact,
+}: {
+  rows: readonly ServiceWorkbenchRow[]
+  onInspect: (section: ServicesSection) => void
+  compact: boolean
+}) {
+  const t = useTheme()
+
+  return (
+    <View
+      testID="service-workbench-matrix"
+      accessibilityRole="summary"
+      style={[
+        a.w_full,
+        a.border,
+        t.atoms.border_contrast_low,
+        t.atoms.bg_contrast_25,
+        a.p_sm,
+        a.gap_xs,
+      ]}>
+      <View style={[a.gap_2xs, a.pb_xs]}>
+        <SettingsList.ItemText
+          style={[{paddingHorizontal: 0}, a.font_semi_bold]}>
+          Capability map
+        </SettingsList.ItemText>
+        <SettingsList.ItemText
+          style={[
+            {paddingHorizontal: 0},
+            a.text_sm,
+            t.atoms.text_contrast_medium,
+          ]}>
+          Each service has a named source, a visible state, and an ordinary
+          inspection path. A default provider is a convenience choice, not a
+          universal authority.
+        </SettingsList.ItemText>
+      </View>
+
+      {!compact && (
+        <View
+          aria-hidden
+          style={[a.flex_row, a.align_center, a.gap_sm, a.pb_xs]}>
+          <SettingsList.ItemText
+            style={[
+              a.flex_1,
+              {paddingHorizontal: 0},
+              a.text_xs,
+              a.font_semi_bold,
+              t.atoms.text_contrast_medium,
+            ]}>
+            CAPABILITY
+          </SettingsList.ItemText>
+          <SettingsList.ItemText
+            style={[
+              a.flex_1,
+              {paddingHorizontal: 0},
+              a.text_xs,
+              a.font_semi_bold,
+              t.atoms.text_contrast_medium,
+            ]}>
+            CURRENT SOURCE
+          </SettingsList.ItemText>
+          <SettingsList.ItemText
+            style={[
+              a.flex_1,
+              {paddingHorizontal: 0},
+              a.text_xs,
+              a.font_semi_bold,
+              t.atoms.text_contrast_medium,
+            ]}>
+            STATE
+          </SettingsList.ItemText>
+          <View style={{width: 66}} />
+        </View>
+      )}
+
+      {rows.map(row => (
+        <View
+          key={row.id}
+          testID={`service-workbench-row-${row.id}`}
+          style={[
+            a.flex_row,
+            a.align_start,
+            a.gap_sm,
+            compact && a.flex_wrap,
+            a.border_t,
+            a.py_sm,
+            t.atoms.border_contrast_low,
+          ]}>
+          <View
+            style={[compact ? a.w_full : a.flex_1, {minWidth: 0}, a.gap_2xs]}>
+            <SettingsList.ItemText
+              style={[{paddingHorizontal: 0}, a.font_semi_bold]}>
+              {row.label}
+            </SettingsList.ItemText>
+            <SettingsList.ItemText
+              style={[
+                {paddingHorizontal: 0},
+                a.text_xs,
+                t.atoms.text_contrast_medium,
+              ]}>
+              {row.detail}
+            </SettingsList.ItemText>
+          </View>
+          <View style={[compact ? a.w_full : a.flex_1, {minWidth: 0}]}>
+            <SettingsList.ItemText
+              selectable
+              style={[
+                {paddingHorizontal: 0},
+                a.text_xs,
+                t.atoms.text_contrast_medium,
+              ]}>
+              {row.provider}
+            </SettingsList.ItemText>
+          </View>
+          <View style={[a.flex_1, {minWidth: 0}]}>
+            <View
+              style={[
+                a.self_start,
+                a.border,
+                a.px_xs,
+                a.py_2xs,
+                t.atoms.border_contrast_low,
+              ]}>
+              <SettingsList.ItemText
+                style={[{paddingHorizontal: 0}, a.text_xs, a.font_semi_bold]}>
+                {row.state}
+              </SettingsList.ItemText>
+            </View>
+          </View>
+          <View style={{width: 66, alignItems: 'flex-end'}}>
+            <Button
+              label={`Inspect ${row.label} service`}
+              size="small"
+              color="secondary"
+              variant="outline"
+              shape="rectangular"
+              onPress={() => onInspect(row.section)}>
+              <ButtonText>Inspect</ButtonText>
+            </Button>
+          </View>
+        </View>
+      ))}
+    </View>
+  )
+}
+
 export function ServicesSettingsScreen({route}: Props) {
   const {currentAccount} = useSession()
   const {_} = useLingui()
   const t = useTheme()
-  const {gtMobile} = useBreakpoints()
+  const {gtMobile, gtTablet} = useBreakpoints()
   const {switchAppViewProvider, upgradeOAuthFeature} = useSessionApi()
   const [providers, setProviders] = useState<AppViewProvider[]>(() =>
     getAppViewProviders(),
@@ -537,6 +708,113 @@ export function ServicesSettingsScreen({route}: Props) {
     section => section.id === activeSection,
   )!
   const activeInspector = SERVICES_INSPECTOR_COPY[activeSection]
+  const feedProviderSources = describeProviderSources(
+    getAppViewProvidersForSurface('feeds'),
+  )
+  const notificationProviderSources = describeProviderSources(
+    getAppViewProvidersForSurface('notifications'),
+  )
+  const labelProviderSources = describeProviderSources(
+    getAppViewProvidersForSurface('labels'),
+  )
+  const searchProviderSources = describeProviderSources(
+    getAppViewProvidersForSurface('search'),
+  )
+  const serviceWorkbenchRows: ServiceWorkbenchRow[] = [
+    {
+      id: 'identity',
+      label: 'Identity',
+      provider: currentAccount?.did ?? 'No active account',
+      state: currentAccount ? 'Active' : 'Not signed in',
+      detail: `DID-backed account; ${identityPolicy.mode} resolver policy`,
+      section: 'identity',
+    },
+    {
+      id: 'pds',
+      label: 'Personal Data Server',
+      provider: currentAccount?.pdsUrl ?? 'No repository PDS',
+      state: currentAccount?.pdsUrl ? 'Write host' : 'Unavailable',
+      detail:
+        'Account records, writes, and profile media remain on the account host.',
+      section: 'overview',
+    },
+    {
+      id: 'appview',
+      label: 'AppView reads',
+      provider: selectedProvider?.displayName ?? 'No provider selected',
+      state: selectedProvider ? 'Active' : 'Not selected',
+      detail: selectedProvider?.endpoint ?? 'Choose an explicit read provider.',
+      section: 'providers',
+    },
+    {
+      id: 'feeds',
+      label: 'Feeds',
+      provider: feedProviderSources.provider,
+      state: feedProviderSources.state,
+      detail: 'Feed results retain source and reconciliation state.',
+      section: 'providers',
+    },
+    {
+      id: 'moderation-reach',
+      label: 'Moderation & Reach',
+      provider: labelProviderSources.provider,
+      state: 'Local policy',
+      detail:
+        'Labels are claims; local rules decide warning, hiding, or ranking.',
+      section: 'policies',
+    },
+    {
+      id: 'search',
+      label: 'Search',
+      provider: searchProviderSources.provider,
+      state: searchProviderSources.state,
+      detail: 'Search results remain attributable to their read provider.',
+      section: 'providers',
+    },
+    {
+      id: 'notifications',
+      label: 'Notifications',
+      provider: notificationProviderSources.provider,
+      state: notificationProviderSources.state,
+      detail:
+        'Account-scoped reads use an explicit authenticated provider boundary.',
+      section: 'authorization',
+    },
+    {
+      id: 'authorization',
+      label: 'Authorization',
+      provider: currentAccount?.service ?? 'No login service',
+      state: currentAccount ? 'Delegated' : 'Not signed in',
+      detail:
+        'Feature-scoped session permissions can be inspected and upgraded.',
+      section: 'authorization',
+    },
+    {
+      id: 'media',
+      label: 'Media',
+      provider: currentAccount?.pdsUrl ?? 'Account PDS',
+      state: currentAccount?.pdsUrl ? 'Boundary-owned' : 'Unavailable',
+      detail: PROVIDER_SURFACE_DETAILS.media.description,
+      section: 'policies',
+    },
+    {
+      id: 'communities',
+      label: 'Communities',
+      provider: 'Spaces transport and community authority',
+      state: 'Boundary-owned',
+      detail: PROVIDER_SURFACE_DETAILS.communities.description,
+      section: 'policies',
+    },
+    {
+      id: 'exit-backups',
+      label: 'Exit & backups',
+      provider: 'Local account controls',
+      state: 'Available',
+      detail:
+        'Export repository data and portable policy without exporting credentials.',
+      section: 'identity',
+    },
+  ]
   const activeState =
     activeSection === 'overview'
       ? `${providers.length} registered read provider${providers.length === 1 ? '' : 's'}; ${selectedProvider?.displayName ?? 'no provider selected'}`
@@ -754,6 +1032,13 @@ export function ServicesSettingsScreen({route}: Props) {
                       <SettingsList.BadgeText>
                         {selectedProvider?.displayName ?? 'Not selected'}
                       </SettingsList.BadgeText>
+                    </SettingsList.Item>
+                    <SettingsList.Item>
+                      <ServiceWorkbenchMatrix
+                        rows={serviceWorkbenchRows}
+                        onInspect={setActiveSection}
+                        compact={!gtTablet}
+                      />
                     </SettingsList.Item>
                     <SettingsList.Item>
                       <View style={[a.flex_1, a.gap_sm]}>
