@@ -12,7 +12,6 @@ import {
   createSpaceCredentialSession,
 } from '#/lib/atproto/spaces'
 import {
-  type CommunityDirectoryComposition,
   type CommunityDirectoryEntry,
   type CommunityDirectorySource,
   composeCommunityDirectory,
@@ -22,6 +21,7 @@ import {
   type SpaceFanoutRecord,
 } from '#/lib/atproto/spaces/fanout'
 import {writePrivateTextPost} from '#/lib/permissioned-data'
+import {type ProviderCompositionResult} from '#/lib/provider-composition'
 import {
   type CommonNavigatorParams,
   type NavigationProp,
@@ -36,6 +36,7 @@ import {OAuthFeatureAccessPrompt} from '#/components/AuthorizationProvenance'
 import {Button, ButtonText} from '#/components/Button'
 import * as Layout from '#/components/Layout'
 import {Link} from '#/components/Link'
+import {getProviderCompositionFromError} from '#/components/ProviderCompositionProvenance'
 import {H1, H2, H3, Text} from '#/components/Typography'
 import {SPACES_ALPHA_ENABLED} from '#/env'
 import {us} from '#/lexicons'
@@ -556,6 +557,9 @@ export function CommunityBoardScreen({route}: Props) {
     })
   }, [client.did, communityFilter, communitySearch, orderedCommunities, space])
   const boardIndexUnavailable = communitySpacesQuery.isError && !community
+  const directoryComposition =
+    communitySpacesQuery.data?.composition ??
+    getProviderCompositionFromError(communitySpacesQuery.error)
   const spaceAuthority =
     community?.authorityDid || parseSpaceAuthoritySafe(space)
   const isOwner = community?.ownerDid === client.did
@@ -784,9 +788,19 @@ export function CommunityBoardScreen({route}: Props) {
                   </Text>
                 ) : boardIndexUnavailable ? (
                   <View style={{gap: 8}}>
+                    {directoryComposition ? (
+                      <CommunityDirectoryEvidence
+                        composition={directoryComposition}
+                        colors={colors}
+                        onRefresh={() => void refreshCommunityIndex()}
+                        refreshing={communitySpacesQuery.isFetching}
+                      />
+                    ) : null}
                     <Text style={{color: colors.secondary}}>
                       Communities are unavailable or not authorized on this PDS.
-                      Refresh the session and try again.
+                      The source observations above explain which directory
+                      reads answered or failed. Refresh the session and try
+                      again.
                     </Text>
                     <Button
                       label="Refresh community index"
@@ -805,10 +819,12 @@ export function CommunityBoardScreen({route}: Props) {
                   </View>
                 ) : visibleCommunities.length ? (
                   <View style={{gap: 6}}>
-                    {communitySpacesQuery.data?.composition ? (
+                    {directoryComposition ? (
                       <CommunityDirectoryEvidence
-                        composition={communitySpacesQuery.data.composition}
+                        composition={directoryComposition}
                         colors={colors}
+                        onRefresh={() => void refreshCommunityIndex()}
+                        refreshing={communitySpacesQuery.isFetching}
                       />
                     ) : null}
                     {visibleCommunities.map(item => {
@@ -873,10 +889,12 @@ export function CommunityBoardScreen({route}: Props) {
                   </View>
                 ) : (
                   <View style={{gap: 6}}>
-                    {communitySpacesQuery.data?.composition ? (
+                    {directoryComposition ? (
                       <CommunityDirectoryEvidence
-                        composition={communitySpacesQuery.data.composition}
+                        composition={directoryComposition}
                         colors={colors}
+                        onRefresh={() => void refreshCommunityIndex()}
+                        refreshing={communitySpacesQuery.isFetching}
                       />
                     ) : null}
                     <Text style={{color: colors.secondary}}>
@@ -2119,9 +2137,13 @@ function InfoChip({label, colors}: {label: string; colors: ForumColors}) {
 function CommunityDirectoryEvidence({
   composition,
   colors,
+  onRefresh,
+  refreshing = false,
 }: {
-  composition: CommunityDirectoryComposition['composition']
+  composition: ProviderCompositionResult<unknown>
   colors: ForumColors
+  onRefresh?: () => void
+  refreshing?: boolean
 }) {
   const hasConflict =
     composition.status === 'disagreement' || composition.status === 'partial'
@@ -2155,6 +2177,9 @@ function CommunityDirectoryEvidence({
       <Text style={[metaStyle(colors), {color: colors.secondary}]}>
         Each row is a source observation. The list remains a local merge, not a
         claim that one provider owns the community.
+      </Text>
+      <Text style={metaStyle(colors)}>
+        Reconciliation: {communityReconciliationLabel(composition)}
       </Text>
       {composition.observations.map((observation, index) => {
         const endpoint = observation.provider.endpoint.startsWith('http')
@@ -2205,6 +2230,12 @@ function CommunityDirectoryEvidence({
           ? `Selected source${composition.selectedProviderIds.length === 1 ? '' : 's'}: ${composition.selectedProviderIds.join(', ')}`
           : 'No source was selected under the current reconciliation policy.'}
       </Text>
+      <Text style={metaStyle(colors)}>
+        Operator control:{' '}
+        {composition.independence === 'declared-distinct'
+          ? 'distinct operator IDs declared; independent control is not proven'
+          : 'not established'}
+      </Text>
       {hasConflict ? (
         <Text
           style={[metaStyle(colors), {color: colors.accent, paddingTop: 3}]}>
@@ -2212,8 +2243,37 @@ function CommunityDirectoryEvidence({
           disagreement or an outage remains visible above.
         </Text>
       ) : null}
+      {onRefresh ? (
+        <Button
+          label="Refresh community directory evidence"
+          size="small"
+          color="secondary"
+          variant="outline"
+          shape="rectangular"
+          disabled={refreshing}
+          onPress={onRefresh}>
+          <ButtonText>
+            {refreshing ? 'Refreshing…' : 'Refresh sources'}
+          </ButtonText>
+        </Button>
+      ) : null}
     </View>
   )
+}
+
+function communityReconciliationLabel(
+  composition: ProviderCompositionResult<unknown>,
+): string {
+  switch (composition.policy.mode) {
+    case 'require-agreement':
+      return 'require agreement'
+    case 'first-verified':
+      return 'use first verified result'
+    case 'prefer-provider':
+      return `prefer ${composition.policy.preferredProviderId ?? 'provider not specified'}`
+    case 'merge':
+      return 'merge attributable directory results'
+  }
 }
 
 function StatusNotice({
