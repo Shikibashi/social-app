@@ -819,7 +819,7 @@ that its CDN or AppView delivery path is independently authoritative.
 | Targeted formatting and lint | PASS | Prettier and Oxlint passed for all changed TypeScript/TSX files |
 | Web TypeScript | PASS | `pnpm run typecheck:web` |
 | Production-shaped web export | PASS | `pnpm run build-web`; completed with existing bundle-size warnings |
-| Public browser verification | PENDING | The rebuilt artifact is ready for the next Wrangler deployment and canonical in-app-browser check |
+| Public browser verification | PASS | Wrangler deployment `https://f01fb7c9.social-edriffles.pages.dev`; canonical `https://plumblines.uk/?deployment=f01fb7c9` rendered `Following — Plumbline` with four feed Source / Rule / State summaries and no page alerts; the profile route rendered identity and profile-provider summaries, posts, and Plumbline favicon links |
 
 This iteration improves disclosure at an existing boundary. It does not
 claim authenticated write verification, independent PLC operator control, or
