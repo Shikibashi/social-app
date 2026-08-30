@@ -1,6 +1,6 @@
 import {useLingui} from '@lingui/react/macro'
 
-import {BSKY_APP_HOST, toShortUrl} from '#/lib/strings/url-helpers'
+import {toShareUrl, toShortUrl} from '#/lib/strings/url-helpers'
 import {app, chat} from '#/lexicons'
 import * as bsky from '#/types/bsky'
 
@@ -54,7 +54,7 @@ export function useReplyPreviewText(): (
         bsky.isType(chat.bsky.group.defs.joinLinkPreviewView, joinLinkPreview)
       ) {
         return {
-          text: `${BSKY_APP_HOST}/chat/${joinLinkPreview.code}`,
+          text: toShareUrl(`/chat/${joinLinkPreview.code}`),
           subtle: true,
         }
       }

@@ -9,12 +9,14 @@ import {startUriToStarterPackUri} from '#/lib/strings/starter-pack'
 import {logger} from '#/logger'
 
 export const BSKY_APP_HOST = 'https://bsky.app'
+export const PLUMBLINE_APP_HOST = 'https://plumblines.uk'
 export const BSKY_HOSTING_ENDSWITH = '.host.bsky.network'
 const BSKY_TRUSTED_HOSTS = [
   'bsky\\.app',
   'bsky\\.social',
   'blueskyweb\\.xyz',
   'blueskyweb\\.zendesk\\.com',
+  'plumblines\\.uk',
   ...(__DEV__ ? ['localhost:19006', 'localhost:8100'] : []),
 ]
 
@@ -137,7 +139,16 @@ export function isBlueskyHostedUrl(url: string): boolean {
 }
 
 export function isBskyAppUrl(url: string): boolean {
-  return url.startsWith('https://bsky.app/')
+  try {
+    const {origin} = new URL(url)
+    return (
+      origin === BSKY_APP_HOST ||
+      origin === PLUMBLINE_APP_HOST ||
+      origin === getRuntimePublicWebOrigin()
+    )
+  } catch {
+    return false
+  }
 }
 
 export function isRelativeUrl(url: string): boolean {

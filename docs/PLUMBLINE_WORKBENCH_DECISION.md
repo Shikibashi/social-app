@@ -100,7 +100,38 @@ The client commit for this iteration is `dca8068f2`, pushed to
 `fork/codex/spaces-alpha-integration`. It does not alter ATProto namespaces,
 provider endpoints, account-PDS writes, or the external evidence gates.
 
-## 10. Remaining concentrations worth attacking next
+## 10. Iteration 4 — canonical chat links and app-icon identity
+
+The chat invite surface now uses the runtime Plumbline origin for copied invite
+links and reply previews. The shared URL boundary recognizes both canonical
+Plumbline application paths and reference `bsky.app` paths, so existing links
+remain interoperable while new links do not silently return users to the
+reference client. The app-icon settings surface now calls its internal icon set
+“Plumbline variants” and removes the remaining user-facing “Bluesky+” and
+“Bluesky Classic” labels; technical package and asset identifiers remain
+unchanged.
+
+### Implementation and verification evidence
+
+- `src/lib/strings/url-helpers.ts` accepts exact reference and canonical app
+  origins for post, feed, list, starter-pack, RSS, and chat-path recognition,
+  while rejecting lookalike hosts and preserving external HTTP(S) behavior.
+- `src/components/dms/ChatInvite/Root.tsx`,
+  `src/screens/Messages/components/InviteLinkDialog.tsx`, and
+  `src/components/dms/replyPreview.ts` use the shared runtime-origin helper.
+- `src/screens/Settings/AppIconSettings/` uses Plumbline terminology for the
+  visible variant group; native icon IDs and files remain compatible.
+- URL-helper tests pass 4/4, targeted Oxlint and Prettier pass, and
+  `pnpm run typecheck:web` passes.
+- `pnpm run build-web` completed with the existing bundle-size warnings; the
+  resulting export uses the Plumbline title, mark, metadata, and canonical
+  share origin.
+
+This iteration does not rename ATProto protocol namespaces or external provider
+identifiers. A visible provider name such as Bluesky remains when it identifies
+an external service or reference URL rather than Plumbline product branding.
+
+## 11. Remaining concentrations worth attacking next
 
 1. Add a compatible, independently attributable media delivery composition contract only if it can preserve PDS blob authority and safe browser delivery; do not treat a CDN URL as a second authoritatively owned record.
 2. Add credentialed multi-provider browser fixtures for revoked grants, migration, block boundaries, and partial service support without using production credentials.

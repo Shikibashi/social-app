@@ -40,7 +40,7 @@ export function useAppIconSets() {
     ] satisfies AppIconSet[]
 
     /**
-     * Bluesky+
+     * Plumbline variants.
      */
     const core = [
       {
@@ -164,7 +164,7 @@ export function useAppIconSets() {
         name: _(
           msg({
             context: 'Name of app icon variant',
-            message: 'Bluesky Classic™',
+            message: 'Plumbline Classic',
           }),
         ),
         iosImage: () => {
