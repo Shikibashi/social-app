@@ -84,6 +84,7 @@ export function DesktopFeeds() {
         return (
           <FeedItem
             key={feedInfo.uri}
+            index={index}
             feedInfo={feedInfo}
             current={current}
             onPress={() => {
@@ -109,7 +110,7 @@ export function DesktopFeeds() {
           a.align_center,
           a.gap_sm,
           a.self_start,
-          a.rounded_sm,
+          web({borderRadius: 1}),
           {paddingVertical: 6, paddingHorizontal: 8},
           route.name === 'Feeds' && {backgroundColor: t.palette.primary_50},
         ]}>
@@ -121,7 +122,7 @@ export function DesktopFeeds() {
                 style={[
                   a.align_center,
                   a.justify_center,
-                  a.rounded_xs,
+                  web({borderRadius: 1}),
                   isActive
                     ? {backgroundColor: t.palette.primary_100}
                     : t.atoms.bg_contrast_50,
@@ -161,10 +162,12 @@ export function DesktopFeeds() {
 }
 
 function FeedItem({
+  index,
   feedInfo,
   current,
   onPress,
 }: {
+  index: number
   feedInfo: SavedFeedSourceInfo
   current: boolean
   onPress: () => void
@@ -183,6 +186,8 @@ function FeedItem({
       accessibilityRole="link"
       accessibilityLabel={feedInfo.displayName}
       accessibilityHint={_(msg`Opens ${feedInfo.displayName} feed`)}
+      accessibilityState={{selected: current}}
+      testID={`plumbline-feed-${index}`}
       onPress={onPress}
       onHoverIn={onHoverIn}
       onHoverOut={onHoverOut}
@@ -191,7 +196,7 @@ function FeedItem({
         a.align_center,
         a.gap_sm,
         a.self_start,
-        a.rounded_sm,
+        web({borderRadius: 1}),
         {paddingVertical: 6, paddingHorizontal: 8},
         current && {backgroundColor: t.palette.primary_50},
       ]}>
@@ -200,7 +205,7 @@ function FeedItem({
           style={[
             a.align_center,
             a.justify_center,
-            a.rounded_xs,
+            web({borderRadius: 1}),
             {
               width: 20,
               height: 20,

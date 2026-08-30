@@ -1,11 +1,13 @@
 import {useEffect, useState} from 'react'
-import {View} from 'react-native'
+import {StyleSheet, View} from 'react-native'
 import {msg} from '@lingui/core/macro'
 import {useLingui} from '@lingui/react'
 import {useNavigation} from '@react-navigation/native'
 
 import {FEEDBACK_FORM_URL, HELP_DESK_URL} from '#/lib/constants'
+import {usePinnedFeedsInfos} from '#/state/queries/feed'
 import {useSession} from '#/state/session'
+import {useSelectedFeed} from '#/state/shell/selected-feed'
 import {DesktopFeeds} from '#/view/shell/desktop/Feeds'
 import {DesktopSearch} from '#/view/shell/desktop/Search'
 import {SidebarTrendingTopics} from '#/view/shell/desktop/SidebarTrendingTopics'
@@ -82,6 +84,7 @@ export function DesktopRightNav({routeName}: {routeName: string}) {
           maxHeight: '100vh',
         }),
       ]}>
+      <DesktopWorkbenchInspector routeName={routeName} />
       {!isSearchScreen && <DesktopSearch />}
 
       {hasSession && (
@@ -139,3 +142,204 @@ export function DesktopRightNav({routeName}: {routeName: string}) {
     </View>
   )
 }
+
+type WorkbenchInspectorContext = {
+  route: string
+  source: string
+  rule: string
+  control: string
+  href: string
+  action: string
+}
+
+function DesktopWorkbenchInspector({routeName}: {routeName: string}) {
+  const {_} = useLingui()
+  const t = useTheme()
+  const {data: pinnedFeeds} = usePinnedFeedsInfos()
+  const selectedFeed = useSelectedFeed()
+  const activeFeed =
+    pinnedFeeds?.find(feed => feed.feedDescriptor === selectedFeed) ??
+    pinnedFeeds?.[0]
+
+  let context: WorkbenchInspectorContext
+  switch (routeName) {
+    case 'Home':
+      context = {
+        route: activeFeed?.displayName || _(msg`Selected feed`),
+        source: activeFeed?.creatorHandle
+          ? `@${activeFeed.creatorHandle}`
+          : _(msg`Configured read provider`),
+        rule: _(msg`Pinned feed choice; feed ordering is provider-defined`),
+        control: _(msg`Choose, compare, or remove feeds`),
+        href: '/feeds',
+        action: _(msg`Open feed settings`),
+      }
+      break
+    case 'Profile':
+      context = {
+        route: _(msg`Profile`),
+        source: _(msg`Account PDS and selected read providers`),
+        rule: _(msg`Profile record, identity resolution, and local moderation`),
+        control: _(msg`Inspect providers and identity evidence`),
+        href: '/settings/services',
+        action: _(msg`Open Services`),
+      }
+      break
+    case 'PostThread':
+      context = {
+        route: _(msg`Post thread`),
+        source: _(msg`Author repository and thread read providers`),
+        rule: _(msg`Thread composition and local moderation rules`),
+        control: _(msg`Compare providers or change local rules`),
+        href: '/settings/services',
+        action: _(msg`Inspect providers`),
+      }
+      break
+    case 'Moderation':
+    case 'ModerationInbox':
+      context = {
+        route: _(msg`Moderation & Reach`),
+        source: _(msg`Labelers and attributable assertions`),
+        rule: _(msg`Your moderation and reach policy`),
+        control: _(msg`Change the client action without erasing the source`),
+        href: '/moderation',
+        action: _(msg`Open Moderation & Reach`),
+      }
+      break
+    case 'ServicesSettings':
+    case 'IdentitySovereigntySettings':
+      context = {
+        route: _(msg`Services`),
+        source: _(msg`Declared providers and identity services`),
+        rule: _(msg`User-selected capability and reconciliation policy`),
+        control: _(msg`Inspect, change, export, or reset a boundary`),
+        href: '/settings/services',
+        action: _(msg`Open service workbench`),
+      }
+      break
+    case 'Search':
+      context = {
+        route: _(msg`Search`),
+        source: _(msg`Selected search provider`),
+        rule: _(msg`Query and provider reconciliation policy`),
+        control: _(msg`Change the read provider in Services`),
+        href: '/settings/services',
+        action: _(msg`Change search provider`),
+      }
+      break
+    case 'Feeds':
+      context = {
+        route: _(msg`Feeds`),
+        source: _(msg`Feed generators, lists, and account preferences`),
+        rule: _(msg`Saved-feed order and moderation policy`),
+        control: _(msg`Pin, reorder, compare, or remove`),
+        href: '/feeds',
+        action: _(msg`Configure feeds`),
+      }
+      break
+    default:
+      context = {
+        route: routeName,
+        source: _(msg`Current surface providers`),
+        rule: _(msg`Configured local policy`),
+        control: _(msg`Inspect the service boundary`),
+        href: '/settings/services',
+        action: _(msg`Inspect Services`),
+      }
+  }
+
+  return (
+    <View
+      accessibilityRole="summary"
+      accessibilityLabel={_(msg`Workbench inspector`)}
+      accessibilityHint={_(
+        msg`Shows the provider, rule, and control for this surface`,
+      )}
+      testID="plumbline-workbench-inspector"
+      style={[
+        styles.inspector,
+        t.atoms.bg,
+        t.atoms.border_contrast_low,
+        web({borderRadius: 1}),
+      ]}>
+      <Text accessibilityRole="header" style={styles.inspectorTitle}>
+        {_(msg`Inspector`)}
+      </Text>
+      <Text
+        testID="plumbline-workbench-inspector-route"
+        style={[styles.inspectorRoute, t.atoms.text]}>
+        {context.route}
+      </Text>
+      <InspectorDetail
+        testID="plumbline-workbench-inspector-source"
+        label={_(msg`Source`)}
+        value={context.source}
+      />
+      <InspectorDetail
+        testID="plumbline-workbench-inspector-rule"
+        label={_(msg`Rule`)}
+        value={context.rule}
+      />
+      <InspectorDetail
+        testID="plumbline-workbench-inspector-control"
+        label={_(msg`Control`)}
+        value={context.control}
+      />
+      <InlineLinkText
+        to={context.href}
+        label={context.action}
+        style={[styles.inspectorAction, t.atoms.text_link]}>
+        {context.action}
+      </InlineLinkText>
+    </View>
+  )
+}
+
+function InspectorDetail({
+  testID,
+  label,
+  value,
+}: {
+  testID: string
+  label: string
+  value: string
+}) {
+  return (
+    <Text testID={testID} style={styles.inspectorDetail}>
+      <Text style={styles.inspectorLabel}>{label}: </Text>
+      {value}
+    </Text>
+  )
+}
+
+const styles = StyleSheet.create({
+  inspector: {
+    borderWidth: 1,
+    padding: 10,
+    gap: 4,
+  },
+  inspectorTitle: {
+    fontSize: 12,
+    fontWeight: '700',
+    letterSpacing: 0.8,
+    textTransform: 'uppercase',
+  },
+  inspectorRoute: {
+    fontSize: 15,
+    fontWeight: '700',
+    paddingBottom: 2,
+  },
+  inspectorDetail: {
+    fontSize: 12,
+    lineHeight: 16,
+  },
+  inspectorLabel: {
+    fontWeight: '700',
+  },
+  inspectorAction: {
+    alignSelf: 'flex-start',
+    fontSize: 12,
+    fontWeight: '700',
+    marginTop: 2,
+  },
+})
