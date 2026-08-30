@@ -646,6 +646,7 @@ export function DesktopLeftNav({routeName}: {routeName: string}) {
   return (
     <View
       role="navigation"
+      testID="plumbline-left-nav"
       style={[
         a.fixed,
         a.top_0,

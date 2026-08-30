@@ -64,6 +64,7 @@ export function DesktopRightNav({routeName}: {routeName: string}) {
 
   return (
     <View
+      testID="plumbline-right-nav"
       style={[
         gutters,
         a.gap_lg,
@@ -183,6 +184,58 @@ function DesktopWorkbenchInspector({routeName}: {routeName: string}) {
         control: _(msg`Inspect providers and identity evidence`),
         href: '/settings/services',
         action: _(msg`Open Services`),
+      }
+      break
+    case 'ProfileFollowers':
+      context = {
+        route: _(msg`Followers`),
+        source: _(msg`Profile record and graph read provider`),
+        rule: _(msg`Follow records with local moderation and block boundaries`),
+        control: _(msg`Compare providers or inspect the profile record`),
+        href: '/settings/services',
+        action: _(msg`Inspect graph providers`),
+      }
+      break
+    case 'ProfileFollows':
+      context = {
+        route: _(msg`Following`),
+        source: _(msg`Profile record and graph read provider`),
+        rule: _(msg`Follow records with local moderation and block boundaries`),
+        control: _(msg`Compare providers or inspect the profile record`),
+        href: '/settings/services',
+        action: _(msg`Inspect graph providers`),
+      }
+      break
+    case 'ProfileKnownFollowers':
+      context = {
+        route: _(msg`Followers you know`),
+        source: _(msg`Profile graph and viewer relationship provider`),
+        rule: _(
+          msg`Known relationship results with local moderation and blocks`,
+        ),
+        control: _(msg`Compare providers or inspect the profile record`),
+        href: '/settings/services',
+        action: _(msg`Inspect graph providers`),
+      }
+      break
+    case 'ProfileLabelerLikedBy':
+      context = {
+        route: _(msg`Labeler liked by`),
+        source: _(msg`Labeler service record and engagement read provider`),
+        rule: _(msg`Like records with local moderation and block boundaries`),
+        control: _(msg`Compare providers or inspect the labeler record`),
+        href: '/settings/services',
+        action: _(msg`Inspect engagement providers`),
+      }
+      break
+    case 'ProfileList':
+      context = {
+        route: _(msg`List`),
+        source: _(msg`List record and selected read provider`),
+        rule: _(msg`List purpose, member records, and local moderation`),
+        control: _(msg`Compare providers or inspect the list record`),
+        href: '/settings/services',
+        action: _(msg`Inspect list providers`),
       }
       break
     case 'PostThread':

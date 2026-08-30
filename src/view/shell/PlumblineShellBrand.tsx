@@ -39,6 +39,7 @@ export function PlumblineShellBrand({
               {
                 fontFamily: 'Georgia, "Times New Roman", serif',
                 letterSpacing: 0.3,
+                textTransform: 'uppercase',
               },
             ]}>
             {PRODUCT_NAME}
@@ -57,7 +58,22 @@ export function PlumblineShellBrand({
               textTransform: 'uppercase',
             },
           ]}>
-          Seamful Hypertext Workbench
+          Social client for the open web
+        </Text>
+      )}
+      {!minimal && (
+        <Text
+          numberOfLines={1}
+          style={[
+            a.text_xs,
+            t.atoms.text_contrast_medium,
+            {
+              fontFamily: 'Courier New, "Liberation Mono", monospace',
+              letterSpacing: 0.6,
+              textTransform: 'uppercase',
+            },
+          ]}>
+          Align · Inspect · Understand
         </Text>
       )}
     </View>

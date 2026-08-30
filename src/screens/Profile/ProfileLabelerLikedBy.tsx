@@ -18,7 +18,7 @@ export function ProfileLabelerLikedByScreen({
   const {_} = useLingui()
 
   return (
-    <Layout.Screen>
+    <Layout.Screen ecwMode="workbench">
       <ViewHeader title={_(msg`Liked By`)} />
       <LikedByList uri={uri} />
     </Layout.Screen>

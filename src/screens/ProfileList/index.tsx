@@ -2,7 +2,6 @@ import {useCallback, useMemo, useRef, useState} from 'react'
 import {View} from 'react-native'
 import {useAnimatedRef} from 'react-native-reanimated'
 import {AtUri} from '@atproto/syntax'
-import {moderateUserList, type ModerationOpts} from '#/lib/moderation'
 import {msg} from '@lingui/core/macro'
 import {useLingui} from '@lingui/react'
 import {Trans} from '@lingui/react/macro'
@@ -11,6 +10,7 @@ import {useQueryClient} from '@tanstack/react-query'
 
 import {useOpenComposer} from '#/lib/hooks/useOpenComposer'
 import {useSetTitle} from '#/lib/hooks/useSetTitle'
+import {moderateUserList, type ModerationOpts} from '#/lib/moderation'
 import {
   type CommonNavigatorParams,
   type NativeStackScreenProps,
@@ -51,7 +51,7 @@ interface SectionRef {
 type Props = NativeStackScreenProps<CommonNavigatorParams, 'ProfileList'>
 export function ProfileListScreen(props: Props) {
   return (
-    <Layout.Screen testID="profileListScreen">
+    <Layout.Screen testID="profileListScreen" ecwMode="workbench">
       <ProfileListScreenInner {...props} />
     </Layout.Screen>
   )

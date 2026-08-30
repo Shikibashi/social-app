@@ -39,7 +39,7 @@
     body {
       margin: 0px;
       padding: 0px;
-      font-family: InterVariable, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Liberation Sans', Helvetica, Arial, sans-serif;
+      font-family: Verdana, 'DejaVu Sans', Tahoma, 'Noto Sans', Arial, sans-serif;
       text-rendering: optimizeLegibility;
       /* Platform-specific reset */
       -webkit-overflow-scrolling: touch;
@@ -50,24 +50,24 @@
       font-synthesis-weight: none;
     }
     :root {
-      --text: #f9f3ff;
-      --background: #050719;
-      --backgroundLight: #12144b;
+      --text: #f6f4ef;
+      --background: #0b1020;
+      --backgroundLight: #202b43;
     }
     @media (prefers-color-scheme: dark) {
       :root {
         color-scheme: dark;
-        --text: #f9f3ff;
-        --background: #050719;
-        --backgroundLight: #12144b;
+        --text: #f6f4ef;
+        --background: #0b1020;
+        --backgroundLight: #202b43;
       }
     }
     @media (prefers-color-scheme: light) {
       :root {
         color-scheme: light;
-        --text: #11132d;
-        --background: #d6d9e8;
-        --backgroundLight: #f4f3eb;
+        --text: #151f3a;
+        --background: #d5d8de;
+        --backgroundLight: #f6f4ef;
       }
     }
     html,
@@ -81,28 +81,28 @@
     html.theme--light,
     html.theme--light body,
     html.theme--light #root {
-      background-color: #d6d9e8;
-      --text: #11132d;
-      --background: #d6d9e8;
-      --backgroundLight: #f4f3eb;
+      background-color: #d5d8de;
+      --text: #151f3a;
+      --background: #d5d8de;
+      --backgroundLight: #f6f4ef;
     }
     html.theme--dark,
     html.theme--dark body,
     html.theme--dark #root {
       color-scheme: dark;
-      background-color: #050719;
-      --text: #f9f3ff;
-      --background: #050719;
-      --backgroundLight: #12144b;
+      background-color: #0b1020;
+      --text: #f6f4ef;
+      --background: #0b1020;
+      --backgroundLight: #202b43;
     }
     html.theme--dim,
     html.theme--dim body,
     html.theme--dim #root {
       color-scheme: dark;
-      background-color: #0b0d20;
-      --text: #f1efff;
-      --background: #0b0d20;
-      --backgroundLight: #171a4d;
+      background-color: #101828;
+      --text: #f1eee7;
+      --background: #101828;
+      --backgroundLight: #24324b;
     }
     #splash {
       display: flex;
@@ -140,8 +140,8 @@
   <link rel="apple-touch-icon" sizes="180x180" href="{{ staticCDNHost }}/static/apple-touch-icon.png">
   <link rel="icon" type="image/png" sizes="32x32" href="{{ staticCDNHost }}/static/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="{{ staticCDNHost }}/static/favicon-16x16.png">
-  <link rel="mask-icon" href="{{ staticCDNHost }}/static/safari-pinned-tab.svg" color="#5530a3">
-  <meta name="theme-color">
+  <link rel="mask-icon" href="{{ staticCDNHost }}/static/safari-pinned-tab.svg" color="#B79A5A">
+  <meta name="theme-color" content="#d5d8de">
   <meta name="application-name" content="Plumbline">
   <meta name="generator" content="Plumbline Computer Web">
   {% if noindex %}<meta name="robots" content="noindex{% if nofollow %}, nofollow{% endif %}">{% endif %}
@@ -156,12 +156,14 @@
   <div id="splash">
     <!-- Plumbline Computer Web mark -->
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Plumbline">
-      <rect x="3" y="3" width="58" height="58" rx="12" fill="#f4f3eb" stroke="#11132d" stroke-width="3"/>
-      <circle cx="32" cy="28" r="18" fill="none" stroke="#b189ff" stroke-width="2"/>
-      <path d="M32 8v40M12 28h40" stroke="#b189ff" stroke-width="1.5"/>
-      <path d="M17 42h30l-6 9H23z" fill="#11132d"/>
-      <path d="M22 42l10-15 10 15" fill="#5530a3" stroke="#11132d" stroke-width="1.5"/>
-      <path d="M32 15v27" stroke="#ffd45c" stroke-width="2"/>
+      <rect width="64" height="64" rx="10" fill="#151F3A"/>
+      <rect x="3" y="3" width="58" height="58" rx="8" fill="none" stroke="#B79A5A" stroke-width="1"/>
+      <path d="M32 7v28" stroke="#F6F4EF" stroke-width="1.5" stroke-linecap="round"/>
+      <path d="M32 7v28" stroke="#B79A5A" stroke-width="1" stroke-linecap="round"/>
+      <path d="M29 7h6" stroke="#B79A5A" stroke-width="2" stroke-linecap="round"/>
+      <path d="M28 35h8l-1.5 4h-5z" fill="#B79A5A" stroke="#F6F4EF" stroke-width=".5"/>
+      <path d="M26 39h12l-3 6-3 14-3-14z" fill="#B79A5A" stroke="#F6F4EF" stroke-width=".75" stroke-linejoin="round"/>
+      <path d="M32 40v16" stroke="#F6F4EF" stroke-width=".8" stroke-linecap="round"/>
     </svg>
   </div>
   <div id="root">
@@ -170,7 +172,7 @@
   <noscript>
     <h1 lang="en">JavaScript Required</h1>
     <p lang="en">This is a heavily interactive web application, and JavaScript is required. Simple HTML interfaces are possible, but that is not what this is.
-    <p lang="en">Learn more about Plumbline at <a href="https://edriffles.us">edriffles.us</a> and about the AT Protocol at <a href="https://atproto.com">atproto.com</a>.
+    <p lang="en">Learn more about Plumbline at <a href="https://plumblines.uk">plumblines.uk</a> and about the AT Protocol at <a href="https://atproto.com">atproto.com</a>.
     {% block noscript_extra %}{% endblock %}
   </noscript>
 {% endblock -%}
