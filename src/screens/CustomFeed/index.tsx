@@ -9,10 +9,16 @@ import {
 import {type NativeStackScreenProps} from '@react-navigation/native-stack'
 import {useQueryClient} from '@tanstack/react-query'
 
+import {type FeedProviderProvenance} from '#/lib/api/feed/types'
 import {isBlueskyOwnedFeed} from '#/lib/api/feed/utils'
 import {TRENDING_DID, TRENDING_HANDLE, VIDEO_FEED_URIS} from '#/lib/constants'
 import {useOpenComposer} from '#/lib/hooks/useOpenComposer'
 import {useSetTitle} from '#/lib/hooks/useSetTitle'
+import {
+  type ProviderCompositionResult,
+  type ProviderCompositionStatus,
+  type ProviderIndependence,
+} from '#/lib/provider-composition'
 import {
   type AllNavigatorParams,
   type CommonNavigatorParams,
@@ -154,6 +160,15 @@ export function CustomFeedScreenInner({
 
   const [hasNew, setHasNew] = useState(false)
   const [isScrolledDown, setIsScrolledDown] = useState(false)
+  const [feedContext, setFeedContext] = useState<string>()
+  const [feedProviderProvenance, setFeedProviderProvenance] =
+    useState<FeedProviderProvenance[]>()
+  const [feedProviderCompositionStatus, setFeedProviderCompositionStatus] =
+    useState<ProviderCompositionStatus>()
+  const [feedProviderIndependence, setFeedProviderIndependence] =
+    useState<ProviderIndependence>()
+  const [feedProviderComposition, setFeedProviderComposition] =
+    useState<ProviderCompositionResult<unknown>>()
   const queryClient = useQueryClient()
   const feedFeedback = useFeedFeedback(feedInfo, hasSession)
   const scrollElRef = useAnimatedRef() as ListRef
@@ -202,6 +217,23 @@ export function CustomFeedScreenInner({
     localFeedPreferences.contentFilterPolicy?.enabled,
   )
 
+  const onFeedContext = useCallback(
+    (
+      nextFeedContext: string | undefined,
+      providerProvenance?: FeedProviderProvenance[],
+      providerCompositionStatus?: ProviderCompositionStatus,
+      providerIndependence?: ProviderIndependence,
+      providerComposition?: ProviderCompositionResult<unknown>,
+    ) => {
+      setFeedContext(nextFeedContext)
+      setFeedProviderProvenance(providerProvenance)
+      setFeedProviderCompositionStatus(providerCompositionStatus)
+      setFeedProviderIndependence(providerIndependence)
+      setFeedProviderComposition(providerComposition)
+    },
+    [],
+  )
+
   return (
     <>
       <CustomFeedHeader info={feedInfo} isTrending={isTrending} />
@@ -236,6 +268,13 @@ export function CustomFeedScreenInner({
         }
         feedOwnerDid={feedInfo.creatorDid}
         feedUri={feedInfo.uri}
+        feedContext={feedContext}
+        providerProvenance={feedProviderProvenance}
+        providerCompositionStatus={feedProviderCompositionStatus}
+        providerIndependence={feedProviderIndependence}
+        providerComposition={
+          feedProviderComposition ?? feedInfo.providerComposition
+        }
         privacy={
           radlibCurationEnabled && contentFilterEnabled
             ? 'Custom filter terms and curation state stay on this device; the selected provider supplies candidates'
@@ -267,6 +306,7 @@ export function CustomFeedScreenInner({
           localFeedPreferences={localFeedPreferences}
           radlibCuration={localFeedPreferences.radlibCuration}
           contentFilterPolicy={localFeedPreferences.contentFilterPolicy}
+          onFeedContext={onFeedContext}
           isVideoFeed={isVideoFeed}
         />
       </FeedFeedbackProvider>
