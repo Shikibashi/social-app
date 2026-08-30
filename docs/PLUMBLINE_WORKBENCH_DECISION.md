@@ -639,3 +639,50 @@ feed-state model.
 This iteration improves ordinary-view legibility of feed authority without
 claiming provider independence, cryptographic feed manifests, or completion
 of the external OAuth/Relay/AppView/PLC gates.
+
+## 26. Iteration 19 — delegated OAuth authority inspector
+
+The Authorization workbench previously exposed only feature counts and upgrade
+rows even though the existing OAuth scope ledger already distinguished posting,
+profile editing, social graph, AppView, chat, Spaces, media, and notifications.
+That presentation made delegated authority harder to inspect than provider
+authority elsewhere in the workbench.
+
+### Authority before versus after
+
+| Surface | Before iteration 19 | After iteration 19 |
+| --- | --- | --- |
+| Feature grant | Count-only row or generic upgrade action | Progressive inspector with purpose, authority, resource, audiences, exact requested/granted/missing scopes, and feature-scoped upgrade |
+| Session control | Revocation was explained in identity settings | Authorization states that the current integration revokes the whole OAuth session and exposes the existing logout action |
+| Community authorization | Spaces prompts opened Providers | Spaces prompts open Authorization, where the missing grant can be inspected and upgraded |
+
+### Implementation evidence
+
+- `src/state/session/oauth-scopes.ts` derives presentation metadata from the
+  existing scope constants and grant status. It is presentation-only and does
+  not carry credentials.
+- `src/components/AuthorizationProvenance.tsx` provides the progressive
+  disclosure seam inside the existing Services workbench. DID, service, PDS,
+  audiences, exact scope strings, purpose, status, and revocation boundary are
+  selectable/inspectable without making protocol details mandatory for normal
+  use.
+- `src/screens/Settings/ServicesSettings.tsx` reuses `upgradeOAuthFeature` and
+  `logoutCurrentAccount`; it does not invent a parallel authorization or
+  revocation mechanism.
+- `src/screens/CommunityBoardScreen.tsx` directs missing Spaces authorization
+  to the new Authorization section.
+
+### Verification
+
+| Check | Status | Evidence |
+| --- | --- | --- |
+| OAuth permission contract | PASS | `src/state/session/__tests__/oauth-scopes-test.ts` — 11 tests |
+| Targeted Prettier | PASS | All five touched TypeScript/TSX files |
+| Targeted Oxlint | PASS | All five touched TypeScript/TSX files |
+| Web TypeScript | PASS | `pnpm run typecheck:web` |
+| Production-shaped web export | PASS | `pnpm run build-web`; completed with existing bundle-size warnings |
+
+This is a UI/provenance slice, not an action-level permission enforcement
+claim. Posting, likes, profile editing, chat, and Spaces behavior remains on
+the existing compatibility path until the separate caller-level preflight
+batch is implemented and verified.

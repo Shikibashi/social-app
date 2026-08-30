@@ -149,6 +149,60 @@ export type OAuthFeatureGrant = {
   status: OAuthFeatureGrantStatus
 }
 
+export type OAuthAuthorityKind =
+  | 'account-pds'
+  | 'appview-service'
+  | 'chat-service'
+  | 'notification-service'
+  | 'permissioned-spaces'
+  | 'blob-resource'
+  | 'unknown'
+
+export type OAuthFeatureGrantPresentation = OAuthFeatureGrant & {
+  purpose: string
+  authority: OAuthAuthorityKind
+  resource: string
+  audiences: string[]
+}
+
+const OAUTH_FEATURE_PURPOSES: Record<OAuthFeature, string> = {
+  posting: 'Create, update, and delete posts, likes, and reposts.',
+  'profile-editing': 'Update the account profile record.',
+  'social-graph': 'Manage follows, blocks, mutes, lists, and starter packs.',
+  appview: 'Read account-scoped views through the selected AppView service.',
+  chat: 'Read and send direct or group messages through the chat service.',
+  spaces: 'Read and manage the account’s permissioned Spaces records.',
+  media:
+    'Upload blobs to the account’s hosting service for profile or post media.',
+  notifications: 'Read account notifications through the notification service.',
+}
+
+const OAUTH_FEATURE_AUTHORITIES: Record<
+  OAuthFeature,
+  {authority: OAuthAuthorityKind; resource: string}
+> = {
+  posting: {authority: 'account-pds', resource: 'Account PDS repository'},
+  'profile-editing': {
+    authority: 'account-pds',
+    resource: 'Account PDS repository',
+  },
+  'social-graph': {
+    authority: 'account-pds',
+    resource: 'Account PDS repository',
+  },
+  appview: {authority: 'appview-service', resource: 'AppView RPC service'},
+  chat: {authority: 'chat-service', resource: 'Chat RPC service'},
+  spaces: {
+    authority: 'permissioned-spaces',
+    resource: 'Permissioned Spaces service and records',
+  },
+  media: {authority: 'blob-resource', resource: 'Account PDS blob store'},
+  notifications: {
+    authority: 'notification-service',
+    resource: 'Notification RPC service',
+  },
+}
+
 /**
  * Describe one feature grant without treating a legacy transition permission
  * as if it were a native, least-authority grant. This is intentionally pure so
@@ -187,6 +241,44 @@ export function getOAuthFeatureGrants(
   return OAUTH_FEATURES.map(feature =>
     getOAuthFeatureGrant(grantedScopes, feature),
   )
+}
+
+/**
+ * Add human-readable authority metadata to the existing grant ledger. The
+ * scope strings remain the source of truth; this is presentation data only and
+ * deliberately contains no token, key, cookie, or other credential material.
+ */
+export function getOAuthFeatureGrantPresentations(
+  grantedScopes: string | readonly string[] | undefined,
+): OAuthFeatureGrantPresentation[] {
+  return getOAuthFeatureGrants(grantedScopes).map(grant => {
+    const {authority, resource} = OAUTH_FEATURE_AUTHORITIES[grant.feature]
+    return {
+      ...grant,
+      purpose: OAUTH_FEATURE_PURPOSES[grant.feature],
+      authority,
+      resource,
+      audiences: extractOAuthAudiences(grant.requiredScopes),
+    }
+  })
+}
+
+function extractOAuthAudiences(scopes: readonly string[]): string[] {
+  const audiences = new Set<string>()
+  for (const scope of scopes) {
+    const queryStart = scope.indexOf('?')
+    if (queryStart < 0) continue
+
+    for (const parameter of scope.slice(queryStart + 1).split('&')) {
+      const separator = parameter.indexOf('=')
+      if (separator < 0 || parameter.slice(0, separator) !== 'aud') continue
+
+      const encodedAudience = parameter.slice(separator + 1)
+      if (!encodedAudience) continue
+      audiences.add(decodeURIComponent(encodedAudience))
+    }
+  }
+  return [...audiences]
 }
 
 /**

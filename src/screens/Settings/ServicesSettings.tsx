@@ -21,10 +21,7 @@ import {
   type ServicesSettingsSection,
 } from '#/lib/routes/types'
 import {useSession, useSessionApi} from '#/state/session'
-import {
-  getOAuthFeatureGrants,
-  type OAuthFeature,
-} from '#/state/session/oauth-scopes'
+import {type OAuthFeature} from '#/state/session/oauth-scopes'
 import {
   getRegisteredPlcResolvers,
   PRIMARY_PLC_RESOLVER,
@@ -51,6 +48,7 @@ import {
 } from '#/state/session/providers'
 import * as SettingsList from '#/screens/Settings/components/SettingsList'
 import {atoms as a, useBreakpoints, useTheme} from '#/alf'
+import {AuthorizationProvenance} from '#/components/AuthorizationProvenance'
 import {Button, ButtonText} from '#/components/Button'
 import * as Layout from '#/components/Layout'
 
@@ -358,7 +356,8 @@ export function ServicesSettingsScreen({route, navigation}: Props) {
   const {_} = useLingui()
   const t = useTheme()
   const {gtMobile, gtTablet} = useBreakpoints()
-  const {switchAppViewProvider, upgradeOAuthFeature} = useSessionApi()
+  const {logoutCurrentAccount, switchAppViewProvider, upgradeOAuthFeature} =
+    useSessionApi()
   const [providers, setProviders] = useState<AppViewProvider[]>(() =>
     getAppViewProviders(),
   )
@@ -418,6 +417,21 @@ export function ServicesSettingsScreen({route, navigation}: Props) {
     } finally {
       setPendingOAuthFeature(undefined)
     }
+  }
+
+  function revokeOAuthSession() {
+    Alert.alert(
+      'Revoke OAuth session?',
+      'This signs out the current account and revokes the complete OAuth session. It does not revoke one feature independently.',
+      [
+        {text: 'Cancel', style: 'cancel'},
+        {
+          text: 'Revoke session',
+          style: 'destructive',
+          onPress: () => logoutCurrentAccount('Settings'),
+        },
+      ],
+    )
   }
 
   async function saveIdentityPolicy(policy: IdentityResolutionPolicy) {
@@ -1103,54 +1117,14 @@ export function ServicesSettingsScreen({route, navigation}: Props) {
                             </SettingsList.ItemText>
                           </View>
                         </SettingsList.Item>
-                        {getOAuthFeatureGrants(currentAccount.oauthScopes).map(
-                          grant => {
-                            const label = OAUTH_FEATURE_LABELS[grant.feature]
-                            const isPending =
-                              pendingOAuthFeature === grant.feature
-                            if (grant.status === 'granted') {
-                              return (
-                                <SettingsList.Item
-                                  key={`oauth-grant-${grant.feature}`}>
-                                  <SettingsList.ItemText>
-                                    {label}
-                                  </SettingsList.ItemText>
-                                  <SettingsList.BadgeText>
-                                    {grant.grantedScopes.length} scoped
-                                    permissions granted
-                                  </SettingsList.BadgeText>
-                                </SettingsList.Item>
-                              )
-                            }
-
-                            const actionLabel =
-                              grant.status === 'compatibility'
-                                ? `Replace compatibility authorization for ${label}`
-                                : `Authorize ${label}`
-                            const statusLabel = isPending
-                              ? 'Opening consent…'
-                              : grant.status === 'compatibility'
-                                ? 'Legacy compatibility grant; replace with scoped permissions'
-                                : `${grant.missingScopes.length} scoped permission${grant.missingScopes.length === 1 ? '' : 's'} required`
-
-                            return (
-                              <SettingsList.PressableItem
-                                key={`oauth-upgrade-${grant.feature}`}
-                                label={actionLabel}
-                                onPress={() =>
-                                  void upgradeFeature(grant.feature)
-                                }
-                                disabled={pendingOAuthFeature !== undefined}>
-                                <SettingsList.ItemText>
-                                  {label}
-                                </SettingsList.ItemText>
-                                <SettingsList.BadgeText>
-                                  {statusLabel}
-                                </SettingsList.BadgeText>
-                              </SettingsList.PressableItem>
-                            )
-                          },
-                        )}
+                        <SettingsList.Item>
+                          <AuthorizationProvenance
+                            account={currentAccount}
+                            onUpgrade={feature => void upgradeFeature(feature)}
+                            pendingFeature={pendingOAuthFeature}
+                            onRevokeSession={revokeOAuthSession}
+                          />
+                        </SettingsList.Item>
                       </>
                     ) : (
                       <SettingsList.Item>

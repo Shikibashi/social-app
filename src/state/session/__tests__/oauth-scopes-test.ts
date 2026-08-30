@@ -3,6 +3,7 @@ import {describe, expect, it} from '@jest/globals'
 import {
   getMissingOAuthScopes,
   getOAuthFeatureGrant,
+  getOAuthFeatureGrantPresentations,
   getOAuthFeatureGrants,
   getOAuthFeatureUpgradeScopes,
   getRuntimeOAuthClientMetadata,
@@ -142,6 +143,39 @@ describe('OAuth permission contract', () => {
       status: 'missing',
       missingScopes: OAUTH_SPACE_SCOPES,
     })
+  })
+
+  it('presents feature authority without exposing credentials', () => {
+    const presentations = getOAuthFeatureGrantPresentations([
+      'atproto',
+      ...OAUTH_POSTING_SCOPES,
+      ...OAUTH_FEATURE_SCOPES.appview,
+      'accessJwt:should-not-be-presented',
+    ])
+    const posting = presentations.find(
+      presentation => presentation.feature === 'posting',
+    )
+    const appview = presentations.find(
+      presentation => presentation.feature === 'appview',
+    )
+    const spaces = presentations.find(
+      presentation => presentation.feature === 'spaces',
+    )
+
+    expect(posting).toMatchObject({
+      status: 'granted',
+      purpose: 'Create, update, and delete posts, likes, and reposts.',
+      authority: 'account-pds',
+      resource: 'Account PDS repository',
+    })
+    expect(appview).toMatchObject({
+      status: 'granted',
+      authority: 'appview-service',
+      audiences: ['did:web:api.bsky.app#bsky_appview'],
+    })
+    expect(spaces).toMatchObject({status: 'missing'})
+    expect(JSON.stringify(presentations)).not.toContain('accessJwt')
+    expect(JSON.stringify(presentations)).not.toContain('refreshJwt')
   })
 
   it('keeps OAuth-native account creation explicit', () => {
