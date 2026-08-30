@@ -32,6 +32,7 @@ import {useEnsureOAuthFeature} from '#/state/session/oauth-feature-gate'
 import {hasOAuthFeature} from '#/state/session/oauth-scopes'
 import {resolvePdsEndpointForDid} from '#/state/session/pds-resolution'
 import {atoms as a, useBreakpoints, useTheme} from '#/alf'
+import {OAuthFeatureAccessPrompt} from '#/components/AuthorizationProvenance'
 import {Button, ButtonText} from '#/components/Button'
 import * as Layout from '#/components/Layout'
 import {Link} from '#/components/Link'
@@ -193,7 +194,8 @@ export function CommunityBoardScreen({route}: Props) {
 
   const communitySpacesQuery = useQuery({
     queryKey: ['radlib-community-spaces', client.did, requestedSpace],
-    enabled: !!client.did && SPACES_ALPHA_ENABLED,
+    enabled:
+      !!client.did && SPACES_ALPHA_ENABLED && !spacesAuthorizationRequired,
     queryFn: async ({signal}) => {
       const accountPdsEndpoint =
         currentAccount?.pdsUrl ??
@@ -237,13 +239,18 @@ export function CommunityBoardScreen({route}: Props) {
     },
   })
 
-  const space =
-    requestedSpace ?? communitySpacesQuery.data?.spaces[0]?.uri ?? ''
+  const space = spacesAuthorizationRequired
+    ? ''
+    : (requestedSpace ?? communitySpacesQuery.data?.spaces[0]?.uri ?? '')
   const membershipState = membershipStates[space]
 
   const communityQuery = useQuery({
     queryKey: ['radlib-community', client.did, space],
-    enabled: !!client.did && !!space && SPACES_ALPHA_ENABLED,
+    enabled:
+      !!client.did &&
+      !!space &&
+      SPACES_ALPHA_ENABLED &&
+      !spacesAuthorizationRequired,
     queryFn: async () => {
       const authorityDid = parseSpaceAuthority(space)
       const controlClient =
@@ -699,6 +706,7 @@ export function CommunityBoardScreen({route}: Props) {
                   variant="outline"
                   color="secondary"
                   shape="rectangular"
+                  disabled={spacesAuthorizationRequired}
                   onPress={() => setCreateCommunityOpen(open => !open)}>
                   <ButtonText>New community</ButtonText>
                 </Button>
@@ -761,7 +769,16 @@ export function CommunityBoardScreen({route}: Props) {
                     ))}
                   </View>
                 </View>
-                {communitySpacesQuery.isPending ? (
+                {spacesAuthorizationRequired ? (
+                  <OAuthFeatureAccessPrompt
+                    feature="spaces"
+                    onOpenServices={() =>
+                      navigation.navigate('ServicesSettings', {
+                        section: 'authorization',
+                      })
+                    }
+                  />
+                ) : communitySpacesQuery.isPending ? (
                   <Text style={{color: colors.secondary}}>
                     Reading communities from the PDS…
                   </Text>

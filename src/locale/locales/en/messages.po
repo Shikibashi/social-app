@@ -13,6 +13,16 @@ msgstr ""
 "Language-Team: \n"
 "Plural-Forms: \n"
 
+#: src/components/AuthorizationProvenance.tsx:233
+msgid ""
+"\n"
+"        Explains why this permission is needed and how to change it\n"
+"      "
+msgstr ""
+"\n"
+"        Explains why this permission is needed and how to change it\n"
+"      "
+
 #. Accessibility label for a category (e.g. Art, Video Games, Sports, etc.) that shows suggested accounts for the user to follow. The tab is currently selected.
 #: src/components/InterestTabs.tsx:333
 msgid "\"{interestsDisplayName}\" category (active)"
@@ -1373,8 +1383,8 @@ msgstr ""
 msgid "Adding members to list..."
 msgstr ""
 
-#: src/components/AuthorizationProvenance.tsx:219
-#: src/components/AuthorizationProvenance.tsx:229
+#: src/components/AuthorizationProvenance.tsx:232
+#: src/components/AuthorizationProvenance.tsx:245
 msgid "Additional authorization required"
 msgstr "Additional authorization required"
 
@@ -2037,11 +2047,11 @@ msgstr "Author's curation"
 msgid "Authority"
 msgstr "Authority"
 
-#: src/components/AuthorizationProvenance.tsx:248
+#: src/components/AuthorizationProvenance.tsx:261
 msgid "Authorization did not finish:"
 msgstr "Authorization did not finish:"
 
-#: src/components/AuthorizationProvenance.tsx:256
+#: src/components/AuthorizationProvenance.tsx:269
 msgid "Authorize {name}"
 msgstr "Authorize {name}"
 
@@ -2049,7 +2059,7 @@ msgstr "Authorize {name}"
 msgid "Authorize this app with your hosting provider"
 msgstr "Authorize this app with your hosting provider"
 
-#: src/components/AuthorizationProvenance.tsx:264
+#: src/components/AuthorizationProvenance.tsx:277
 msgid "Authorize this feature"
 msgstr "Authorize this feature"
 
@@ -5297,7 +5307,7 @@ msgstr ""
 msgid "False information about elections"
 msgstr ""
 
-#: src/components/AuthorizationProvenance.tsx:241
+#: src/components/AuthorizationProvenance.tsx:254
 msgid "Feature"
 msgstr "Feature"
 
@@ -6744,7 +6754,7 @@ msgstr ""
 msgid "Inspect {surfaceLabel} sources"
 msgstr "Inspect {surfaceLabel} sources"
 
-#: src/components/AuthorizationProvenance.tsx:269
+#: src/components/AuthorizationProvenance.tsx:282
 msgid "Inspect authorization settings"
 msgstr "Inspect authorization settings"
 
@@ -8901,7 +8911,7 @@ msgstr "Open QR code scanner"
 msgid "Open service workbench"
 msgstr "Open service workbench"
 
-#: src/components/AuthorizationProvenance.tsx:276
+#: src/components/AuthorizationProvenance.tsx:289
 #: src/view/shell/desktop/RightNav.tsx:185
 msgid "Open Services"
 msgstr "Open Services"
@@ -8943,11 +8953,11 @@ msgstr "Open the mobile app"
 msgid "Open this group chat"
 msgstr "Open this group chat"
 
-#: src/components/AuthorizationProvenance.tsx:256
+#: src/components/AuthorizationProvenance.tsx:269
 msgid "Opening consent for {name}"
 msgstr "Opening consent for {name}"
 
-#: src/components/AuthorizationProvenance.tsx:264
+#: src/components/AuthorizationProvenance.tsx:277
 msgid "Opening consent…"
 msgstr "Opening consent…"
 
@@ -13374,9 +13384,9 @@ msgstr "This moderation service does not support that report reason. Please choo
 msgid "This moderation service is unavailable. See below for more details. If this issue persists, contact us."
 msgstr ""
 
-#: src/components/AuthorizationProvenance.tsx:232
-msgid "This part of Plumbline uses a separate service permission. No request has been sent to the chat service."
-msgstr "This part of Plumbline uses a separate service permission. No request has been sent to the chat service."
+#: src/components/AuthorizationProvenance.tsx:248
+msgid "This part of Plumbline uses a separate {name} permission. No request has been sent to the {resource} for this feature."
+msgstr "This part of Plumbline uses a separate {name} permission. No request has been sent to the {resource} for this feature."
 
 #: src/components/dms/MessagesListBlockedFooter.tsx:72
 msgid "This person is blocking you"

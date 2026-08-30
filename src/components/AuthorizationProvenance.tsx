@@ -33,6 +33,18 @@ const FEATURE_LABELS: Record<OAuthFeature, string> = {
   notifications: 'Notifications',
 }
 
+const FEATURE_RESOURCE_LABELS: Record<OAuthFeature, string> = {
+  posting: 'account PDS',
+  'profile-editing': 'account PDS',
+  'social-graph': 'account PDS',
+  'identity-recovery': 'identity service',
+  appview: 'selected AppView service',
+  chat: 'chat service',
+  spaces: 'Spaces authority',
+  media: 'media service',
+  notifications: 'notification service',
+}
+
 function featureLabel(feature: OAuthFeature): string {
   return FEATURE_LABELS[feature]
 }
@@ -199,6 +211,7 @@ export function OAuthFeatureAccessPrompt({
   const [pending, setPending] = useState(false)
   const [error, setError] = useState<string | undefined>()
   const name = featureLabel(feature)
+  const resource = FEATURE_RESOURCE_LABELS[feature]
 
   const authorize = async () => {
     setPending(true)
@@ -232,10 +245,7 @@ export function OAuthFeatureAccessPrompt({
           <Trans>Additional authorization required</Trans>
         </Text>
         <Text style={[a.text_sm, t.atoms.text_contrast_medium]}>
-          <Trans>
-            This part of Plumbline uses a separate service permission. No
-            request has been sent to the chat service.
-          </Trans>
+          {l`This part of Plumbline uses a separate ${name} permission. No request has been sent to the ${resource} for this feature.`}
         </Text>
       </View>
 
