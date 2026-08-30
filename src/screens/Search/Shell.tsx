@@ -27,6 +27,7 @@ import {HITSLOP_10, HITSLOP_20} from '#/lib/constants'
 import {useNonReactiveCallback} from '#/lib/hooks/useNonReactiveCallback'
 import {MagnifyingGlassIcon} from '#/lib/icons'
 import {type NavigationProp, type SearchParams} from '#/lib/routes/types'
+import {toShareUrl} from '#/lib/strings/url-helpers'
 import {listenSoftReset} from '#/state/events'
 import {
   unstableCacheProfileView,
@@ -499,8 +500,7 @@ export function SearchScreenShell({
   )
 
   const onShareSearch = useCallback(() => {
-    const url = new URL('https://bsky.app')
-    url.pathname = '/search'
+    const url = new URL(toShareUrl('/search'))
     if (query) url.searchParams.set('q', query)
     for (const [key, value] of Object.entries(definedFilterParams(filters))) {
       url.searchParams.set(key, value)

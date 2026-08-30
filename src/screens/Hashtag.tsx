@@ -11,6 +11,7 @@ import {shareUrl} from '#/lib/sharing'
 import {cleanError} from '#/lib/strings/errors'
 import {sanitizeHandle} from '#/lib/strings/handles'
 import {enforceLen} from '#/lib/strings/helpers'
+import {toShareUrl} from '#/lib/strings/url-helpers'
 import {useSearchPostsV2Query} from '#/state/queries/search-posts-v2'
 import {useSession} from '#/state/session'
 import {useLoggedOutViewControls} from '#/state/shell/logged-out'
@@ -68,8 +69,7 @@ export default function HashtagScreen({
   }, [author])
 
   const onShare = useCallback(() => {
-    const url = new URL('https://bsky.app')
-    url.pathname = `/hashtag/${decodeURIComponent(tag)}`
+    const url = new URL(toShareUrl(`/hashtag/${decodeURIComponent(tag)}`))
     if (author) {
       url.searchParams.set('author', author)
     }

@@ -2,6 +2,7 @@ import {type AtIdentifierString, AtUri} from '@atproto/syntax'
 import {parse} from 'psl'
 import TLDs from 'tlds'
 
+import {getRuntimePublicWebOrigin} from '#/lib/brand'
 import {BSKY_SERVICE} from '#/lib/constants'
 import {isInvalidHandle} from '#/lib/strings/handles'
 import {startUriToStarterPackUri} from '#/lib/strings/starter-pack'
@@ -89,12 +90,17 @@ export function toShortUrl(url: string): string {
 }
 
 export function toShareUrl(url: string): string {
-  if (!url.startsWith('https')) {
-    const urlp = new URL('https://bsky.app')
-    urlp.pathname = url
-    url = urlp.toString()
+  try {
+    const parsed = new URL(url)
+    if (parsed.protocol === 'http:' || parsed.protocol === 'https:') {
+      return parsed.toString()
+    }
+  } catch {
+    // Relative application paths are resolved against the current Plumbline
+    // web origin below. Invalid values retain the prior path-like behavior.
   }
-  return url
+
+  return new URL(url, getRuntimePublicWebOrigin()).toString()
 }
 
 export function toBskyAppUrl(url: string): string {
