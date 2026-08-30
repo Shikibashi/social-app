@@ -103,13 +103,23 @@ export const OAUTH_FEATURE_SCOPES: Record<OAuthFeature, readonly string[]> = {
   notifications: OAUTH_NOTIFICATION_SCOPES,
 }
 
-/** New sessions grant only the feature groups required for ordinary use. */
+/**
+ * The compatibility baseline is an explicit allowlist of feature groups, not
+ * a wildcard or transitional grant. Optional service boundaries such as chat,
+ * Spaces, media, and notifications are added only after the user activates
+ * them and accepts their separate consent request.
+ */
+export const OAUTH_DEFAULT_FEATURES = [
+  'posting',
+  'profile-editing',
+  'social-graph',
+  'appview',
+] as const satisfies readonly OAuthFeature[]
+
+/** New sessions grant only the explicitly listed feature groups. */
 export const OAUTH_BASE_SCOPES = [
   'atproto',
-  ...OAUTH_POSTING_SCOPES,
-  ...OAUTH_PROFILE_SCOPES,
-  ...OAUTH_SOCIAL_GRAPH_SCOPES,
-  ...OAUTH_APPVIEW_SCOPES,
+  ...OAUTH_DEFAULT_FEATURES.flatMap(feature => OAUTH_FEATURE_SCOPES[feature]),
 ] as const
 
 /** The complete scope advertised in metadata and sent on first authorization. */
@@ -127,6 +137,56 @@ export function getOAuthFeatureScopes(
   feature: OAuthFeature,
 ): readonly string[] {
   return OAUTH_FEATURE_SCOPES[feature]
+}
+
+export type OAuthFeatureGrantStatus = 'granted' | 'compatibility' | 'missing'
+
+export type OAuthFeatureGrant = {
+  feature: OAuthFeature
+  requiredScopes: readonly string[]
+  grantedScopes: readonly string[]
+  missingScopes: readonly string[]
+  status: OAuthFeatureGrantStatus
+}
+
+/**
+ * Describe one feature grant without treating a legacy transition permission
+ * as if it were a native, least-authority grant. This is intentionally pure so
+ * the settings workbench and tests share the same decision as the request
+ * boundary.
+ */
+export function getOAuthFeatureGrant(
+  grantedScopes: string | readonly string[] | undefined,
+  feature: OAuthFeature,
+): OAuthFeatureGrant {
+  const normalized = normalizeOAuthScopes(grantedScopes)
+  const requiredScopes = getOAuthFeatureScopes(feature)
+  const missingScopes = getMissingOAuthScopes(normalized, feature)
+  const explicitlyGranted = requiredScopes.filter(scope =>
+    normalized.includes(scope),
+  )
+  const status: OAuthFeatureGrantStatus =
+    missingScopes.length > 0
+      ? 'missing'
+      : explicitlyGranted.length === requiredScopes.length
+        ? 'granted'
+        : 'compatibility'
+
+  return {
+    feature,
+    requiredScopes: [...requiredScopes],
+    grantedScopes: explicitlyGranted,
+    missingScopes,
+    status,
+  }
+}
+
+export function getOAuthFeatureGrants(
+  grantedScopes: string | readonly string[] | undefined,
+): OAuthFeatureGrant[] {
+  return OAUTH_FEATURES.map(feature =>
+    getOAuthFeatureGrant(grantedScopes, feature),
+  )
 }
 
 /**
@@ -163,6 +223,25 @@ export function hasOAuthFeature(
   feature: OAuthFeature,
 ): boolean {
   return getMissingOAuthScopes(grantedScopes, feature).length === 0
+}
+
+/**
+ * Build a reauthorization request that retains the current grant and adds
+ * only the missing scopes for one feature. Existing and transitional scopes
+ * are preserved for compatibility; transitional scopes are never introduced
+ * by this helper.
+ */
+export function getOAuthFeatureUpgradeScopes(
+  grantedScopes: string | readonly string[] | undefined,
+  feature: OAuthFeature,
+): string[] {
+  const normalized = normalizeOAuthScopes(grantedScopes)
+  const grant = getOAuthFeatureGrant(normalized, feature)
+  const additionalScopes =
+    grant.status === 'compatibility'
+      ? getOAuthFeatureScopes(feature)
+      : grant.missingScopes
+  return mergeOAuthScopes('atproto', normalized, additionalScopes)
 }
 
 /** Merge scopes without dropping permissions already held by the session. */

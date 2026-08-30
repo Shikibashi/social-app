@@ -11,8 +11,7 @@ import {com} from '#/lexicons'
 import {networkAwareFetch} from './network'
 import {ExpoOAuthClient} from './oauth-client'
 import {
-  getMissingOAuthScopes,
-  getOAuthFeatureScopes,
+  getOAuthFeatureUpgradeScopes,
   getRuntimeOAuthClientMetadata,
   mergeOAuthScopes,
   normalizeOAuthScopes,
@@ -137,14 +136,9 @@ export async function reauthorizeOAuthFeature(
       resolvedScopes = OAUTH_SCOPE
     }
   }
-  const missing = getMissingOAuthScopes(resolvedScopes, feature)
-  const scope = mergeOAuthScopes(
-    'atproto',
-    resolvedScopes,
-    missing.length ? getOAuthFeatureScopes(feature) : [],
-  )
+  const scope = getOAuthFeatureUpgradeScopes(resolvedScopes, feature)
   return signInWithOAuth(identifierOrService, hooks, {
-    scope,
+    scope: scope.join(' '),
     prompt: 'consent',
   })
 }

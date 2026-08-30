@@ -19,8 +19,7 @@ import {
 import {type CommonNavigatorParams} from '#/lib/routes/types'
 import {useSession, useSessionApi} from '#/state/session'
 import {
-  hasOAuthFeature,
-  OAUTH_FEATURES,
+  getOAuthFeatureGrants,
   type OAuthFeature,
 } from '#/state/session/oauth-scopes'
 import {
@@ -790,26 +789,53 @@ export function ServicesSettingsScreen({}: Props) {
                             </SettingsList.ItemText>
                           </View>
                         </SettingsList.Item>
-                        {OAUTH_FEATURES.map(feature =>
-                          hasOAuthFeature(
-                            currentAccount.oauthScopes,
-                            feature,
-                          ) ? null : (
-                            <SettingsList.PressableItem
-                              key={`oauth-upgrade-${feature}`}
-                              label={`Authorize ${OAUTH_FEATURE_LABELS[feature]}`}
-                              onPress={() => void upgradeFeature(feature)}
-                              disabled={pendingOAuthFeature !== undefined}>
-                              <SettingsList.ItemText>
-                                {OAUTH_FEATURE_LABELS[feature]}
-                              </SettingsList.ItemText>
-                              <SettingsList.BadgeText>
-                                {pendingOAuthFeature === feature
-                                  ? 'Opening consent…'
-                                  : 'Additional permission required'}
-                              </SettingsList.BadgeText>
-                            </SettingsList.PressableItem>
-                          ),
+                        {getOAuthFeatureGrants(currentAccount.oauthScopes).map(
+                          grant => {
+                            const label = OAUTH_FEATURE_LABELS[grant.feature]
+                            const isPending =
+                              pendingOAuthFeature === grant.feature
+                            if (grant.status === 'granted') {
+                              return (
+                                <SettingsList.Item
+                                  key={`oauth-grant-${grant.feature}`}>
+                                  <SettingsList.ItemText>
+                                    {label}
+                                  </SettingsList.ItemText>
+                                  <SettingsList.BadgeText>
+                                    {grant.grantedScopes.length} scoped
+                                    permissions granted
+                                  </SettingsList.BadgeText>
+                                </SettingsList.Item>
+                              )
+                            }
+
+                            const actionLabel =
+                              grant.status === 'compatibility'
+                                ? `Replace compatibility authorization for ${label}`
+                                : `Authorize ${label}`
+                            const statusLabel = isPending
+                              ? 'Opening consent…'
+                              : grant.status === 'compatibility'
+                                ? 'Legacy compatibility grant; replace with scoped permissions'
+                                : `${grant.missingScopes.length} scoped permission${grant.missingScopes.length === 1 ? '' : 's'} required`
+
+                            return (
+                              <SettingsList.PressableItem
+                                key={`oauth-upgrade-${grant.feature}`}
+                                label={actionLabel}
+                                onPress={() =>
+                                  void upgradeFeature(grant.feature)
+                                }
+                                disabled={pendingOAuthFeature !== undefined}>
+                                <SettingsList.ItemText>
+                                  {label}
+                                </SettingsList.ItemText>
+                                <SettingsList.BadgeText>
+                                  {statusLabel}
+                                </SettingsList.BadgeText>
+                              </SettingsList.PressableItem>
+                            )
+                          },
                         )}
                       </>
                     ) : (

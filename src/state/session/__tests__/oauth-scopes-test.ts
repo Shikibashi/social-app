@@ -2,11 +2,15 @@ import {describe, expect, it} from '@jest/globals'
 
 import {
   getMissingOAuthScopes,
+  getOAuthFeatureGrant,
+  getOAuthFeatureGrants,
+  getOAuthFeatureUpgradeScopes,
   getRuntimeOAuthClientMetadata,
   hasOAuthFeature,
   mergeOAuthScopes,
   OAUTH_BASE_SCOPES,
   OAUTH_CLIENT_METADATA,
+  OAUTH_DEFAULT_FEATURES,
   OAUTH_FEATURE_SCOPES,
   OAUTH_FEATURES,
   OAUTH_MEDIA_SCOPES,
@@ -36,6 +40,25 @@ describe('OAuth permission contract', () => {
     expect(OAUTH_SCOPE).toBe(OAUTH_BASE_SCOPES.join(' '))
     expect(OAUTH_SCOPE).not.toContain('transition:generic')
     expect(OAUTH_SCOPE).not.toContain(OAUTH_SPACE_SCOPES[0])
+  })
+
+  it('builds the initial grant from an explicit default feature allowlist', () => {
+    expect(OAUTH_DEFAULT_FEATURES).toEqual([
+      'posting',
+      'profile-editing',
+      'social-graph',
+      'appview',
+    ])
+    expect(OAUTH_BASE_SCOPES).toEqual([
+      'atproto',
+      ...OAUTH_DEFAULT_FEATURES.flatMap(
+        feature => OAUTH_FEATURE_SCOPES[feature],
+      ),
+    ])
+    expect(OAUTH_SCOPE).not.toContain(OAUTH_FEATURE_SCOPES.chat[0])
+    expect(OAUTH_SCOPE).not.toContain(OAUTH_FEATURE_SCOPES.spaces[0])
+    expect(OAUTH_SCOPE).not.toContain(OAUTH_FEATURE_SCOPES.media[0])
+    expect(OAUTH_SCOPE).not.toContain(OAUTH_FEATURE_SCOPES.notifications[0])
   })
 
   it('keeps Spaces, media, chat, and notification grants feature-scoped', () => {
@@ -79,6 +102,46 @@ describe('OAuth permission contract', () => {
     ).toEqual([])
     expect(hasOAuthFeature(['transition:chat.bsky'], 'chat')).toBe(true)
     expect(hasOAuthFeature(['transition:generic'], 'chat')).toBe(false)
+  })
+
+  it('labels legacy compatibility grants and offers a native replacement', () => {
+    const legacy = getOAuthFeatureGrant(
+      ['atproto', 'transition:generic'],
+      'posting',
+    )
+    expect(legacy.status).toBe('compatibility')
+    expect(legacy.missingScopes).toEqual([])
+    expect(legacy.grantedScopes).toEqual([])
+
+    const upgrade = getOAuthFeatureUpgradeScopes(
+      ['atproto', 'transition:generic'],
+      'posting',
+    )
+    expect(upgrade).toEqual([
+      'atproto',
+      'transition:generic',
+      ...OAUTH_POSTING_SCOPES,
+    ])
+  })
+
+  it('keeps the complete feature ledger attributable to each feature', () => {
+    const grants = getOAuthFeatureGrants([
+      'atproto',
+      ...OAUTH_POSTING_SCOPES,
+      'transition:generic',
+    ])
+    expect(grants).toHaveLength(8)
+    expect(grants.find(grant => grant.feature === 'posting')).toMatchObject({
+      status: 'granted',
+      missingScopes: [],
+    })
+    expect(
+      grants.find(grant => grant.feature === 'profile-editing'),
+    ).toMatchObject({status: 'compatibility'})
+    expect(grants.find(grant => grant.feature === 'spaces')).toMatchObject({
+      status: 'missing',
+      missingScopes: OAUTH_SPACE_SCOPES,
+    })
   })
 
   it('keeps OAuth-native account creation explicit', () => {
