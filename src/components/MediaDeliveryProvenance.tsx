@@ -5,6 +5,7 @@ import {useLingui} from '@lingui/react'
 
 import {type AccountProfileMediaProvenance} from '#/lib/api/account-profile'
 import {useTheme} from '#/alf'
+import {PlumblineAuthoritySummary} from '#/components/PlumblineAuthoritySummary'
 import {Text} from '#/components/Typography'
 
 /**
@@ -27,9 +28,14 @@ export function MediaDeliveryProvenance({
   if (!provenance) return null
 
   return (
-    <View
-      testID="media-delivery-provenance"
-      style={[styles.container, {borderLeftColor: t.palette.contrast_200}]}>
+    <View testID="media-delivery-provenance" style={styles.container}>
+      <PlumblineAuthoritySummary
+        testID="media-delivery-authority-summary"
+        title="Profile media"
+        source="Account PDS"
+        rule="Profile record determines the blob CID"
+        state="Record available"
+      />
       <Pressable
         testID="media-delivery-provenance-toggle"
         accessibilityRole="button"
@@ -112,9 +118,7 @@ function Detail({
 
 const styles = StyleSheet.create({
   container: {
-    borderLeftWidth: 2,
     marginBottom: 4,
-    paddingLeft: 8,
   },
   toggle: {
     alignSelf: 'flex-start',

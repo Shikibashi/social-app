@@ -10,6 +10,7 @@ import {
 } from '#/lib/provider-composition'
 import {type NavigationProp} from '#/lib/routes/types'
 import {useTheme} from '#/alf'
+import {PlumblineAuthoritySummary} from '#/components/PlumblineAuthoritySummary'
 import {Text} from '#/components/Typography'
 
 /**
@@ -47,32 +48,13 @@ export function ProviderCompositionProvenance({
   return (
     <View
       testID={`provider-composition-provenance-${composition.surface}`}
-      style={[styles.container, {borderLeftColor: t.palette.contrast_200}]}>
-      <View
+      style={styles.container}>
+      <PlumblineAuthoritySummary
         testID={`provider-composition-summary-${composition.surface}`}
-        style={styles.summary}>
-        <Text
-          style={[
-            styles.summaryText,
-            {color: t.atoms.text_contrast_medium.color},
-          ]}
-          numberOfLines={2}>
-          <Text style={styles.label}>Source: </Text>
-          {sourceNames}
-        </Text>
-        <Text
-          style={[
-            styles.summaryText,
-            {color: t.atoms.text_contrast_medium.color},
-          ]}
-          numberOfLines={2}>
-          <Text style={styles.label}>Rule: </Text>
-          {rule}
-          {' · '}
-          <Text style={styles.label}>State: </Text>
-          {status}
-        </Text>
-      </View>
+        source={sourceNames}
+        rule={rule}
+        state={status}
+      />
       <Pressable
         testID={`provider-composition-provenance-toggle-${composition.surface}`}
         accessibilityRole="button"
@@ -272,16 +254,7 @@ function reconciliationLabel(
 
 const styles = StyleSheet.create({
   container: {
-    borderLeftWidth: 2,
     marginBottom: 4,
-    paddingLeft: 8,
-  },
-  summary: {
-    gap: 2,
-    marginBottom: 2,
-  },
-  summaryText: {
-    fontSize: 12,
   },
   toggle: {
     alignSelf: 'flex-start',

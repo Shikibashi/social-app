@@ -87,6 +87,8 @@ export type IdentityClaimsResult = {
   unavailableResolvers: string[]
   /** The evidence state, independent of whether an explicit policy selected a claim. */
   status: 'verified' | 'disagreement' | 'resolver-unavailable' | 'invalid'
+  /** The user-owned rule used to reconcile these claims. */
+  policy?: IdentityResolutionPolicy
   /** The policy-selected claim. It is absent when the policy fails closed. */
   selected?: IdentityClaim
 }
@@ -272,7 +274,7 @@ export function reconcileIdentityClaims(
   policy: IdentityResolutionPolicy = DEFAULT_IDENTITY_RESOLUTION_POLICY,
 ): IdentityClaimsResult {
   if (result.status === 'invalid' || result.claims.length === 0)
-    return {...result, selected: undefined}
+    return {...result, policy, selected: undefined}
 
   const verifiedClaims = result.claims.filter(isSelectableIdentityClaim)
   let selected: IdentityClaim | undefined
@@ -287,7 +289,7 @@ export function reconcileIdentityClaims(
     selected = verifiedClaims[0]
   }
 
-  return {...result, selected}
+  return {...result, policy, selected}
 }
 
 /**
@@ -312,6 +314,7 @@ export async function resolveIdentityClaims(
       evidence: [],
       unavailableResolvers: [],
       status: 'invalid',
+      policy,
     }
   }
 

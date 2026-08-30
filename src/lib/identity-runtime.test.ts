@@ -69,6 +69,7 @@ describe('identity runtime', () => {
       'resolver-a',
       'resolver-b',
     ])
+    expect(result.policy).toEqual({mode: 'require-agreement'})
     expect(result.selected?.providerId).toBe('resolver-a')
     expect(result.claims[1]?.provenance.resolver).toBe('resolver-b')
   })
@@ -136,6 +137,7 @@ describe('identity runtime', () => {
     })
     expect(explicit.status).toBe('disagreement')
     expect(explicit.selected?.did).toBe('did:plc:alice')
+    expect(explicit.policy).toEqual({mode: 'first-verified'})
   })
 
   it('fails closed on disagreement and preserves the disputed claims', async () => {
@@ -200,6 +202,10 @@ describe('identity runtime', () => {
     expect(result.status).toBe('disagreement')
     expect(result.selected?.providerId).toBe('resolver-b')
     expect(result.selected?.did).toBe('did:plc:other')
+    expect(result.policy).toEqual({
+      mode: 'prefer-provider',
+      preferredProviderId: 'resolver-b',
+    })
   })
 
   it('records unavailable providers and requires an explicit partial-result policy', async () => {

@@ -771,3 +771,56 @@ locally without putting the selected authority surface in the browser URL.
 This iteration improves inspectability and browser addressability without
 claiming provider independence, changing write routing, or closing the
 external OAuth, Relay/AppView, short-TTL, or PLC operator gates.
+
+## 29. Iteration 22 — align authority summaries across read surfaces
+
+The compact Source / Rule / State seam introduced for composed provider reads
+was not yet shared by feed provenance, identity resolution, or profile-media
+provenance. Identity evidence also retained the reconciliation policy only in
+the query key and resolver call, which made the rule harder for a screen to
+show beside the claims it governed.
+
+### Authority before versus after
+
+| Boundary | Before iteration 22 | After iteration 22 |
+| --- | --- | --- |
+| Feed provenance | Feed name and provider appeared in a bespoke summary with no explicit rule or state. | The existing feed algorithm/objective, provider, health, and composition state are shown through the shared Source / Rule / State summary. |
+| Identity resolution | Resolver evidence was available after expansion, while the selected policy was not carried in the result. | Resolver sources and unavailable providers are visible before expansion, and the result carries the user-owned reconciliation policy into the inspector. |
+| Profile media | The account-PDS delivery seam was hidden until expansion. | The ordinary profile view identifies the account PDS as record authority while retaining CID and delivery details behind the inspector. |
+
+### Implementation evidence
+
+- `src/components/PlumblineAuthoritySummary.tsx` is a presentation-only
+  seam. It consumes source, rule, and state already produced by the existing
+  provider or record boundary; it does not select a provider or mint access.
+- `src/components/FeedProvenanceCard.tsx`,
+  `src/components/IdentityResolutionProvenance.tsx`,
+  `src/components/MediaDeliveryProvenance.tsx`, and
+  `src/components/ProviderCompositionProvenance.tsx` use the same compact
+  layout while retaining their detailed inspectors.
+- `src/lib/identity-runtime.ts` and `src/state/queries/resolve-uri.ts` carry
+  the existing `IdentityResolutionPolicy` through direct, resolved, invalid,
+  and cached claim results. No resolver is promoted to a universal authority.
+
+### Interoperability and security tradeoffs
+
+The change is additive to the `IdentityClaimsResult` shape and preserves the
+existing fail-closed disagreement behavior. Source text may include provider
+IDs when no display name is available, which is intentionally attributable
+rather than silently replaced with a generic network label. The profile-media
+summary identifies the account PDS as the record authority but does not claim
+that its CDN or AppView delivery path is independently authoritative.
+
+### Verification
+
+| Check | Status | Evidence |
+| --- | --- | --- |
+| Resolver/provider behavior | PASS | `src/lib/provider-composition.test.ts`, `src/lib/attention-ui.test.ts`, and `src/lib/identity-runtime.test.ts` — 3 suites, 34 tests |
+| Targeted formatting and lint | PASS | Prettier and Oxlint passed for all changed TypeScript/TSX files |
+| Web TypeScript | PASS | `pnpm run typecheck:web` |
+| Production-shaped web export | PASS | `pnpm run build-web`; completed with existing bundle-size warnings |
+| Public browser verification | PENDING | The rebuilt artifact is ready for the next Wrangler deployment and canonical in-app-browser check |
+
+This iteration improves disclosure at an existing boundary. It does not
+claim authenticated write verification, independent PLC operator control, or
+closure of the external Relay/AppView and short-TTL OAuth gates.

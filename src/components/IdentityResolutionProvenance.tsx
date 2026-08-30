@@ -6,8 +6,10 @@ import {useLingui} from '@lingui/react'
 import {
   type IdentityClaimsResult,
   type IdentityDocumentEvidence,
+  type IdentityResolutionPolicy,
 } from '#/lib/identity-runtime'
 import {useTheme} from '#/alf'
+import {PlumblineAuthoritySummary} from '#/components/PlumblineAuthoritySummary'
 import {Text} from '#/components/Typography'
 
 /**
@@ -23,11 +25,18 @@ export function IdentityResolutionProvenance({
   const {_} = useLingui()
   const t = useTheme()
   const [expanded, setExpanded] = useState(false)
+  const source = identitySourceNames(result)
+  const rule = identityPolicyLabel(result.policy)
+  const state = identityStatusLabel(result.status)
 
   return (
-    <View
-      testID="identity-resolution-provenance"
-      style={[styles.container, {borderLeftColor: t.palette.contrast_200}]}>
+    <View testID="identity-resolution-provenance" style={styles.container}>
+      <PlumblineAuthoritySummary
+        testID="identity-resolution-authority-summary"
+        source={source}
+        rule={rule}
+        state={state}
+      />
       <Pressable
         testID="identity-resolution-provenance-toggle"
         accessibilityRole="button"
@@ -59,6 +68,7 @@ export function IdentityResolutionProvenance({
             label={_(msg`Evidence status`)}
             value={identityStatusLabel(result.status)}
           />
+          <Detail label="Reconciliation" value={rule} />
           {result.selected ? (
             <Detail
               label={_(msg`Selected claim`)}
@@ -195,11 +205,38 @@ function identityStatusLabel(status: IdentityClaimsResult['status']): string {
   }
 }
 
+function identitySourceNames(result: IdentityClaimsResult): string {
+  const names = [
+    ...result.claims.map(claim => claim.providerId),
+    ...result.evidence.flatMap(evidence =>
+      evidence.resolvers.map(
+        resolver => resolver.displayName || resolver.resolverId,
+      ),
+    ),
+    ...result.unavailableResolvers,
+  ]
+  return (
+    Array.from(new Set(names.filter(Boolean))).join(' · ') ||
+    'No resolver answered'
+  )
+}
+
+function identityPolicyLabel(policy?: IdentityResolutionPolicy): string {
+  switch (policy?.mode) {
+    case 'require-agreement':
+      return 'Require agreement'
+    case 'first-verified':
+      return 'Use first verified claim'
+    case 'prefer-provider':
+      return `Prefer ${policy.preferredProviderId}`
+    default:
+      return 'Configured identity policy'
+  }
+}
+
 const styles = StyleSheet.create({
   container: {
-    borderLeftWidth: 2,
     marginBottom: 4,
-    paddingLeft: 8,
   },
   toggle: {
     alignSelf: 'flex-start',

@@ -1,5 +1,5 @@
 import {useEffect, useState} from 'react'
-import {Pressable, StyleSheet, View} from 'react-native'
+import {Pressable, View} from 'react-native'
 
 import {
   type FeedProvenance,
@@ -14,6 +14,7 @@ import {
 } from '#/state/session/providers'
 import {useTheme} from '#/alf'
 import * as Layout from '#/components/Layout'
+import {PlumblineAuthoritySummary} from '#/components/PlumblineAuthoritySummary'
 import {Text} from '#/components/Typography'
 
 export function FeedProvenanceCard({
@@ -33,25 +34,22 @@ export function FeedProvenanceCard({
       : /^\d+(?:\.\d+)*$/.test(provenance.algorithmVersion)
         ? `v${provenance.algorithmVersion}`
         : `(version ${provenance.algorithmVersion})`
+  const rule =
+    [provenance.algorithmName, provenance.objective]
+      .map(value => value.trim())
+      .filter(Boolean)
+      .join(' · ') || 'Not declared'
+  const state = feedStateLabel(provenance)
 
   return (
     <Layout.Content contentContainerStyle={{paddingVertical: 2}}>
-      <View
+      <PlumblineAuthoritySummary
         testID="feed-provenance-summary"
-        accessibilityRole="text"
-        style={[styles.summary, {borderLeftColor: t.palette.contrast_200}]}>
-        <Text style={styles.summaryName} numberOfLines={1}>
-          {provenance.feedName}
-        </Text>
-        <Text
-          style={[
-            styles.summaryDetails,
-            {color: t.atoms.text_contrast_medium.color},
-          ]}
-          numberOfLines={2}>
-          {provenance.algorithmName} · Source: {provenance.provider}
-        </Text>
-      </View>
+        title={provenance.feedName}
+        source={provenance.provider || 'Not declared'}
+        rule={rule}
+        state={state}
+      />
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={
@@ -147,20 +145,30 @@ export function FeedProvenanceCard({
   )
 }
 
-const styles = StyleSheet.create({
-  summary: {
-    borderLeftWidth: 2,
-    gap: 2,
-    marginBottom: 4,
-    paddingLeft: 8,
-  },
-  summaryName: {
-    fontWeight: '600',
-  },
-  summaryDetails: {
-    fontSize: 12,
-  },
-})
+function feedStateLabel(provenance: FeedProvenance): string {
+  const health = provenance.health ? healthLabel(provenance.health) : undefined
+  const composition = provenance.providerCompositionStatus
+    ? providerCompositionStatusLabel(provenance.providerCompositionStatus)
+    : undefined
+  return [health, composition].filter(Boolean).join(' · ') || 'Not declared'
+}
+
+function providerCompositionStatusLabel(
+  status: NonNullable<FeedProvenance['providerCompositionStatus']>,
+): string {
+  switch (status) {
+    case 'agreement':
+      return 'Provider agreement'
+    case 'disagreement':
+      return 'Provider disagreement'
+    case 'partial':
+      return 'Partial provider response'
+    case 'unavailable':
+      return 'Providers unavailable'
+    case 'empty':
+      return 'No provider result'
+  }
+}
 
 export function ActiveFeedProvenance({
   feedName,

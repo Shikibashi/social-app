@@ -54,11 +54,11 @@ const resolvedDidQueryOptions = (
       policy,
     }),
     queryFn: async () => {
-      if (!didOrHandle) return makeDirectIdentityClaimsResult('', '')
+      if (!didOrHandle) return makeDirectIdentityClaimsResult('', '', policy)
       // A caller-supplied DID is already an addressable subject. Preserve the
       // old fast path, but make the absence of resolver evidence inspectable.
       if (didOrHandle.startsWith('did:'))
-        return makeDirectIdentityClaimsResult(didOrHandle, didOrHandle)
+        return makeDirectIdentityClaimsResult(didOrHandle, didOrHandle, policy)
 
       /*
        * Handle resolution is a read capability, not a property of the one
@@ -213,6 +213,7 @@ async function resolveIdentityDocument(did: string): Promise<{
 function makeDirectIdentityClaimsResult(
   input: string,
   did: string,
+  policy: IdentityResolutionPolicy,
 ): IdentityClaimsResult {
   const now = Date.now()
   const claim: IdentityClaim = {
@@ -232,6 +233,7 @@ function makeDirectIdentityClaimsResult(
     evidence: [],
     unavailableResolvers: [],
     status: 'verified',
+    policy,
     selected: claim,
   }
 }
@@ -260,6 +262,7 @@ export function precacheResolvedUri(
     evidence: [],
     unavailableResolvers: [],
     status: 'verified',
+    policy: getIdentityResolutionPolicy(),
     selected: {
       providerId: 'record-cache',
       did,
