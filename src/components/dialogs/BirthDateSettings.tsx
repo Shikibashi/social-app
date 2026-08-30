@@ -175,11 +175,11 @@ function BirthdayInner({
       {isUnder13 && (
         <Admonition type="error">
           <Trans>
-            You must be at least 13 years old to use Plumbline. Read our{' '}
+            You must be at least 13 years old to use Plumbline. Read the{' '}
             <SimpleInlineLinkText
-              to="https://bsky.social/about/support/tos"
-              label={l`Terms of Service`}>
-              Terms of Service
+              to="/support/tos"
+              label={l`hosting provider's Terms of Service`}>
+              hosting provider's Terms of Service
             </SimpleInlineLinkText>{' '}
             for more information.
           </Trans>

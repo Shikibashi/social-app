@@ -299,14 +299,14 @@ function ProvidedHandlePage({
               <InlineLinkText
                 label={_(
                   msg({
-                    message: `Learn more`,
+                    message: `Read the hosting provider's domain-handle guide`,
                     context: `english-only-resource`,
                   }),
                 )}
                 to="https://bsky.social/about/blog/4-28-2023-domain-handle-tutorial"
                 style={[a.font_semi_bold]}
                 disableMismatchWarning>
-                Learn more here.
+                <Trans>Read the hosting provider's domain-handle guide.</Trans>
               </InlineLinkText>
             </Trans>
           </Text>
@@ -642,8 +642,8 @@ function DidPlcHandleWarning({
       <Admonition type="warning">
         <Trans>
           This account uses a did:plc identity. Changing its handle does not
-          create a new identity or make past handles unlinkable: the DID and
-          its public history remain the same. This is a naming change, not an
+          create a new identity or make past handles unlinkable: the DID and its
+          public history remain the same. This is a naming change, not an
           anonymity guarantee.
         </Trans>
       </Admonition>
