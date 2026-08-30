@@ -85,6 +85,9 @@ export type WhyThisPostModel = {
   postUri: string
   localReasons: string[]
   providerExplanation?: string
+  providerProvenance?: FeedProviderProvenance[]
+  providerCompositionStatus?: ProviderCompositionStatus
+  providerIndependence?: ProviderIndependence
   feed?: {
     name: string
     owner: string
@@ -105,6 +108,9 @@ export function buildWhyThisPostModel({
   feedContext,
   feedDescriptor,
   feedSource,
+  providerProvenance,
+  providerCompositionStatus,
+  providerIndependence,
 }: {
   postUri: string
   localExplanation?: readonly string[]
@@ -115,6 +121,9 @@ export function buildWhyThisPostModel({
     creatorHandle: string
     uri: string
   }
+  providerProvenance?: readonly FeedProviderProvenance[]
+  providerCompositionStatus?: ProviderCompositionStatus
+  providerIndependence?: ProviderIndependence
 }): WhyThisPostModel {
   const localReasons = (localExplanation ?? [])
     .map(reason => reason.trim().slice(0, 200))
@@ -122,11 +131,28 @@ export function buildWhyThisPostModel({
     .slice(0, 5)
   const providerExplanation = providerRankingExplanation(feedContext)
   const normalizedDescriptor = feedDescriptor?.trim()
+  const normalizedProviderProvenance = (providerProvenance ?? [])
+    .map(provider => ({
+      id: provider.id.trim().slice(0, 200),
+      displayName: provider.displayName.trim().slice(0, 200),
+      endpoint: provider.endpoint.trim().slice(0, 500),
+      serviceDid: provider.serviceDid?.trim().slice(0, 200),
+      operatorId: provider.operatorId?.trim().slice(0, 200),
+    }))
+    .filter(
+      provider => provider.id && provider.displayName && provider.endpoint,
+    )
+    .slice(0, 5)
 
   return {
     postUri,
     localReasons,
     providerExplanation,
+    providerProvenance: normalizedProviderProvenance.length
+      ? normalizedProviderProvenance
+      : undefined,
+    providerCompositionStatus,
+    providerIndependence,
     feed:
       feedSource &&
       feedSource.displayName.trim() &&
@@ -146,6 +172,9 @@ export function hasWhyThisPostDetails(model: WhyThisPostModel): boolean {
   return Boolean(
     model.localReasons.length ||
     model.providerExplanation ||
+    model.providerProvenance?.length ||
+    model.providerCompositionStatus ||
+    model.providerIndependence ||
     model.feed ||
     model.feedDescriptor,
   )

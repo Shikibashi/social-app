@@ -4,12 +4,19 @@ import {AtUri} from '@atproto/syntax'
 import {RichText as RichTextAPI} from '@bsky/sdk/richtext'
 import {useQueryClient} from '@tanstack/react-query'
 
-import {type ReasonFeedSource} from '#/lib/api/feed/types'
+import {
+  type FeedProviderProvenance,
+  type ReasonFeedSource,
+} from '#/lib/api/feed/types'
 import {type FeedPostNumbering} from '#/lib/api/feed-manip'
 import {MAX_POST_LINES} from '#/lib/constants'
 import {useOpenComposer} from '#/lib/hooks/useOpenComposer'
 import {usePalette} from '#/lib/hooks/usePalette'
 import {type ModerationDecision} from '#/lib/moderation'
+import {
+  type ProviderCompositionStatus,
+  type ProviderIndependence,
+} from '#/lib/provider-composition'
 import {makeProfileLink} from '#/lib/routes/links'
 import {countLines} from '#/lib/strings/helpers'
 import {
@@ -79,6 +86,9 @@ interface FeedItemProps {
   isParentBlocked?: boolean
   isParentNotFound?: boolean
   localExplanation?: string[]
+  providerProvenance?: FeedProviderProvenance[]
+  providerCompositionStatus?: ProviderCompositionStatus
+  providerIndependence?: ProviderIndependence
 }
 
 export function PostFeedItem({
@@ -100,6 +110,9 @@ export function PostFeedItem({
   rootPost,
   onShowLess,
   localExplanation,
+  providerProvenance,
+  providerCompositionStatus,
+  providerIndependence,
 }: FeedItemProps & {
   post: app.bsky.feed.defs.PostView
   rootPost: app.bsky.feed.defs.PostView
@@ -141,6 +154,9 @@ export function PostFeedItem({
           rootPost={rootPost}
           onShowLess={onShowLess}
           localExplanation={localExplanation}
+          providerProvenance={providerProvenance}
+          providerCompositionStatus={providerCompositionStatus}
+          providerIndependence={providerIndependence}
         />
       </ReportDialogMetadataContext.Provider>
     )
@@ -168,6 +184,9 @@ let FeedItemInner = ({
   rootPost,
   onShowLess,
   localExplanation,
+  providerProvenance,
+  providerCompositionStatus,
+  providerIndependence,
 }: FeedItemProps & {
   richText: RichTextAPI
   post: Shadow<app.bsky.feed.defs.PostView>
@@ -265,6 +284,9 @@ let FeedItemInner = ({
     unstableCacheProfileView(queryClient, post.author)
     setUnstablePostSource(buildPostSourceKey(post.uri, post.author.handle), {
       feedSourceInfo,
+      providerProvenance,
+      providerCompositionStatus,
+      providerIndependence,
       post: {
         post,
         /*
@@ -391,6 +413,9 @@ let FeedItemInner = ({
               feedContext={feedContext}
               feedDescriptor={feedDescriptor}
               feedSourceInfo={feedSourceInfo}
+              providerProvenance={providerProvenance}
+              providerCompositionStatus={providerCompositionStatus}
+              providerIndependence={providerIndependence}
             />
           </View>
         </View>

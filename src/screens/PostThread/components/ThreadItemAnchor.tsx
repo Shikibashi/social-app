@@ -395,6 +395,9 @@ const ThreadItemAnchorInner = memo(function ThreadItemAnchorInner({
               feedContext={postSource.post.feedContext}
               feedDescriptor={feedFeedback.feedDescriptor}
               feedSourceInfo={postSource.feedSourceInfo}
+              providerProvenance={postSource.providerProvenance}
+              providerCompositionStatus={postSource.providerCompositionStatus}
+              providerIndependence={postSource.providerIndependence}
             />
           )}
           <View style={[a.pb_sm]}>

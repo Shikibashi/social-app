@@ -1200,6 +1200,9 @@ let PostFeed = ({
             hideTopBorder={rowIndex === 0 && indexInSlice === 0}
             rootPost={slice.items[0].post}
             onShowLess={onPressShowLess}
+            providerProvenance={slice.providerProvenance}
+            providerCompositionStatus={slice.providerCompositionStatus}
+            providerIndependence={slice.providerIndependence}
           />
         )
       } else if (row.type === 'sliceViewFullThread') {

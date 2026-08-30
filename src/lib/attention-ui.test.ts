@@ -64,6 +64,17 @@ describe('attention sovereignty UI models', () => {
         creatorHandle: 'creator.example',
         uri: 'at://did:plc:feed/app.bsky.feed.generator/main',
       },
+      providerProvenance: [
+        {
+          id: 'appview-a',
+          displayName: 'AppView A',
+          endpoint: 'https://appview-a.example',
+          serviceDid: 'did:web:appview-a.example',
+          operatorId: 'operator-a',
+        },
+      ],
+      providerCompositionStatus: 'agreement',
+      providerIndependence: 'not-established',
     })
 
     expect(model.localReasons).toEqual([
@@ -77,6 +88,15 @@ describe('attention sovereignty UI models', () => {
       'provider supplied: provider-declared reason',
     )
     expect(model.feed?.name).toBe('A public feed')
+    expect(model.providerProvenance?.[0]).toEqual({
+      id: 'appview-a',
+      displayName: 'AppView A',
+      endpoint: 'https://appview-a.example',
+      serviceDid: 'did:web:appview-a.example',
+      operatorId: 'operator-a',
+    })
+    expect(model.providerCompositionStatus).toBe('agreement')
+    expect(model.providerIndependence).toBe('not-established')
     expect(hasWhyThisPostDetails(model)).toBe(true)
     expect(JSON.stringify(model)).not.toContain('privateSignal')
   })

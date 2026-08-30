@@ -129,6 +129,9 @@ export interface FeedPostSlice {
     | app.bsky.feed.defs.ReasonPin
     | ReasonFeedSource
     | {[k: string]: unknown; $type: string}
+  providerProvenance?: FeedProviderProvenance[]
+  providerCompositionStatus?: ProviderCompositionStatus
+  providerIndependence?: ProviderIndependence
 }
 
 export interface FeedPageUnselected {
@@ -402,6 +405,9 @@ export function usePostFeedQuery(
                     reqId: slice.reqId,
                     reason: slice.reason,
                     feedPostUri: slice.feedPostUri,
+                    providerProvenance: page.providerProvenance,
+                    providerCompositionStatus: page.providerCompositionStatus,
+                    providerIndependence: page.providerIndependence,
                     items: items.map((item, i) => {
                       const feedPostSliceItem: FeedPostSliceItem = {
                         _reactKey: `${slice._reactKey}-${i}-${item.post.uri}`,

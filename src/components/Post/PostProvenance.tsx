@@ -3,7 +3,12 @@ import {Pressable, StyleSheet, View} from 'react-native'
 import {msg} from '@lingui/core/macro'
 import {useLingui} from '@lingui/react'
 
+import {type FeedProviderProvenance} from '#/lib/api/feed/types'
 import {buildWhyThisPostModel, hasWhyThisPostDetails} from '#/lib/attention-ui'
+import {
+  type ProviderCompositionStatus,
+  type ProviderIndependence,
+} from '#/lib/provider-composition'
 import {type FeedSourceInfo} from '#/state/queries/feed'
 import {useTheme} from '#/alf'
 import {Text} from '#/components/Typography'
@@ -14,12 +19,18 @@ export function PostProvenance({
   feedContext,
   feedDescriptor,
   feedSourceInfo,
+  providerProvenance,
+  providerCompositionStatus,
+  providerIndependence,
 }: {
   postUri: string
   localExplanation?: readonly string[]
   feedContext?: string
   feedDescriptor?: string
   feedSourceInfo?: FeedSourceInfo
+  providerProvenance?: readonly FeedProviderProvenance[]
+  providerCompositionStatus?: ProviderCompositionStatus
+  providerIndependence?: ProviderIndependence
 }) {
   const {_} = useLingui()
   const t = useTheme()
@@ -32,8 +43,20 @@ export function PostProvenance({
         feedContext,
         feedDescriptor,
         feedSource: feedSourceInfo,
+        providerProvenance,
+        providerCompositionStatus,
+        providerIndependence,
       }),
-    [postUri, localExplanation, feedContext, feedDescriptor, feedSourceInfo],
+    [
+      postUri,
+      localExplanation,
+      feedContext,
+      feedDescriptor,
+      feedSourceInfo,
+      providerProvenance,
+      providerCompositionStatus,
+      providerIndependence,
+    ],
   )
 
   if (!hasWhyThisPostDetails(model)) return null
@@ -74,6 +97,56 @@ export function PostProvenance({
             <Text style={styles.detail}>
               <Text style={styles.label}>{_(msg`Feed provider`)}: </Text>
               {model.providerExplanation}
+            </Text>
+          ) : null}
+          {model.providerProvenance?.length ? (
+            <>
+              <Text style={styles.detail}>
+                <Text style={styles.label}>{_(msg`Read provider(s)`)}: </Text>
+                {model.providerProvenance
+                  .map(provider => provider.displayName)
+                  .join(', ')}
+              </Text>
+              {model.providerProvenance.map(provider => (
+                <View key={provider.id} style={styles.providerDetail}>
+                  <Text style={styles.detail} selectable>
+                    <Text style={styles.label}>{provider.displayName}: </Text>
+                    {provider.endpoint}
+                  </Text>
+                  {provider.serviceDid ? (
+                    <Text style={styles.detail} selectable>
+                      <Text style={styles.label}>{_(msg`Service DID`)}: </Text>
+                      {provider.serviceDid}
+                    </Text>
+                  ) : null}
+                  {provider.operatorId ? (
+                    <Text style={styles.detail} selectable>
+                      <Text style={styles.label}>
+                        {_(msg`Declared operator`)}:{' '}
+                      </Text>
+                      {provider.operatorId}
+                    </Text>
+                  ) : null}
+                </View>
+              ))}
+            </>
+          ) : null}
+          {model.providerCompositionStatus ? (
+            <Text style={styles.detail}>
+              <Text style={styles.label}>{_(msg`Provider composition`)}: </Text>
+              {model.providerCompositionStatus}
+            </Text>
+          ) : null}
+          {model.providerIndependence ? (
+            <Text style={styles.detail}>
+              <Text style={styles.label}>
+                {_(msg`Operator independence`)}:{' '}
+              </Text>
+              {model.providerIndependence === 'declared-distinct'
+                ? _(
+                    msg`Distinct operator IDs declared; independent control not proven`,
+                  )
+                : _(msg`Not established`)}
             </Text>
           ) : null}
           {model.feed ? (
@@ -131,6 +204,10 @@ const styles = StyleSheet.create({
   },
   detail: {
     fontSize: 12,
+  },
+  providerDetail: {
+    gap: 2,
+    paddingLeft: 8,
   },
   label: {
     fontWeight: '600',

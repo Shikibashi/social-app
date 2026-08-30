@@ -1,6 +1,11 @@
 import {useEffect, useId, useState} from 'react'
 import {type AtIdentifierString, AtUri} from '@atproto/syntax'
 
+import {type FeedProviderProvenance} from '#/lib/api/feed/types'
+import {
+  type ProviderCompositionStatus,
+  type ProviderIndependence,
+} from '#/lib/provider-composition'
 import {Logger} from '#/logger'
 import {type FeedSourceInfo} from '#/state/queries/feed'
 import {type app} from '#/lexicons'
@@ -13,6 +18,9 @@ const logger = Logger.create(Logger.Context.PostSource)
 export type PostSource = {
   post: app.bsky.feed.defs.FeedViewPost
   feedSourceInfo?: FeedSourceInfo
+  providerProvenance?: FeedProviderProvenance[]
+  providerCompositionStatus?: ProviderCompositionStatus
+  providerIndependence?: ProviderIndependence
 }
 
 /**
