@@ -18,6 +18,10 @@ import {NotificationFeedLoadingPlaceholder} from '#/view/com/util/LoadingPlaceho
 import {LoadMoreRetryBtn} from '#/view/com/util/LoadMoreRetryBtn'
 import {atoms as a, platform} from '#/alf'
 import {Bell_Stroke2_Corner0_Rounded as BellIcon} from '#/components/icons/Bell'
+import {
+  getProviderCompositionFromError,
+  ProviderCompositionProvenance,
+} from '#/components/ProviderCompositionProvenance'
 import {NotificationFeedItem} from './NotificationFeedItem'
 
 const EMPTY_FEED_ITEM = {type: 'empty', _reactKey: '__empty__'} as const
@@ -75,6 +79,9 @@ export function NotificationFeed({
   // the `.find()` won't need to go any further than the first page -sfn
   const isEmpty =
     !isFetching && !isError && !data?.pages.find(page => page.items.length > 0)
+  const providerComposition =
+    data?.pages.find(page => page.providerComposition)?.providerComposition ??
+    getProviderCompositionFromError(error)
 
   const items = useMemo(() => {
     let arr: NotificationFeedListItem[] = []
@@ -178,6 +185,10 @@ export function NotificationFeed({
         web: {minHeight: '100%'},
         default: {height: '100%'},
       })}>
+      <ProviderCompositionProvenance
+        surfaceLabel={l`Notifications`}
+        composition={providerComposition}
+      />
       {error && (
         <ErrorMessage
           message={cleanError(error)}

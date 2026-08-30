@@ -33,6 +33,10 @@ import * as FeedCard from '#/components/FeedCard'
 import * as Layout from '#/components/Layout'
 import {InlineLinkText} from '#/components/Link'
 import {ListFooter} from '#/components/Lists'
+import {
+  getProviderCompositionFromError,
+  ProviderCompositionProvenance,
+} from '#/components/ProviderCompositionProvenance'
 import {SearchError} from '#/components/SearchError'
 import {Text} from '#/components/Typography'
 import {type Metrics, useAnalytics} from '#/analytics'
@@ -378,6 +382,9 @@ let SearchScreenPostResults = ({
 
     return temp
   }, [posts, isFetchingNextPage])
+  const providerComposition =
+    results?.pages.find(page => page.providerComposition)
+      ?.providerComposition ?? getProviderCompositionFromError(error)
 
   const closeAllActiveElements = useCloseAllActiveElements()
   const {requestSwitchToAccount} = useLoggedOutViewControls()
@@ -431,17 +438,31 @@ let SearchScreenPostResults = ({
     )
   }
 
-  return error ? (
-    <EmptyState
-      messageText={
-        shouldRetryError(error) || isNetworkError(error)
-          ? l`We’re sorry, but your search could not be completed. Please try again in a few minutes.`
-          : l`We’re sorry, but your search could not be completed.`
-      }
-      error={cleanError(error)}
-    />
-  ) : (
+  if (error) {
+    return (
+      <>
+        <ProviderCompositionProvenance
+          surfaceLabel={l`Search`}
+          composition={providerComposition}
+        />
+        <EmptyState
+          messageText={
+            shouldRetryError(error) || isNetworkError(error)
+              ? l`We’re sorry, but your search could not be completed. Please try again in a few minutes.`
+              : l`We’re sorry, but your search could not be completed.`
+          }
+          error={cleanError(error)}
+        />
+      </>
+    )
+  }
+
+  return (
     <>
+      <ProviderCompositionProvenance
+        surfaceLabel={l`Search`}
+        composition={providerComposition}
+      />
       {isFetched ? (
         <>
           {posts.length ? (

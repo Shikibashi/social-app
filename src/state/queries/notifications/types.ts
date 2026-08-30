@@ -1,3 +1,4 @@
+import {type ProviderCompositionResult} from '#/lib/provider-composition'
 import {type app} from '#/lexicons'
 
 export type Notification = app.bsky.notification.listNotifications.Notification
@@ -20,6 +21,10 @@ export interface FeedPage {
   seenAt: Date
   items: FeedNotification[]
   priority: boolean
+}
+
+export type NotificationFeedPage = FeedPage & {
+  providerComposition?: ProviderCompositionResult<FeedPage>
 }
 
 export interface CachedFeedPage {

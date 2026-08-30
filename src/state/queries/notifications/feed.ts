@@ -43,11 +43,16 @@ import {
   embedViewRecordToPostView,
   getEmbeddedPost,
 } from '../util'
-import {type FeedPage} from './types'
+import {type FeedPage, type NotificationFeedPage} from './types'
 import {useUnreadNotificationsApi} from './unread'
 import {fetchPage, notificationPageClaimKey} from './util'
 
-export type {FeedNotification, FeedPage, NotificationType} from './types'
+export type {
+  FeedNotification,
+  FeedPage,
+  NotificationFeedPage,
+  NotificationType,
+} from './types'
 
 const PAGE_SIZE = 30
 
@@ -77,15 +82,15 @@ export function useNotificationFeedQuery(opts: {
     }
   }, [moderationOpts, hiddenReplyUris])
   const lastRun = useRef<{
-    data: InfiniteData<FeedPage>
+    data: InfiniteData<NotificationFeedPage>
     args: typeof selectArgs
-    result: InfiniteData<FeedPage>
+    result: InfiniteData<NotificationFeedPage>
   } | null>(null)
 
   const query = useInfiniteQuery<
-    FeedPage,
+    NotificationFeedPage,
     Error,
-    InfiniteData<FeedPage>,
+    InfiniteData<NotificationFeedPage>,
     QueryKey,
     RQPageParam
   >({
@@ -99,7 +104,7 @@ export function useNotificationFeedQuery(opts: {
       pageParam: RQPageParam
       signal: AbortSignal
     }) {
-      let page
+      let page: NotificationFeedPage | undefined
       if (filter === 'all' && !pageParam) {
         // for the first page, we check the cached page held by the unread-checker first
         page = unreads.getCachedUnreadPage()
@@ -114,28 +119,30 @@ export function useNotificationFeedQuery(opts: {
             'quote',
           ]
         }
-        page = requireComposedProviderValue(
-          await composeAppViewProviderRead<FeedPage>(
-            'notifications',
-            (providerClient, _provider, context) =>
-              fetchPage({
-                client: providerClient,
-                limit: PAGE_SIZE,
-                cursor: pageParam,
-                queryClient,
-                moderationOpts,
-                fetchAdditionalData: true,
-                reasons,
-                signal: context.signal,
-              }).then(result => result.page),
-            {
-              access: 'account-scoped',
-              clientForProvider: providerClientFactory,
-              claimKey: page => notificationPageClaimKey({page}),
-              signal,
-            },
-          ),
+        const composed = await composeAppViewProviderRead<FeedPage>(
+          'notifications',
+          (providerClient, _provider, context) =>
+            fetchPage({
+              client: providerClient,
+              limit: PAGE_SIZE,
+              cursor: pageParam,
+              queryClient,
+              moderationOpts,
+              fetchAdditionalData: true,
+              reasons,
+              signal: context.signal,
+            }).then(result => result.page),
+          {
+            access: 'account-scoped',
+            clientForProvider: providerClientFactory,
+            claimKey: page => notificationPageClaimKey({page}),
+            signal,
+          },
         )
+        page = {
+          ...requireComposedProviderValue(composed),
+          providerComposition: composed,
+        }
       }
 
       if (filter === 'all' && !pageParam) {
@@ -149,7 +156,7 @@ export function useNotificationFeedQuery(opts: {
     getNextPageParam: lastPage => lastPage.cursor,
     enabled,
     select: useCallback(
-      (data: InfiniteData<FeedPage>) => {
+      (data: InfiniteData<NotificationFeedPage>) => {
         const {moderationOpts, hiddenReplyUris} = selectArgs
 
         // Keep track of the last run and whether we can reuse

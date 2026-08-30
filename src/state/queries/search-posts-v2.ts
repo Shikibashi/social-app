@@ -8,7 +8,10 @@ import {
 } from '@tanstack/react-query'
 
 import {moderatePost} from '#/lib/moderation'
-import {PROVIDER_COMPOSITION_QUERY_META} from '#/lib/provider-composition'
+import {
+  PROVIDER_COMPOSITION_QUERY_META,
+  type ProviderCompositionResult,
+} from '#/lib/provider-composition'
 import {useModerationOpts} from '#/state/preferences/moderation-opts'
 import {
   composeAppViewProviderRead,
@@ -40,6 +43,10 @@ const searchPostsV2QueryKey = ({
   filters?: SearchFilters
 }) => [searchPostsQueryKeyRoot, query, sort, filters]
 
+export type SearchPostsV2Page = app.bsky.feed.searchPostsV2.$OutputBody & {
+  providerComposition?: ProviderCompositionResult<app.bsky.feed.searchPostsV2.$OutputBody>
+}
+
 export function useSearchPostsV2Query({
   query,
   sort,
@@ -62,15 +69,15 @@ export function useSearchPostsV2Query({
     [query, filters?.author, filters?.from, moderationOpts],
   )
   const lastRun = useRef<{
-    data: InfiniteData<app.bsky.feed.searchPostsV2.$OutputBody>
+    data: InfiniteData<SearchPostsV2Page>
     args: typeof selectArgs
-    result: InfiniteData<app.bsky.feed.searchPostsV2.$OutputBody>
+    result: InfiniteData<SearchPostsV2Page>
   } | null>(null)
 
   return useInfiniteQuery<
-    app.bsky.feed.searchPostsV2.$OutputBody,
+    SearchPostsV2Page,
     Error,
-    InfiniteData<app.bsky.feed.searchPostsV2.$OutputBody>,
+    InfiniteData<SearchPostsV2Page>,
     QueryKey,
     string | undefined
   >({
@@ -94,39 +101,41 @@ export function useSearchPostsV2Query({
         filters,
       ) as app.bsky.feed.searchPostsV2.$Params
       const finalQuery = appendFromMe(q, filters?.from === 'me')
-      return requireComposedProviderValue(
-        await composeAppViewProviderRead(
-          'search',
-          (providerClient, _provider, context) =>
-            providerClient.call(
-              app.bsky.feed.searchPostsV2,
-              {
-                ...builtFilters,
-                query: finalQuery,
-                limit: 25,
-                cursor: pageParam,
-                /*
-                 * v2 calls the recency sort 'recent'; the rest of the app still
-                 * uses the v1 'latest' label.
-                 */
-                sort: sort === 'latest' ? 'recent' : sort,
-                allTime: true,
-              },
-              {signal: context.signal},
-            ),
-          {
-            access: 'account-scoped',
-            clientForProvider: providerClientFactory,
-            signal,
-          },
-        ),
+      const composed = await composeAppViewProviderRead(
+        'search',
+        (providerClient, _provider, context) =>
+          providerClient.call(
+            app.bsky.feed.searchPostsV2,
+            {
+              ...builtFilters,
+              query: finalQuery,
+              limit: 25,
+              cursor: pageParam,
+              /*
+               * v2 calls the recency sort 'recent'; the rest of the app still
+               * uses the v1 'latest' label.
+               */
+              sort: sort === 'latest' ? 'recent' : sort,
+              allTime: true,
+            },
+            {signal: context.signal},
+          ),
+        {
+          access: 'account-scoped',
+          clientForProvider: providerClientFactory,
+          signal,
+        },
       )
+      return {
+        ...requireComposedProviderValue(composed),
+        providerComposition: composed,
+      }
     },
     initialPageParam: undefined,
     getNextPageParam: lastPage => lastPage.cursor,
     enabled: enabled ?? !!moderationOpts,
     select: useCallback(
-      (data: InfiniteData<app.bsky.feed.searchPostsV2.$OutputBody>) => {
+      (data: InfiniteData<SearchPostsV2Page>) => {
         const {moderationOpts, isSearchingSpecificUser} = selectArgs
 
         /*
@@ -207,7 +216,7 @@ export function* findAllPostsInQueryData(
   uri: string,
 ): Generator<app.bsky.feed.defs.PostView, undefined> {
   const queryDatas = queryClient.getQueriesData<
-    InfiniteData<app.bsky.feed.searchPostsV2.$OutputBody>
+    InfiniteData<SearchPostsV2Page>
   >({
     queryKey: [searchPostsQueryKeyRoot],
   })
