@@ -32,10 +32,47 @@ export function ProviderCompositionProvenance({
 
   if (!composition) return null
 
+  const sourceNames = composition.observations.length
+    ? [
+        ...new Set(
+          composition.observations.map(
+            observation => observation.provider.displayName,
+          ),
+        ),
+      ].join(', ')
+    : _(msg`No provider answered`)
+  const status = compositionStatusLabel(composition.status)
+  const rule = reconciliationLabel(composition)
+
   return (
     <View
       testID={`provider-composition-provenance-${composition.surface}`}
       style={[styles.container, {borderLeftColor: t.palette.contrast_200}]}>
+      <View
+        testID={`provider-composition-summary-${composition.surface}`}
+        style={styles.summary}>
+        <Text
+          style={[
+            styles.summaryText,
+            {color: t.atoms.text_contrast_medium.color},
+          ]}
+          numberOfLines={2}>
+          <Text style={styles.label}>{_(msg`Source`)}: </Text>
+          {sourceNames}
+        </Text>
+        <Text
+          style={[
+            styles.summaryText,
+            {color: t.atoms.text_contrast_medium.color},
+          ]}
+          numberOfLines={2}>
+          <Text style={styles.label}>{_(msg`Rule`)}: </Text>
+          {rule}
+          {' · '}
+          <Text style={styles.label}>{_(msg`State`)}: </Text>
+          {status}
+        </Text>
+      </View>
       <Pressable
         testID={`provider-composition-provenance-toggle-${composition.surface}`}
         accessibilityRole="button"
@@ -219,10 +256,18 @@ function compositionStatusLabel(
 function reconciliationLabel(
   composition: ProviderCompositionResult<unknown>,
 ): string {
-  if (composition.policy.mode !== 'prefer-provider') {
-    return composition.policy.mode
+  switch (composition.policy.mode) {
+    case 'require-agreement':
+      return 'Require agreement'
+    case 'first-verified':
+      return 'Use first verified result'
+    case 'merge':
+      return 'Merge attributable results'
+    case 'prefer-provider':
+      return `Prefer ${
+        composition.policy.preferredProviderId ?? 'provider not specified'
+      }`
   }
-  return `${composition.policy.mode} · ${composition.policy.preferredProviderId ?? 'provider not specified'}`
 }
 
 const styles = StyleSheet.create({
@@ -230,6 +275,13 @@ const styles = StyleSheet.create({
     borderLeftWidth: 2,
     marginBottom: 4,
     paddingLeft: 8,
+  },
+  summary: {
+    gap: 2,
+    marginBottom: 2,
+  },
+  summaryText: {
+    fontSize: 12,
   },
   toggle: {
     alignSelf: 'flex-start',

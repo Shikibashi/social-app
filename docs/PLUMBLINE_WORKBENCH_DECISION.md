@@ -733,3 +733,40 @@ independent PLC operator evidence remain separate gates.
 | Branding asset | PASS | Published document advertises `/plumbline-mark.svg` as the favicon |
 | Authorization workbench | PASS | The deployed `settings/services?section=authorization` route expanded the delegated-authority inspector with feature authority, upgrades, and whole-session revocation text |
 | Credentialed mutation walkthrough | NOT RUN | The browser check was read-only; no credential or live social mutation was used |
+
+## 28. Iteration 21 — make authority seams visible and addressable
+
+The composition inspector already preserved provider observations, but on
+profile, search, notification, thread, and label surfaces the ordinary view
+only exposed an inspection link. The Services workbench also changed sections
+locally without putting the selected authority surface in the browser URL.
+
+### Authority before versus after
+
+| Surface | Before iteration 21 | After iteration 21 |
+| --- | --- | --- |
+| Composed public reads | Source and reconciliation state were hidden until expansion | A compact Source / Rule / State summary is visible before expansion; full observations remain one action away |
+| Reconciliation language | Policy modes could appear as internal identifiers | The inspector uses user-facing labels while retaining the same policy semantics |
+| Services workbench | Section selection was local component state | Section selection updates the route parameter, so a service inspection can be copied, refreshed, and revisited |
+
+### Implementation evidence
+
+- `src/components/ProviderCompositionProvenance.tsx` reuses the existing
+  composition result to show participating provider names, the local rule,
+  and the observed state. It does not infer operator independence or promote
+  an unverified claim.
+- `src/screens/Settings/ServicesSettings.tsx` routes all in-workbench section
+  changes through `navigation.setParams`, preserving the existing
+  `ServicesSettingsSection` contract and incoming deep links.
+
+### Verification
+
+| Check | Status | Evidence |
+| --- | --- | --- |
+| Provider composition semantics | PASS | Existing `src/lib/provider-composition.test.ts` coverage retained; no selection or verification logic changed |
+| Targeted formatting/lint/type checks | NOT RUN | Run against the two changed client files before commit |
+| Browser workbench inspection | NOT RUN | Verify the compact provenance summary and URL-preserved Services section after deployment |
+
+This iteration improves inspectability and browser addressability without
+claiming provider independence, changing write routing, or closing the
+external OAuth, Relay/AppView, short-TTL, or PLC operator gates.

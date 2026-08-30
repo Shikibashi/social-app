@@ -840,9 +840,14 @@ export function ServicesSettingsScreen({route, navigation}: Props) {
     },
   ]
 
+  function selectSection(section: ServicesSection) {
+    setActiveSection(section)
+    navigation.setParams({section})
+  }
+
   function inspectService(target: ServiceWorkbenchTarget) {
     if (target.kind === 'services') {
-      setActiveSection(target.section)
+      selectSection(target.section)
       return
     }
     navigation.navigate(target.route)
@@ -998,7 +1003,7 @@ export function ServicesSettingsScreen({route, navigation}: Props) {
                     shape="rectangular"
                     color={isActive ? 'primary' : 'secondary'}
                     variant={isActive ? 'solid' : 'outline'}
-                    onPress={() => setActiveSection(section.id)}>
+                    onPress={() => selectSection(section.id)}>
                     <ButtonText>{section.label}</ButtonText>
                   </Button>
                 )
