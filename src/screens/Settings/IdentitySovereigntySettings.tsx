@@ -247,7 +247,9 @@ export function IdentitySovereigntySettingsScreen() {
             </SettingsList.BadgeText>
           </SettingsList.Item>
           <SettingsList.Item>
-            <SettingsList.ItemText>Hosting / PDS</SettingsList.ItemText>
+            <SettingsList.ItemText>
+              Repository PDS (from DID document)
+            </SettingsList.ItemText>
             <SettingsList.BadgeText>
               {overview.pds ?? 'Unavailable'} · separate from identity
             </SettingsList.BadgeText>
@@ -393,11 +395,9 @@ export function IdentitySovereigntySettingsScreen() {
             </SettingsList.BadgeText>
           </SettingsList.Item>
           <SettingsList.Item>
-            <SettingsList.ItemText>Session authority</SettingsList.ItemText>
+            <SettingsList.ItemText>Session login service</SettingsList.ItemText>
             <SettingsList.BadgeText>
-              {currentAccount?.pdsUrl ??
-                currentAccount?.service ??
-                'Unavailable'}
+              {currentAccount?.service ?? 'Unavailable'}
             </SettingsList.BadgeText>
           </SettingsList.Item>
           <SettingsList.PressableItem

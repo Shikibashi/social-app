@@ -730,12 +730,21 @@ export function ServicesSettingsScreen({route}: Props) {
                   <>
                     <SettingsList.Item>
                       <SettingsList.ItemText>
-                        Account host (PDS)
+                        Account service (login)
                       </SettingsList.ItemText>
                       <SettingsList.BadgeText>
                         {currentAccount
-                          ? currentAccount.pdsUrl || currentAccount.service
+                          ? currentAccount.service
                           : 'No active account'}
+                      </SettingsList.BadgeText>
+                    </SettingsList.Item>
+                    <SettingsList.Item>
+                      <SettingsList.ItemText>
+                        Repository PDS
+                      </SettingsList.ItemText>
+                      <SettingsList.BadgeText>
+                        {currentAccount?.pdsUrl ??
+                          'Not available from the DID-backed session state'}
                       </SettingsList.BadgeText>
                     </SettingsList.Item>
                     <SettingsList.Item>
