@@ -247,6 +247,18 @@ function DesktopWorkbenchInspector({routeName}: {routeName: string}) {
         action: _(msg`Notification settings`),
       }
       break
+    case 'CommunityBoard':
+      context = {
+        route: _(msg`Communities`),
+        source: _(msg`Spaces transport and community authority`),
+        rule: _(
+          msg`Membership and community records use the declared Spaces/Radlib transport, not AppView fan-out.`,
+        ),
+        control: _(msg`Inspect, change, export, or reset a boundary`),
+        href: '/settings/services',
+        action: _(msg`Open Services`),
+      }
+      break
     default:
       context = {
         route: routeName,
