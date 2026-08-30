@@ -1,5 +1,5 @@
 import {useEffect, useState} from 'react'
-import {Pressable, View} from 'react-native'
+import {Pressable, StyleSheet, View} from 'react-native'
 
 import {
   type FeedProvenance,
@@ -12,6 +12,7 @@ import {
   getAppViewProviders,
   getSelectedAppViewProvider,
 } from '#/state/session/providers'
+import {useTheme} from '#/alf'
 import * as Layout from '#/components/Layout'
 import {Text} from '#/components/Typography'
 
@@ -24,6 +25,7 @@ export function FeedProvenanceCard({
   onChangeRanking?: () => void
   onChangeProvider?: () => void
 }) {
+  const t = useTheme()
   const [showDetails, setShowDetails] = useState(false)
   const algorithmVersionLabel =
     provenance.algorithmVersion === 'not declared'
@@ -34,6 +36,22 @@ export function FeedProvenanceCard({
 
   return (
     <Layout.Content contentContainerStyle={{paddingVertical: 2}}>
+      <View
+        testID="feed-provenance-summary"
+        accessibilityRole="text"
+        style={[styles.summary, {borderLeftColor: t.palette.contrast_200}]}>
+        <Text style={styles.summaryName} numberOfLines={1}>
+          {provenance.feedName}
+        </Text>
+        <Text
+          style={[
+            styles.summaryDetails,
+            {color: t.atoms.text_contrast_medium.color},
+          ]}
+          numberOfLines={2}>
+          {provenance.algorithmName} · Source: {provenance.provider}
+        </Text>
+      </View>
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={
@@ -45,7 +63,8 @@ export function FeedProvenanceCard({
         style={({pressed}) => [
           {
             alignSelf: 'flex-start',
-            borderRadius: 6,
+            borderColor: t.palette.contrast_200,
+            borderWidth: 1,
             paddingHorizontal: 8,
             paddingVertical: 4,
           },
@@ -127,6 +146,21 @@ export function FeedProvenanceCard({
     </Layout.Content>
   )
 }
+
+const styles = StyleSheet.create({
+  summary: {
+    borderLeftWidth: 2,
+    gap: 2,
+    marginBottom: 4,
+    paddingLeft: 8,
+  },
+  summaryName: {
+    fontWeight: '600',
+  },
+  summaryDetails: {
+    fontSize: 12,
+  },
+})
 
 export function ActiveFeedProvenance({
   feedName,
