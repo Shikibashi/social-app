@@ -1360,6 +1360,11 @@ silently hidden.
 | Web TypeScript | PASS | `pnpm typecheck:web` |
 | English catalog extraction/compile | PASS | `pnpm intl:extract && pnpm intl:compile`; 3321 source messages |
 | Production web export | PASS | `EXPO_PUBLIC_ENV=production pnpm build-web`; existing bundle-size warnings remain |
+| Client code commit and push | PASS | `91f7e4314` pushed to `fork/codex/spaces-alpha-integration` |
+| Decision record commit and push | PASS | `2bd0816f0` pushed to `fork/codex/spaces-alpha-integration` |
+| Pages deployment | PASS | `https://aad5cdf4.social-edriffles.pages.dev` uploaded to `social-edriffles` using Node `v24.19.0` |
+| ChatGPT in-app browser profile inspection | PASS | Canonical `https://plumblines.uk/profile/edriffles.us?audit=profile-media-91f7e4314` showed the authority summary, record URI, source links, and no alert |
+| Direct media load | PASS | The same browser inspection reported the PDS-served avatar and banner images complete with non-zero dimensions |
 
 The client code remains compatible with the existing provider composition
 architecture. The external Relay/AppView, short-TTL OAuth, and independent-PLC
