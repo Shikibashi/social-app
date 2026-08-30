@@ -633,7 +633,8 @@ feed-state model.
 | Targeted Prettier | PASS | `pnpm exec prettier --check src/components/FeedProvenanceCard.tsx` |
 | Targeted Oxlint | PASS | `pnpm exec oxlint --quiet src/components/FeedProvenanceCard.tsx` |
 | Web TypeScript | PASS | `pnpm run typecheck:web` |
-| Browser baseline | PASS | ChatGPT in-app browser loaded the canonical feed and showed the existing feed-details control plus posts; deployment verification follows the build |
+| Production-shaped web export | PASS | `pnpm run build-web`; export completed with the existing bundle-size warnings |
+| Deployed browser verification | PASS | Wrangler deployment `https://4d5949ec.social-edriffles.pages.dev`; canonical `https://plumblines.uk/?deployment=4d5949ec` loaded in the ChatGPT in-app browser with 4 summaries, 1 feed-details control, 96 like controls, 32 reply controls, 32 repost/quote controls, and no application error |
 
 This iteration improves ordinary-view legibility of feed authority without
 claiming provider independence, cryptographic feed manifests, or completion
