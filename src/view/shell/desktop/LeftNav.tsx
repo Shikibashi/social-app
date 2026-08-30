@@ -27,6 +27,7 @@ import {LoadingPlaceholder} from '#/view/com/util/LoadingPlaceholder'
 import {PressableWithHover} from '#/view/com/util/PressableWithHover'
 import {UserAvatar} from '#/view/com/util/UserAvatar'
 import {NavSignupCard} from '#/view/shell/NavSignupCard'
+import {PlumblineShellBrand} from '#/view/shell/PlumblineShellBrand'
 import {
   atoms as a,
   tokens,
@@ -663,6 +664,7 @@ export function DesktopLeftNav({routeName}: {routeName: string}) {
           ],
         },
       ]}>
+      <PlumblineShellBrand minimal={leftNavMinimal} style={[a.mb_md]} />
       {hasSession ? (
         <ProfileCard minimal={leftNavMinimal} />
       ) : !leftNavMinimal ? (

@@ -27,8 +27,8 @@ import {type SessionAccount, useSession} from '#/state/session'
 import {useSetDrawerOpen} from '#/state/shell'
 import {formatCount} from '#/view/com/util/numeric/format'
 import {UserAvatar} from '#/view/com/util/UserAvatar'
-import {useLogoVariant} from '#/view/icons/useLogoVariant'
 import {NavSignupCard} from '#/view/shell/NavSignupCard'
+import {PlumblineShellBrand} from '#/view/shell/PlumblineShellBrand'
 import {atoms as a, tokens, useTheme, web} from '#/alf'
 import {Button, ButtonIcon, ButtonText} from '#/components/Button'
 import {useDialogControl} from '#/components/Dialog'
@@ -324,6 +324,7 @@ let DrawerContent = ({}: React.PropsWithoutRef<{}>): React.ReactNode => {
           },
         ]}>
         <View style={[a.px_xl]}>
+          <PlumblineShellBrand style={[a.mb_lg]} />
           {hasSession && currentAccount ? (
             <DrawerProfileCard
               account={currentAccount}
@@ -749,36 +750,21 @@ function MenuItem({icon, label, count, bold, onPress}: MenuItemProps) {
 
 function ExtraLinks() {
   const {_} = useLingui()
-  const t = useTheme()
-  const logoVariant = useLogoVariant()
 
   return (
     <View style={[a.flex_col, a.gap_md, a.flex_wrap]}>
       <InlineLinkText
         style={[a.text_md]}
         label={_(msg`Terms of Service`)}
-        to="https://bsky.social/about/support/tos">
+        to="/support/tos">
         <Trans>Terms of Service</Trans>
       </InlineLinkText>
       <InlineLinkText
         style={[a.text_md]}
-        to="https://bsky.social/about/support/privacy-policy"
+        to="/support/privacy"
         label={_(msg`Privacy Policy`)}>
         <Trans>Privacy Policy</Trans>
       </InlineLinkText>
-      {logoVariant === 'kawaii' && (
-        <Text style={t.atoms.text_contrast_medium}>
-          <Trans>
-            Logo by{' '}
-            <InlineLinkText
-              style={[a.text_md]}
-              to="/profile/sawaratsuki.bsky.social"
-              label="@sawaratsuki.bsky.social">
-              @sawaratsuki.bsky.social
-            </InlineLinkText>
-          </Trans>
-        </Text>
-      )}
     </View>
   )
 }

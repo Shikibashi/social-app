@@ -222,12 +222,10 @@ export function SettingsScreen({}: Props) {
               Private spaces and communities
             </SettingsList.ItemText>
           </SettingsList.LinkItem>
-          <SettingsList.LinkItem
-            to="/moderation"
-            label={l`Moderation and content filters`}>
+          <SettingsList.LinkItem to="/moderation" label={l`Moderation & Reach`}>
             <SettingsList.ItemIcon icon={HandIcon} />
             <SettingsList.ItemText>
-              <Trans>Moderation and content filters</Trans>
+              <Trans>Moderation &amp; Reach</Trans>
             </SettingsList.ItemText>
           </SettingsList.LinkItem>
           <SettingsList.LinkItem

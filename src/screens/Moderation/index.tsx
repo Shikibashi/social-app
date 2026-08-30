@@ -2,8 +2,7 @@ import {Fragment, useCallback} from 'react'
 import {Linking, View} from 'react-native'
 import {Trans, useLingui} from '@lingui/react/macro'
 
-import {LABELS} from '#/lib/moderation'
-import {getLabelingServiceTitle, isAppLabeler} from '#/lib/moderation'
+import {getLabelingServiceTitle, isAppLabeler, LABELS} from '#/lib/moderation'
 import {
   type CommonNavigatorParams,
   type NativeStackScreenProps,
@@ -95,7 +94,7 @@ export function ModerationScreen(
         <Layout.Header.BackButton />
         <Layout.Header.Content>
           <Layout.Header.TitleText>
-            <Trans>Moderation</Trans>
+            <Trans>Moderation &amp; Reach</Trans>
           </Layout.Header.TitleText>
         </Layout.Header.Content>
         <Layout.Header.Slot />
@@ -181,6 +180,59 @@ function SubItem({
   )
 }
 
+function ModerationLayers() {
+  const t = useTheme()
+
+  return (
+    <View
+      style={[
+        a.mb_2xl,
+        a.border,
+        a.p_lg,
+        a.gap_sm,
+        t.atoms.bg_contrast_25,
+        t.atoms.border_contrast_low,
+      ]}>
+      <Text style={[a.font_semi_bold, t.atoms.text_contrast_high]}>
+        <Trans>How a moderation decision reaches your screen</Trans>
+      </Text>
+      <Text style={[a.text_sm, a.leading_snug, t.atoms.text_contrast_medium]}>
+        <Trans>
+          A service makes an assertion, your rule interprets it, and Plumbline
+          applies the resulting client action. These are separate authorities;
+          changing a local rule does not erase the underlying record or label.
+        </Trans>
+      </Text>
+      <View style={[a.gap_xs, a.pt_xs]}>
+        {[
+          ['Source', 'A labeler, host, account, or other named actor'],
+          ['Assertion / label', 'The claim supplied by that source'],
+          ['My rule', 'Your selected response to the claim'],
+          ['Client action', 'Warn, hide, filter, downrank, or allow'],
+        ].map(([label, description]) => (
+          <View key={label} style={[a.flex_row, a.align_center, a.gap_sm]}>
+            <View
+              style={[
+                {
+                  width: 4,
+                  height: 28,
+                  backgroundColor: t.atoms.border_contrast_high.borderColor,
+                },
+              ]}
+            />
+            <View style={[a.flex_1, a.gap_2xs]}>
+              <Text style={[a.text_sm, a.font_semi_bold]}>{label}</Text>
+              <Text style={[a.text_xs, t.atoms.text_contrast_medium]}>
+                {description}
+              </Text>
+            </View>
+          </View>
+        ))}
+      </View>
+    </View>
+  )
+}
+
 export function ModerationScreenInner({
   preferences,
 }: {
@@ -252,6 +304,7 @@ export function ModerationScreenInner({
 
   return (
     <View style={[a.pt_2xl, a.px_lg, gtMobile && a.px_2xl]}>
+      <ModerationLayers />
       {isModerationInboxEnabled && (
         <Link
           label={l`View your moderation inbox`}
@@ -262,7 +315,6 @@ export function ModerationScreenInner({
             <SubItem
               title={l`Moderation inbox`}
               icon={Inbox}
-              badge={3} // TODO This is a placeholder value. -dsb
               style={[
                 t.atoms.bg_contrast_25,
                 (state.hovered || state.pressed) && [t.atoms.bg_contrast_50],

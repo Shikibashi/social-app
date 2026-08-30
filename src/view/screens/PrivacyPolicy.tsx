@@ -3,6 +3,7 @@ import {msg} from '@lingui/core/macro'
 import {useLingui} from '@lingui/react'
 import {Trans} from '@lingui/react/macro'
 
+import {PRODUCT_NAME} from '#/lib/brand'
 import {usePalette} from '#/lib/hooks/usePalette'
 import {
   type CommonNavigatorParams,
@@ -22,12 +23,13 @@ export const PrivacyPolicyScreen = (_props: Props) => {
 
   return (
     <Layout.Screen>
-      <ViewHeader title={_(msg`Privacy Policy`)} />
+      <ViewHeader title={_(msg`Provider Privacy Policy`)} />
       <ScrollView style={[s.hContentRegion, pal.view]}>
         <View style={[s.p20]}>
           <Text style={pal.text}>
             <Trans>
-              The Privacy Policy has been moved to{' '}
+              {PRODUCT_NAME} uses the hosting provider's privacy policy, which
+              is maintained at{' '}
               <TextLink
                 style={pal.link}
                 href="https://bsky.social/about/support/privacy-policy"
