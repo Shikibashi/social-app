@@ -18,7 +18,10 @@ import {
   filterPublicPostsForViewer,
   hasDirectViewerBlock,
 } from '#/state/queries/public-visibility'
-import {hydrateBlockedThreadItems} from '#/state/queries/usePostThread/blocked'
+import {
+  enforceThreadViewerBlockBoundaries,
+  hydrateBlockedThreadItems,
+} from '#/state/queries/usePostThread/blocked'
 import {
   LINEAR_VIEW_BELOW,
   LINEAR_VIEW_BF,
@@ -125,6 +128,26 @@ async function fetchThreadPostsWithPublicFallback(
   }
 }
 
+type PostThreadQueryParams = Partial<
+  Omit<app.bsky.unspecced.getPostThreadV2.$Params, 'anchor'>
+>
+
+function fetchPostThread(
+  client: Client,
+  anchor: string,
+  params: PostThreadQueryParams,
+  signal?: AbortSignal,
+): Promise<app.bsky.unspecced.getPostThreadV2.$OutputBody> {
+  return client.call(
+    app.bsky.unspecced.getPostThreadV2,
+    {
+      anchor: anchor as AtUriString,
+      ...params,
+    },
+    {signal},
+  )
+}
+
 export function usePostThread({anchor}: {anchor?: string}) {
   const qc = useQueryClient()
   const client = useAppviewClient()
@@ -172,24 +195,21 @@ export function usePostThread({anchor}: {anchor?: string}) {
         | undefined
       let threadClient = client
       let threadPublicClient = publicClient
+      const threadParams = {
+        branchingFactor: view === 'linear' ? LINEAR_VIEW_BF : TREE_VIEW_BF,
+        below,
+        sort,
+      } satisfies PostThreadQueryParams
       try {
-        const providerClients = new Map<string, Client>()
         const composed = await composeAppViewProviderRead(
           'threads',
-          async (providerClient, provider, context) => {
-            providerClients.set(provider.id, providerClient)
-            return providerClient.call(
-              app.bsky.unspecced.getPostThreadV2,
-              {
-                anchor: anchor! as AtUriString,
-                branchingFactor:
-                  view === 'linear' ? LINEAR_VIEW_BF : TREE_VIEW_BF,
-                below,
-                sort: sort,
-              },
-              {signal: context.signal},
-            )
-          },
+          (providerClient, _provider, context) =>
+            fetchPostThread(
+              providerClient,
+              anchor!,
+              threadParams,
+              context.signal,
+            ),
           {
             access: 'account-scoped',
             clientForProvider: providerClientFactory,
@@ -202,27 +222,68 @@ export function usePostThread({anchor}: {anchor?: string}) {
         const selectedProvider = getAppViewProvidersForSurface('threads').find(
           provider => provider.id === selectedProviderId,
         )
-        threadClient =
-          (selectedProviderId && providerClients.get(selectedProviderId)) ||
-          client
+        threadClient = selectedProvider
+          ? providerClientFactory(selectedProvider)
+          : client
         threadPublicClient = selectedProvider
           ? getPublicAppviewClient(selectedProvider.endpoint)
           : publicClient
       } catch (error) {
         if (ctx.signal.aborted) throw error
-        if (!pdsClient || !currentAccount?.did) throw error
-        const directPost = await fetchAccountPost({
-          pdsClient,
-          appviewClient: client,
-          actor: currentAccount.did,
-          uri: anchor!,
-        })
-        if (!directPost) throw error
-        data = {
-          hasOtherReplies: false,
-          thread: [views.postViewToThreadPlaceholder(directPost)],
+        try {
+          /*
+           * Public thread data does not require the account's OAuth grant.
+           * This matters for an otherwise valid session whose grant predates
+           * an optional thread-read permission, and for links to an actor on
+           * another PDS. Keep the public retry inside the same provider
+           * composition boundary so provider choice and provenance remain
+           * explicit instead of silently routing to a hard-coded endpoint.
+           */
+          const composed = await composeAppViewProviderRead(
+            'threads',
+            (providerClient, _provider, context) =>
+              fetchPostThread(
+                providerClient,
+                anchor!,
+                threadParams,
+                context.signal,
+              ),
+            {access: 'public', signal: ctx.signal},
+          )
+          providerComposition = composed
+          data = requireComposedProviderValue(composed)
+          if (pdsClient && currentAccount?.did) {
+            data = {
+              ...data,
+              thread: await enforceThreadViewerBlockBoundaries(
+                client,
+                data.thread,
+              ),
+            }
+          }
+          const selectedProvider = getAppViewProvidersForSurface(
+            'threads',
+          ).find(provider => provider.id === composed.selectedProviderIds[0])
+          threadClient = selectedProvider
+            ? getPublicAppviewClient(selectedProvider.endpoint)
+            : publicClient
+          threadPublicClient = threadClient
+        } catch (publicError) {
+          if (ctx.signal.aborted) throw publicError
+          if (!pdsClient || !currentAccount?.did) throw error
+          const directPost = await fetchAccountPost({
+            pdsClient,
+            appviewClient: client,
+            actor: currentAccount.did,
+            uri: anchor!,
+          })
+          if (!directPost) throw error
+          data = {
+            hasOtherReplies: false,
+            thread: [views.postViewToThreadPlaceholder(directPost)],
+          }
+          providerComposition = undefined
         }
-        providerComposition = undefined
       }
 
       const missingAnchor = data.thread.some(

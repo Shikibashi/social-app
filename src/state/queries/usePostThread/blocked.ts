@@ -1,6 +1,10 @@
+import {type Client} from '@atproto/lex'
 import {type AtUriString} from '@atproto/syntax'
 
-import {hasDirectViewerBlock} from '#/state/queries/public-visibility'
+import {
+  filterPublicPostsForViewer,
+  hasDirectViewerBlock,
+} from '#/state/queries/public-visibility'
 import {type ApiThreadItem} from '#/state/queries/usePostThread/types'
 import {app} from '#/lexicons'
 import * as bsky from '#/types/bsky'
@@ -58,6 +62,52 @@ export function hydrateThreadPost(
     ...item,
     value,
   } as unknown as ApiThreadItem
+}
+
+/**
+ * Public thread reads do not contain the viewer's relationship state. Restore
+ * the client's direct-block boundary before rendering an anonymous fallback;
+ * a relationship lookup failure remains fail-closed rather than exposing a
+ * post that the viewer may have directly blocked.
+ */
+export async function enforceThreadViewerBlockBoundaries(
+  client: Client,
+  thread: app.bsky.unspecced.getPostThreadV2.ThreadItem[],
+): Promise<app.bsky.unspecced.getPostThreadV2.ThreadItem[]> {
+  const postItems = thread.filter(item =>
+    bsky.isType(app.bsky.unspecced.defs.threadItemPost, item.value),
+  )
+  if (!postItems.length) return thread
+
+  const visiblePosts = await filterPublicPostsForViewer(
+    client,
+    postItems.map(
+      item => (item.value as app.bsky.unspecced.defs.ThreadItemPost).post,
+    ),
+  )
+  const visibleUris = new Set(visiblePosts.map(post => post.uri))
+
+  return thread.map(item => {
+    if (
+      !bsky.isType(app.bsky.unspecced.defs.threadItemPost, item.value) ||
+      visibleUris.has(item.uri)
+    ) {
+      return item
+    }
+
+    const post = item.value.post
+    return {
+      ...item,
+      value: {
+        $type: 'app.bsky.unspecced.defs#threadItemBlocked' as const,
+        author: {
+          $type: 'app.bsky.feed.defs#blockedAuthor' as const,
+          did: post.author.did,
+          viewer: post.author.viewer,
+        },
+      },
+    }
+  })
 }
 
 /**

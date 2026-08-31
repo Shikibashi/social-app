@@ -1,10 +1,15 @@
+import {type Client} from '@atproto/lex'
 import {type AtUriString} from '@atproto/syntax'
 import {describe, expect, it} from '@jest/globals'
 
 import {type ApiThreadItem} from '#/state/queries/usePostThread/types'
 import {app} from '#/lexicons'
 import * as bsky from '#/types/bsky'
-import {hasViewerBlockBoundary, hydrateBlockedThreadItems} from './blocked'
+import {
+  enforceThreadViewerBlockBoundaries,
+  hasViewerBlockBoundary,
+  hydrateBlockedThreadItems,
+} from './blocked'
 
 const blockedUri =
   'at://did:plc:parent/app.bsky.feed.post/parent' as AtUriString
@@ -144,6 +149,69 @@ describe('pairwise thread visibility', () => {
     )
 
     expect(result).toEqual([directBlockedItem])
+  })
+
+  it('converts directly blocked posts in an anonymous thread fallback to tombstones', async () => {
+    const visibleUri =
+      'at://did:plc:visible/app.bsky.feed.post/visible' as AtUriString
+    const visiblePost = {
+      ...post,
+      uri: visibleUri,
+      author: {
+        did: 'did:plc:visible',
+        handle: 'visible.example.com',
+      },
+    }
+    const thread = [
+      {
+        $type: 'app.bsky.unspecced.getPostThreadV2#threadItem' as const,
+        uri: blockedUri,
+        depth: 0,
+        value: {
+          $type: 'app.bsky.unspecced.defs#threadItemPost' as const,
+          post,
+          opThread: false,
+          moreParents: false,
+          moreReplies: 0,
+          hiddenByThreadgate: false,
+          mutedByViewer: false,
+        },
+      },
+      {
+        $type: 'app.bsky.unspecced.getPostThreadV2#threadItem' as const,
+        uri: visibleUri,
+        depth: 1,
+        value: {
+          $type: 'app.bsky.unspecced.defs#threadItemPost' as const,
+          post: visiblePost,
+          opThread: false,
+          moreParents: false,
+          moreReplies: 0,
+          hiddenByThreadgate: false,
+          mutedByViewer: false,
+        },
+      },
+    ] satisfies app.bsky.unspecced.getPostThreadV2.ThreadItem[]
+    const client = {
+      call: jest.fn((_method: unknown, params: {actor: string}) => ({
+        viewer:
+          params.actor === 'did:plc:parent'
+            ? {
+                blocking: 'at://did:plc:viewer/app.bsky.graph.block/direct',
+              }
+            : undefined,
+      })),
+    } as unknown as Client
+
+    const result = await enforceThreadViewerBlockBoundaries(client, thread)
+
+    expect(
+      bsky.isType(app.bsky.unspecced.defs.threadItemBlocked, result[0].value),
+    ).toBe(true)
+    expect(
+      bsky.isType(app.bsky.unspecced.defs.threadItemPost, result[1].value),
+    ).toBe(true)
+    expect(client.call).toHaveBeenCalledTimes(2)
   })
 
   it('leaves the tombstone in place when hydration fails', async () => {
