@@ -188,6 +188,7 @@ export function NotificationFeed({
       <ProviderCompositionProvenance
         surfaceLabel={l`Notifications`}
         composition={providerComposition}
+        summaryPresentation={error ? 'full' : 'compact'}
       />
       {error && (
         <ErrorMessage

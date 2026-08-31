@@ -582,6 +582,7 @@ export function PostThread({uri}: {uri: string}) {
       <ProviderCompositionProvenance
         surfaceLabel="Thread"
         composition={providerComposition}
+        summaryPresentation={thread.state.error ? 'full' : 'compact'}
       />
 
       {thread.state.error ? (

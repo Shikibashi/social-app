@@ -182,6 +182,23 @@ export function hasWhyThisPostDetails(model: WhyThisPostModel): boolean {
   )
 }
 
+/**
+ * A feed boundary already identifies the selected feed, its reader, and its
+ * ordinary reconciliation state once. Repeat a placement affordance on an
+ * individual post only when this post has a public reason of its own or when
+ * the read path is degraded or contested.
+ */
+export function hasWhyThisPostPlacementDetails(
+  model: WhyThisPostModel,
+): boolean {
+  return Boolean(
+    model.localReasons.length ||
+    model.providerExplanation ||
+    (model.providerCompositionStatus &&
+      model.providerCompositionStatus !== 'agreement'),
+  )
+}
+
 export type WhyPostCategory =
   | 'followed'
   | 'explicit-interest'

@@ -23,8 +23,10 @@ import {Text} from '#/components/Typography'
  */
 export function MediaDeliveryProvenance({
   provenance,
+  summaryPresentation = 'full',
 }: {
   provenance?: AccountProfileMediaProvenance
+  summaryPresentation?: 'full' | 'compact'
 }) {
   const {_} = useLingui()
   const t = useTheme()
@@ -51,6 +53,7 @@ export function MediaDeliveryProvenance({
         source={_(msg`Account PDS profile record`)}
         rule={_(msg`Profile record determines blob CID`)}
         state={_(msg`Record available; direct PDS delivery`)}
+        presentation={summaryPresentation}
       />
       <Pressable
         testID="media-delivery-provenance-toggle"

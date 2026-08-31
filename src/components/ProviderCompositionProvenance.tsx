@@ -25,10 +25,12 @@ export function ProviderCompositionProvenance({
   surfaceLabel,
   composition,
   showSummary = true,
+  summaryPresentation = 'full',
 }: {
   surfaceLabel: string
   composition?: ProviderCompositionResult<unknown>
   showSummary?: boolean
+  summaryPresentation?: 'full' | 'compact'
 }) {
   const {_, i18n} = useLingui()
   const t = useTheme()
@@ -56,9 +58,11 @@ export function ProviderCompositionProvenance({
       {showSummary ? (
         <PlumblineAuthoritySummary
           testID={`provider-composition-summary-${composition.surface}`}
+          title={summaryPresentation === 'compact' ? surfaceLabel : undefined}
           source={sourceNames}
           rule={rule}
           state={status}
+          presentation={summaryPresentation}
         />
       ) : null}
       <Pressable

@@ -40,7 +40,7 @@ import {FAB} from '#/view/com/util/fab/FAB'
 import {type ListMethods} from '#/view/com/util/List'
 import {LoadLatestBtn} from '#/view/com/util/load-latest/LoadLatestBtn'
 import {MainScrollProvider} from '#/view/com/util/MainScrollProvider'
-import {useBreakpoints, useTheme} from '#/alf'
+import {useTheme} from '#/alf'
 import {ActiveFeedProvenance} from '#/components/FeedProvenanceCard'
 import {useHeaderOffset} from '#/components/hooks/useHeaderOffset'
 import {EditBig_Stroke2_Corner2_Rounded as EditBigIcon} from '#/components/icons/EditBig'
@@ -98,7 +98,6 @@ export function FeedPage({
   const [feedProviderComposition, setFeedProviderComposition] =
     useState<ProviderCompositionResult<unknown>>()
   const headerOffset = useHeaderOffset()
-  const {gtMobile} = useBreakpoints()
   const feedFeedback = useFeedFeedback(feedInfo, hasSession)
   const scrollElRef = useRef<ListMethods>(null)
   const [hasNew, setHasNew] = useState(false)
@@ -299,7 +298,6 @@ export function FeedPage({
       // @ts-expect-error web only -sfn
       dataSet={{nosnippet: isDiscoverFeed ? '' : undefined}}>
       <MainScrollProvider>
-        {gtMobile && <FeedProvenanceHeader />}
         <FeedFeedbackProvider value={feedFeedback}>
           <PostFeed
             testID={testID ? `${testID}-feed` : undefined}
@@ -320,7 +318,7 @@ export function FeedPage({
             contentFilterPolicy={localFeedPreferences.contentFilterPolicy}
             onFeedContext={onFeedContext}
             headerOffset={headerOffset}
-            ListHeaderComponent={gtMobile ? undefined : FeedProvenanceHeader}
+            ListHeaderComponent={FeedProvenanceHeader}
             savedFeedConfig={savedFeedConfig}
             isVideoFeed={isVideoFeed}
             showComposerPrompt

@@ -444,6 +444,7 @@ let SearchScreenPostResults = ({
         <ProviderCompositionProvenance
           surfaceLabel={l`Search`}
           composition={providerComposition}
+          summaryPresentation="full"
         />
         <EmptyState
           messageText={
@@ -462,6 +463,7 @@ let SearchScreenPostResults = ({
       <ProviderCompositionProvenance
         surfaceLabel={l`Search`}
         composition={providerComposition}
+        summaryPresentation="compact"
       />
       {isFetched ? (
         <>
@@ -601,6 +603,7 @@ let SearchScreenUserResults = ({
         <ProviderCompositionProvenance
           surfaceLabel={l`People`}
           composition={providerComposition}
+          summaryPresentation="full"
         />
         <EmptyState
           messageText={
@@ -619,6 +622,7 @@ let SearchScreenUserResults = ({
       <ProviderCompositionProvenance
         surfaceLabel={l`People`}
         composition={providerComposition}
+        summaryPresentation="compact"
       />
       {profiles.length ? (
         <List
@@ -722,6 +726,7 @@ let SearchScreenFeedsResults = ({
         <ProviderCompositionProvenance
           surfaceLabel={l`Feeds`}
           composition={providerComposition}
+          summaryPresentation="full"
         />
         <EmptyState
           messageText={
@@ -740,6 +745,7 @@ let SearchScreenFeedsResults = ({
       <ProviderCompositionProvenance
         surfaceLabel={l`Feeds`}
         composition={providerComposition}
+        summaryPresentation="compact"
       />
       {feeds.length || hasNextPage ? (
         <List

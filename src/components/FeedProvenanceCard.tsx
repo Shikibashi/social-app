@@ -48,6 +48,7 @@ export function FeedProvenanceCard({
         source={provenance.provider || _(msg`Not declared`)}
         rule={rule}
         state={state}
+        presentation="compact"
       />
       <ProviderCompositionProvenance
         surfaceLabel={provenance.feedName}

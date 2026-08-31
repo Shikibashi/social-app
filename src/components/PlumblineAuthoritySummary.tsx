@@ -17,21 +17,33 @@ export function PlumblineAuthoritySummary({
   state,
   testID,
   title,
+  presentation = 'full',
 }: {
   source: string
   rule: string
   state: string
   testID: string
   title?: string
+  /**
+   * Ordinary reading surfaces keep the current authority visible without
+   * forcing the full source/rule explanation ahead of their primary content.
+   * Workbenches and error surfaces retain the full presentation.
+   */
+  presentation?: 'full' | 'compact'
 }) {
   const {_} = useLingui()
   const t = useTheme()
+  const isCompact = presentation === 'compact'
 
   return (
     <View
       testID={testID}
       accessibilityRole="text"
-      style={[styles.container, {borderLeftColor: t.palette.contrast_200}]}>
+      style={[
+        styles.container,
+        isCompact && styles.compactContainer,
+        {borderLeftColor: t.palette.contrast_200},
+      ]}>
       <View
         aria-hidden={true}
         pointerEvents="none"
@@ -47,26 +59,42 @@ export function PlumblineAuthoritySummary({
           ]}
         />
       </View>
-      {title ? (
-        <Text style={styles.title} numberOfLines={1}>
-          {title}
+      {isCompact ? (
+        <Text
+          style={[styles.text, {color: t.atoms.text_contrast_medium.color}]}
+          numberOfLines={1}>
+          {title ? <Text style={styles.title}>{title}</Text> : null}
+          {title ? ' · ' : null}
+          <Text style={styles.label}>{_(msg`Source`)}: </Text>
+          {source}
+          {' · '}
+          <Text style={styles.label}>{_(msg`State`)}: </Text>
+          {state}
         </Text>
-      ) : null}
-      <Text
-        style={[styles.text, {color: t.atoms.text_contrast_medium.color}]}
-        numberOfLines={2}>
-        <Text style={styles.label}>{_(msg`Source`)}: </Text>
-        {source}
-      </Text>
-      <Text
-        style={[styles.text, {color: t.atoms.text_contrast_medium.color}]}
-        numberOfLines={2}>
-        <Text style={styles.label}>{_(msg`Rule`)}: </Text>
-        {rule}
-        {' · '}
-        <Text style={styles.label}>{_(msg`State`)}: </Text>
-        {state}
-      </Text>
+      ) : (
+        <>
+          {title ? (
+            <Text style={styles.title} numberOfLines={1}>
+              {title}
+            </Text>
+          ) : null}
+          <Text
+            style={[styles.text, {color: t.atoms.text_contrast_medium.color}]}
+            numberOfLines={2}>
+            <Text style={styles.label}>{_(msg`Source`)}: </Text>
+            {source}
+          </Text>
+          <Text
+            style={[styles.text, {color: t.atoms.text_contrast_medium.color}]}
+            numberOfLines={2}>
+            <Text style={styles.label}>{_(msg`Rule`)}: </Text>
+            {rule}
+            {' · '}
+            <Text style={styles.label}>{_(msg`State`)}: </Text>
+            {state}
+          </Text>
+        </>
+      )}
     </View>
   )
 }
@@ -78,6 +106,10 @@ const styles = StyleSheet.create({
     marginBottom: 4,
     paddingLeft: 8,
     position: 'relative',
+  },
+  compactContainer: {
+    justifyContent: 'center',
+    minHeight: 24,
   },
   marker: {
     bottom: 4,

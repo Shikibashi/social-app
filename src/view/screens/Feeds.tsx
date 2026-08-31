@@ -464,6 +464,7 @@ export function FeedsScreen(_props: Props) {
                     ? searchFeedsComposition
                     : popularFeedsComposition
                 }
+                summaryPresentation="compact"
               />
             </View>
           </>

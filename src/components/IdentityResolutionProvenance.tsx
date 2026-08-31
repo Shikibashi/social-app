@@ -21,8 +21,10 @@ import {Text} from '#/components/Typography'
  */
 export function IdentityResolutionProvenance({
   result,
+  summaryPresentation = 'full',
 }: {
   result: IdentityClaimsResult
+  summaryPresentation?: 'full' | 'compact'
 }) {
   const {_, i18n} = useLingui()
   const t = useTheme()
@@ -35,9 +37,11 @@ export function IdentityResolutionProvenance({
     <View testID="identity-resolution-provenance" style={styles.container}>
       <PlumblineAuthoritySummary
         testID="identity-resolution-authority-summary"
+        title={summaryPresentation === 'compact' ? _(msg`Identity`) : undefined}
         source={source}
         rule={rule}
         state={state}
+        presentation={summaryPresentation}
       />
       <Pressable
         testID="identity-resolution-provenance-toggle"

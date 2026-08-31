@@ -5,7 +5,10 @@ import {msg} from '@lingui/core/macro'
 import {useLingui} from '@lingui/react'
 
 import {type FeedProviderProvenance} from '#/lib/api/feed/types'
-import {buildWhyThisPostModel, hasWhyThisPostDetails} from '#/lib/attention-ui'
+import {
+  buildWhyThisPostModel,
+  hasWhyThisPostPlacementDetails,
+} from '#/lib/attention-ui'
 import {
   type ProviderCompositionStatus,
   type ProviderIndependence,
@@ -61,7 +64,7 @@ export function PostProvenance({
     ],
   )
 
-  if (!hasWhyThisPostDetails(model)) return null
+  if (!hasWhyThisPostPlacementDetails(model)) return null
 
   const onCopyPostUri = (event: {stopPropagation: () => void}) => {
     event.stopPropagation()

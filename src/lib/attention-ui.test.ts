@@ -1,6 +1,7 @@
 import {
   buildWhyThisPostModel,
   hasWhyThisPostDetails,
+  hasWhyThisPostPlacementDetails,
   healthLabel,
   parseFeedProviderContext,
   providerRankingExplanation,
@@ -98,7 +99,32 @@ describe('attention sovereignty UI models', () => {
     expect(model.providerCompositionStatus).toBe('agreement')
     expect(model.providerIndependence).toBe('not-established')
     expect(hasWhyThisPostDetails(model)).toBe(true)
+    expect(hasWhyThisPostPlacementDetails(model)).toBe(true)
     expect(JSON.stringify(model)).not.toContain('privateSignal')
+  })
+
+  it('keeps generic feed and reader provenance at the feed boundary', () => {
+    const model = buildWhyThisPostModel({
+      postUri: 'at://did:plc:author/app.bsky.feed.post/1',
+      feedDescriptor: 'following',
+      feedSource: {
+        displayName: 'Following',
+        creatorHandle: 'system',
+        uri: 'at://did:plc:system/app.bsky.feed.generator/following',
+      },
+      providerProvenance: [
+        {
+          id: 'appview-a',
+          displayName: 'AppView A',
+          endpoint: 'https://appview-a.example',
+        },
+      ],
+      providerCompositionStatus: 'agreement',
+      providerIndependence: 'not-established',
+    })
+
+    expect(hasWhyThisPostDetails(model)).toBe(true)
+    expect(hasWhyThisPostPlacementDetails(model)).toBe(false)
   })
 
   it('does not create a placement disclosure for empty evidence', () => {
@@ -111,5 +137,6 @@ describe('attention sovereignty UI models', () => {
 
     expect(model.localReasons).toEqual([])
     expect(hasWhyThisPostDetails(model)).toBe(false)
+    expect(hasWhyThisPostPlacementDetails(model)).toBe(false)
   })
 })

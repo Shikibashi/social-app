@@ -404,13 +404,18 @@ function ProfileScreenLoaded({
         />
         <MediaDeliveryProvenance
           provenance={profileUnshadowed.mediaProvenance}
+          summaryPresentation="compact"
         />
         {identityResolution ? (
-          <IdentityResolutionProvenance result={identityResolution} />
+          <IdentityResolutionProvenance
+            result={identityResolution}
+            summaryPresentation="compact"
+          />
         ) : null}
         <ProviderCompositionProvenance
           surfaceLabel={_(msg`Profile`)}
           composition={profileComposition}
+          summaryPresentation="compact"
         />
       </ScrollForwarderView>
     )
