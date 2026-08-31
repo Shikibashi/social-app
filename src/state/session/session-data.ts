@@ -31,11 +31,20 @@ export type SessionData = {
 /** Whether an access token was issued for a queued (waitlisted) signup. */
 export function isSignupQueued(accessJwt: string | undefined) {
   if (accessJwt) {
-    const sessData = jwtDecode(accessJwt)
-    return (
-      hasProp(sessData, 'scope') &&
-      sessData.scope === 'com.atproto.signupQueued'
-    )
+    try {
+      const sessData = jwtDecode(accessJwt)
+      return (
+        hasProp(sessData, 'scope') &&
+        sessData.scope === 'com.atproto.signupQueued'
+      )
+    } catch {
+      /*
+       * OAuth access credentials are not required to use the legacy JWT
+       * shape. A non-JWT credential cannot carry the legacy queued-signup
+       * scope, but it is still a valid input to the OAuth session boundary.
+       */
+      return false
+    }
   }
   return false
 }

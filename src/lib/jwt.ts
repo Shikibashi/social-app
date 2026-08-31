@@ -23,7 +23,16 @@ export function isJwtExpired(token: string) {
 }
 
 export function isAppPassword(token: string) {
-  const payload = jwtDecode(token)
-  // @ts-expect-error
-  return payload.scope === 'com.atproto.appPass'
+  try {
+    const payload = jwtDecode(token)
+    // @ts-expect-error
+    return payload.scope === 'com.atproto.appPass'
+  } catch {
+    /*
+     * OAuth access credentials may be opaque rather than JWTs. They cannot
+     * carry the legacy App Password scope, but must not crash callers that
+     * render account settings alongside OAuth sessions.
+     */
+    return false
+  }
 }

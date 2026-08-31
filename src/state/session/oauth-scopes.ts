@@ -1,4 +1,5 @@
 import {type OAuthClientMetadataInput} from '@atproto/oauth-client-expo'
+import {isValidDid} from '@atproto/syntax'
 import {type MessageDescriptor} from '@lingui/core'
 import {msg} from '@lingui/core/macro'
 
@@ -48,6 +49,7 @@ export const OAUTH_SOCIAL_GRAPH_SCOPES = [
  */
 export const OAUTH_SPACE_SCOPES = [
   'space:us.edriffles.radlib.account?authority=*&action=read',
+  'space:us.edriffles.radlib.account?authority=*&collection=us.edriffles.radlib.private.post&action=read',
   'space:us.edriffles.radlib.account?authority=*&manage=update',
   'space:us.edriffles.radlib.account?authority=self&collection=us.edriffles.radlib.private.post&action=create&action=update&action=delete',
   'space:us.edriffles.radlib.community?authority=*&action=read',
@@ -56,6 +58,19 @@ export const OAUTH_SPACE_SCOPES = [
   'space:us.edriffles.radlib.community?authority=*&manage=update',
   'space:us.edriffles.radlib.community?authority=*&collection=us.edriffles.radlib.private.post&action=create&action=update&action=delete',
 ] as const
+
+/**
+ * Older Spaces grants included a collection on a read permission. The PDS
+ * matcher deliberately ignores collections for reads, so this is an exact
+ * compatibility alias for the current collection-independent declaration.
+ */
+const OAUTH_LEGACY_SPACE_SCOPE_ALIASES: Readonly<Record<string, string>> = {
+  'space:us.edriffles.radlib.community?authority=*&collection=us.edriffles.radlib.private.post&action=read':
+    OAUTH_SPACE_SCOPES[4],
+  'space:us.edriffles.radlib.community?authority=*&collection=us.edriffles.radlib.private.post&manage=update':
+    OAUTH_SPACE_SCOPES[7],
+}
+const OAUTH_SPACE_COLLECTION = 'us.edriffles.radlib.private.post'
 
 /** Blob permissions cannot be placed in a permission-set and stay explicit. */
 export const OAUTH_MEDIA_SCOPES = ['blob:*/*'] as const
@@ -88,6 +103,17 @@ export const OAUTH_TRANSITION_SCOPES = [
   'transition:chat.bsky',
 ] as const
 export const OAUTH_COMPATIBILITY_SCOPES = OAUTH_TRANSITION_SCOPES
+
+/**
+ * Scopes issued by an earlier Spaces authorization flow are declared for
+ * compatibility only. They remain preservable when a user upgrades another
+ * feature, but are not added to the new Spaces request unless the feature
+ * ledger requires them.
+ */
+export const OAUTH_METADATA_COMPATIBILITY_SCOPES = [
+  'space:us.edriffles.radlib.account?authority=*&collection=us.edriffles.radlib.private.post&manage=update',
+  'space:us.edriffles.radlib.community?authority=*&collection=us.edriffles.radlib.private.post&manage=update',
+] as const
 
 export const OAUTH_FEATURES = [
   'posting',
@@ -133,8 +159,24 @@ export const OAUTH_BASE_SCOPES = [
   ...OAUTH_DEFAULT_FEATURES.flatMap(feature => OAUTH_FEATURE_SCOPES[feature]),
 ] as const
 
-/** The complete scope advertised in metadata and sent on first authorization. */
+/** The least-authority scope requested by a new authorization flow. */
 export const OAUTH_SCOPE = OAUTH_BASE_SCOPES.join(' ')
+
+/**
+ * The maximum scope set declared by the client metadata document. OAuth
+ * authorization requests may ask for a subset of this set, so optional
+ * feature scopes must be declared here without being added to first login.
+ * Transitional scopes are included only so an existing compatibility grant
+ * can be preserved during an explicit feature upgrade.
+ */
+export const OAUTH_METADATA_SCOPE = [
+  ...new Set([
+    ...OAUTH_BASE_SCOPES,
+    ...OAUTH_TRANSITION_SCOPES,
+    ...OAUTH_METADATA_COMPATIBILITY_SCOPES,
+    ...OAUTH_FEATURES.flatMap(feature => OAUTH_FEATURE_SCOPES[feature]),
+  ]),
+].join(' ')
 
 /**
  * Native OAuth callbacks must use a private-use scheme derived from the
@@ -480,14 +522,57 @@ export function hasOAuthFeature(
 export function getOAuthFeatureUpgradeScopes(
   grantedScopes: string | readonly string[] | undefined,
   feature: OAuthFeature,
+  selfDid?: string,
 ): string[] {
-  const normalized = normalizeOAuthScopes(grantedScopes)
+  const normalized = normalizeOAuthScopes(grantedScopes).map(scope =>
+    canonicalizeOAuthUpgradeScope(scope, selfDid),
+  )
   const grant = getOAuthFeatureGrant(normalized, feature)
   const additionalScopes =
     grant.status === 'compatibility'
       ? getOAuthFeatureScopes(feature)
       : grant.missingScopes
   return mergeOAuthScopes('atproto', normalized, additionalScopes)
+}
+
+/**
+ * The PDS resolves `authority=self` to the granting DID when it materializes a
+ * token scope. OAuth metadata, however, declares the request-time `self` form.
+ * Translate only the exact feature-ledger scopes for this account back to that
+ * request form during an upgrade; concrete authorities for other actors remain
+ * untouched and are never widened to a wildcard.
+ */
+function canonicalizeOAuthUpgradeScope(
+  scope: string,
+  selfDid?: string,
+): string {
+  const legacyAlias = OAUTH_LEGACY_SPACE_SCOPE_ALIASES[scope]
+  if (legacyAlias) return legacyAlias
+  if (!selfDid || !isValidDid(selfDid)) return scope
+
+  return (
+    OAUTH_SPACE_SCOPES.find(candidate => {
+      if (!candidate.includes('?authority=self')) return false
+
+      const resolvedCandidate = candidate.replace(
+        'authority=self',
+        `authority=${selfDid}`,
+      )
+      if (resolvedCandidate === scope) return true
+
+      // Space lexicons may materialize their declared collection when the
+      // request used a bare manage permission. That produces a second,
+      // equivalent token-scope spelling that must also be upgraded safely.
+      return (
+        !candidate.includes('&collection=') &&
+        candidate.includes('&manage=') &&
+        resolvedCandidate.replace(
+          '&manage=',
+          `&collection=${OAUTH_SPACE_COLLECTION}&manage=`,
+        ) === scope
+      )
+    }) ?? scope
+  )
 }
 
 /** Merge scopes without dropping permissions already held by the session. */
@@ -521,7 +606,7 @@ function buildOAuthClientMetadata(publicWebOrigin: string) {
     ],
     response_types: ['code'],
     grant_types: ['authorization_code', 'refresh_token'],
-    scope: OAUTH_SCOPE,
+    scope: OAUTH_METADATA_SCOPE,
     application_type: 'native',
     token_endpoint_auth_method: 'none',
     dpop_bound_access_tokens: true,

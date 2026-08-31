@@ -502,6 +502,7 @@ export async function createSessionBundleAndOAuthUpgrade(
     feature,
     hooks,
     currentScopes,
+    account.did,
   )
   bundle = buildBundle(session, account.pdsUrl)
   registerBundleKillSwitch(bundle, hooks.kill)

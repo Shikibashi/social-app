@@ -206,6 +206,9 @@ jest.mock('jwt-decode', () => ({
     if (token === 'queued-access-jwt') {
       return {scope: 'com.atproto.signupQueued'}
     }
+    if (token === 'opaque-access-token') {
+      throw new Error('Invalid token specified: missing part #2')
+    }
     /*
      * A far-future exp so isSessionExpired() reads this stored token as still
      * valid, which routes resume() through the sync (no-network) fast path.
@@ -365,6 +368,14 @@ describe('sessionDataToSessionAccount', () => {
       'https://bsky.social',
     )!
     expect(notQueued.signupQueued).toBe(false)
+  })
+
+  it('does not crash when an OAuth access credential is not a JWT', () => {
+    const account = sessionDataToSessionAccount(
+      makeSessionData({accessJwt: 'opaque-access-token'}),
+      'https://bsky.social',
+    )!
+    expect(account.signupQueued).toBe(false)
   })
 
   it('coerces missing email flags to false', () => {

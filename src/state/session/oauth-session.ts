@@ -123,6 +123,7 @@ export async function reauthorizeOAuthFeature(
   feature: OAuthFeature,
   hooks: OAuthSessionHooks = {},
   grantedScopes?: string | readonly string[],
+  selfDid?: string,
 ) {
   let resolvedScopes = grantedScopes
   if (!resolvedScopes) {
@@ -137,7 +138,7 @@ export async function reauthorizeOAuthFeature(
       resolvedScopes = OAUTH_SCOPE
     }
   }
-  const scope = getOAuthFeatureUpgradeScopes(resolvedScopes, feature)
+  const scope = getOAuthFeatureUpgradeScopes(resolvedScopes, feature, selfDid)
   return signInWithOAuth(identifierOrService, hooks, {
     scope: scope.join(' '),
     prompt: 'consent',

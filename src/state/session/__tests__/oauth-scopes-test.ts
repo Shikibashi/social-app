@@ -16,6 +16,8 @@ import {
   OAUTH_FEATURES,
   OAUTH_IDENTITY_RECOVERY_SCOPES,
   OAUTH_MEDIA_SCOPES,
+  OAUTH_METADATA_COMPATIBILITY_SCOPES,
+  OAUTH_METADATA_SCOPE,
   OAUTH_NATIVE_REDIRECT_URI,
   OAUTH_NOTIFICATION_SCOPES,
   OAUTH_POSTING_SCOPES,
@@ -64,9 +66,27 @@ describe('OAuth permission contract', () => {
     expect(OAUTH_SCOPE).not.toContain(OAUTH_IDENTITY_RECOVERY_SCOPES[0])
   })
 
+  it('declares optional and compatibility scopes without requesting them at login', () => {
+    expect(OAUTH_METADATA_SCOPE).toContain(OAUTH_SPACE_SCOPES[0])
+    expect(OAUTH_METADATA_SCOPE).toContain(OAUTH_FEATURE_SCOPES.chat[0])
+    expect(OAUTH_METADATA_SCOPE).toContain(OAUTH_MEDIA_SCOPES[0])
+    expect(OAUTH_METADATA_SCOPE).toContain(OAUTH_TRANSITION_SCOPES[0])
+    expect(OAUTH_METADATA_SCOPE).toContain(
+      OAUTH_METADATA_COMPATIBILITY_SCOPES[0],
+    )
+    expect(OAUTH_METADATA_SCOPE).toContain(
+      OAUTH_METADATA_COMPATIBILITY_SCOPES[1],
+    )
+    expect(new Set(OAUTH_METADATA_SCOPE.split(' ')).size).toBe(
+      OAUTH_METADATA_SCOPE.split(' ').length,
+    )
+    expect(OAUTH_SCOPE).not.toContain(OAUTH_SPACE_SCOPES[0])
+  })
+
   it('keeps Spaces, media, chat, and notification grants feature-scoped', () => {
     expect(OAUTH_SPACE_SCOPES).toEqual([
       'space:us.edriffles.radlib.account?authority=*&action=read',
+      'space:us.edriffles.radlib.account?authority=*&collection=us.edriffles.radlib.private.post&action=read',
       'space:us.edriffles.radlib.account?authority=*&manage=update',
       'space:us.edriffles.radlib.account?authority=self&collection=us.edriffles.radlib.private.post&action=create&action=update&action=delete',
       'space:us.edriffles.radlib.community?authority=*&action=read',
@@ -133,6 +153,59 @@ describe('OAuth permission contract', () => {
       'transition:generic',
       ...OAUTH_POSTING_SCOPES,
     ])
+  })
+
+  it('canonicalizes PDS-materialized self scopes during upgrades', () => {
+    const selfDid = 'did:plc:3ijrhre2q5e4tt2f4ph2sneo'
+    const materializedSelfScope =
+      'space:us.edriffles.radlib.account?authority=did:plc:3ijrhre2q5e4tt2f4ph2sneo&collection=us.edriffles.radlib.private.post&action=create&action=update&action=delete'
+    const legacyCollectionReadScope =
+      'space:us.edriffles.radlib.community?authority=*&collection=us.edriffles.radlib.private.post&action=read'
+    const materializedSelfManagementScope =
+      'space:us.edriffles.radlib.community?authority=did:plc:3ijrhre2q5e4tt2f4ph2sneo&collection=us.edriffles.radlib.private.post&manage=create'
+    const legacyCollectionManagementScope =
+      'space:us.edriffles.radlib.community?authority=*&collection=us.edriffles.radlib.private.post&manage=update'
+
+    expect(
+      getOAuthFeatureUpgradeScopes(
+        ['atproto', materializedSelfScope],
+        'chat',
+        selfDid,
+      ),
+    ).toEqual(['atproto', OAUTH_SPACE_SCOPES[3], OAUTH_FEATURE_SCOPES.chat[0]])
+    expect(
+      getOAuthFeatureUpgradeScopes(
+        ['atproto', materializedSelfScope],
+        'chat',
+        selfDid,
+      ),
+    ).not.toContain(materializedSelfScope)
+    expect(
+      getOAuthFeatureUpgradeScopes(
+        ['atproto', materializedSelfScope],
+        'chat',
+        'did:plc:other-account',
+      ),
+    ).toContain(materializedSelfScope)
+    expect(
+      getOAuthFeatureUpgradeScopes(
+        ['atproto', legacyCollectionReadScope],
+        'chat',
+      ),
+    ).toEqual(['atproto', OAUTH_SPACE_SCOPES[4], OAUTH_FEATURE_SCOPES.chat[0]])
+    expect(
+      getOAuthFeatureUpgradeScopes(
+        ['atproto', materializedSelfManagementScope],
+        'chat',
+        selfDid,
+      ),
+    ).toEqual(['atproto', OAUTH_SPACE_SCOPES[5], OAUTH_FEATURE_SCOPES.chat[0]])
+    expect(
+      getOAuthFeatureUpgradeScopes(
+        ['atproto', legacyCollectionManagementScope],
+        'chat',
+      ),
+    ).toEqual(['atproto', OAUTH_SPACE_SCOPES[7], OAUTH_FEATURE_SCOPES.chat[0]])
   })
 
   it('keeps the complete feature ledger attributable to each feature', () => {
@@ -222,7 +295,7 @@ describe('OAuth permission contract', () => {
       `${staticMetadata.client_uri}/oauth/callback`,
     )
     expect(staticMetadata.client_uri).toBe('https://plumblines.uk')
-    expect(staticMetadata.scope).toBe(OAUTH_SCOPE)
+    expect(staticMetadata.scope).toBe(OAUTH_METADATA_SCOPE)
 
     const normalizeOriginBoundFields = (metadata: typeof staticMetadata) => ({
       ...metadata,
