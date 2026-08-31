@@ -41,9 +41,9 @@ export function PlumblineShellBrand({
               a.flex_shrink,
               {
                 fontFamily: 'Georgia, "Times New Roman", serif',
-                fontSize: 26,
-                lineHeight: 30,
-                letterSpacing: 1.2,
+                fontSize: 24,
+                lineHeight: 28,
+                letterSpacing: 0.8,
                 textTransform: 'uppercase',
               },
             ]}>

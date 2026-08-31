@@ -45,43 +45,41 @@ function HomeHeaderLayoutDesktopAndTablet({
 
   return (
     <>
-      {hasSession && (
-        <Layout.Center>
-          <View
-            testID="plumbline-document-stream-heading"
-            style={[
-              a.flex_row,
-              a.align_center,
-              gutters,
-              a.pt_md,
-              a.pb_sm,
-              t.atoms.bg,
-            ]}>
+      <Layout.Center>
+        <View
+          testID="plumbline-document-stream-heading"
+          style={[
+            a.flex_row,
+            a.align_center,
+            gutters,
+            a.pt_md,
+            a.pb_sm,
+            t.atoms.bg,
+          ]}>
+          <View testID="plumbline-document-stream-marker" style={styles.marker}>
             <View
-              testID="plumbline-document-stream-marker"
-              style={styles.marker}>
-              <View
-                aria-hidden={true}
-                style={[styles.markerLine, {backgroundColor: PLUMBLINE_BRASS}]}
-              />
-              <View
-                aria-hidden={true}
-                style={[
-                  styles.markerBob,
-                  {
-                    backgroundColor: PLUMBLINE_BRASS,
-                    borderColor: t.palette.contrast_975,
-                  },
-                ]}
-              />
-            </View>
-            <PlumblineBrandMark size={28} />
-            <View style={[a.flex_1, a.pl_sm]}>
-              <Text style={styles.headingEyebrow}>DOCUMENT STREAM</Text>
-              <Text style={[styles.headingTitle, t.atoms.text]}>
-                Home workspace
-              </Text>
-            </View>
+              aria-hidden={true}
+              style={[styles.markerLine, {backgroundColor: PLUMBLINE_BRASS}]}
+            />
+            <View
+              aria-hidden={true}
+              style={[
+                styles.markerBob,
+                {
+                  backgroundColor: PLUMBLINE_BRASS,
+                  borderColor: t.palette.contrast_975,
+                },
+              ]}
+            />
+          </View>
+          <PlumblineBrandMark size={28} />
+          <View style={[a.flex_1, a.pl_sm]}>
+            <Text style={styles.headingEyebrow}>DOCUMENT STREAM</Text>
+            <Text style={[styles.headingTitle, t.atoms.text]}>
+              {hasSession ? 'Home workspace' : 'Public discovery'}
+            </Text>
+          </View>
+          {hasSession && (
             <Link
               to="/feeds"
               hitSlop={HITSLOP_10}
@@ -96,9 +94,9 @@ function HomeHeaderLayoutDesktopAndTablet({
               style={[a.justify_center]}>
               <ButtonIcon icon={FeedsIcon} size="lg" />
             </Link>
-          </View>
-        </Layout.Center>
-      )}
+          )}
+        </View>
+      </Layout.Center>
       {tabBarAnchor}
       <Layout.Center
         style={[a.sticky, a.z_10, a.align_center, t.atoms.bg, {top: 0}]}
