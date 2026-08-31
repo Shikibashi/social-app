@@ -1,6 +1,6 @@
-import {type StyleProp, View, type ViewStyle} from 'react-native'
+import {type StyleProp, StyleSheet, View, type ViewStyle} from 'react-native'
 
-import {PRODUCT_NAME} from '#/lib/brand'
+import {PLUMBLINE_BRASS, PRODUCT_NAME} from '#/lib/brand'
 import {PlumblineBrandMark} from '#/view/icons/PlumblineBrandMark'
 import {atoms as a, useTheme} from '#/alf'
 import {Text} from '#/components/Typography'
@@ -28,8 +28,10 @@ export function PlumblineShellBrand({
       accessibilityRole="image"
       accessibilityLabel={PRODUCT_NAME}
       accessibilityHint="">
-      <View style={[a.flex_row, a.align_center, a.gap_sm]}>
-        <PlumblineBrandMark size={minimal ? 36 : 34} />
+      <View
+        testID="plumbline-brand-lockup"
+        style={[a.flex_row, a.align_center, a.gap_sm]}>
+        <PlumblineBrandMark size={minimal ? 36 : 40} />
         {!minimal && (
           <Text
             numberOfLines={1}
@@ -39,7 +41,9 @@ export function PlumblineShellBrand({
               a.flex_shrink,
               {
                 fontFamily: 'Georgia, "Times New Roman", serif',
-                letterSpacing: 0.3,
+                fontSize: 26,
+                lineHeight: 30,
+                letterSpacing: 1.2,
                 textTransform: 'uppercase',
               },
             ]}>
@@ -89,9 +93,56 @@ export function PlumblineWorkbenchMasthead({
 }: {
   style?: StyleProp<ViewStyle>
 }) {
+  const t = useTheme()
+
   return (
-    <View testID="plumbline-responsive-masthead" style={[a.w_full, style]}>
-      <PlumblineShellBrand />
+    <View
+      testID="plumbline-responsive-masthead"
+      style={[a.w_full, a.flex_row, a.align_start, style]}>
+      <View testID="plumbline-masthead-marker" style={styles.mastheadMarker}>
+        <View
+          aria-hidden={true}
+          style={[styles.mastheadLine, {backgroundColor: PLUMBLINE_BRASS}]}
+        />
+        <View
+          aria-hidden={true}
+          style={[
+            styles.mastheadBob,
+            {
+              backgroundColor: PLUMBLINE_BRASS,
+              borderColor: t.palette.contrast_975,
+            },
+          ]}
+        />
+      </View>
+      <View style={[a.flex_1]}>
+        <PlumblineShellBrand />
+      </View>
     </View>
   )
 }
+
+const styles = StyleSheet.create({
+  mastheadMarker: {
+    width: 12,
+    height: 52,
+    marginRight: 10,
+    position: 'relative',
+  },
+  mastheadLine: {
+    position: 'absolute',
+    top: 0,
+    bottom: 7,
+    left: 5,
+    width: 2,
+  },
+  mastheadBob: {
+    position: 'absolute',
+    bottom: 0,
+    left: 2,
+    width: 8,
+    height: 8,
+    borderWidth: 1,
+    transform: [{rotate: '45deg'}],
+  },
+})

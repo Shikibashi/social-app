@@ -33,7 +33,10 @@ export function useBreakpoints(): Record<Breakpoint, boolean> & {
 export function useLayoutBreakpoints() {
   const rightNavVisible = useMediaQuery({minWidth: 1100})
   const centerColumnOffset = useMediaQuery({minWidth: 1100, maxWidth: 1300})
-  const leftNavMinimal = useMediaQuery({maxWidth: 1300})
+  // Keep the labeled Navigator visible while the three-pane workbench still
+  // fits. The compact rail is the fallback for genuinely narrow desktop
+  // widths, not the default for a viewport that still has an Inspector.
+  const leftNavMinimal = useMediaQuery({maxWidth: 1180})
 
   return {
     rightNavVisible,

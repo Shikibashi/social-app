@@ -86,17 +86,40 @@ export function DesktopRightNav({routeName}: {routeName: string}) {
         }),
       ]}>
       <DesktopWorkbenchInspector routeName={routeName} />
-      {!isSearchScreen && <DesktopSearch />}
+      <View testID="plumbline-inspector-tools" style={styles.inspectorTools}>
+        <Text
+          accessibilityRole="header"
+          style={[styles.secondaryHeading, t.atoms.text_contrast_medium]}>
+          Tools & alternatives
+        </Text>
+        {!isSearchScreen && <DesktopSearch />}
 
-      {hasSession && (
-        <>
-          <DesktopFeeds />
-          <ProgressGuideList />
-        </>
+        {hasSession && (
+          <>
+            <Text
+              accessibilityRole="header"
+              style={[styles.secondaryHeading, t.atoms.text_contrast_medium]}>
+              Available feeds
+            </Text>
+            <DesktopFeeds />
+            <ProgressGuideList />
+          </>
+        )}
+      </View>
+
+      {showExploreScreenDuplicatedContent && (
+        <View
+          testID="plumbline-inspector-discovery"
+          style={styles.inspectorDiscovery}>
+          <Text
+            accessibilityRole="header"
+            style={[styles.secondaryHeading, t.atoms.text_contrast_medium]}>
+            Discovery
+          </Text>
+          <SidebarLiveEventFeedsBanner />
+          <SidebarTrendingTopics />
+        </View>
       )}
-
-      {showExploreScreenDuplicatedContent && <SidebarLiveEventFeedsBanner />}
-      {showExploreScreenDuplicatedContent && <SidebarTrendingTopics />}
 
       <Text style={[a.leading_snug, t.atoms.text_contrast_low]}>
         {hasSession && (
@@ -556,6 +579,23 @@ function InspectorDetail({
 }
 
 const styles = StyleSheet.create({
+  inspectorTools: {
+    gap: 10,
+    paddingTop: 4,
+  },
+  inspectorDiscovery: {
+    gap: 10,
+    paddingTop: 4,
+  },
+  secondaryHeading: {
+    borderTopWidth: 1,
+    paddingTop: 8,
+    fontFamily: 'Courier New, "Liberation Mono", monospace',
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+  },
   inspector: {
     borderWidth: 1,
     padding: 10,

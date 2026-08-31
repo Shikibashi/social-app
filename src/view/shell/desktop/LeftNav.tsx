@@ -31,7 +31,6 @@ import {PlumblineSelectionMarker} from '#/view/shell/PlumblineSelectionMarker'
 import {PlumblineShellBrand} from '#/view/shell/PlumblineShellBrand'
 import {
   atoms as a,
-  tokens,
   useBreakpoints,
   useLayoutBreakpoints,
   useTheme,
@@ -183,11 +182,9 @@ function ProfileCard({minimal}: {minimal: boolean}) {
                       <View
                         style={[
                           a.flex_1,
-                          a.transition_opacity,
-                          !active && a.transition_delay_50ms,
                           {
-                            marginLeft: tokens.space.xl * -1,
-                            opacity: active ? 1 : 0,
+                            marginLeft: 0,
+                            opacity: 1,
                           },
                         ]}>
                         <Text
@@ -210,11 +207,7 @@ function ProfileCard({minimal}: {minimal: boolean}) {
                       </View>
                       <EllipsisIcon
                         aria-hidden={true}
-                        style={[
-                          t.atoms.text_contrast_medium,
-                          a.transition_opacity,
-                          {opacity: active ? 1 : 0},
-                        ]}
+                        style={[t.atoms.text_contrast_medium, {opacity: 1}]}
                         size="sm"
                       />
                     </>
@@ -552,7 +545,7 @@ function NavItem({
         ) : null}
       </View>
       {!minimal && (
-        <Text style={[a.text_xl, isCurrent ? a.font_bold : a.font_normal]}>
+        <Text style={[a.text_md, isCurrent ? a.font_bold : a.font_normal]}>
           {label}
         </Text>
       )}

@@ -1,19 +1,20 @@
 import {type JSX} from 'react'
-import {View} from 'react-native'
+import {StyleSheet, View} from 'react-native'
 import {msg} from '@lingui/core/macro'
 import {useLingui} from '@lingui/react'
 
+import {PLUMBLINE_BRASS} from '#/lib/brand'
 import {HITSLOP_10} from '#/lib/constants'
 import {useSession} from '#/state/session'
 import {useShellLayout} from '#/state/shell/shell-layout'
 import {HomeHeaderLayoutMobile} from '#/view/com/home/HomeHeaderLayoutMobile'
-import {Logo} from '#/view/icons/Logo'
-import {useLogoVariant} from '#/view/icons/useLogoVariant'
+import {PlumblineBrandMark} from '#/view/icons/PlumblineBrandMark'
 import {atoms as a, useBreakpoints, useGutters, useTheme} from '#/alf'
 import {ButtonIcon} from '#/components/Button'
 import {Hashtag_Stroke2_Corner0_Rounded as FeedsIcon} from '#/components/icons/Hashtag'
 import * as Layout from '#/components/Layout'
 import {Link} from '#/components/Link'
+import {Text} from '#/components/Typography'
 import {useAnalytics} from '#/analytics'
 
 export function HomeHeaderLayout(props: {
@@ -40,7 +41,6 @@ function HomeHeaderLayoutDesktopAndTablet({
   const {hasSession} = useSession()
   const {_} = useLingui()
   const ax = useAnalytics()
-  const logoVariant = useLogoVariant()
   const gutters = useGutters([0, 'base'])
 
   return (
@@ -48,18 +48,39 @@ function HomeHeaderLayoutDesktopAndTablet({
       {hasSession && (
         <Layout.Center>
           <View
-            style={[a.flex_row, a.align_center, gutters, a.pt_md, t.atoms.bg]}>
-            <View style={{width: 34}} />
-            <View style={[a.flex_1, a.align_center, a.justify_center]}>
-              <Logo
-                width={
-                  logoVariant === 'kawaii'
-                    ? 60
-                    : logoVariant === 'japan'
-                      ? 34
-                      : 28
-                }
+            testID="plumbline-document-stream-heading"
+            style={[
+              a.flex_row,
+              a.align_center,
+              gutters,
+              a.pt_md,
+              a.pb_sm,
+              t.atoms.bg,
+            ]}>
+            <View
+              testID="plumbline-document-stream-marker"
+              style={styles.marker}>
+              <View
+                aria-hidden={true}
+                style={[styles.markerLine, {backgroundColor: PLUMBLINE_BRASS}]}
               />
+              <View
+                aria-hidden={true}
+                style={[
+                  styles.markerBob,
+                  {
+                    backgroundColor: PLUMBLINE_BRASS,
+                    borderColor: t.palette.contrast_975,
+                  },
+                ]}
+              />
+            </View>
+            <PlumblineBrandMark size={28} />
+            <View style={[a.flex_1, a.pl_sm]}>
+              <Text style={styles.headingEyebrow}>DOCUMENT STREAM</Text>
+              <Text style={[styles.headingTitle, t.atoms.text]}>
+                Home workspace
+              </Text>
             </View>
             <Link
               to="/feeds"
@@ -89,3 +110,41 @@ function HomeHeaderLayoutDesktopAndTablet({
     </>
   )
 }
+
+const styles = StyleSheet.create({
+  marker: {
+    width: 10,
+    height: 32,
+    marginRight: 8,
+    position: 'relative',
+  },
+  markerLine: {
+    position: 'absolute',
+    top: 0,
+    bottom: 5,
+    left: 4,
+    width: 1,
+  },
+  markerBob: {
+    position: 'absolute',
+    bottom: 0,
+    left: 1,
+    width: 7,
+    height: 7,
+    borderWidth: 1,
+    transform: [{rotate: '45deg'}],
+  },
+  headingEyebrow: {
+    fontFamily: 'Courier New, "Liberation Mono", monospace',
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 1.2,
+    lineHeight: 15,
+  },
+  headingTitle: {
+    fontFamily: 'Georgia, "Times New Roman", serif',
+    fontSize: 17,
+    fontWeight: '700',
+    lineHeight: 22,
+  },
+})

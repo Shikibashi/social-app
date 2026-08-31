@@ -233,7 +233,7 @@ body {
   background-color: var(--ecw-surface) !important;
   border-inline: 1px solid var(--ecw-border-structural) !important;
   border-bottom: 1px solid var(--ecw-border-strong) !important;
-  padding: 12px 16px 0 !important;
+  padding: 14px 16px 0 !important;
   box-shadow: 0 2px 0 var(--ecw-hard-shadow);
 }
 
@@ -244,8 +244,10 @@ body {
 }
 
 [data-testid='plumbline-left-nav'] {
+  background-color: var(--ecw-surface) !important;
   border-right: 1px solid var(--ecw-border-structural);
   padding-right: 12px !important;
+  box-shadow: 2px 0 0 var(--ecw-hard-shadow);
 }
 
 [data-testid='plumbline-left-nav'] [data-testid^='plumbline-nav-'] {
@@ -283,8 +285,22 @@ body {
 }
 
 [data-testid='plumbline-right-nav'] {
+  background-color: var(--ecw-workspace) !important;
   border-left: 1px solid var(--ecw-border-structural);
   padding-left: 16px !important;
+}
+
+[data-testid='plumbline-inspector-tools'],
+[data-testid='plumbline-inspector-discovery'] {
+  border-top: 1px solid var(--ecw-rule-decorative);
+}
+
+[data-testid='plumbline-inspector-tools'] > [role='heading'],
+[data-testid='plumbline-inspector-discovery'] > [role='heading'] {
+  color: var(--ecw-text-muted);
+  font-family: var(--ecw-font-system);
+  font-size: var(--ecw-font-size-micro) !important;
+  letter-spacing: 0.08em;
 }
 
 [data-testid='plumbline-workbench-inspector'] {

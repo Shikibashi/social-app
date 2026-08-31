@@ -16,9 +16,11 @@ export const BUTTON_VISUAL_ALIGNMENT_OFFSET = 3
 export const HEADER_SLOT_SIZE = 33
 
 /**
- * How far to shift the center column when in the tablet breakpoint
+ * How far to shift the center column when the desktop workbench is between
+ * the full and wide breakpoints. The smaller shift leaves room for the
+ * labeled Navigator as well as the Inspector.
  */
-export const CENTER_COLUMN_OFFSET = -105
+export const CENTER_COLUMN_OFFSET = -50
 
 /**
  * How wide the center column is
