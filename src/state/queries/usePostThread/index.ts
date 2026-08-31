@@ -190,6 +190,7 @@ export function usePostThread({anchor}: {anchor?: string}) {
     queryKey: postThreadQueryKey,
     async queryFn(ctx) {
       let data: app.bsky.unspecced.getPostThreadV2.$OutputBody
+      let hasOtherReplies = false
       let providerComposition:
         | ProviderCompositionResult<app.bsky.unspecced.getPostThreadV2.$OutputBody>
         | undefined
@@ -319,18 +320,13 @@ export function usePostThread({anchor}: {anchor?: string}) {
       )
 
       /*
-       * Initialize `ctx.meta` to track if we know we have additional replies
-       * we could fetch once we hit the end.
-       */
-      ctx.meta = ctx.meta || {
-        hasOtherReplies: false,
-      }
-
-      /*
        * If we know we have additional replies, we'll set this to true.
+       * `ctx.meta` is React Query option metadata and may be frozen by the
+       * provider-composition cache marker. Keep pagination state local to this
+       * query invocation instead of mutating that metadata object.
        */
       if (data.hasOtherReplies) {
-        ctx.meta.hasOtherReplies = true
+        hasOtherReplies = true
       }
 
       /*
@@ -342,7 +338,7 @@ export function usePostThread({anchor}: {anchor?: string}) {
       const result = {
         thread: hydratedThread,
         threadgate: data.threadgate,
-        hasOtherReplies: !!ctx.meta.hasOtherReplies,
+        hasOtherReplies,
         providerComposition,
       } as UsePostThreadQueryResult
 
