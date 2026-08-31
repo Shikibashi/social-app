@@ -54,8 +54,9 @@ export const Screen = memo(function Screen({
 }: ScreenProps) {
   const {top} = useSafeAreaInsets()
   const {isWithinSplitView} = useIsWithinSplitView()
+  const {isWithinOffsetView} = useContext(ScrollbarOffsetContext)
   const {gtMobile} = useBreakpoints()
-  const {leftNavMinimal} = useLayoutBreakpoints()
+  const {centerColumnOffset, leftNavMinimal} = useLayoutBreakpoints()
 
   useEnableMinimalShellModeForScreen({enabled: minimalShell})
 
@@ -78,7 +79,24 @@ export const Screen = memo(function Screen({
           style,
         ]}
         {...props}>
-        {showResponsiveMasthead && <PlumblineWorkbenchMasthead />}
+        {showResponsiveMasthead && (
+          <View
+            style={[
+              a.w_full,
+              gtMobile && [a.mx_auto, {maxWidth: CENTER_COLUMN_WIDTH}],
+              !isWithinOffsetView &&
+                !isWithinSplitView && {
+                  transform: [
+                    {
+                      translateX: centerColumnOffset ? CENTER_COLUMN_OFFSET : 0,
+                    },
+                    {translateX: web(SCROLLBAR_OFFSET) ?? 0},
+                  ],
+                },
+            ]}>
+            <PlumblineWorkbenchMasthead />
+          </View>
+        )}
         {props.children}
       </View>
     </>
