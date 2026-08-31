@@ -35,6 +35,13 @@ export function HomeHeader(
     return pinnedNames
   }, [hasPinnedCustom, feeds])
 
+  const surfaceTitle = useMemo(
+    () =>
+      feeds[props.selectedPage]?.displayName ??
+      (hasSession ? 'Home workspace' : 'Public discovery'),
+    [feeds, hasSession, props.selectedPage],
+  )
+
   const onPressFeedsLink = useCallback(() => {
     navigation.navigate('Feeds')
   }, [navigation])
@@ -51,7 +58,9 @@ export function HomeHeader(
   )
 
   return (
-    <HomeHeaderLayout tabBarAnchor={props.tabBarAnchor}>
+    <HomeHeaderLayout
+      surfaceTitle={surfaceTitle}
+      tabBarAnchor={props.tabBarAnchor}>
       <TabBar
         key={items.join(',')}
         onPressSelected={props.onPressSelected}

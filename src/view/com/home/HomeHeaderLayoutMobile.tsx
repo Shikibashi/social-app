@@ -27,6 +27,7 @@ export function HomeHeaderLayoutMobile({
 }: {
   children: React.ReactNode
   tabBarAnchor: React.ReactElement | null | undefined
+  surfaceTitle?: string
 }) {
   const t = useTheme()
   const {_} = useLingui()

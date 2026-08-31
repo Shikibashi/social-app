@@ -293,6 +293,17 @@ body {
 [data-testid='plumbline-inspector-tools'],
 [data-testid='plumbline-inspector-discovery'] {
   border-top: 1px solid var(--ecw-rule-decorative);
+  padding-top: 12px;
+}
+
+[data-testid='plumbline-inspector-tools'] {
+  background-color: var(--ecw-workspace);
+}
+
+[data-testid='plumbline-inspector-discovery'] {
+  background-color: var(--ecw-surface-recessed);
+  border-inline: 1px solid var(--ecw-rule-decorative);
+  padding-inline: 8px;
 }
 
 [data-testid='plumbline-inspector-tools'] > [role='heading'],
@@ -316,6 +327,23 @@ body {
   font-size: var(--ecw-font-size-micro);
   letter-spacing: 0.02em;
   text-transform: uppercase;
+}
+
+[data-testid='plumbline-account-context'] > [role='button'] {
+  border-top: 1px solid var(--ecw-rule-decorative);
+  border-bottom: 1px solid var(--ecw-rule-decorative);
+  min-width: 0;
+}
+
+[data-testid='plumbline-document-stream-title-group'] {
+  min-width: 0;
+}
+
+[data-testid='plumbline-document-stream-title'] {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 [data-testid='plumbline-trending-panel'] {
@@ -372,6 +400,7 @@ body {
 [data-ecw-mode='workbench'] h3 {
   font-family: var(--ecw-font-display);
   letter-spacing: 0.01em;
+  text-wrap: balance;
 }
 
 [data-ecw-mode='workbench'] [data-testid*='did'],

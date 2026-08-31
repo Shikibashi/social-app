@@ -20,6 +20,7 @@ import {useAnalytics} from '#/analytics'
 export function HomeHeaderLayout(props: {
   children: React.ReactNode
   tabBarAnchor: JSX.Element | null | undefined
+  surfaceTitle: string
 }) {
   const {gtMobile} = useBreakpoints()
   if (!gtMobile) {
@@ -32,9 +33,11 @@ export function HomeHeaderLayout(props: {
 function HomeHeaderLayoutDesktopAndTablet({
   children,
   tabBarAnchor,
+  surfaceTitle,
 }: {
   children: React.ReactNode
   tabBarAnchor: JSX.Element | null | undefined
+  surfaceTitle: string
 }) {
   const t = useTheme()
   const {headerHeight} = useShellLayout()
@@ -73,10 +76,17 @@ function HomeHeaderLayoutDesktopAndTablet({
             />
           </View>
           <PlumblineBrandMark size={28} />
-          <View style={[a.flex_1, a.pl_sm]}>
+          <View
+            testID="plumbline-document-stream-title-group"
+            style={[a.flex_1, a.pl_sm, {minWidth: 0}]}
+            accessible={false}>
             <Text style={styles.headingEyebrow}>DOCUMENT STREAM</Text>
-            <Text style={[styles.headingTitle, t.atoms.text]}>
-              {hasSession ? 'Home workspace' : 'Public discovery'}
+            <Text
+              testID="plumbline-document-stream-title"
+              accessibilityRole="header"
+              numberOfLines={1}
+              style={[styles.headingTitle, t.atoms.text]}>
+              {surfaceTitle}
             </Text>
           </View>
           {hasSession && (

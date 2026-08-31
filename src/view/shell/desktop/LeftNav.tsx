@@ -95,7 +95,6 @@ import {type Events} from '#/analytics/metrics/types'
 import {useActorStatus} from '#/features/liveNow'
 import {type app} from '#/lexicons'
 import {router} from '#/routes'
-import {PlatformInfo} from '../../../../modules/expo-bluesky-swiss-army'
 
 const LARGE_ELEMENT_SIZE = 48
 const NAV_ICON_WIDTH = 28
@@ -133,7 +132,9 @@ function ProfileCard({minimal}: {minimal: boolean}) {
   const {isActive: live} = useActorStatus(profile)
 
   return (
-    <View style={[a.pb_md, !minimal && [a.w_full, a.align_start]]}>
+    <View
+      testID="plumbline-account-context"
+      style={[a.pb_md, !minimal && [a.w_full, a.align_start]]}>
       {!isLoading && profile ? (
         <Menu.Root>
           <Menu.Trigger label={l`Switch accounts`}>
@@ -147,29 +148,14 @@ function ProfileCard({minimal}: {minimal: boolean}) {
                     a.w_full,
                     a.transition_color,
                     active ? t.atoms.bg_contrast_25 : a.transition_delay_50ms,
-                    a.rounded_full,
+                    web({borderRadius: 1}),
                     a.justify_between,
                     a.align_center,
                     a.flex_row,
                     {gap: 6},
                     !minimal && [a.pl_lg, a.pr_md],
                   ]}>
-                  <View
-                    style={[
-                      !PlatformInfo.getIsReducedMotionEnabled() && [
-                        a.transition_transform,
-                        {transitionDuration: '250ms'},
-                        !active && a.transition_delay_50ms,
-                      ],
-                      a.relative,
-                      a.z_10,
-                      active && {
-                        transform: [
-                          {scale: !minimal ? 2 / 3 : 0.8},
-                          {translateX: !minimal ? -22 : 0},
-                        ],
-                      },
-                    ]}>
+                  <View style={[a.relative, a.z_10]}>
                     <UserAvatar
                       avatar={profile.avatar}
                       size={LARGE_ELEMENT_SIZE}

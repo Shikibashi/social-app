@@ -86,11 +86,23 @@ export function DesktopRightNav({routeName}: {routeName: string}) {
         }),
       ]}>
       <DesktopWorkbenchInspector routeName={routeName} />
-      <View testID="plumbline-inspector-tools" style={styles.inspectorTools}>
+      <View
+        testID="plumbline-inspector-tools"
+        role="region"
+        accessibilityLabel={_(msg`Optional read tools`)}
+        accessibilityHint={_(
+          msg`Contains replaceable read tools for this surface`,
+        )}
+        style={styles.inspectorTools}>
         <Text
           accessibilityRole="header"
           style={[styles.secondaryHeading, t.atoms.text_contrast_medium]}>
-          Tools & alternatives
+          {_(msg`Optional read tools`)}
+        </Text>
+        <Text
+          testID="plumbline-inspector-tools-description"
+          style={[styles.secondaryDescription, t.atoms.text_contrast_medium]}>
+          {_(msg`Optional sources remain separate from the selected surface.`)}
         </Text>
         {!isSearchScreen && <DesktopSearch />}
 
@@ -110,11 +122,23 @@ export function DesktopRightNav({routeName}: {routeName: string}) {
       {showExploreScreenDuplicatedContent && (
         <View
           testID="plumbline-inspector-discovery"
+          role="region"
+          accessibilityLabel={_(msg`Optional discovery sources`)}
+          accessibilityHint={_(
+            msg`Contains optional external signals for this surface`,
+          )}
           style={styles.inspectorDiscovery}>
           <Text
             accessibilityRole="header"
             style={[styles.secondaryHeading, t.atoms.text_contrast_medium]}>
-            Discovery
+            {_(msg`Optional discovery sources`)}
+          </Text>
+          <Text
+            testID="plumbline-inspector-discovery-description"
+            style={[styles.secondaryDescription, t.atoms.text_contrast_medium]}>
+            {_(
+              msg`External signals may be unavailable and are not authoritative.`,
+            )}
           </Text>
           <SidebarLiveEventFeedsBanner />
           <SidebarTrendingTopics />
@@ -581,11 +605,12 @@ function InspectorDetail({
 const styles = StyleSheet.create({
   inspectorTools: {
     gap: 10,
-    paddingTop: 4,
+    paddingTop: 8,
   },
   inspectorDiscovery: {
     gap: 10,
-    paddingTop: 4,
+    paddingTop: 8,
+    paddingBottom: 8,
   },
   secondaryHeading: {
     borderTopWidth: 1,
@@ -595,6 +620,10 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     letterSpacing: 1,
     textTransform: 'uppercase',
+  },
+  secondaryDescription: {
+    fontSize: 12,
+    lineHeight: 16,
   },
   inspector: {
     borderWidth: 1,
