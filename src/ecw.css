@@ -288,6 +288,11 @@ body {
   text-transform: uppercase;
 }
 
+[data-testid='plumbline-trending-panel'] {
+  border-radius: 1px !important;
+  box-shadow: none !important;
+}
+
 [data-testid='HomeScreen'] [role='tablist'],
 [data-testid='homeScreen'] [role='tablist'] {
   border-bottom: 1px solid var(--ecw-border-strong);

@@ -58,6 +58,7 @@ function Inner() {
   return error || noTopics ? null : (
     <>
       <View
+        testID="plumbline-trending-panel"
         style={[a.p_lg, a.rounded_md, a.border, t.atoms.border_contrast_low]}>
         <View style={[a.flex_row, a.align_center, a.gap_xs, a.pb_md]}>
           <TrendingIcon width={16} height={16} fill={t.atoms.text.color} />
