@@ -13,7 +13,6 @@ import {
   getSelectedAppViewProvider,
 } from '#/state/session/providers'
 import {useTheme} from '#/alf'
-import * as Layout from '#/components/Layout'
 import {PlumblineAuthoritySummary} from '#/components/PlumblineAuthoritySummary'
 import {ProviderCompositionProvenance} from '#/components/ProviderCompositionProvenance'
 import {Text} from '#/components/Typography'
@@ -42,7 +41,7 @@ export function FeedProvenanceCard({
   const state = feedStateLabel(provenance, i18n)
 
   return (
-    <Layout.Content contentContainerStyle={{paddingVertical: 2}}>
+    <View style={{paddingVertical: 2}}>
       <PlumblineAuthoritySummary
         testID="feed-provenance-summary"
         title={provenance.feedName}
@@ -181,7 +180,7 @@ export function FeedProvenanceCard({
           )}
         </View>
       ) : null}
-    </Layout.Content>
+    </View>
   )
 }
 
