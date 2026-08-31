@@ -92,6 +92,8 @@ function MessagesSplitViewLayoutInner({
 
   return (
     <View
+      testID="plumbline-messages-workbench"
+      {...(IS_WEB ? {dataSet: {ecwMode: 'workbench'}} : {})}
       style={[
         a.flex_1,
         a.flex_row,
