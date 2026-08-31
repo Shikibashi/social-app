@@ -20,6 +20,7 @@ import {
 } from '#/state/queries/public-visibility'
 import {
   enforceThreadViewerBlockBoundaries,
+  filterThreadViewerBlockBoundaries,
   hydrateBlockedThreadItems,
 } from '#/state/queries/usePostThread/blocked'
 import {
@@ -144,6 +145,18 @@ function fetchPostThread(
       anchor: anchor as AtUriString,
       ...params,
     },
+    {signal},
+  )
+}
+
+function fetchPostThreadOther(
+  client: Client,
+  anchor: string,
+  signal?: AbortSignal,
+): Promise<app.bsky.unspecced.getPostThreadOtherV2.$OutputBody> {
+  return client.call(
+    app.bsky.unspecced.getPostThreadOtherV2,
+    {anchor: anchor as AtUriString},
     {signal},
   )
 }
@@ -405,34 +418,60 @@ export function usePostThread({anchor}: {anchor?: string}) {
     meta: PROVIDER_COMPOSITION_QUERY_META,
     queryKey: postThreadOtherQueryKey,
     async queryFn({signal}) {
-      const providerClients = new Map<string, Client>()
-      const composed = await composeAppViewProviderRead(
-        'threads',
-        async (providerClient, provider, context) => {
-          providerClients.set(provider.id, providerClient)
-          return providerClient.call(
-            app.bsky.unspecced.getPostThreadOtherV2,
-            {anchor: anchor! as AtUriString},
-            {signal: context.signal},
-          )
-        },
-        {
-          access: 'account-scoped',
-          clientForProvider: providerClientFactory,
-          signal,
-        },
-      )
-      const data = requireComposedProviderValue(composed)
-      const selectedProviderId = composed.selectedProviderIds[0]
-      const selectedProvider = getAppViewProvidersForSurface('threads').find(
-        provider => provider.id === selectedProviderId,
-      )
-      const threadClient =
-        (selectedProviderId && providerClients.get(selectedProviderId)) ||
-        client
-      const threadPublicClient = selectedProvider
-        ? getPublicAppviewClient(selectedProvider.endpoint)
-        : publicClient
+      let data: app.bsky.unspecced.getPostThreadOtherV2.$OutputBody
+      let threadClient = client
+      let threadPublicClient = publicClient
+      try {
+        const providerClients = new Map<string, Client>()
+        const composed = await composeAppViewProviderRead(
+          'threads',
+          async (providerClient, provider, context) => {
+            providerClients.set(provider.id, providerClient)
+            return fetchPostThreadOther(providerClient, anchor!, context.signal)
+          },
+          {
+            access: 'account-scoped',
+            clientForProvider: providerClientFactory,
+            signal,
+          },
+        )
+        data = requireComposedProviderValue(composed)
+        const selectedProviderId = composed.selectedProviderIds[0]
+        const selectedProvider = getAppViewProvidersForSurface('threads').find(
+          provider => provider.id === selectedProviderId,
+        )
+        threadClient =
+          (selectedProviderId && providerClients.get(selectedProviderId)) ||
+          client
+        threadPublicClient = selectedProvider
+          ? getPublicAppviewClient(selectedProvider.endpoint)
+          : publicClient
+      } catch (error) {
+        if (signal.aborted) throw error
+        const composed = await composeAppViewProviderRead(
+          'threads',
+          (providerClient, _provider, context) =>
+            fetchPostThreadOther(providerClient, anchor!, context.signal),
+          {access: 'public', signal},
+        )
+        data = requireComposedProviderValue(composed)
+        if (pdsClient && currentAccount?.did) {
+          data = {
+            ...data,
+            thread: await filterThreadViewerBlockBoundaries(
+              client,
+              data.thread,
+            ),
+          }
+        }
+        const selectedProvider = getAppViewProvidersForSurface('threads').find(
+          provider => provider.id === composed.selectedProviderIds[0],
+        )
+        threadClient = selectedProvider
+          ? getPublicAppviewClient(selectedProvider.endpoint)
+          : publicClient
+        threadPublicClient = threadClient
+      }
       return {
         ...data,
         thread: await hydrateBlockedThreadItems(data.thread || [], uris =>

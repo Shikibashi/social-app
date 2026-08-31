@@ -7,6 +7,7 @@ import {app} from '#/lexicons'
 import * as bsky from '#/types/bsky'
 import {
   enforceThreadViewerBlockBoundaries,
+  filterThreadViewerBlockBoundaries,
   hasViewerBlockBoundary,
   hydrateBlockedThreadItems,
 } from './blocked'
@@ -211,6 +212,54 @@ describe('pairwise thread visibility', () => {
     expect(
       bsky.isType(app.bsky.unspecced.defs.threadItemPost, result[1].value),
     ).toBe(true)
+    expect(client.call).toHaveBeenCalledTimes(2)
+  })
+
+  it('filters directly blocked posts from additional public replies', async () => {
+    const visibleUri =
+      'at://did:plc:visible/app.bsky.feed.post/visible' as AtUriString
+    const visiblePost = {
+      ...post,
+      uri: visibleUri,
+      author: {
+        did: 'did:plc:visible',
+        handle: 'visible.example.com',
+      },
+    }
+    const thread = [
+      {
+        $type: 'app.bsky.unspecced.getPostThreadOtherV2#threadItem' as const,
+        uri: blockedUri,
+        depth: 1,
+        value: {
+          $type: 'app.bsky.unspecced.defs#threadItemPost' as const,
+          post,
+        },
+      },
+      {
+        $type: 'app.bsky.unspecced.getPostThreadOtherV2#threadItem' as const,
+        uri: visibleUri,
+        depth: 1,
+        value: {
+          $type: 'app.bsky.unspecced.defs#threadItemPost' as const,
+          post: visiblePost,
+        },
+      },
+    ] satisfies app.bsky.unspecced.getPostThreadOtherV2.ThreadItem[]
+    const client = {
+      call: jest.fn((_method: unknown, params: {actor: string}) => ({
+        viewer:
+          params.actor === 'did:plc:parent'
+            ? {
+                blocking: 'at://did:plc:viewer/app.bsky.graph.block/direct',
+              }
+            : undefined,
+      })),
+    } as unknown as Client
+
+    const result = await filterThreadViewerBlockBoundaries(client, thread)
+
+    expect(result.map(item => item.uri)).toEqual([visibleUri])
     expect(client.call).toHaveBeenCalledTimes(2)
   })
 

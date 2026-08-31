@@ -111,6 +111,34 @@ export async function enforceThreadViewerBlockBoundaries(
 }
 
 /**
+ * The additional-replies endpoint only returns post items, so a directly
+ * blocked public reply is omitted instead of being represented by the V2
+ * tombstone type that endpoint does not declare.
+ */
+export async function filterThreadViewerBlockBoundaries<
+  T extends ApiThreadItem,
+>(client: Client, thread: T[]): Promise<T[]> {
+  const postItems = thread.filter(item =>
+    bsky.isType(app.bsky.unspecced.defs.threadItemPost, item.value),
+  )
+  if (!postItems.length) return thread
+
+  const visiblePosts = await filterPublicPostsForViewer(
+    client,
+    postItems.map(
+      item => (item.value as app.bsky.unspecced.defs.ThreadItemPost).post,
+    ),
+  )
+  const visibleUris = new Set(visiblePosts.map(post => post.uri))
+
+  return thread.filter(
+    item =>
+      !bsky.isType(app.bsky.unspecced.defs.threadItemPost, item.value) ||
+      visibleUris.has(item.uri),
+  )
+}
+
+/**
  * Hydrate provider tombstones in bounded batches. Failures intentionally leave
  * the original tombstone in place so an AppView outage cannot be mistaken for
  * a successful visibility override.
