@@ -36,6 +36,7 @@ export function PlumblineShellBrand({
             style={[
               a.font_bold,
               a.text_xl,
+              a.flex_shrink,
               {
                 fontFamily: 'Georgia, "Times New Roman", serif',
                 letterSpacing: 0.3,
@@ -48,7 +49,6 @@ export function PlumblineShellBrand({
       </View>
       {!minimal && (
         <Text
-          numberOfLines={1}
           style={[
             a.text_xs,
             t.atoms.text_contrast_medium,
@@ -63,7 +63,6 @@ export function PlumblineShellBrand({
       )}
       {!minimal && (
         <Text
-          numberOfLines={1}
           style={[
             a.text_xs,
             t.atoms.text_contrast_medium,
