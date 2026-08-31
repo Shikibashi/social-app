@@ -53,6 +53,7 @@ export function FeedProvenanceCard({
       <ProviderCompositionProvenance
         surfaceLabel={provenance.feedName}
         composition={provenance.providerComposition}
+        showSummary={false}
       />
       <Pressable
         accessibilityRole="button"

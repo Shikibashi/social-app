@@ -300,6 +300,17 @@ body {
   background-color: var(--ecw-workspace);
 }
 
+[data-testid='plumbline-inspector-secondary-context'] {
+  background-color: var(--ecw-surface-recessed);
+  border-inline: 1px solid var(--ecw-rule-decorative);
+  padding-inline: 8px;
+}
+
+[data-testid='plumbline-more-context-toggle'] {
+  background-color: var(--ecw-surface) !important;
+  border-color: var(--ecw-border-strong) !important;
+}
+
 [data-testid='plumbline-inspector-discovery'] {
   background-color: var(--ecw-surface-recessed);
   border-inline: 1px solid var(--ecw-rule-decorative);

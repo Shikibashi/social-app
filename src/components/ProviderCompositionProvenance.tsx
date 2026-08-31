@@ -24,9 +24,11 @@ import {Text} from '#/components/Typography'
 export function ProviderCompositionProvenance({
   surfaceLabel,
   composition,
+  showSummary = true,
 }: {
   surfaceLabel: string
   composition?: ProviderCompositionResult<unknown>
+  showSummary?: boolean
 }) {
   const {_, i18n} = useLingui()
   const t = useTheme()
@@ -51,12 +53,14 @@ export function ProviderCompositionProvenance({
     <View
       testID={`provider-composition-provenance-${composition.surface}`}
       style={styles.container}>
-      <PlumblineAuthoritySummary
-        testID={`provider-composition-summary-${composition.surface}`}
-        source={sourceNames}
-        rule={rule}
-        state={status}
-      />
+      {showSummary ? (
+        <PlumblineAuthoritySummary
+          testID={`provider-composition-summary-${composition.surface}`}
+          source={sourceNames}
+          rule={rule}
+          state={status}
+        />
+      ) : null}
       <Pressable
         testID={`provider-composition-provenance-toggle-${composition.surface}`}
         accessibilityRole="button"

@@ -1,5 +1,5 @@
 import {useEffect, useState} from 'react'
-import {StyleSheet, View} from 'react-native'
+import {Pressable, StyleSheet, View} from 'react-native'
 import {msg} from '@lingui/core/macro'
 import {useLingui} from '@lingui/react'
 import {useNavigation} from '@react-navigation/native'
@@ -55,6 +55,11 @@ export function DesktopRightNav({routeName}: {routeName: string}) {
     !isSearchScreen || (isSearchScreen && !!searchQuery)
   const {rightNavVisible, centerColumnOffset, leftNavMinimal} =
     useLayoutBreakpoints()
+  const [showMoreContext, setShowMoreContext] = useState(false)
+
+  useEffect(() => {
+    setShowMoreContext(false)
+  }, [routeName])
 
   if (!rightNavVisible || isMessagesRelatedScreen) {
     return null
@@ -83,6 +88,8 @@ export function DesktopRightNav({routeName}: {routeName: string}) {
            */
           width: width + gutters.paddingLeft + 2,
           maxHeight: '100vh',
+          overflowY: 'auto',
+          scrollbarWidth: 'thin',
         }),
       ]}>
       <DesktopWorkbenchInspector routeName={routeName} />
@@ -106,20 +113,62 @@ export function DesktopRightNav({routeName}: {routeName: string}) {
         </Text>
         {!isSearchScreen && <DesktopSearch />}
 
-        {hasSession && (
-          <>
-            <Text
-              accessibilityRole="header"
-              style={[styles.secondaryHeading, t.atoms.text_contrast_medium]}>
-              Available feeds
-            </Text>
-            <DesktopFeeds />
-            <ProgressGuideList />
-          </>
+        <Pressable
+          testID="plumbline-more-context-toggle"
+          accessibilityRole="button"
+          accessibilityLabel={
+            showMoreContext
+              ? _(msg`Hide more context`)
+              : _(msg`Show more context`)
+          }
+          accessibilityHint={_(
+            msg`Show optional feeds, guides, live events, and discovery sources`,
+          )}
+          accessibilityState={{expanded: showMoreContext}}
+          aria-expanded={showMoreContext}
+          onPress={() => setShowMoreContext(value => !value)}
+          style={({pressed}) => [
+            styles.contextToggle,
+            {borderColor: t.palette.contrast_200},
+            pressed && styles.pressed,
+          ]}>
+          <Text
+            style={[
+              styles.contextToggleText,
+              {color: t.atoms.text_link.color},
+            ]}>
+            {showMoreContext ? _(msg`Hide more context`) : _(msg`More context`)}
+          </Text>
+        </Pressable>
+
+        {showMoreContext && (
+          <View
+            testID="plumbline-inspector-secondary-context"
+            role="region"
+            accessibilityLabel={_(msg`More context`)}
+            accessibilityHint={_(
+              msg`Optional sources remain separate from the selected surface`,
+            )}
+            style={styles.secondaryContext}>
+            {hasSession && (
+              <>
+                <Text
+                  accessibilityRole="header"
+                  style={[
+                    styles.secondaryHeading,
+                    t.atoms.text_contrast_medium,
+                  ]}>
+                  Available feeds
+                </Text>
+                <DesktopFeeds />
+                <ProgressGuideList />
+              </>
+            )}
+          </View>
         )}
       </View>
 
-      {showExploreScreenDuplicatedContent && (
+      {showMoreContext && showExploreScreenDuplicatedContent && (
         <View
           testID="plumbline-inspector-discovery"
           role="region"
@@ -606,6 +655,23 @@ const styles = StyleSheet.create({
   inspectorTools: {
     gap: 10,
     paddingTop: 8,
+  },
+  secondaryContext: {
+    gap: 10,
+    paddingTop: 8,
+  },
+  contextToggle: {
+    alignSelf: 'flex-start',
+    borderWidth: 1,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+  },
+  contextToggleText: {
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  pressed: {
+    opacity: 0.65,
   },
   inspectorDiscovery: {
     gap: 10,
