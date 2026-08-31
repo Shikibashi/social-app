@@ -40,7 +40,7 @@ import {FAB} from '#/view/com/util/fab/FAB'
 import {type ListMethods} from '#/view/com/util/List'
 import {LoadLatestBtn} from '#/view/com/util/load-latest/LoadLatestBtn'
 import {MainScrollProvider} from '#/view/com/util/MainScrollProvider'
-import {useTheme} from '#/alf'
+import {useBreakpoints, useTheme} from '#/alf'
 import {ActiveFeedProvenance} from '#/components/FeedProvenanceCard'
 import {useHeaderOffset} from '#/components/hooks/useHeaderOffset'
 import {EditBig_Stroke2_Corner2_Rounded as EditBigIcon} from '#/components/icons/EditBig'
@@ -98,6 +98,7 @@ export function FeedPage({
   const [feedProviderComposition, setFeedProviderComposition] =
     useState<ProviderCompositionResult<unknown>>()
   const headerOffset = useHeaderOffset()
+  const {gtMobile} = useBreakpoints()
   const feedFeedback = useFeedFeedback(feedInfo, hasSession)
   const scrollElRef = useRef<ListMethods>(null)
   const [hasNew, setHasNew] = useState(false)
@@ -190,96 +191,115 @@ export function FeedPage({
 
   const shouldPrefetch = IS_NATIVE && isPageAdjacent
   const isDiscoverFeed = feedInfo.uri === DISCOVER_FEED_URI
+  const FeedProvenanceHeader = useCallback(
+    () => (
+      <ActiveFeedProvenance
+        feedName={feedInfo.displayName}
+        algorithmName={
+          feed === 'following'
+            ? balancedEnabled
+              ? 'Balanced local algorithm (Following only)'
+              : radlibCurationEnabled && contentFilterEnabled
+                ? 'Filtered Following + local curation'
+                : radlibCurationEnabled || contentFilterEnabled
+                  ? contentFilterEnabled
+                    ? 'Filtered Following (local content policy)'
+                    : 'Local curation over Following'
+                  : localFeedEnabled
+                    ? 'Local Following reranker'
+                    : 'Following / chronological'
+            : radlibCurationEnabled && contentFilterEnabled
+              ? `Filtered ${feedInfo.displayName} + local curation`
+              : radlibCurationEnabled || contentFilterEnabled
+                ? contentFilterEnabled
+                  ? `Filtered ${feedInfo.displayName} (local content policy)`
+                  : `Local curation over ${feedInfo.displayName}`
+                : 'Feed generator ranking'
+        }
+        algorithmVersion={
+          balancedEnabled
+            ? 'balanced/1'
+            : radlibCurationEnabled && contentFilterEnabled
+              ? 'content-filter/1 + local-curation/1'
+              : contentFilterEnabled
+                ? 'content-filter/1'
+                : radlibCurationEnabled
+                  ? '1'
+                  : 'not declared'
+        }
+        objective={
+          balancedEnabled
+            ? 'Bounded structural variety, freshness, explicit preferences, and exploration; no ideological quota'
+            : radlibCurationEnabled && contentFilterEnabled
+              ? 'User-selected hard content exclusions plus a user-selected topic and exclusion overlay; follows, blocks, and ranking remain separate'
+              : contentFilterEnabled
+                ? 'User-selected hard content exclusions; follows, blocks, and ranking remain separate'
+                : radlibCurationEnabled
+                  ? 'User-selected topic and exclusion overlay; no ideological quota'
+                  : feed === 'following' && !localFeedEnabled
+                    ? 'Chronological access'
+                    : 'Not declared by the feed source'
+        }
+        feedOwnerDid={feedInfo.creatorDid}
+        feedUri={feedInfo.uri}
+        feedContext={feedContext}
+        providerProvenance={feedProviderProvenance}
+        providerCompositionStatus={feedProviderCompositionStatus}
+        providerIndependence={feedProviderIndependence}
+        providerComposition={
+          feedProviderComposition ?? feedInfo.providerComposition
+        }
+        privacy={
+          balancedEnabled
+            ? 'Candidate posts are supplied by the selected provider; Balanced ordering and preferences stay on this device'
+            : radlibCurationEnabled && contentFilterEnabled
+              ? 'Custom filter terms and curation state stay on this device; the selected provider supplies candidates'
+              : contentFilterEnabled
+                ? 'Custom terms and excluded authors stay on this device; the selected provider supplies candidates'
+                : radlibCurationEnabled
+                  ? 'Local curation stays on this device; the selected provider supplies candidates'
+                  : feed === 'following'
+                    ? localFeedEnabled
+                      ? 'Local reranking stays on this device'
+                      : 'Chronological access; no local reranking is applied'
+                    : isBlueskyOwnedFeed(feedInfo.uri)
+                      ? 'Selected interests may be sent to this AppView'
+                      : 'Local ranking preferences stay on this device'
+        }
+        onChangeRanking={() =>
+          navigation.navigate(
+            feed === 'following'
+              ? 'PreferencesFollowingFeed'
+              : 'PersonalizationSettings',
+          )
+        }
+        onChangeProvider={() =>
+          navigation.navigate('ServicesSettings', {section: 'providers'})
+        }
+      />
+    ),
+    [
+      balancedEnabled,
+      contentFilterEnabled,
+      feed,
+      feedContext,
+      feedInfo,
+      feedProviderComposition,
+      feedProviderCompositionStatus,
+      feedProviderIndependence,
+      feedProviderProvenance,
+      localFeedEnabled,
+      navigation,
+      radlibCurationEnabled,
+    ],
+  )
   return (
     <View
       testID={testID}
       // @ts-expect-error web only -sfn
       dataSet={{nosnippet: isDiscoverFeed ? '' : undefined}}>
       <MainScrollProvider>
-        <ActiveFeedProvenance
-          feedName={feedInfo.displayName}
-          algorithmName={
-            feed === 'following'
-              ? balancedEnabled
-                ? 'Balanced local algorithm (Following only)'
-                : radlibCurationEnabled && contentFilterEnabled
-                  ? 'Filtered Following + local curation'
-                  : radlibCurationEnabled || contentFilterEnabled
-                    ? contentFilterEnabled
-                      ? 'Filtered Following (local content policy)'
-                      : 'Local curation over Following'
-                    : localFeedEnabled
-                      ? 'Local Following reranker'
-                      : 'Following / chronological'
-              : radlibCurationEnabled && contentFilterEnabled
-                ? `Filtered ${feedInfo.displayName} + local curation`
-                : radlibCurationEnabled || contentFilterEnabled
-                  ? contentFilterEnabled
-                    ? `Filtered ${feedInfo.displayName} (local content policy)`
-                    : `Local curation over ${feedInfo.displayName}`
-                  : 'Feed generator ranking'
-          }
-          algorithmVersion={
-            balancedEnabled
-              ? 'balanced/1'
-              : radlibCurationEnabled && contentFilterEnabled
-                ? 'content-filter/1 + local-curation/1'
-                : contentFilterEnabled
-                  ? 'content-filter/1'
-                  : radlibCurationEnabled
-                    ? '1'
-                    : 'not declared'
-          }
-          objective={
-            balancedEnabled
-              ? 'Bounded structural variety, freshness, explicit preferences, and exploration; no ideological quota'
-              : radlibCurationEnabled && contentFilterEnabled
-                ? 'User-selected hard content exclusions plus a user-selected topic and exclusion overlay; follows, blocks, and ranking remain separate'
-                : contentFilterEnabled
-                  ? 'User-selected hard content exclusions; follows, blocks, and ranking remain separate'
-                  : radlibCurationEnabled
-                    ? 'User-selected topic and exclusion overlay; no ideological quota'
-                    : feed === 'following' && !localFeedEnabled
-                      ? 'Chronological access'
-                      : 'Not declared by the feed source'
-          }
-          feedOwnerDid={feedInfo.creatorDid}
-          feedUri={feedInfo.uri}
-          feedContext={feedContext}
-          providerProvenance={feedProviderProvenance}
-          providerCompositionStatus={feedProviderCompositionStatus}
-          providerIndependence={feedProviderIndependence}
-          providerComposition={
-            feedProviderComposition ?? feedInfo.providerComposition
-          }
-          privacy={
-            balancedEnabled
-              ? 'Candidate posts are supplied by the selected provider; Balanced ordering and preferences stay on this device'
-              : radlibCurationEnabled && contentFilterEnabled
-                ? 'Custom filter terms and curation state stay on this device; the selected provider supplies candidates'
-                : contentFilterEnabled
-                  ? 'Custom terms and excluded authors stay on this device; the selected provider supplies candidates'
-                  : radlibCurationEnabled
-                    ? 'Local curation stays on this device; the selected provider supplies candidates'
-                    : feed === 'following'
-                      ? localFeedEnabled
-                        ? 'Local reranking stays on this device'
-                        : 'Chronological access; no local reranking is applied'
-                      : isBlueskyOwnedFeed(feedInfo.uri)
-                        ? 'Selected interests may be sent to this AppView'
-                        : 'Local ranking preferences stay on this device'
-          }
-          onChangeRanking={() =>
-            navigation.navigate(
-              feed === 'following'
-                ? 'PreferencesFollowingFeed'
-                : 'PersonalizationSettings',
-            )
-          }
-          onChangeProvider={() =>
-            navigation.navigate('ServicesSettings', {section: 'providers'})
-          }
-        />
+        {gtMobile && <FeedProvenanceHeader />}
         <FeedFeedbackProvider value={feedFeedback}>
           <PostFeed
             testID={testID ? `${testID}-feed` : undefined}
@@ -300,6 +320,7 @@ export function FeedPage({
             contentFilterPolicy={localFeedPreferences.contentFilterPolicy}
             onFeedContext={onFeedContext}
             headerOffset={headerOffset}
+            ListHeaderComponent={gtMobile ? undefined : FeedProvenanceHeader}
             savedFeedConfig={savedFeedConfig}
             isVideoFeed={isVideoFeed}
             showComposerPrompt
