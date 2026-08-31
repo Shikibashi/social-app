@@ -229,6 +229,20 @@ body {
   flex: 0 0 auto;
 }
 
+[data-testid='plumbline-responsive-masthead'] {
+  background-color: var(--ecw-surface) !important;
+  border-inline: 1px solid var(--ecw-border-structural) !important;
+  border-bottom: 1px solid var(--ecw-border-strong) !important;
+  padding: 12px 16px 0 !important;
+  box-shadow: 0 2px 0 var(--ecw-hard-shadow);
+}
+
+[data-testid='plumbline-responsive-masthead']
+  [data-testid='plumbline-shell-brand'] {
+  border-bottom: 0;
+  padding-bottom: 10px;
+}
+
 [data-testid='plumbline-left-nav'] {
   border-right: 1px solid var(--ecw-border-structural);
   padding-right: 12px !important;

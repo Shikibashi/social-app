@@ -9,6 +9,7 @@ import {ScrollProvider} from '#/lib/ScrollContext'
 import {useChatActorStatusQuery} from '#/state/queries/messages/get-status'
 import {type NativeStackNavigationOptionsWithAuth} from '#/view/shell/createNativeStackNavigatorWithAuth'
 import {LEFT_NAV_MINIMAL_WIDTH} from '#/view/shell/desktop/LeftNav'
+import {PlumblineWorkbenchMasthead} from '#/view/shell/PlumblineShellBrand'
 import {atoms as a, useLayoutBreakpoints, useTheme, web} from '#/alf'
 import {useDialogControl} from '#/components/Dialog'
 import {NewChat} from '#/components/dms/dialogs/NewChatDialog'
@@ -96,7 +97,6 @@ function MessagesSplitViewLayoutInner({
       {...(IS_WEB ? {dataSet: {ecwMode: 'workbench'}} : {})}
       style={[
         a.flex_1,
-        a.flex_row,
         a.mx_auto,
         {maxWidth: containerWidth},
         {
@@ -110,38 +110,41 @@ function MessagesSplitViewLayoutInner({
           ],
         },
       ]}>
-      {isFocused && <LockScroll />}
-      <SplitViewProvider side="left">
-        <View
-          style={[
-            a.border_l,
-            t.atoms.border_contrast_low,
-            {width: leftColumnWidth},
-          ]}>
-          <ChatListHeader
-            newChatControl={newChatControl}
-            chatStatus={chatStatus}
-          />
-          <ScrollProvider onScroll={onLeftColumnScroll}>
-            <ChatList
+      <PlumblineWorkbenchMasthead />
+      <View style={[a.flex_1, a.flex_row]}>
+        {isFocused && <LockScroll />}
+        <SplitViewProvider side="left">
+          <View
+            style={[
+              a.border_l,
+              t.atoms.border_contrast_low,
+              {width: leftColumnWidth},
+            ]}>
+            <ChatListHeader
               newChatControl={newChatControl}
-              selectedChat={selectedChat}
               chatStatus={chatStatus}
             />
-          </ScrollProvider>
-          <NewChat onNewChat={onNewChat} control={newChatControl} />
-        </View>
-      </SplitViewProvider>
-      <SplitViewProvider side="right">
-        <View
-          style={[
-            a.border_x,
-            t.atoms.border_contrast_low,
-            {width: rightColumnWidth},
-          ]}>
-          {children}
-        </View>
-      </SplitViewProvider>
+            <ScrollProvider onScroll={onLeftColumnScroll}>
+              <ChatList
+                newChatControl={newChatControl}
+                selectedChat={selectedChat}
+                chatStatus={chatStatus}
+              />
+            </ScrollProvider>
+            <NewChat onNewChat={onNewChat} control={newChatControl} />
+          </View>
+        </SplitViewProvider>
+        <SplitViewProvider side="right">
+          <View
+            style={[
+              a.border_x,
+              t.atoms.border_contrast_low,
+              {width: rightColumnWidth},
+            ]}>
+            {children}
+          </View>
+        </SplitViewProvider>
+      </View>
     </View>
   )
 }

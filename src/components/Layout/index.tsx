@@ -14,6 +14,7 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context'
 
 import {useEnableMinimalShellModeForScreen} from '#/state/shell'
 import {useShellLayout} from '#/state/shell/shell-layout'
+import {PlumblineWorkbenchMasthead} from '#/view/shell/PlumblineShellBrand'
 import {useIsWithinSplitView} from '#/screens/Messages/components/splitView/context'
 import {
   atoms as a,
@@ -53,8 +54,17 @@ export const Screen = memo(function Screen({
 }: ScreenProps) {
   const {top} = useSafeAreaInsets()
   const {isWithinSplitView} = useIsWithinSplitView()
+  const {gtMobile} = useBreakpoints()
+  const {leftNavMinimal} = useLayoutBreakpoints()
 
   useEnableMinimalShellModeForScreen({enabled: minimalShell})
+
+  const showResponsiveMasthead =
+    IS_WEB &&
+    !isWithinSplitView &&
+    ecwMode === 'workbench' &&
+    leftNavMinimal &&
+    gtMobile
 
   return (
     <>
@@ -67,8 +77,10 @@ export const Screen = memo(function Screen({
           isWithinSplitView && {maxHeight: '100%'},
           style,
         ]}
-        {...props}
-      />
+        {...props}>
+        {showResponsiveMasthead && <PlumblineWorkbenchMasthead />}
+        {props.children}
+      </View>
     </>
   )
 })

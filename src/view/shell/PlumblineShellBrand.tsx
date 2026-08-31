@@ -78,3 +78,20 @@ export function PlumblineShellBrand({
     </View>
   )
 }
+
+/**
+ * The compact desktop shell uses an icon-only Navigator to preserve the
+ * document stream width. Keep the full product identity in the workspace so
+ * that compact navigation does not make the user agent anonymous.
+ */
+export function PlumblineWorkbenchMasthead({
+  style,
+}: {
+  style?: StyleProp<ViewStyle>
+}) {
+  return (
+    <View testID="plumbline-responsive-masthead" style={[a.w_full, style]}>
+      <PlumblineShellBrand />
+    </View>
+  )
+}
