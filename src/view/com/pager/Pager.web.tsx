@@ -2,6 +2,7 @@ import {
   Children,
   type JSX,
   useCallback,
+  useId,
   useImperativeHandle,
   useRef,
   useState,
@@ -21,6 +22,8 @@ export interface RenderTabBarFnProps {
   selectedPage: number
   onSelect?: (index: number) => void
   tabBarAnchor?: JSX.Element | null | undefined // Ignored on native.
+  tabIds?: string[]
+  tabPanelIds?: string[]
   dragProgress: SharedValue<number> // Ignored on web.
   dragState: SharedValue<'idle' | 'dragging' | 'settling'> // Ignored on web.
 }
@@ -56,6 +59,12 @@ export function Pager({
   const [selectedPage, setSelectedPage] = useState(initialPage)
   const scrollYs = useRef<Array<number | null>>([])
   const anchorRef = useRef(null)
+  const pagerId = useId().replace(/[^a-zA-Z0-9_-]/g, '')
+  const pages = Children.toArray(children)
+  const tabIds = pages.map((_, index) => `plumbline-tab-${pagerId}-${index}`)
+  const tabPanelIds = pages.map(
+    (_, index) => `plumbline-tabpanel-${pagerId}-${index}`,
+  )
 
   /*
    * There is no drag gesture on web; these exist to satisfy the shared
@@ -109,12 +118,17 @@ export function Pager({
       {renderTabBar({
         selectedPage,
         tabBarAnchor: <View ref={anchorRef} />,
+        tabIds,
+        tabPanelIds,
         onSelect: e => onTabBarSelect(e),
         dragProgress,
         dragState,
       })}
-      {Children.map(children, (child, i) => (
+      {pages.map((child, i) => (
         <View
+          role="tabpanel"
+          nativeID={tabPanelIds[i]}
+          aria-labelledby={tabIds[i]}
           style={selectedPage === i ? a.flex_1 : a.hidden}
           key={`page-${i}`}>
           {child}

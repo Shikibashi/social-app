@@ -65,6 +65,8 @@ export const PagerWithHeader = forwardRef<PagerRef, PagerWithHeaderProps>(
             onCurrentPageSelected={onCurrentPageSelected}
             onSelect={props.onSelect}
             tabBarAnchor={props.tabBarAnchor}
+            tabIds={props.tabIds}
+            tabPanelIds={props.tabPanelIds}
             testID={testID}
           />
         )
@@ -123,6 +125,8 @@ let PagerTabBar = ({
   onCurrentPageSelected,
   onSelect,
   tabBarAnchor,
+  tabIds,
+  tabPanelIds,
 }: {
   currentPage: number
   items: string[]
@@ -136,6 +140,8 @@ let PagerTabBar = ({
   onCurrentPageSelected?: (index: number) => void
   onSelect?: (index: number) => void
   tabBarAnchor?: JSX.Element | null | undefined
+  tabIds?: string[]
+  tabPanelIds?: string[]
 }): React.ReactNode => {
   return (
     <>
@@ -158,6 +164,8 @@ let PagerTabBar = ({
           selectedPage={currentPage}
           onSelect={onSelect}
           onPressSelected={onCurrentPageSelected}
+          tabIds={tabIds}
+          tabPanelIds={tabPanelIds}
           dragProgress={undefined as any /* native-only */}
           dragState={undefined as any /* native-only */}
         />

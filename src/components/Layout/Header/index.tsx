@@ -28,7 +28,7 @@ import {
   SCROLLBAR_OFFSET,
 } from '#/components/Layout/const'
 import {ScrollbarOffsetContext} from '#/components/Layout/context'
-import {Text} from '#/components/Typography'
+import {H1, H2, H3, H4, H5, H6, Text} from '#/components/Typography'
 import {useAnalytics} from '#/analytics'
 import {IS_IOS, IS_WEB} from '#/env'
 
@@ -186,32 +186,48 @@ export function MenuButton() {
 export function TitleText({
   children,
   style,
-}: {children: React.ReactNode} & TextStyleProp) {
+  level = 1,
+}: {
+  children: React.ReactNode
+  level?: 1 | 2 | 3 | 4 | 5 | 6
+} & TextStyleProp) {
   const {gtMobile} = useBreakpoints()
   const {isWithinLeftPanel} = useIsWithinSplitView()
   const align = useContext(AlignmentContext)
-  return (
-    <Text
-      style={[
-        isWithinLeftPanel
-          ? [a.text_xl, a.font_bold]
-          : [a.text_lg, a.font_semi_bold],
-        a.leading_tight,
-        IS_IOS && align === 'platform' && a.text_center,
-        gtMobile && a.text_xl,
-        web({
-          fontFamily:
-            'Georgia, "Noto Serif", "DejaVu Serif", "Times New Roman", serif',
-          textShadow: '1px 1px 0 var(--ecw-surface-raised)',
-        }),
-        style,
-      ]}
-      numberOfLines={2}
-      emoji
-      maxFontSizeMultiplier={2}>
-      {children}
-    </Text>
-  )
+  const headingProps = {
+    style: [
+      isWithinLeftPanel
+        ? [a.text_xl, a.font_bold]
+        : [a.text_lg, a.font_semi_bold],
+      a.leading_tight,
+      IS_IOS && align === 'platform' && a.text_center,
+      gtMobile && a.text_xl,
+      web({
+        fontFamily:
+          'Georgia, "Noto Serif", "DejaVu Serif", "Times New Roman", serif',
+        textShadow: '1px 1px 0 var(--ecw-surface-raised)',
+      }),
+      style,
+    ],
+    numberOfLines: 2,
+    emoji: true,
+    maxFontSizeMultiplier: 2,
+  }
+
+  switch (level) {
+    case 1:
+      return <H1 {...headingProps}>{children}</H1>
+    case 2:
+      return <H2 {...headingProps}>{children}</H2>
+    case 3:
+      return <H3 {...headingProps}>{children}</H3>
+    case 4:
+      return <H4 {...headingProps}>{children}</H4>
+    case 5:
+      return <H5 {...headingProps}>{children}</H5>
+    case 6:
+      return <H6 {...headingProps}>{children}</H6>
+  }
 }
 
 export function SubtitleText({children}: {children: React.ReactNode}) {

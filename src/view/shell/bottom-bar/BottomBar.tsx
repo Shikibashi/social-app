@@ -189,7 +189,7 @@ export function BottomBar({navigation}: BottomTabBarProps) {
                 )
               }
               onPress={onPressHome}
-              accessibilityRole="tab"
+              accessibilityRole="button"
               accessibilityLabel={l`Home`}
               accessibilityHint=""
             />
@@ -209,7 +209,7 @@ export function BottomBar({navigation}: BottomTabBarProps) {
                 )
               }
               onPress={onPressSearch}
-              accessibilityRole="search"
+              accessibilityRole="button"
               accessibilityLabel={l`Search`}
               accessibilityHint=""
             />
@@ -233,7 +233,7 @@ export function BottomBar({navigation}: BottomTabBarProps) {
               notificationCount={numUnreadMessages.numUnread}
               hasNew={numUnreadMessages.hasNew}
               accessible={true}
-              accessibilityRole="tab"
+              accessibilityRole="button"
               accessibilityLabel={l`Chat`}
               accessibilityHint={
                 numUnreadMessages.count > 0
@@ -270,7 +270,7 @@ export function BottomBar({navigation}: BottomTabBarProps) {
               onPress={onPressNotifications}
               notificationCount={numUnreadNotifications}
               accessible={true}
-              accessibilityRole="tab"
+              accessibilityRole="button"
               accessibilityLabel={l`Notifications`}
               accessibilityHint={
                 numUnreadNotifications === ''
@@ -313,7 +313,7 @@ export function BottomBar({navigation}: BottomTabBarProps) {
               }
               onPress={onPressProfile}
               onLongPress={onLongPressProfile}
-              accessibilityRole="tab"
+              accessibilityRole="button"
               accessibilityLabel={l`Profile`}
               accessibilityHint=""
             />

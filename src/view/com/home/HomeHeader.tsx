@@ -68,6 +68,8 @@ export function HomeHeader(
         onSelect={onSelect}
         testID={props.testID}
         items={items}
+        tabIds={props.tabIds}
+        tabPanelIds={props.tabPanelIds}
         dragProgress={props.dragProgress}
         dragState={props.dragState}
         transparent

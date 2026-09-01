@@ -12,6 +12,8 @@ export interface TabBarProps {
   testID?: string
   selectedPage: number
   items: string[]
+  tabIds?: string[]
+  tabPanelIds?: string[]
   indicatorColor?: string
   backgroundColor?: string
 
@@ -35,6 +37,8 @@ export function TabBar({
   testID,
   selectedPage,
   items,
+  tabIds,
+  tabPanelIds,
   onSelect,
   onPressSelected,
 }: TabBarProps) {
@@ -113,6 +117,7 @@ export function TabBar({
         contentContainerStyle={styles.contentContainer}>
         {items.map((item, i) => {
           const selected = i === selectedPage
+          const isTab = tabPanelIds === undefined || Boolean(tabPanelIds[i])
           return (
             <PressableWithHover
               testID={`${testID}-selector-${i}`}
@@ -123,9 +128,11 @@ export function TabBar({
               style={styles.item}
               hoverStyle={t.atoms.bg_contrast_25}
               onPress={() => onPressItem(i)}
-              accessibilityRole="tab"
-              accessibilityState={{selected}}
-              aria-selected={selected}>
+              accessibilityRole={isTab ? 'tab' : 'button'}
+              accessibilityState={isTab ? {selected} : undefined}
+              aria-selected={isTab ? selected : undefined}
+              nativeID={isTab ? tabIds?.[i] : undefined}
+              aria-controls={isTab ? tabPanelIds?.[i] : undefined}>
               <View style={styles.itemInner}>
                 <Text
                   emoji
@@ -191,7 +198,11 @@ const desktopStyles = StyleSheet.create({
   },
   itemInner: {
     alignItems: 'center',
-    ...web({overflowX: 'hidden'}),
+    // CSS turns a lone `overflow-x: hidden` into `overflow-y: auto`, which
+    // creates a visible vertical scrollbar when a tab label is a few pixels
+    // taller than its wrapper. Keep long labels clipped in both axes while
+    // preserving horizontal scrolling on the tab strip itself.
+    ...web({overflowX: 'hidden', overflowY: 'hidden'}),
   },
   itemText: {
     textAlign: 'center',
@@ -243,7 +254,7 @@ const mobileStyles = StyleSheet.create({
   itemInner: {
     flexGrow: 1,
     alignItems: 'center',
-    ...web({overflowX: 'hidden'}),
+    ...web({overflowX: 'hidden', overflowY: 'hidden'}),
   },
   itemText: {
     textAlign: 'center',

@@ -39,6 +39,9 @@ export interface RenderTabBarFnProps {
   selectedPage: number
   onSelect?: (index: number) => void
   tabBarAnchor?: JSX.Element | null | undefined // Ignored on native.
+  /** Web tab-to-panel relationships. Ignored by native tab bars. */
+  tabIds?: string[]
+  tabPanelIds?: string[]
   dragProgress: SharedValue<number> // Ignored on web.
   dragState: SharedValue<'idle' | 'dragging' | 'settling'> // Ignored on web.
 }

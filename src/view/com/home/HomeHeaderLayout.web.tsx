@@ -14,7 +14,7 @@ import {ButtonIcon} from '#/components/Button'
 import {Hashtag_Stroke2_Corner0_Rounded as FeedsIcon} from '#/components/icons/Hashtag'
 import * as Layout from '#/components/Layout'
 import {Link} from '#/components/Link'
-import {Text} from '#/components/Typography'
+import {H1, Text} from '#/components/Typography'
 import {useAnalytics} from '#/analytics'
 
 export function HomeHeaderLayout(props: {
@@ -81,13 +81,12 @@ function HomeHeaderLayoutDesktopAndTablet({
             style={[a.flex_1, a.pl_sm, {minWidth: 0}]}
             accessible={false}>
             <Text style={styles.headingEyebrow}>DOCUMENT STREAM</Text>
-            <Text
+            <H1
               testID="plumbline-document-stream-title"
-              accessibilityRole="header"
               numberOfLines={1}
               style={[styles.headingTitle, t.atoms.text]}>
               {surfaceTitle}
-            </Text>
+            </H1>
           </View>
           {hasSession && (
             <Link

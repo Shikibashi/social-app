@@ -121,6 +121,7 @@ function NativeStackNavigator({
   const {setShowLoggedOut} = useLoggedOutViewControls()
   const {isMobile} = useWebMediaQueries()
   const {leftNavMinimal} = useLayoutBreakpoints()
+
   if (!hasSession && (activeRouteRequiresAuth || IS_NATIVE)) {
     return <LoggedOut />
   }
@@ -190,7 +191,11 @@ function NativeStackNavigator({
 
   return (
     <NavigationContent>
-      <View role="main" style={a.flex_1}>
+      <View
+        role="main"
+        id="plumbline-main-content"
+        tabIndex={-1}
+        style={a.flex_1}>
         <NativeStackView
           {...rest}
           state={state}

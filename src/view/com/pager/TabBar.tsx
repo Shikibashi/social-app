@@ -25,6 +25,9 @@ export interface TabBarProps {
   testID?: string
   selectedPage: number
   items: string[]
+  /** Web tab-to-panel relationships. Ignored by the native renderer. */
+  tabIds?: string[]
+  tabPanelIds?: string[]
   onSelect?: (index: number) => void
   onPressSelected?: (index: number) => void
   dragProgress: SharedValue<number>

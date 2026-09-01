@@ -19,11 +19,13 @@ import {ButtonIcon} from '#/components/Button'
 import {Hashtag_Stroke2_Corner0_Rounded as FeedsIcon} from '#/components/icons/Hashtag'
 import * as Layout from '#/components/Layout'
 import {Link} from '#/components/Link'
+import {H1} from '#/components/Typography'
 import {useAnalytics} from '#/analytics'
-import {IS_DEV, IS_LIQUID_GLASS} from '#/env'
+import {IS_DEV, IS_LIQUID_GLASS, IS_WEB} from '#/env'
 
 export function HomeHeaderLayoutMobile({
   children,
+  surfaceTitle = 'Home workspace',
 }: {
   children: React.ReactNode
   tabBarAnchor: React.ReactElement | null | undefined
@@ -57,6 +59,7 @@ export function HomeHeaderLayoutMobile({
         headerHeight.set(e.nativeEvent.layout.height)
       }}>
       <Layout.Header.Outer noBottomBorder>
+        {IS_WEB && <H1 style={a.sr_only}>{surfaceTitle}</H1>}
         <Layout.Header.Slot>
           <Layout.Header.MenuButton />
         </Layout.Header.Slot>
@@ -64,6 +67,10 @@ export function HomeHeaderLayoutMobile({
         <View style={[a.flex_1, a.align_center]}>
           <PressableScale
             targetScale={0.9}
+            accessibilityLabel={_(msg`Refresh current feed`)}
+            accessibilityHint={_(
+              msg`Returns to the top and loads the latest posts`,
+            )}
             onPress={() => {
               if (IS_DEV) {
                 navigate('Debug')
