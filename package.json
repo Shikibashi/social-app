@@ -45,6 +45,8 @@
     "android:profile": "BSKY_PROFILE=1 expo run:android --variant release",
     "ios": "expo run:ios",
     "web": "expo start --web",
+    "web:local": "BROWSER=none expo start --web --localhost --port 19006",
+    "preview-web": "node ./scripts/serve-web-build.js",
     "use-build-number": "./scripts/useBuildNumberEnv.sh",
     "use-build-number-with-bump": "./scripts/useBuildNumberEnvWithBump.sh",
     "build-web": "expo export:web && node ./scripts/post-web-build.js",

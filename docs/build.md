@@ -7,6 +7,44 @@
 
 You're all set!
 
+### Local OAuth development
+
+AT Protocol OAuth does not permit an ordinary HTTP or IP-address client-metadata
+URL. Development builds therefore use the protocol's loopback-client exception
+only when `EXPO_PUBLIC_ENV=development` and the app is running on a loopback
+origin. Start from `http://127.0.0.1:<port>/` when testing sign-in locally.
+
+Use the repeatable local server command:
+
+```sh
+pnpm web:local
+```
+
+Then open [http://127.0.0.1:19006/](http://127.0.0.1:19006/). If a developer
+opens a `http://localhost:<port>/` root, profile, post, or community route,
+Plumbline replaces it with the equivalent `127.0.0.1` URL before it creates
+OAuth state. The local client ID remains `http://localhost` without a port,
+while its declared bootstrap and callback redirects point to
+`http://127.0.0.1:<port>/` and
+`http://127.0.0.1:<port>/oauth/callback` respectively.
+
+Do not replace the public Plumbline metadata with HTTP local metadata. Hosted
+and production OAuth continue to use the HTTPS metadata document and callback
+at `https://plumblines.uk/`.
+
+For a local check of an exported bundle, use:
+
+```sh
+pnpm build-web
+pnpm preview-web
+```
+
+`preview-web` routes browser paths such as `/oauth/callback` back to the app
+shell, which lets the client consume its one-time OAuth callback. Do not use a
+generic static-file server such as `python -m http.server web-build` for OAuth
+testing: it treats that callback as a missing file and returns a 404 before the
+client can restore the authorization transaction.
+
 ## iOS/Android Build
 
 ### Native Environment Setup
