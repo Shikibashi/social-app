@@ -523,6 +523,33 @@ function WorkbenchActionPanel({
   )
 }
 
+function ServiceInspectorDetail({
+  label,
+  value,
+}: {
+  label: ReactNode
+  value: ReactNode
+}) {
+  const t = useTheme()
+
+  return (
+    <View style={[a.gap_2xs]}>
+      <SettingsList.ItemText
+        style={[{paddingHorizontal: 0, flex: 0}, a.text_sm, a.font_semi_bold]}>
+        {label}
+      </SettingsList.ItemText>
+      <SettingsList.ItemText
+        style={[
+          {paddingHorizontal: 0, flex: 0},
+          a.text_sm,
+          t.atoms.text_contrast_medium,
+        ]}>
+        {value}
+      </SettingsList.ItemText>
+    </View>
+  )
+}
+
 function ProviderSurfaceActionPanel({
   provider,
   onToggle,
@@ -2414,6 +2441,7 @@ export function ServicesSettingsScreen({route, navigation}: Props) {
                 msg`Shows the provider, rule, and control for this surface`,
               )}
               style={[
+                a.self_start,
                 a.border,
                 a.p_md,
                 a.gap_sm,
@@ -2422,54 +2450,22 @@ export function ServicesSettingsScreen({route, navigation}: Props) {
                 gtMobile ? {width: 184} : a.w_full,
               ]}>
               <H2 style={[a.text_md, a.font_semi_bold]}>{_(msg`Inspector`)}</H2>
-              <SettingsList.ItemText
-                style={[{paddingHorizontal: 0}, a.text_sm, a.font_semi_bold]}>
-                {_(msg`Source`)}
-              </SettingsList.ItemText>
-              <SettingsList.ItemText
-                style={[
-                  {paddingHorizontal: 0},
-                  a.text_sm,
-                  t.atoms.text_contrast_medium,
-                ]}>
-                {i18n._(activeInspector.source)}
-              </SettingsList.ItemText>
-              <SettingsList.ItemText
-                style={[{paddingHorizontal: 0}, a.text_sm, a.font_semi_bold]}>
-                {_(msg`Rule`)}
-              </SettingsList.ItemText>
-              <SettingsList.ItemText
-                style={[
-                  {paddingHorizontal: 0},
-                  a.text_sm,
-                  t.atoms.text_contrast_medium,
-                ]}>
-                {i18n._(activeInspector.rule)}
-              </SettingsList.ItemText>
-              <SettingsList.ItemText
-                style={[{paddingHorizontal: 0}, a.text_sm, a.font_semi_bold]}>
-                {_(msg`User control`)}
-              </SettingsList.ItemText>
-              <SettingsList.ItemText
-                style={[
-                  {paddingHorizontal: 0},
-                  a.text_sm,
-                  t.atoms.text_contrast_medium,
-                ]}>
-                {i18n._(activeInspector.control)}
-              </SettingsList.ItemText>
-              <SettingsList.ItemText
-                style={[{paddingHorizontal: 0}, a.text_sm, a.font_semi_bold]}>
-                {_(msg`Current state`)}
-              </SettingsList.ItemText>
-              <SettingsList.ItemText
-                style={[
-                  {paddingHorizontal: 0},
-                  a.text_sm,
-                  t.atoms.text_contrast_medium,
-                ]}>
-                {activeState}
-              </SettingsList.ItemText>
+              <ServiceInspectorDetail
+                label={_(msg`Source`)}
+                value={i18n._(activeInspector.source)}
+              />
+              <ServiceInspectorDetail
+                label={_(msg`Rule`)}
+                value={i18n._(activeInspector.rule)}
+              />
+              <ServiceInspectorDetail
+                label={_(msg`User control`)}
+                value={i18n._(activeInspector.control)}
+              />
+              <ServiceInspectorDetail
+                label={_(msg`Current state`)}
+                value={activeState}
+              />
             </View>
           </View>
         </View>
