@@ -169,6 +169,9 @@ export function PostThread({uri}: {uri: string}) {
   const listRef = useRef<ListMethods>(null)
   const anchorRef = useRef<React.ComponentRef<typeof View> | null>(null)
   const headerRef = useRef<React.ComponentRef<typeof View> | null>(null)
+  const provenanceHeaderRef = useRef<React.ComponentRef<typeof View> | null>(
+    null,
+  )
 
   /*
    * On a cold load, parents are not prepended until the anchor post has
@@ -208,10 +211,14 @@ export function PostThread({uri}: {uri: string}) {
     const list = listRef.current
     const anchor = anchorRef.current as any as Element
     const header = headerRef.current as any as Element
+    const provenanceHeader =
+      provenanceHeaderRef.current as unknown as Element | null
 
     if (list && anchor && header && shouldHandleScroll.current) {
       const anchorOffsetTop = anchor.getBoundingClientRect().top
       const headerHeight = header.getBoundingClientRect().height
+      const provenanceHeaderHeight =
+        provenanceHeader?.getBoundingClientRect().height ?? 0
 
       /*
        * `deferParents` is `true` on a cold load, and always reset to
@@ -239,7 +246,14 @@ export function PostThread({uri}: {uri: string}) {
        * will give us a _positive_ offset, which will scroll the anchor post
        * back _up_ to the top of the screen.
        */
-      const offset = anchorOffsetTop - headerHeight
+      /*
+       * The compact provider control is part of the document flow so it can
+       * remain an ordinary, browser-addressable disclosure rather than a
+       * second sticky toolbar. Keep that control below the thread header when
+       * pinning the anchor post; otherwise the window scroll moves it under
+       * the sticky header and makes it impossible to activate.
+       */
+      const offset = anchorOffsetTop - headerHeight - provenanceHeaderHeight
       list.scrollToOffset({offset})
 
       /*
@@ -579,17 +593,18 @@ export function PostThread({uri}: {uri: string}) {
         </Layout.Header.Slot>
       </Layout.Header.Outer>
 
-      <ProviderCompositionProvenance
-        surfaceLabel="Thread"
-        composition={providerComposition}
-        summaryPresentation={thread.state.error ? 'full' : 'compact'}
-      />
-
       {thread.state.error ? (
-        <ThreadError
-          error={thread.state.error}
-          onRetry={thread.actions.refetch}
-        />
+        <Layout.Center>
+          <ProviderCompositionProvenance
+            surfaceLabel="Thread"
+            composition={providerComposition}
+            summaryPresentation="full"
+          />
+          <ThreadError
+            error={thread.state.error}
+            onRetry={thread.actions.refetch}
+          />
+        </Layout.Center>
       ) : (
         <AnalyticsOnlyFeedFeedbackProvider
           feedDescriptor={feedFeedback.feedDescriptor}>
@@ -598,6 +613,17 @@ export function PostThread({uri}: {uri: string}) {
             data={deferredSlices}
             renderItem={renderItem}
             keyExtractor={keyExtractor}
+            ListHeaderComponent={
+              providerComposition ? (
+                <View ref={provenanceHeaderRef}>
+                  <ProviderCompositionProvenance
+                    surfaceLabel="Thread"
+                    composition={providerComposition}
+                    summaryPresentation="compact"
+                  />
+                </View>
+              ) : undefined
+            }
             onContentSizeChange={platform({
               web: onContentSizeChangeWebOnly,
               default: onContentSizeChangeNativeOnly,

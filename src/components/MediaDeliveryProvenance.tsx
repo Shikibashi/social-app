@@ -1,4 +1,4 @@
-import {useState} from 'react'
+import {useId, useState} from 'react'
 import {Pressable, StyleSheet, View} from 'react-native'
 import {msg} from '@lingui/core/macro'
 import {useLingui} from '@lingui/react'
@@ -31,6 +31,7 @@ export function MediaDeliveryProvenance({
   const {_} = useLingui()
   const t = useTheme()
   const [expanded, setExpanded] = useState(false)
+  const detailsId = `media-delivery-provenance-details-${useId()}`
 
   if (!provenance) return null
 
@@ -67,6 +68,8 @@ export function MediaDeliveryProvenance({
           msg`Show the account PDS and blob references used for profile media`,
         )}
         accessibilityState={{expanded}}
+        aria-expanded={expanded}
+        aria-controls={expanded ? detailsId : undefined}
         onPress={() => setExpanded(value => !value)}
         style={({pressed}) => [styles.toggle, pressed && styles.pressed]}>
         <Text style={[styles.toggleText, {color: t.atoms.text_link.color}]}>
@@ -77,8 +80,16 @@ export function MediaDeliveryProvenance({
       </Pressable>
 
       {expanded ? (
-        <View testID="media-delivery-provenance-details" style={styles.details}>
-          <Text accessibilityRole="header">
+        <View
+          testID="media-delivery-provenance-details"
+          nativeID={detailsId}
+          role="region"
+          accessibilityLabel={_(msg`Profile media source details`)}
+          accessibilityHint={_(
+            msg`Contains the profile record, account PDS, and direct blob delivery references`,
+          )}
+          style={styles.details}>
+          <Text accessibilityRole="header" aria-level={2}>
             {_(msg`Profile media delivery`)}
           </Text>
           <Detail label={_(msg`Authority`)} value={_(msg`Account PDS`)} />
@@ -177,6 +188,8 @@ const styles = StyleSheet.create({
   },
   toggle: {
     alignSelf: 'flex-start',
+    justifyContent: 'center',
+    minHeight: 30,
     paddingVertical: 2,
   },
   toggleText: {

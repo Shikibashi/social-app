@@ -1,4 +1,4 @@
-import {useEffect, useState} from 'react'
+import {useEffect, useId, useState} from 'react'
 import {Pressable, View} from 'react-native'
 import {type I18n} from '@lingui/core'
 import {msg} from '@lingui/core/macro'
@@ -29,6 +29,7 @@ export function FeedProvenanceCard({
   const {_, i18n} = useLingui()
   const t = useTheme()
   const [showDetails, setShowDetails] = useState(false)
+  const detailsId = `feed-provenance-details-${useId()}`
   const algorithmVersionLabel = feedAlgorithmVersionLabel(
     provenance.algorithmVersion,
     i18n,
@@ -50,12 +51,8 @@ export function FeedProvenanceCard({
         state={state}
         presentation="compact"
       />
-      <ProviderCompositionProvenance
-        surfaceLabel={provenance.feedName}
-        composition={provenance.providerComposition}
-        showSummary={false}
-      />
       <Pressable
+        testID="feed-provenance-details-toggle"
         accessibilityRole="button"
         accessibilityLabel={
           showDetails ? _(msg`Hide feed details`) : _(msg`Show feed details`)
@@ -64,14 +61,18 @@ export function FeedProvenanceCard({
           msg`Feed provenance details are hidden until expanded`,
         )}
         accessibilityState={{expanded: showDetails}}
+        aria-expanded={showDetails}
+        aria-controls={showDetails ? detailsId : undefined}
         onPress={() => setShowDetails(value => !value)}
         style={({pressed}) => [
           {
             alignSelf: 'flex-start',
             borderColor: t.palette.contrast_200,
             borderWidth: 1,
+            minHeight: 30,
             paddingHorizontal: 8,
             paddingVertical: 4,
+            justifyContent: 'center',
           },
           pressed && {opacity: 0.65},
         ]}>
@@ -81,8 +82,17 @@ export function FeedProvenanceCard({
       </Pressable>
 
       {showDetails ? (
-        <View style={{gap: 3, paddingTop: 4}}>
-          <Text accessibilityRole="header">{provenance.feedName}</Text>
+        <View
+          nativeID={detailsId}
+          role="region"
+          accessibilityLabel={_(msg`Feed details`)}
+          accessibilityHint={_(
+            msg`Contains the feed's provider, ordering, policy, and service state`,
+          )}
+          style={{gap: 3, paddingTop: 4}}>
+          <Text accessibilityRole="header" aria-level={2}>
+            {provenance.feedName}
+          </Text>
           <Text>
             {_(msg`Algorithm`)}: {provenance.algorithmName}{' '}
             {algorithmVersionLabel}
@@ -147,6 +157,12 @@ export function FeedProvenanceCard({
           <Text accessibilityLiveRegion="polite">
             {_(msg`Health`)}: {localizedHealthLabel(provenance.health, i18n)}
           </Text>
+          <ProviderCompositionProvenance
+            surfaceLabel={provenance.feedName}
+            composition={provenance.providerComposition}
+            showSummary={false}
+            detailsHeadingLevel={3}
+          />
           {(onChangeRanking || onChangeProvider) && (
             <View style={{flexDirection: 'row', gap: 12, paddingTop: 6}}>
               {onChangeRanking ? (
@@ -157,7 +173,10 @@ export function FeedProvenanceCard({
                     msg`Open settings for local ranking choices`,
                   )}
                   onPress={onChangeRanking}
-                  style={({pressed}) => pressed && {opacity: 0.65}}>
+                  style={({pressed}) => [
+                    styles.detailAction,
+                    pressed && {opacity: 0.65},
+                  ]}>
                   <Text style={{fontWeight: '600'}}>
                     {_(msg`Change ranking`)}
                   </Text>
@@ -171,7 +190,10 @@ export function FeedProvenanceCard({
                     msg`Open settings for explicit read provider choices`,
                   )}
                   onPress={onChangeProvider}
-                  style={({pressed}) => pressed && {opacity: 0.65}}>
+                  style={({pressed}) => [
+                    styles.detailAction,
+                    pressed && {opacity: 0.65},
+                  ]}>
                   <Text style={{fontWeight: '600'}}>
                     {_(msg`Change provider`)}
                   </Text>
@@ -183,6 +205,13 @@ export function FeedProvenanceCard({
       ) : null}
     </View>
   )
+}
+
+const styles = {
+  detailAction: {
+    minHeight: 30,
+    justifyContent: 'center' as const,
+  },
 }
 
 function feedAlgorithmVersionLabel(version: string, i18n: I18n): string {

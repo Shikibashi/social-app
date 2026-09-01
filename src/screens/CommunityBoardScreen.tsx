@@ -1,4 +1,4 @@
-import {useEffect, useMemo, useState} from 'react'
+import {useEffect, useId, useMemo, useState} from 'react'
 import {Alert, TextInput, View} from 'react-native'
 import {type Client, type LexMap} from '@atproto/lex'
 import {type NsidString} from '@atproto/syntax'
@@ -158,6 +158,11 @@ export function CommunityBoardScreen({route}: Props) {
   const [status, setStatus] = useState<string>()
   const [composerMode, setComposerMode] = useState<ComposerMode>()
   const [activeTab, setActiveTab] = useState<CommunityTab>('threads')
+  const communityTabsId = useId().replace(/[^a-zA-Z0-9_-]/g, '')
+  const communityTabId = (tab: CommunityTab) =>
+    `community-tab-${communityTabsId}-${tab}`
+  const communityPanelId = (tab: CommunityTab) =>
+    `community-tabpanel-${communityTabsId}-${tab}`
   const [selectedTopicKey, setSelectedTopicKey] = useState<string>()
   const [topicSearch, setTopicSearch] = useState('')
   const [communitySearch, setCommunitySearch] = useState('')
@@ -654,7 +659,9 @@ export function CommunityBoardScreen({route}: Props) {
       <Layout.Header.Outer>
         <Layout.Header.BackButton />
         <Layout.Header.Content>
-          <Layout.Header.TitleText>Communities</Layout.Header.TitleText>
+          <Layout.Header.TitleText level={2}>
+            Communities
+          </Layout.Header.TitleText>
         </Layout.Header.Content>
         <Layout.Header.Slot />
       </Layout.Header.Outer>
@@ -1222,6 +1229,10 @@ export function CommunityBoardScreen({route}: Props) {
                         label={`Show ${label.toLocaleLowerCase()}`}
                         accessibilityRole="tab"
                         accessibilityState={{selected: activeTab === tab}}
+                        nativeID={communityTabId(tab)}
+                        aria-controls={
+                          activeTab === tab ? communityPanelId(tab) : undefined
+                        }
                         size="small"
                         shape="rectangular"
                         color={activeTab === tab ? 'primary' : 'secondary'}
@@ -1239,6 +1250,9 @@ export function CommunityBoardScreen({route}: Props) {
                   </View>
 
                   <View
+                    role="tabpanel"
+                    nativeID={communityPanelId(activeTab)}
+                    aria-labelledby={communityTabId(activeTab)}
                     style={{
                       borderTopWidth: 1,
                       borderColor: colors.border,
@@ -2163,6 +2177,7 @@ function CommunityDirectoryEvidence({
       <View style={[a.flex_row, a.align_center, a.justify_between, a.gap_sm]}>
         <Text
           accessibilityRole="header"
+          aria-level={2}
           style={[metaStyle(colors), {color: colors.ink, fontWeight: '700'}]}>
           DIRECTORY EVIDENCE
         </Text>

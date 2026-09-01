@@ -215,6 +215,7 @@ function ModerationLayers() {
       ]}>
       <Text
         accessibilityRole="header"
+        aria-level={2}
         style={[a.font_semi_bold, t.atoms.text_contrast_high]}>
         {l`How a moderation decision reaches your screen`}
       </Text>

@@ -54,6 +54,7 @@ import {atoms as a, useBreakpoints, useTheme} from '#/alf'
 import {AuthorizationProvenance} from '#/components/AuthorizationProvenance'
 import {Button, ButtonText} from '#/components/Button'
 import * as Layout from '#/components/Layout'
+import {H2} from '#/components/Typography'
 
 type Props = NativeStackScreenProps<CommonNavigatorParams, 'ServicesSettings'>
 
@@ -2406,6 +2407,12 @@ export function ServicesSettingsScreen({route, navigation}: Props) {
             </View>
 
             <View
+              testID="service-workbench-inspector"
+              role="complementary"
+              accessibilityLabel={_(msg`Inspector`)}
+              accessibilityHint={_(
+                msg`Shows the provider, rule, and control for this surface`,
+              )}
               style={[
                 a.border,
                 a.p_md,
@@ -2414,10 +2421,7 @@ export function ServicesSettingsScreen({route, navigation}: Props) {
                 t.atoms.border_contrast_low,
                 gtMobile ? {width: 184} : a.w_full,
               ]}>
-              <SettingsList.ItemText
-                style={[{paddingHorizontal: 0}, a.font_semi_bold]}>
-                {_(msg`Inspector`)}
-              </SettingsList.ItemText>
+              <H2 style={[a.text_md, a.font_semi_bold]}>{_(msg`Inspector`)}</H2>
               <SettingsList.ItemText
                 style={[{paddingHorizontal: 0}, a.text_sm, a.font_semi_bold]}>
                 {_(msg`Source`)}

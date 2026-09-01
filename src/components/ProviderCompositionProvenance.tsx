@@ -1,4 +1,4 @@
-import {useState} from 'react'
+import {useId, useState} from 'react'
 import {Pressable, StyleSheet, View} from 'react-native'
 import {type I18n} from '@lingui/core'
 import {msg, plural} from '@lingui/core/macro'
@@ -24,11 +24,13 @@ import {Text} from '#/components/Typography'
 export function ProviderCompositionProvenance({
   surfaceLabel,
   composition,
+  detailsHeadingLevel = 2,
   showSummary = true,
   summaryPresentation = 'full',
 }: {
   surfaceLabel: string
   composition?: ProviderCompositionResult<unknown>
+  detailsHeadingLevel?: 2 | 3
   showSummary?: boolean
   summaryPresentation?: 'full' | 'compact'
 }) {
@@ -36,6 +38,7 @@ export function ProviderCompositionProvenance({
   const t = useTheme()
   const navigation = useNavigation<NavigationProp>()
   const [expanded, setExpanded] = useState(false)
+  const detailsId = `provider-composition-provenance-details-${useId()}`
 
   if (!composition) return null
 
@@ -77,6 +80,8 @@ export function ProviderCompositionProvenance({
           msg`Show provider observations and the local reconciliation policy`,
         )}
         accessibilityState={{expanded}}
+        aria-expanded={expanded}
+        aria-controls={expanded ? detailsId : undefined}
         onPress={() => setExpanded(value => !value)}
         style={({pressed}) => [styles.toggle, pressed && styles.pressed]}>
         <Text style={[styles.toggleText, {color: t.atoms.text_link.color}]}>
@@ -89,8 +94,16 @@ export function ProviderCompositionProvenance({
       {expanded ? (
         <View
           testID={`provider-composition-provenance-details-${composition.surface}`}
+          nativeID={detailsId}
+          role="region"
+          accessibilityLabel={_(msg`${surfaceLabel} source details`)}
+          accessibilityHint={_(
+            msg`Contains provider observations and the local reconciliation policy`,
+          )}
           style={styles.details}>
-          <Text accessibilityRole="header">{surfaceLabel}</Text>
+          <Text accessibilityRole="header" aria-level={detailsHeadingLevel}>
+            {surfaceLabel}
+          </Text>
           <Detail
             label={_(msg`Evidence status`)}
             value={compositionStatusLabel(composition.status, i18n)}
@@ -356,6 +369,8 @@ const styles = StyleSheet.create({
   },
   toggle: {
     alignSelf: 'flex-start',
+    justifyContent: 'center',
+    minHeight: 30,
     paddingVertical: 2,
   },
   toggleText: {
@@ -382,6 +397,8 @@ const styles = StyleSheet.create({
   action: {
     alignSelf: 'flex-start',
     borderWidth: 1,
+    justifyContent: 'center',
+    minHeight: 30,
     paddingHorizontal: 8,
     paddingVertical: 5,
   },

@@ -1,4 +1,4 @@
-import {useState} from 'react'
+import {useId, useState} from 'react'
 import {Pressable, View} from 'react-native'
 import {type I18n} from '@lingui/core'
 import {msg} from '@lingui/core/macro'
@@ -294,6 +294,7 @@ export function AuthorizationProvenance({
   const {_} = useLingui()
   const t = useTheme()
   const [expanded, setExpanded] = useState(false)
+  const detailsId = `authorization-provenance-details-${useId()}`
   const grants = getOAuthFeatureGrantPresentations(account.oauthScopes)
 
   return (
@@ -309,6 +310,8 @@ export function AuthorizationProvenance({
           msg`Shows the OAuth permissions, service authority, and revocation boundary for this session`,
         )}
         accessibilityState={{expanded}}
+        aria-expanded={expanded}
+        aria-controls={expanded ? detailsId : undefined}
         testID="authorization-provenance-toggle"
         onPress={() => setExpanded(value => !value)}
         style={({pressed}) => [
@@ -325,7 +328,15 @@ export function AuthorizationProvenance({
       </Pressable>
 
       {expanded ? (
-        <View style={[a.gap_md]} testID="authorization-provenance-details">
+        <View
+          nativeID={detailsId}
+          role="region"
+          accessibilityLabel={_(msg`Delegated authority details`)}
+          accessibilityHint={_(
+            msg`Contains OAuth session information, delegated capabilities, and revocation options`,
+          )}
+          style={[a.gap_md]}
+          testID="authorization-provenance-details">
           <View style={[a.gap_2xs, a.p_md, t.atoms.bg_contrast_25]}>
             <Text style={a.font_semi_bold}>{_(msg`Account`)}</Text>
             <Text>@{account.handle}</Text>

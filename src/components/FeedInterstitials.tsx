@@ -349,6 +349,8 @@ export function ProfileGrid({
                     {onDismiss && (
                       <Button
                         label={l`Dismiss this suggestion`}
+                        shape="square"
+                        size="small"
                         onPress={e => {
                           e.preventDefault()
                           onDismiss(profile.actor.did)

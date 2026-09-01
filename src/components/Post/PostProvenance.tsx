@@ -1,4 +1,4 @@
-import {useMemo, useState} from 'react'
+import {useId, useMemo, useState} from 'react'
 import {Pressable, StyleSheet, View} from 'react-native'
 import * as Clipboard from 'expo-clipboard'
 import {msg} from '@lingui/core/macro'
@@ -40,6 +40,7 @@ export function PostProvenance({
   const {_} = useLingui()
   const t = useTheme()
   const [expanded, setExpanded] = useState(false)
+  const detailsId = `post-provenance-details-${useId()}`
   const model = useMemo(
     () =>
       buildWhyThisPostModel({
@@ -87,6 +88,8 @@ export function PostProvenance({
           msg`Show the public reasons and sources for this post's placement`,
         )}
         accessibilityState={{expanded}}
+        aria-expanded={expanded}
+        aria-controls={expanded ? detailsId : undefined}
         onPress={event => {
           event.stopPropagation()
           setExpanded(value => !value)
@@ -98,7 +101,15 @@ export function PostProvenance({
       </Pressable>
 
       {expanded ? (
-        <View testID="post-provenance-details" style={styles.details}>
+        <View
+          testID="post-provenance-details"
+          nativeID={detailsId}
+          role="region"
+          accessibilityLabel={_(msg`Why this post details`)}
+          accessibilityHint={_(
+            msg`Contains the placement reasons, read-provider evidence, and stable post record address`,
+          )}
+          style={styles.details}>
           {model.localReasons.map((reason, index) => (
             <Text key={`${reason}-${index}`} style={styles.detail}>
               <Text style={styles.label}>{_(msg`Local policy`)}: </Text>
@@ -219,6 +230,8 @@ const styles = StyleSheet.create({
   },
   toggle: {
     alignSelf: 'flex-start',
+    justifyContent: 'center',
+    minHeight: 30,
     paddingVertical: 2,
   },
   toggleText: {
@@ -238,7 +251,9 @@ const styles = StyleSheet.create({
   copyAction: {
     alignSelf: 'flex-start',
     borderWidth: 1,
+    justifyContent: 'center',
     marginTop: 3,
+    minHeight: 30,
     paddingHorizontal: 8,
     paddingVertical: 4,
   },

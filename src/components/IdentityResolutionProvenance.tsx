@@ -1,4 +1,4 @@
-import {useState} from 'react'
+import {useId, useState} from 'react'
 import {Pressable, StyleSheet, View} from 'react-native'
 import {type I18n} from '@lingui/core'
 import {msg, plural} from '@lingui/core/macro'
@@ -29,6 +29,7 @@ export function IdentityResolutionProvenance({
   const {_, i18n} = useLingui()
   const t = useTheme()
   const [expanded, setExpanded] = useState(false)
+  const detailsId = `identity-resolution-provenance-details-${useId()}`
   const source = identitySourceNames(result, i18n)
   const rule = identityPolicyLabel(result.policy, i18n)
   const state = identityStatusLabel(result.status, i18n)
@@ -55,6 +56,8 @@ export function IdentityResolutionProvenance({
           msg`Show the resolver claims and document verification sources for this identity`,
         )}
         accessibilityState={{expanded}}
+        aria-expanded={expanded}
+        aria-controls={expanded ? detailsId : undefined}
         onPress={() => setExpanded(value => !value)}
         style={({pressed}) => [styles.toggle, pressed && styles.pressed]}>
         <Text style={[styles.toggleText, {color: t.atoms.text_link.color}]}>
@@ -67,8 +70,16 @@ export function IdentityResolutionProvenance({
       {expanded ? (
         <View
           testID="identity-resolution-provenance-details"
+          nativeID={detailsId}
+          role="region"
+          accessibilityLabel={_(msg`Identity resolution details`)}
+          accessibilityHint={_(
+            msg`Contains resolver claims, document verification sources, and the local reconciliation policy`,
+          )}
           style={styles.details}>
-          <Text accessibilityRole="header">{_(msg`Identity resolution`)}</Text>
+          <Text accessibilityRole="header" aria-level={2}>
+            {_(msg`Identity resolution`)}
+          </Text>
           <Detail label={_(msg`Input`)} value={result.input} selectable />
           <Detail
             label={_(msg`Evidence status`)}
@@ -312,6 +323,8 @@ const styles = StyleSheet.create({
   },
   toggle: {
     alignSelf: 'flex-start',
+    justifyContent: 'center',
+    minHeight: 30,
     paddingVertical: 2,
   },
   toggleText: {
