@@ -27,7 +27,10 @@ export function ControlButton({
       onPress={onPress}
       style={[
         a.p_xs,
+        a.align_center,
+        a.justify_center,
         a.rounded_full,
+        {minWidth: 30, minHeight: 30},
         web({transition: 'background-color 0.1s'}),
       ]}
       hoverStyle={{backgroundColor: 'rgba(255, 255, 255, 0.2)'}}>

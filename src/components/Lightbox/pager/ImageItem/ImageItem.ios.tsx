@@ -25,7 +25,10 @@ import Animated, {
 import {useSafeAreaFrame} from 'react-native-safe-area-context'
 import {scheduleOnRN} from 'react-native-worklets'
 import {Image} from 'expo-image'
+import {msg} from '@lingui/core/macro'
+import {useLingui} from '@lingui/react'
 
+import {getImageAccessibilityLabel} from '#/components/images/accessibility'
 import {
   type Dimensions as ImageDimensions,
   type ImageSource,
@@ -67,6 +70,11 @@ const ImageItem = ({
   dismissSwipePan,
   transforms,
 }: Props) => {
+  const {_} = useLingui()
+  const imageAccessibilityLabel = getImageAccessibilityLabel(
+    imageSrc.alt,
+    _(msg`Image`),
+  )
   const scrollViewRef = useAnimatedRef<Animated.ScrollView>()
   const [scaled, setScaled] = useState(false)
   const isDragging = useSharedValue(false)
@@ -237,7 +245,7 @@ const ImageItem = ({
               placeholderContentFit="contain"
               placeholder={{uri: imageSrc.thumbUri}}
               style={{flex: 1, borderRadius}}
-              accessibilityLabel={imageSrc.alt}
+              accessibilityLabel={imageAccessibilityLabel}
               accessibilityHint=""
               enableLiveTextInteraction={showControls && !scaled}
               accessibilityIgnoresInvertColors

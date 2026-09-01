@@ -67,10 +67,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.75)',
-    // @ts-expect-error web-only
-    backdropFilter: 'blur(8px)',
-    WebkitBackdropFilter: 'blur(8px)',
+    backgroundColor: 'rgba(11, 16, 32, 0.92)',
   },
   pressed: {
     opacity: 0.85,

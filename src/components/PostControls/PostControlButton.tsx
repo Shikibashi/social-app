@@ -14,6 +14,7 @@ import {type Props as SVGIconProps} from '#/components/icons/common'
 import {Text, type TextProps} from '#/components/Typography'
 
 export const DEFAULT_HITSLOP = {top: 5, bottom: 10, left: 10, right: 10}
+const POST_CONTROL_MIN_SIZE = 30
 
 const PostControlContext = createContext<{
   big?: boolean
@@ -65,7 +66,11 @@ export function PostControlButton({
       a.align_center,
       a.gap_xs,
       a.bg_transparent,
-      {padding: 5},
+      {
+        minWidth: POST_CONTROL_MIN_SIZE,
+        minHeight: POST_CONTROL_MIN_SIZE,
+        padding: 5,
+      },
     ],
     [],
   )

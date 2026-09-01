@@ -111,6 +111,11 @@ export const ExternalEmbed = ({
             <Image
               style={[a.aspect_card]}
               source={{uri: imageUri}}
+              // The enclosing link already carries the external resource's
+              // accessible name. Keep its preview image decorative rather
+              // than announcing the same destination twice.
+              accessibilityLabel=""
+              accessibilityHint=""
               accessibilityIgnoresInvertColors
               loading="lazy"
               useAppleWebpCodec

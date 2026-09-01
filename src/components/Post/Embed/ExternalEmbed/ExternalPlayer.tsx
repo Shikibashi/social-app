@@ -228,6 +228,10 @@ export function ExternalPlayer({
             <Image
               style={[a.flex_1]}
               source={{uri: link.thumb}}
+              // The play control names this preview. The thumbnail itself is
+              // presentational, so it should not create a second announcement.
+              accessibilityLabel=""
+              accessibilityHint=""
               accessibilityIgnoresInvertColors
               loading="lazy"
             />

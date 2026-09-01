@@ -9,6 +9,7 @@ import {Trans} from '@lingui/react/macro'
 import {type Dimensions} from '#/lib/media/types'
 import {useLargeAltBadgeEnabled} from '#/state/preferences/large-alt-badge'
 import {atoms as a, tokens, useTheme} from '#/alf'
+import {getImageAccessibilityLabel} from '#/components/images/accessibility'
 import {MediaInsetBorder} from '#/components/MediaInsetBorder'
 import {ImageContextMenu} from '#/components/Post/Embed/ImageContextMenu'
 import {type PostEmbedViewContext} from '#/components/Post/Embed/types'
@@ -50,7 +51,11 @@ export function GalleryItem({
   const {_} = useLingui()
   const largeAltBadge = useLargeAltBadgeEnabled()
   const image = images[index]
-  const hasAlt = !!image.alt
+  const hasAlt = Boolean(image.alt?.trim())
+  const imageAccessibilityLabel = getImageAccessibilityLabel(
+    image.alt,
+    _(msg`Image`),
+  )
 
   const aspect =
     image.aspectRatio && image.aspectRatio.height > 0
@@ -88,13 +93,13 @@ export function GalleryItem({
             imageStyle,
           ]}
           accessibilityRole="button"
-          accessibilityLabel={image.alt || _(msg`Image`)}
+          accessibilityLabel={imageAccessibilityLabel}
           accessibilityHint="">
           <Image
             source={{uri: image.thumb}}
             style={[a.flex_1]}
-            accessible={true}
-            accessibilityLabel={image.alt}
+            accessible={false}
+            accessibilityLabel=""
             accessibilityHint=""
             accessibilityIgnoresInvertColors
             onLoad={e => {

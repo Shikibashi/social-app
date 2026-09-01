@@ -11,7 +11,6 @@ import {
 } from 'react-native'
 import Svg, {Circle, Path, Rect} from 'react-native-svg'
 import {Image as ExpoImage} from 'expo-image'
-import {type ModerationUI} from '#/lib/moderation'
 import {msg} from '@lingui/core/macro'
 import {useLingui} from '@lingui/react'
 import {Trans} from '@lingui/react/macro'
@@ -27,6 +26,7 @@ import {compressIfNeeded} from '#/lib/media/manip'
 import {openCamera, openCropper, openPicker} from '#/lib/media/picker'
 import {type PickerImage} from '#/lib/media/picker.shared'
 import {convertCdnPreset} from '#/lib/media/util'
+import {type ModerationUI} from '#/lib/moderation'
 import {makeProfileLink} from '#/lib/routes/links'
 import {sanitizeDisplayName} from '#/lib/strings/display-names'
 import {isCancelledError} from '#/lib/strings/errors'
@@ -67,6 +67,12 @@ interface BaseUserAvatarProps {
   shape?: 'circle' | 'square'
   size: number
   avatar?: string | null
+  /**
+   * Avatars are normally decorative because their containing profile link
+   * supplies the actor label. Standalone avatars can opt into an explicit
+   * text alternative instead of leaking an unnamed raster image.
+   */
+  accessibilityLabel?: string
   live?: boolean
   hideLiveBadge?: boolean
 }
@@ -220,6 +226,7 @@ let UserAvatar = ({
   shape: overrideShape,
   size,
   avatar,
+  accessibilityLabel,
   moderation,
   usePlainRNImage = false,
   onLoad,
@@ -231,6 +238,7 @@ let UserAvatar = ({
 }: UserAvatarProps): React.ReactNode => {
   const t = useTheme()
   const finalShape = overrideShape ?? (type === 'user' ? 'circle' : 'square')
+  const avatarAccessibilityLabel = accessibilityLabel?.trim() || ''
 
   const aviStyle = useMemo(() => {
     let borderRadius
@@ -311,6 +319,9 @@ let UserAvatar = ({
     <View style={containerStyle}>
       {usePlainRNImage ? (
         <RNImage
+          accessible={Boolean(avatarAccessibilityLabel)}
+          accessibilityLabel={avatarAccessibilityLabel}
+          accessibilityHint=""
           accessibilityIgnoresInvertColors
           testID="userAvatarImage"
           style={aviStyle}
@@ -323,6 +334,9 @@ let UserAvatar = ({
         />
       ) : (
         <ExpoImage
+          accessible={Boolean(avatarAccessibilityLabel)}
+          accessibilityLabel={avatarAccessibilityLabel}
+          accessibilityHint=""
           testID="userAvatarImage"
           style={aviStyle}
           contentFit="cover"

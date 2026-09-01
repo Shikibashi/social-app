@@ -7,6 +7,7 @@ import {type EmbedPlayerParams} from '#/lib/strings/embed-player'
 import {useAutoplayDisabled} from '#/state/preferences'
 import {atoms as a, useTheme} from '#/alf'
 import {Fill} from '#/components/Fill'
+import {getImageAccessibilityLabel} from '#/components/images/accessibility'
 import {ConstrainedImage} from '#/components/images/AutoSizedImage'
 import {MediaInsetBorder} from '#/components/MediaInsetBorder'
 import {GifView} from '../../../../../modules/expo-bluesky-gif-view'
@@ -29,6 +30,10 @@ export function GifEmbed({
   const t = useTheme()
   const {_} = useLingui()
   const autoplayDisabled = useAutoplayDisabled()
+  const accessibilityLabel = getImageAccessibilityLabel(
+    altText,
+    _(msg`Animated GIF`),
+  )
 
   const playerRef = useRef<GifView>(null)
 
@@ -83,7 +88,7 @@ export function GifEmbed({
             onPlayerStateChange={onPlayerStateChange}
             ref={playerRef}
             accessibilityHint={_(msg`Animated GIF`)}
-            accessibilityLabel={altText}
+            accessibilityLabel={accessibilityLabel}
           />
           {!playerState.isPlaying && (
             <Fill

@@ -27,6 +27,7 @@ import {
 import {normalizeTextStyles} from '#/alf/typography'
 import {
   Autocomplete as AutocompleteBase,
+  type AutocompleteItem,
   AutocompleteItemEmoji,
   AutocompleteItemProfile,
   parseAutocompleteItemType,
@@ -142,16 +143,46 @@ export function Composer({
     placement: autocompletePlacement,
     dynamicWidth: IS_WEB,
   })
+  const {
+    ref: siftInputRef,
+    'aria-controls': autocompletePopupId,
+    ...siftTargetProps
+  } = sift.targetProps
   const inputRef = mergeRefs<TextInputInstance>([
     ref,
     tapper.inputProps.ref as React.Ref<TextInputInstance>,
-    sift.targetProps.ref as React.Ref<TextInputInstance>,
+    siftInputRef as React.Ref<TextInputInstance>,
   ])
 
   /*
    * Active facet state for controlling the visibility of the Autocomplete.
    */
   const [activeFacet, setActiveFacet] = useState<TapperActiveFacet | null>(null)
+  const autocompleteType =
+    activeFacet && activeFacet.type !== 'url'
+      ? parseAutocompleteItemType(activeFacet.type)
+      : 'profile'
+  const autocompleteQuery =
+    activeFacet && activeFacet.type !== 'url' ? activeFacet.value : ''
+  const {items: autocompleteItems} = useAutocomplete({
+    type: autocompleteType,
+    query: autocompleteQuery,
+  })
+  const showAutocomplete = Boolean(
+    activeFacet && activeFacet.type !== 'url' && autocompleteItems.length > 0,
+  )
+
+  useEffect(() => {
+    if (
+      activeFacet?.type === 'emoji' &&
+      !!activeFacet.value.length &&
+      activeFacet.raw.endsWith(':') &&
+      autocompleteItems[0]
+    ) {
+      activeFacet.replace(autocompleteItems[0].value, {noTrailingSpace: true})
+      setActiveFacet(null)
+    }
+  }, [activeFacet, autocompleteItems])
 
   /*
    * Reanimated shared value for syncing scroll on all platforms.
@@ -352,7 +383,8 @@ export function Composer({
           ]}
           {...rest}
           {...tapper.inputProps}
-          {...sift.targetProps}
+          {...siftTargetProps}
+          aria-controls={showAutocomplete ? autocompletePopupId : undefined}
           ref={inputRef}
           rawValue={tapper.state.text}
           onBlur={e => {
@@ -379,11 +411,12 @@ export function Composer({
         </AutosizedTextarea>
       </View>
 
-      {activeFacet && activeFacet.type !== 'url' && (
+      {showAutocomplete && activeFacet && (
         <AutocompleteInner
           inverted={autocompletePlacement?.startsWith('top')}
           sift={sift}
           activeFacet={activeFacet}
+          data={autocompleteItems}
           onDismiss={() => setActiveFacet(null)}
         />
       )}
@@ -399,36 +432,20 @@ function AutocompleteInner({
   inverted,
   sift,
   activeFacet,
+  data,
   onDismiss,
 }: {
   inverted?: boolean
   sift: UseSiftReturn
   activeFacet: TapperActiveFacet
+  data: AutocompleteItem[]
   onDismiss: () => void
 }) {
-  const {items} = useAutocomplete({
-    type: parseAutocompleteItemType(activeFacet.type),
-    query: activeFacet.value,
-  })
-
-  useEffect(() => {
-    if (
-      activeFacet?.type === 'emoji' &&
-      !!activeFacet.value.length &&
-      activeFacet.raw.endsWith(':')
-    ) {
-      if (items?.[0]) {
-        activeFacet.replace(items[0].value, {noTrailingSpace: true})
-        onDismiss()
-      }
-    }
-  }, [items, activeFacet])
-
-  return items && items.length ? (
+  return (
     <AutocompleteBase
       inverted={inverted}
       sift={sift}
-      data={items}
+      data={data}
       render={props => {
         if (props.item.type === 'profile') {
           return <AutocompleteItemProfile {...props} />
@@ -444,5 +461,5 @@ function AutocompleteInner({
       }}
       onDismiss={onDismiss}
     />
-  ) : null
+  )
 }

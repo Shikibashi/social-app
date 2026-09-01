@@ -1,12 +1,12 @@
 import {View} from 'react-native'
-import {type ModerationDecision} from '#/lib/moderation'
 
+import {type ModerationDecision} from '#/lib/moderation'
 import {sanitizeDisplayName} from '#/lib/strings/display-names'
 import {sanitizeHandle} from '#/lib/strings/handles'
 import {type Shadow} from '#/state/cache/types'
 import {atoms as a, platform, useBreakpoints, useTheme} from '#/alf'
 import {ProfileBadges} from '#/components/ProfileBadges'
-import {Text} from '#/components/Typography'
+import {H1} from '#/components/Typography'
 import {type app} from '#/lexicons'
 
 export function ProfileHeaderDisplayName({
@@ -21,7 +21,7 @@ export function ProfileHeaderDisplayName({
 
   return (
     <View>
-      <Text
+      <H1
         emoji
         testID="profileHeaderDisplayName"
         style={[
@@ -43,7 +43,7 @@ export function ProfileHeaderDisplayName({
          * Fixed upstream in RN main (facebook/react-native#56651); remove this
          *  once we are on a release that contains it (0.86.0 should be good).
          */}{' '}
-      </Text>
+      </H1>
     </View>
   )
 }

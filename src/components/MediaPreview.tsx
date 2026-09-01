@@ -8,6 +8,7 @@ import {isGifEmbed} from '#/lib/strings/embed-player'
 import {atoms as a, tokens, useTheme} from '#/alf'
 import {ArrowShareRight_Stroke2_Corner2_Rounded as ShareIcon} from '#/components/icons/ArrowShareRight'
 import {Download_Stroke2_Corner0_Rounded as DownloadIcon} from '#/components/icons/Download'
+import {getImageAccessibilityLabel} from '#/components/images/accessibility'
 import {MediaInsetBorder} from '#/components/MediaInsetBorder'
 import * as PeekMenu from '#/components/PeekMenu'
 import {Text} from '#/components/Typography'
@@ -141,6 +142,8 @@ export function ImageItem({
   maxWidth?: number
 }) {
   const t = useTheme()
+  const {t: l} = useLingui()
+  const imageAccessibilityLabel = getImageAccessibilityLabel(alt, l`Image`)
 
   if (!thumbnail) {
     return (
@@ -152,7 +155,7 @@ export function ImageItem({
           {maxWidth},
           a.rounded_xs,
         ]}
-        accessibilityLabel={alt}
+        accessibilityLabel={imageAccessibilityLabel}
         accessibilityHint="">
         {children}
       </View>
@@ -164,7 +167,7 @@ export function ImageItem({
       <Image
         key={thumbnail}
         source={{uri: thumbnail}}
-        alt={alt}
+        alt={imageAccessibilityLabel}
         style={[a.flex_1, a.rounded_xs, t.atoms.bg_contrast_25]}
         contentFit="cover"
         accessible={true}

@@ -1,6 +1,5 @@
 import {useCallback, useEffect, useRef, useState} from 'react'
 import {Pressable, ScrollView, StyleSheet, View} from 'react-native'
-import {Image} from 'expo-image'
 import {Trans, useLingui} from '@lingui/react/macro'
 import {FocusGuards, FocusScope} from 'radix-ui/internal'
 import {RemoveScrollBar} from 'react-remove-scroll-bar'
@@ -24,6 +23,7 @@ import {
 import {DotGrid3x1_Stroke2_Corner0_Rounded as EllipsisIcon} from '#/components/icons/DotGrid'
 import {Download_Stroke2_Corner0_Rounded as DownloadIcon} from '#/components/icons/Download'
 import {TimesLarge_Stroke2_Corner0_Rounded as XIcon} from '#/components/icons/Times'
+import {getImageAccessibilityLabel} from '#/components/images/accessibility'
 import {CircleChromeButton} from '#/components/Lightbox/chrome/CircleChromeButton'
 import {PagerDots} from '#/components/Lightbox/chrome/PagerDots'
 import {useLightbox, useLightboxControls} from '#/components/Lightbox/state'
@@ -170,6 +170,7 @@ function LightboxGallery({
   ]
 
   const img = imgs[index]
+  const imageAccessibilityLabel = getImageAccessibilityLabel(img.alt, l`Image`)
 
   return (
     <View style={[a.absolute, a.inset_0]}>
@@ -177,7 +178,7 @@ function LightboxGallery({
         <LightboxGalleryItem
           key={index}
           source={img.uri}
-          alt={img.alt}
+          alt={imageAccessibilityLabel}
           type={img.type}
           hasAnyLoaded={hasAnyLoaded}
           onLoad={() => setAnyHasLoaded(true)}
@@ -188,11 +189,11 @@ function LightboxGallery({
             style={[
               a.absolute,
               styles.leftBtn,
-              styles.blurredBackdrop,
+              styles.overlayBackdrop,
               a.transition_color,
               delayedFadeInAnim,
             ]}
-            hoverStyle={styles.blurredBackdropHover}
+            hoverStyle={styles.overlayBackdropHover}
             color="secondary"
             label={l`Previous image`}
             shape="round"
@@ -209,11 +210,11 @@ function LightboxGallery({
             style={[
               a.absolute,
               styles.rightBtn,
-              styles.blurredBackdrop,
+              styles.overlayBackdrop,
               a.transition_color,
               delayedFadeInAnim,
             ]}
-            hoverStyle={styles.blurredBackdropHover}
+            hoverStyle={styles.overlayBackdropHover}
             color="secondary"
             label={l`Next image`}
             shape="round"
@@ -233,15 +234,14 @@ function LightboxGallery({
           style={[
             styles.altScroll,
             {
-              backgroundColor: 'rgba(0, 0, 0, 0.5)',
-              // @ts-expect-error web only
-              backdropFilter: 'blur(16px)',
+              backgroundColor: 'rgba(11, 16, 32, 0.94)',
             },
             delayedFadeInAnim,
           ]}
           scrollEnabled={isAltExpanded}
           contentContainerStyle={[a.px_4xl, a.py_2xl]}>
           <Pressable
+            accessibilityRole="button"
             accessibilityLabel={l`Expand alt text`}
             accessibilityHint={l`If alt text is long, toggles alt text expanded state`}
             onPress={() => {
@@ -354,7 +354,7 @@ function LightboxGalleryItem({
   hasAnyLoaded,
 }: {
   source: string
-  alt: string | undefined
+  alt: string
   type: ImageSource['type']
   onLoad: () => void
   hasAnyLoaded: boolean
@@ -407,13 +407,19 @@ function LightboxGalleryItem({
       break
     case 'image':
       image = (
-        <Image
-          source={{uri: source}}
+        <img
+          src={source}
           alt={alt}
-          style={[a.w_full, a.h_full, zoomInWhenReady]}
+          // Native img preserves the authored description on the final image
+          // element. Expo Image exposes it while resolving, but the loaded
+          // web element can lose its `alt` attribute.
+          style={flatten([
+            a.w_full,
+            a.h_full,
+            {objectFit: 'contain'},
+            zoomInWhenReady,
+          ])}
           onLoad={handleLoad}
-          contentFit="contain"
-          accessibilityIgnoresInvertColors
         />
       )
       break
@@ -484,12 +490,10 @@ const styles = StyleSheet.create({
     left: 'auto',
     top: '50%',
   },
-  blurredBackdrop: {
-    backgroundColor: '#00000077',
-    // @ts-expect-error web only -sfn
-    backdropFilter: 'blur(10px)',
+  overlayBackdrop: {
+    backgroundColor: 'rgba(11, 16, 32, 0.92)',
   },
-  blurredBackdropHover: {
-    backgroundColor: '#00000088',
+  overlayBackdropHover: {
+    backgroundColor: 'rgba(11, 16, 32, 1)',
   },
 })

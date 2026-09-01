@@ -14,6 +14,7 @@ import {type Dimensions} from '#/lib/media/types'
 import {useLargeAltBadgeEnabled} from '#/state/preferences/large-alt-badge'
 import {atoms as a, useTheme, web} from '#/alf'
 import {ArrowsDiagonalOut_Stroke2_Corner0_Rounded as Fullscreen} from '#/components/icons/ArrowsDiagonal'
+import {getImageAccessibilityLabel} from '#/components/images/accessibility'
 import {MediaInsetBorder} from '#/components/MediaInsetBorder'
 import {Text} from '#/components/Typography'
 import {IS_NATIVE} from '#/env'
@@ -117,7 +118,11 @@ export function AutoSizedImage({
   const cropDisabled = crop === 'none'
   const isCropped = rawIsCropped && !cropDisabled
   const isContain = aspectRatio === undefined
-  const hasAlt = !!image.alt
+  const hasAlt = Boolean(image.alt?.trim())
+  const imageAccessibilityLabel = getImageAccessibilityLabel(
+    image.alt,
+    _(msg`Image`),
+  )
 
   const contents = (
     <Animated.View ref={containerRef} collapsable={false} style={{flex: 1}}>
@@ -125,9 +130,11 @@ export function AutoSizedImage({
         contentFit={isContain ? 'contain' : 'cover'}
         style={[a.w_full, a.h_full]}
         source={image.thumb}
-        accessible={true} // Must set for `accessibilityLabel` to work
+        // The containing image control supplies the useful label. Keeping this
+        // raster image decorative prevents duplicate or empty announcements.
+        accessible={false}
         accessibilityIgnoresInvertColors
-        accessibilityLabel={image.alt}
+        accessibilityLabel=""
         accessibilityHint=""
         onLoad={e => {
           if (!isContain) {
@@ -217,8 +224,7 @@ export function AutoSizedImage({
         onPress={() => onPress?.(containerRef, fetchedDimsRef.current)}
         onLongPress={onLongPress}
         onPressIn={onPressIn}
-        // alt here is what screen readers actually use
-        accessibilityLabel={image.alt}
+        accessibilityLabel={imageAccessibilityLabel}
         accessibilityHint={_(msg`Views full image`)}
         accessibilityRole="button"
         android_ripple={{
@@ -249,8 +255,7 @@ export function AutoSizedImage({
           onPress={() => onPress?.(containerRef, fetchedDimsRef.current)}
           onLongPress={onLongPress}
           onPressIn={onPressIn}
-          // alt here is what screen readers actually use
-          accessibilityLabel={image.alt}
+          accessibilityLabel={imageAccessibilityLabel}
           accessibilityHint={_(msg`Views full image`)}
           accessibilityRole="button"
           android_ripple={{

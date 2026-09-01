@@ -17,7 +17,10 @@ import Animated, {
 } from 'react-native-reanimated'
 import {scheduleOnRN} from 'react-native-worklets'
 import {Image} from 'expo-image'
+import {msg} from '@lingui/core/macro'
+import {useLingui} from '@lingui/react'
 
+import {getImageAccessibilityLabel} from '#/components/images/accessibility'
 import {
   type Dimensions as ImageDimensions,
   type ImageSource,
@@ -69,6 +72,11 @@ const ImageItem = ({
   dismissSwipePan,
   transforms,
 }: Props) => {
+  const {_} = useLingui()
+  const imageAccessibilityLabel = getImageAccessibilityLabel(
+    imageSrc.alt,
+    _(msg`Image`),
+  )
   const [isScaled, setIsScaled] = useState(false)
   const committedTransform = useSharedValue(initialTransform)
   const panTranslation = useSharedValue({x: 0, y: 0})
@@ -391,7 +399,7 @@ const ImageItem = ({
                 source={{uri: imageSrc.uri}}
                 placeholderContentFit="contain"
                 placeholder={{uri: imageSrc.thumbUri}}
-                accessibilityLabel={imageSrc.alt}
+                accessibilityLabel={imageAccessibilityLabel}
                 onLoad={
                   hasLoaded
                     ? undefined

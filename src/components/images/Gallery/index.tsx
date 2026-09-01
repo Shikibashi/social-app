@@ -25,6 +25,7 @@ import {useLargeAltBadgeEnabled} from '#/state/preferences/large-alt-badge'
 import {BlockDrawerGesture} from '#/view/shell/BlockDrawerGesture'
 import {atoms as a, tokens, useBreakpoints, useTheme, web} from '#/alf'
 import {ArrowsDiagonalOut_Stroke2_Corner0_Rounded as Fullscreen} from '#/components/icons/ArrowsDiagonal'
+import {getImageAccessibilityLabel} from '#/components/images/accessibility'
 import {AutoSizedImage} from '#/components/images/AutoSizedImage'
 import {
   ITEM_GAP,
@@ -426,7 +427,11 @@ function GalleryImage({
     getAspectRatio(image.aspectRatio),
   )
   const {isCropped, ...dims} = computeDims({height, aspectRatio})
-  const hasAlt = !!image.alt
+  const hasAlt = Boolean(image.alt?.trim())
+  const imageAccessibilityLabel = getImageAccessibilityLabel(
+    image.alt,
+    l`Image ${index + 1}`,
+  )
 
   useEffect(() => {
     onWidthChange(index, dims.width)
@@ -441,7 +446,10 @@ function GalleryImage({
       ref={containerRef}
       collapsable={false}
       aria-roledescription={l`slide`}
-      aria-label={image.alt || l`Image ${index + 1} of ${imageCount}`}>
+      aria-label={getImageAccessibilityLabel(
+        image.alt,
+        l`Image ${index + 1} of ${imageCount}`,
+      )}>
       <ImageContextMenu
         fullsizeUri={image.fullsize}
         thumbUri={image.thumb}
@@ -456,7 +464,7 @@ function GalleryImage({
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
           accessibilityRole="button"
-          accessibilityLabel={image.alt || l`Image ${index + 1}`}
+          accessibilityLabel={imageAccessibilityLabel}
           accessibilityHint={l`Opens full image`}
           android_ripple={{
             color: utils.alpha(t.atoms.bg.backgroundColor, 0.2),
@@ -480,8 +488,8 @@ function GalleryImage({
           <Image
             source={{uri: image.thumb}}
             contentFit="cover"
-            accessible={true}
-            accessibilityLabel={image.alt}
+            accessible={false}
+            accessibilityLabel=""
             accessibilityHint=""
             accessibilityIgnoresInvertColors
             loading={index === 0 ? 'eager' : 'lazy'}

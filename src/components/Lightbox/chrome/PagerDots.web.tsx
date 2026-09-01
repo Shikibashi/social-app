@@ -38,10 +38,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 999,
-    backgroundColor: 'rgba(0, 0, 0, 0.75)',
-    // @ts-expect-error web-only
-    backdropFilter: 'blur(8px)',
-    WebkitBackdropFilter: 'blur(8px)',
+    backgroundColor: 'rgba(11, 16, 32, 0.92)',
   },
   activeDot: {
     width: ACTIVE,

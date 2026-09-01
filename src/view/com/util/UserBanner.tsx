@@ -1,7 +1,6 @@
 import {useCallback, useState} from 'react'
 import {Pressable, StyleSheet, View} from 'react-native'
 import {Image} from 'expo-image'
-import {type ModerationUI} from '#/lib/moderation'
 import {msg} from '@lingui/core/macro'
 import {useLingui} from '@lingui/react'
 import {Trans} from '@lingui/react/macro'
@@ -14,6 +13,7 @@ import {
 import {compressIfNeeded} from '#/lib/media/manip'
 import {openCamera, openCropper, openPicker} from '#/lib/media/picker'
 import {type PickerImage} from '#/lib/media/picker.shared'
+import {type ModerationUI} from '#/lib/moderation'
 import {isCancelledError} from '#/lib/strings/errors'
 import {logger} from '#/logger'
 import {
@@ -122,7 +122,7 @@ export function UserBanner({
     <>
       <EventStopper onKeyDown={true}>
         <Menu.Root>
-          <Menu.Trigger label={_(msg`Edit avatar`)}>
+          <Menu.Trigger label={_(msg`Edit banner`)}>
             {({props}) => (
               <Pressable {...props} testID="changeBannerBtn">
                 {banner ? (
@@ -130,6 +130,9 @@ export function UserBanner({
                     testID="userBannerImage"
                     style={styles.bannerImage}
                     source={{uri: banner}}
+                    alt=""
+                    accessibilityLabel=""
+                    accessibilityHint=""
                     accessible={true}
                     accessibilityIgnoresInvertColors
                     useAppleWebpCodec
@@ -217,6 +220,9 @@ export function UserBanner({
       style={[styles.bannerImage, t.atoms.bg_contrast_25]}
       contentFit="cover"
       source={{uri: banner}}
+      alt=""
+      accessibilityLabel=""
+      accessibilityHint=""
       blurRadius={moderation?.blur ? 100 : 0}
       accessible={true}
       accessibilityIgnoresInvertColors

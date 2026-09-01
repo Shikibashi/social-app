@@ -176,6 +176,10 @@ export const StandardSiteEmbed = ({
               <Image
                 style={[a.aspect_card]}
                 source={{uri: imageUri}}
+                // The enclosing article link supplies the resource name.
+                // Avoid reading that destination twice for a visual preview.
+                accessibilityLabel=""
+                accessibilityHint=""
                 accessibilityIgnoresInvertColors
                 loading="lazy"
                 useAppleWebpCodec
