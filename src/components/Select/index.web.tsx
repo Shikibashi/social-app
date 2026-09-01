@@ -1,4 +1,12 @@
-import {createContext, forwardRef, Fragment, useContext, useMemo} from 'react'
+import {
+  createContext,
+  forwardRef,
+  Fragment,
+  useCallback,
+  useContext,
+  useMemo,
+  useState,
+} from 'react'
 import {View} from 'react-native'
 import {Select as RadixSelect} from 'radix-ui'
 
@@ -26,10 +34,37 @@ import {
 const SelectedValueContext = createContext<string | undefined | null>(null)
 SelectedValueContext.displayName = 'SelectSelectedValueContext'
 
-export function Root(props: RootProps) {
+const OpenContext = createContext(false)
+OpenContext.displayName = 'SelectOpenContext'
+
+export function Root({
+  open,
+  defaultOpen = false,
+  onOpenChange: onOpenChangeProp,
+  ...props
+}: RootProps) {
+  const [uncontrolledOpen, setUncontrolledOpen] = useState(defaultOpen)
+  const isControlled = open !== undefined
+  const isOpen = open ?? uncontrolledOpen
+  const onOpenChange = useCallback(
+    (nextOpen: boolean) => {
+      if (!isControlled) {
+        setUncontrolledOpen(nextOpen)
+      }
+      onOpenChangeProp?.(nextOpen)
+    },
+    [isControlled, onOpenChangeProp],
+  )
+
   return (
     <SelectedValueContext.Provider value={props.value}>
-      <RadixSelect.Root {...props} />
+      <OpenContext.Provider value={isOpen}>
+        <RadixSelect.Root
+          {...props}
+          open={isOpen}
+          onOpenChange={onOpenChange}
+        />
+      </OpenContext.Provider>
     </SelectedValueContext.Provider>
   )
 }
@@ -54,6 +89,7 @@ RadixTriggerPassThrough.displayName = 'RadixTriggerPassThrough'
 
 export function Trigger({children, label}: TriggerProps) {
   const t = useTheme()
+  const isOpen = useContext(OpenContext)
   const {
     state: hovered,
     onIn: onMouseEnter,
@@ -75,6 +111,9 @@ export function Trigger({children, label}: TriggerProps) {
               },
               props: {
                 ...props,
+                // The Radix portal is unmounted while a select is closed.
+                // Do not leave an ID reference to that absent content.
+                'aria-controls': isOpen ? props['aria-controls'] : undefined,
                 onPress: props.onClick,
                 onFocus: onFocus,
                 onBlur: onBlur,
@@ -277,7 +316,7 @@ export function Item({ref, value, style, children}: ItemProps) {
         t.atoms.text,
         a.relative,
         a.flex,
-        {minHeight: 25, paddingLeft: 30, paddingRight: 8},
+        {minHeight: 30, paddingLeft: 30, paddingRight: 8},
         a.user_select_none,
         a.align_center,
         a.rounded_xs,

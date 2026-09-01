@@ -5,6 +5,7 @@ import {useLingui} from '@lingui/react/macro'
 import {useQueryClient} from '@tanstack/react-query'
 
 import {PressableScale} from '#/lib/custom-animations/PressableScale'
+import {bskyTitle} from '#/lib/strings/headings'
 import {STALE} from '#/state/queries'
 import {profilesQueryKey} from '#/state/queries/profile'
 import {useAppviewClient, useSession} from '#/state/session'
@@ -23,6 +24,7 @@ import {atoms as a, native, tokens, useTheme} from '#/alf'
 import {Button, ButtonIcon} from '#/components/Button'
 import {TimesLarge_Stroke2_Corner0_Rounded as XIcon} from '#/components/icons/Times'
 import {useAnalytics} from '#/analytics'
+import {IS_WEB} from '#/env'
 import {app} from '#/lexicons'
 import {SplashScreen} from './SplashScreen'
 
@@ -63,6 +65,19 @@ export function LoggedOut({onDismiss}: {onDismiss?: () => void}) {
     useState<ScreenState>(initialScreenState)
   const {clearRequestedAccount} = useLoggedOutViewControls()
   const setActiveLanding = useSetActiveLanding()
+
+  // Auth-gated routes do not mount their destination screen. Give the browser
+  // a stable, user-facing title for the sign-in shell rather than the route's
+  // internal navigator key.
+  useEffect(() => {
+    if (!IS_WEB) return
+
+    const page = loggedOutPageTitle(screenState)
+    const timeout = setTimeout(() => {
+      document.title = bskyTitle(page)
+    }, 0)
+    return () => clearTimeout(timeout)
+  }, [screenState])
 
   const queryClient = useQueryClient()
   const {accounts} = useSession()
@@ -173,4 +188,19 @@ export function LoggedOut({onDismiss}: {onDismiss?: () => void}) {
       </ErrorBoundary>
     </View>
   )
+}
+
+function loggedOutPageTitle(screenState: ScreenState): string {
+  switch (screenState) {
+    case ScreenState.S_CreateAccount:
+      return 'Create account'
+    case ScreenState.S_StarterPack:
+      return 'Starter pack'
+    case ScreenState.S_GroupChatJoinRequest:
+      return 'Join chat'
+    case ScreenState.S_Login:
+      return 'Sign in'
+    case ScreenState.S_LoginOrCreateAccount:
+      return 'Welcome'
+  }
 }

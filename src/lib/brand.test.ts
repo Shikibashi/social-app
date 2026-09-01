@@ -12,7 +12,7 @@ describe('public product identity', () => {
     expect(resolveProductName(undefined)).toBe('Plumbline')
     expect(resolveProductName('  My Social  ')).toBe('My Social')
     expect(PRODUCT_NAME).toBeTruthy()
-    expect(PRODUCT_WORDMARK).toBe(PRODUCT_NAME.toLowerCase())
+    expect(PRODUCT_WORDMARK).toBe(PRODUCT_NAME)
   })
 
   it('accepts HTTPS deployment origins and rejects unsafe public origins', () => {

@@ -3,7 +3,7 @@
  *
  * ALF owns cross-platform component styles and receives the ECW palette from
  * src/alf/themes.ts. This file supplies the web-only page/workbench grammar:
- * grid canvas, typographic roles, explicit links, square controls, and a
+ * typographic roles, explicit links, square controls, and a
  * resilient two-tone focus treatment.
  */
 :root {
@@ -120,10 +120,6 @@ html.theme--light {
 
 body {
   background-color: var(--ecw-canvas) !important;
-  background-image:
-    linear-gradient(var(--ecw-grid-line) 1px, transparent 1px),
-    linear-gradient(90deg, var(--ecw-grid-line) 1px, transparent 1px);
-  background-size: 32px 32px;
   color: var(--ecw-text);
   font-family: var(--ecw-font-ui);
   font-size: var(--ecw-font-size-body);
@@ -136,10 +132,6 @@ body {
 
 [data-ecw-shell='true'] {
   background-color: var(--ecw-canvas) !important;
-  background-image:
-    linear-gradient(var(--ecw-grid-line) 1px, transparent 1px),
-    linear-gradient(90deg, var(--ecw-grid-line) 1px, transparent 1px);
-  background-size: 32px 32px;
 }
 
 [data-ecw-region='header'] {
@@ -202,6 +194,28 @@ body {
 #root [role='button']:focus-visible {
   outline: 2px solid var(--ecw-focus-inner) !important;
   box-shadow: 0 0 0 4px var(--ecw-focus-outer) !important;
+}
+
+/* A browser-native escape hatch into the document stream. It remains out of
+ * the visual workbench until a keyboard user asks for it. */
+.ecw-skip-link {
+  position: fixed;
+  top: 8px;
+  left: 8px;
+  z-index: 10000;
+  padding: 8px 12px;
+  border: 1px solid var(--ecw-border-strong);
+  background: var(--ecw-surface);
+  color: var(--ecw-link);
+  font-family: var(--ecw-font-ui);
+  font-size: var(--ecw-font-size-ui);
+  text-decoration: underline;
+  transform: translateY(-160%);
+  transition: transform 120ms ease-out;
+}
+
+.ecw-skip-link:focus-visible {
+  transform: translateY(0);
 }
 
 /* The shared screen boundary supplies these attributes without changing routes. */
@@ -452,12 +466,6 @@ body {
     transition-duration: 0.01ms !important;
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
-  }
-}
-
-@media (max-width: 760px) {
-  body {
-    background-size: 24px 24px;
   }
 }
 

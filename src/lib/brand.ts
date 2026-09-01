@@ -47,7 +47,10 @@ export const PRODUCT_NAME = resolveProductName(
   process.env.EXPO_PUBLIC_BRAND_NAME,
 )
 
-export const PRODUCT_WORDMARK = PRODUCT_NAME.toLowerCase()
+// Keep the display wordmark faithful to the public product name. Individual
+// shells may apply their own deliberate casing, but the shared mark must not
+// silently turn "Plumbline" into an all-lowercase fallback.
+export const PRODUCT_WORDMARK = PRODUCT_NAME
 
 export const PUBLIC_WEB_ORIGIN = resolvePublicWebOrigin(
   process.env.EXPO_PUBLIC_PUBLIC_WEB_ORIGIN,

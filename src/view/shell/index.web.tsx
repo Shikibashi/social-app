@@ -27,6 +27,7 @@ import {
   usePolicyUpdateContext,
 } from '#/components/PolicyUpdateOverlay'
 import {Outlet as PortalOutlet} from '#/components/Portal'
+import {Text} from '#/components/Typography'
 import {WelcomeModal} from '#/components/WelcomeModal'
 import {PassiveAnalytics} from '#/analytics/PassiveAnalytics'
 import {FlatNavigator, RoutesContainer} from '#/Navigation'
@@ -81,6 +82,21 @@ function ShellInner() {
 
       <PolicyUpdateOverlayPortalOutlet />
     </>
+  )
+}
+
+function SkipToMainContentLink() {
+  const focusMainContent = useCallback(() => {
+    document.getElementById('plumbline-main-content')?.focus()
+  }, [])
+
+  return (
+    <a
+      className="ecw-skip-link"
+      href="#plumbline-main-content"
+      onClick={focusMainContent}>
+      <Text style={{color: 'inherit'}}>Skip to main content</Text>
+    </a>
   )
 }
 
@@ -164,6 +180,7 @@ export function Shell() {
         <Deactivated />
       ) : (
         <RoutesContainer>
+          <SkipToMainContentLink />
           <ShellInner />
         </RoutesContainer>
       )}

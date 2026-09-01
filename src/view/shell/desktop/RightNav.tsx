@@ -1,4 +1,4 @@
-import {useEffect, useState} from 'react'
+import {useEffect, useId, useState} from 'react'
 import {Pressable, StyleSheet, View} from 'react-native'
 import {msg} from '@lingui/core/macro'
 import {useLingui} from '@lingui/react'
@@ -22,7 +22,7 @@ import {AppLanguageDropdown} from '#/components/AppLanguageDropdown'
 import {CENTER_COLUMN_OFFSET} from '#/components/Layout'
 import {InlineLinkText} from '#/components/Link'
 import {ProgressGuideList} from '#/components/ProgressGuide/List'
-import {Text} from '#/components/Typography'
+import {H2, H3, Text} from '#/components/Typography'
 import {SidebarLiveEventFeedsBanner} from '#/features/liveEvents/components/SidebarLiveEventFeedsBanner'
 
 function useWebQueryParams() {
@@ -49,6 +49,11 @@ export function DesktopRightNav({routeName}: {routeName: string}) {
   const gutters = useGutters(['base', 0, 'base', 'wide'])
   const isSearchScreen = routeName === 'Search'
   const isMessagesRelatedScreen = routeName.startsWith('Messages')
+  // Services owns its active, capability-specific Inspector in the workbench
+  // itself. Rendering the shell Inspector alongside it creates two competing
+  // context rails and leaves the actual configuration surface unnecessarily
+  // narrow.
+  const usesPageOwnedInspector = routeName === 'ServicesSettings'
   const webqueryParams = useWebQueryParams()
   const searchQuery = webqueryParams?.q
   const showExploreScreenDuplicatedContent =
@@ -56,12 +61,13 @@ export function DesktopRightNav({routeName}: {routeName: string}) {
   const {rightNavVisible, centerColumnOffset, leftNavMinimal} =
     useLayoutBreakpoints()
   const [showMoreContext, setShowMoreContext] = useState(false)
+  const moreContextId = `plumbline-inspector-secondary-context-${useId()}`
 
   useEffect(() => {
     setShowMoreContext(false)
   }, [routeName])
 
-  if (!rightNavVisible || isMessagesRelatedScreen) {
+  if (!rightNavVisible || isMessagesRelatedScreen || usesPageOwnedInspector) {
     return null
   }
 
@@ -101,11 +107,9 @@ export function DesktopRightNav({routeName}: {routeName: string}) {
           msg`Contains replaceable read tools for this surface`,
         )}
         style={styles.inspectorTools}>
-        <Text
-          accessibilityRole="header"
-          style={[styles.secondaryHeading, t.atoms.text_contrast_medium]}>
+        <H2 style={[styles.secondaryHeading, t.atoms.text_contrast_medium]}>
           {_(msg`Optional read tools`)}
-        </Text>
+        </H2>
         <Text
           testID="plumbline-inspector-tools-description"
           style={[styles.secondaryDescription, t.atoms.text_contrast_medium]}>
@@ -126,6 +130,7 @@ export function DesktopRightNav({routeName}: {routeName: string}) {
           )}
           accessibilityState={{expanded: showMoreContext}}
           aria-expanded={showMoreContext}
+          aria-controls={showMoreContext ? moreContextId : undefined}
           onPress={() => setShowMoreContext(value => !value)}
           style={({pressed}) => [
             styles.contextToggle,
@@ -144,6 +149,7 @@ export function DesktopRightNav({routeName}: {routeName: string}) {
         {showMoreContext && (
           <View
             testID="plumbline-inspector-secondary-context"
+            nativeID={moreContextId}
             role="region"
             accessibilityLabel={_(msg`More context`)}
             accessibilityHint={_(
@@ -152,14 +158,13 @@ export function DesktopRightNav({routeName}: {routeName: string}) {
             style={styles.secondaryContext}>
             {hasSession && (
               <>
-                <Text
-                  accessibilityRole="header"
+                <H3
                   style={[
                     styles.secondaryHeading,
                     t.atoms.text_contrast_medium,
                   ]}>
                   Available feeds
-                </Text>
+                </H3>
                 <DesktopFeeds />
                 <ProgressGuideList />
               </>
@@ -177,11 +182,9 @@ export function DesktopRightNav({routeName}: {routeName: string}) {
             msg`Contains optional external signals for this surface`,
           )}
           style={styles.inspectorDiscovery}>
-          <Text
-            accessibilityRole="header"
-            style={[styles.secondaryHeading, t.atoms.text_contrast_medium]}>
+          <H2 style={[styles.secondaryHeading, t.atoms.text_contrast_medium]}>
             {_(msg`Optional discovery sources`)}
-          </Text>
+          </H2>
           <Text
             testID="plumbline-inspector-discovery-description"
             style={[styles.secondaryDescription, t.atoms.text_contrast_medium]}>
@@ -589,7 +592,7 @@ function DesktopWorkbenchInspector({routeName}: {routeName: string}) {
 
   return (
     <View
-      accessibilityRole="summary"
+      role="complementary"
       accessibilityLabel={_(msg`Workbench inspector`)}
       accessibilityHint={_(
         msg`Shows the provider, rule, and control for this surface`,
@@ -601,9 +604,7 @@ function DesktopWorkbenchInspector({routeName}: {routeName: string}) {
         t.atoms.border_contrast_low,
         web({borderRadius: 1}),
       ]}>
-      <Text accessibilityRole="header" style={styles.inspectorTitle}>
-        {_(msg`Inspector`)}
-      </Text>
+      <H2 style={styles.inspectorTitle}>{_(msg`Inspector`)}</H2>
       <Text
         testID="plumbline-workbench-inspector-route"
         style={[styles.inspectorRoute, t.atoms.text]}>

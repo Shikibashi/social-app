@@ -103,6 +103,7 @@ export type ButtonProps = Pick<
   | 'onBlur'
   | 'onAccessibilityAction'
   | 'onAccessibilityEscape'
+  | 'nativeID'
 > &
   AccessibilityProps &
   VariantProps & {
@@ -281,10 +282,21 @@ export const Button = forwardRef<React.ComponentRef<typeof View>, ButtonProps>(
         } else if (color === 'negative') {
           if (!disabled) {
             baseStyles.push({
-              backgroundColor: t.palette.negative_500,
+              // Dark and dim palettes intentionally use a much lighter
+              // negative ramp than light mode. The dim ramp needs one darker
+              // step so its solid action can retain a legible foreground.
+              backgroundColor: select(t.name, {
+                light: t.palette.negative_500,
+                dark: t.palette.negative_500,
+                dim: t.palette.negative_600,
+              }),
             })
             hoverStyles.push({
-              backgroundColor: t.palette.negative_600,
+              backgroundColor: select(t.name, {
+                light: t.palette.negative_600,
+                dark: t.palette.negative_600,
+                dim: t.palette.negative_700,
+              }),
             })
           } else {
             baseStyles.push({
@@ -475,6 +487,8 @@ export const Button = forwardRef<React.ComponentRef<typeof View>, ButtonProps>(
           })
         } else if (size === 'tiny') {
           baseStyles.push(a.rounded_full, {
+            minHeight: 30,
+            minWidth: 30,
             paddingVertical: 5,
             paddingHorizontal: 10,
             gap: 3,
@@ -504,6 +518,8 @@ export const Button = forwardRef<React.ComponentRef<typeof View>, ButtonProps>(
           })
         } else if (size === 'tiny') {
           baseStyles.push({
+            minHeight: 30,
+            minWidth: 30,
             paddingVertical: 5,
             paddingHorizontal: 9,
             borderRadius: 6,
@@ -535,9 +551,9 @@ export const Button = forwardRef<React.ComponentRef<typeof View>, ButtonProps>(
           }
         } else if (size === 'tiny') {
           if (shape === 'round') {
-            baseStyles.push({height: 25, width: 25})
+            baseStyles.push({height: 30, width: 30})
           } else {
-            baseStyles.push({height: 25, width: 25})
+            baseStyles.push({height: 30, width: 30})
           }
         }
 
@@ -629,7 +645,16 @@ export function useSharedButtonTextStyles() {
     if (variant === 'solid') {
       if (color === 'primary') {
         if (!disabled) {
-          baseStyles.push({color: t.palette.white})
+          // ECW dark and dim themes use pale primary fills. Retain that
+          // identity treatment while using the dark contrast token for an
+          // accessible label and icon foreground.
+          baseStyles.push({
+            color: select(t.name, {
+              light: t.palette.white,
+              dark: t.palette.contrast_0,
+              dim: t.palette.contrast_0,
+            }),
+          })
         } else {
           baseStyles.push({
             color: select(t.name, {
@@ -657,14 +682,24 @@ export function useSharedButtonTextStyles() {
         }
       } else if (color === 'negative') {
         if (!disabled) {
-          baseStyles.push({color: t.palette.white})
+          baseStyles.push({
+            color: select(t.name, {
+              light: t.palette.white,
+              dark: t.palette.contrast_0,
+              dim: t.palette.white,
+            }),
+          })
         } else {
           baseStyles.push({color: t.palette.negative_300})
         }
       } else if (color === 'primary_subtle') {
         if (!disabled) {
           baseStyles.push({
-            color: t.palette.primary_600,
+            color: select(t.name, {
+              light: t.palette.primary_600,
+              dark: t.palette.primary_950,
+              dim: t.palette.primary_950,
+            }),
           })
         } else {
           baseStyles.push({
@@ -674,7 +709,11 @@ export function useSharedButtonTextStyles() {
       } else if (color === 'negative_subtle') {
         if (!disabled) {
           baseStyles.push({
-            color: t.palette.negative_600,
+            color: select(t.name, {
+              light: t.palette.negative_600,
+              dark: t.palette.negative_950,
+              dim: t.palette.negative_950,
+            }),
           })
         } else {
           baseStyles.push({

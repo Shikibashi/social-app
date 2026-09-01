@@ -1,6 +1,6 @@
 import {type ReactNode, useCallback, useMemo, useState} from 'react'
 import {StyleSheet, View} from 'react-native'
-import {plural} from '@lingui/core/macro'
+import {msg, plural} from '@lingui/core/macro'
 import {Trans, useLingui} from '@lingui/react/macro'
 import {useNavigation, useNavigationState} from '@react-navigation/native'
 
@@ -89,7 +89,7 @@ import {
 import {CENTER_COLUMN_OFFSET, CENTER_COLUMN_WIDTH} from '#/components/Layout'
 import * as Menu from '#/components/Menu'
 import * as Prompt from '#/components/Prompt'
-import {Text} from '#/components/Typography'
+import {H2, Text} from '#/components/Typography'
 import {useAnalytics} from '#/analytics'
 import {type Events} from '#/analytics/metrics/types'
 import {useActorStatus} from '#/features/liveNow'
@@ -555,12 +555,11 @@ function NavSection({
   return (
     <View testID={`plumbline-nav-group-${id}`} style={styles.navSection}>
       {!minimal && (
-        <Text
-          accessibilityRole="header"
+        <H2
           testID={`plumbline-nav-section-label-${id}`}
           style={[styles.navSectionLabel, t.atoms.text_contrast_medium]}>
           {label}
-        </Text>
+        </H2>
       )}
       {children}
     </View>
@@ -656,6 +655,8 @@ export function DesktopLeftNav({routeName}: {routeName: string}) {
   return (
     <View
       role="navigation"
+      accessibilityLabel={l(msg`Primary navigation`)}
+      accessibilityHint=""
       testID="plumbline-left-nav"
       style={[
         a.fixed,

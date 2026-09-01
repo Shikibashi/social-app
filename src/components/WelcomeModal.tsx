@@ -1,20 +1,17 @@
 import {useEffect, useState} from 'react'
-import {Pressable, View} from 'react-native'
-import {ImageBackground} from 'expo-image'
+import {View} from 'react-native'
+import {utils} from '@bsky.app/alf'
 import {Trans, useLingui} from '@lingui/react/macro'
 import {FocusGuards, FocusScope} from 'radix-ui/internal'
 
-import {PRODUCT_NAME} from '#/lib/brand'
 import {useLoggedOutViewControls} from '#/state/shell/logged-out'
-import {Logo} from '#/view/icons/Logo'
-import {atoms as a, flatten, useBreakpoints, web} from '#/alf'
+import {PlumblineShellBrand} from '#/view/shell/PlumblineShellBrand'
+import {atoms as a, flatten, useBreakpoints, useTheme, web} from '#/alf'
 import {Button, ButtonText} from '#/components/Button'
 import {type WelcomeModalControl} from '#/components/hooks/useWelcomeModal.shared'
 import {TimesLarge_Stroke2_Corner0_Rounded as XIcon} from '#/components/icons/Times'
 import {Text} from '#/components/Typography'
 import {useAnalytics} from '#/analytics'
-
-const welcomeModalBg = require('../../assets/images/welcome-modal-bg.jpg')
 
 interface WelcomeModalProps {
   control: WelcomeModalControl
@@ -23,10 +20,10 @@ interface WelcomeModalProps {
 export function WelcomeModal({control}: WelcomeModalProps) {
   const {t: l} = useLingui()
   const ax = useAnalytics()
+  const t = useTheme()
   const {requestSwitchToAccount} = useLoggedOutViewControls()
   const {gtMobile} = useBreakpoints()
   const [isExiting, setIsExiting] = useState(false)
-  const [signInLinkHovered, setSignInLinkHovered] = useState(false)
 
   const fadeOutAndClose = (callback?: () => void) => {
     setIsExiting(true)
@@ -66,179 +63,134 @@ export function WelcomeModal({control}: WelcomeModalProps) {
     <View
       role="dialog"
       aria-modal
+      aria-label={l`Welcome to Plumbline`}
       style={[
         a.fixed,
         a.inset_0,
         a.justify_center,
         a.align_center,
-        {zIndex: 9999, backgroundColor: 'rgba(0,0,0,0.2)'},
-        web({backdropFilter: 'blur(15px)'}),
+        {
+          zIndex: 9999,
+          backgroundColor: utils.alpha(t.palette.black, 0.72),
+        },
         isExiting ? a.fade_out : a.fade_in,
       ]}>
       <FocusScope.FocusScope asChild loop trapped>
         <View
           style={flatten([
             {
-              maxWidth: 800,
-              maxHeight: 600,
+              maxWidth: 520,
               width: '90%',
-              height: '90%',
-              backgroundColor: '#C0DCF0',
+              maxHeight: 'calc(100dvh - 32px)',
             },
-            a.rounded_lg,
             a.overflow_hidden,
-            a.zoom_in,
+            a.border,
+            t.atoms.bg,
+            t.atoms.border_contrast_medium,
+            web({boxShadow: '4px 4px 0 var(--ecw-hard-shadow)'}),
           ])}>
-          <ImageBackground
-            source={welcomeModalBg}
-            style={[a.flex_1, a.justify_center]}
-            contentFit="cover">
-            <View style={[a.gap_2xl, a.align_center, a.p_4xl]}>
-              <View
+          <View style={[a.gap_2xl, a.p_xl, gtMobile && a.p_2xl]}>
+            <PlumblineShellBrand />
+            <View
+              style={[
+                a.gap_sm,
+                a.pt_xl,
+                a.border_t,
+                t.atoms.border_contrast_medium,
+              ]}>
+              <Text
                 style={[
-                  a.flex_row,
-                  a.align_center,
-                  a.justify_center,
-                  a.w_full,
-                  a.p_0,
+                  gtMobile ? a.text_3xl : a.text_2xl,
+                  a.font_semi_bold,
+                  {
+                    fontFamily: 'Georgia, "Times New Roman", serif',
+                    lineHeight: 1.2,
+                  },
                 ]}>
-                <View style={[a.flex_row, a.align_center, a.gap_xs]}>
-                  <Logo allowVariants={false} width={26} />
-                  <Text
-                    style={[
-                      a.text_2xl,
-                      a.font_semi_bold,
-                      a.user_select_none,
-                      {color: '#354358', letterSpacing: -0.5},
-                    ]}>
-                    {PRODUCT_NAME}
-                  </Text>
-                </View>
-              </View>
-              <View
-                style={[
-                  a.gap_sm,
-                  a.align_center,
-                  a.pt_5xl,
-                  a.pb_3xl,
-                  a.mt_2xl,
-                ]}>
-                <Text
-                  style={[
-                    gtMobile ? a.text_4xl : a.text_3xl,
-                    a.font_semi_bold,
-                    a.text_center,
-                    {color: '#354358'},
-                    web({
-                      backgroundImage:
-                        'linear-gradient(180deg, #313F54 0%, #667B99 83.65%, rgba(102, 123, 153, 0.50) 100%)',
-                      backgroundClip: 'text',
-                      WebkitBackgroundClip: 'text',
-                      WebkitTextFillColor: 'transparent',
-                      color: 'transparent',
-                      lineHeight: 1.2,
-                      letterSpacing: -0.5,
-                    }),
-                  ]}>
-                  <Trans>Real people.</Trans>
-                  {'\n'}
-                  <Trans>Real conversations.</Trans>
-                  {'\n'}
-                  <Trans>Social media you control.</Trans>
+                <Trans>Real people.</Trans>
+                {'\n'}
+                <Trans>Real conversations.</Trans>
+                {'\n'}
+                <Trans>Social media you control.</Trans>
+              </Text>
+              <Text style={[a.text_sm, t.atoms.text_contrast_medium]}>
+                <Trans>
+                  Choose how you read, publish, and participate on the open web.
+                </Trans>
+              </Text>
+            </View>
+            <View style={[a.gap_md]}>
+              <Button
+                onPress={onPressCreateAccount}
+                label={l`Create account`}
+                size="large"
+                color="primary"
+                style={a.w_full}>
+                <ButtonText>
+                  <Trans>Create account</Trans>
+                </ButtonText>
+              </Button>
+              <Button
+                onPress={onPressExplore}
+                label={l`Explore the app`}
+                size="large"
+                color="secondary"
+                variant="ghost"
+                style={a.w_full}>
+                {({hovered}) => (
+                  <ButtonText style={[hovered && a.underline]}>
+                    <Trans>Explore the app</Trans>
+                  </ButtonText>
+                )}
+              </Button>
+              <View style={[a.flex_row, a.align_center, a.gap_sm]}>
+                <Text style={[a.text_sm, t.atoms.text_contrast_medium]}>
+                  <Trans>Already have an account?</Trans>
                 </Text>
-              </View>
-              <View style={[a.gap_md, a.align_center]}>
-                <View>
-                  <Button
-                    onPress={onPressCreateAccount}
-                    label={l`Create account`}
-                    size="large"
-                    color="primary"
-                    style={{
-                      width: 200,
-                      backgroundColor: '#006AFF',
-                    }}>
-                    <ButtonText>
-                      <Trans>Create account</Trans>
+                <Button
+                  onPress={onPressSignIn}
+                  label={l`Sign in`}
+                  size="small"
+                  color="secondary"
+                  variant="ghost">
+                  {({hovered}) => (
+                    <ButtonText style={[a.font_medium, hovered && a.underline]}>
+                      <Trans>Sign in</Trans>
                     </ButtonText>
-                  </Button>
-                  <Button
-                    onPress={onPressExplore}
-                    label={l`Explore the app`}
-                    size="large"
-                    color="primary"
-                    variant="ghost"
-                    style={[a.bg_transparent, {width: 200}]}
-                    hoverStyle={[a.bg_transparent]}>
-                    {({hovered}) => (
-                      <ButtonText
-                        style={[hovered && [a.underline], {color: '#006AFF'}]}>
-                        <Trans>Explore the app</Trans>
-                      </ButtonText>
-                    )}
-                  </Button>
-                </View>
-                <View style={[a.align_center, {minWidth: 200}]}>
-                  <Text
-                    style={[
-                      a.text_md,
-                      a.text_center,
-                      {color: '#405168', lineHeight: 24},
-                    ]}>
-                    <Trans>Already have an account?</Trans>{' '}
-                    <Pressable
-                      onPress={onPressSignIn}
-                      onPointerEnter={() => setSignInLinkHovered(true)}
-                      onPointerLeave={() => setSignInLinkHovered(false)}
-                      accessibilityRole="button"
-                      accessibilityLabel={l`Sign in`}
-                      accessibilityHint="">
-                      <Text
-                        style={[
-                          a.font_medium,
-                          {
-                            color: '#006AFF',
-                            fontSize: undefined,
-                          },
-                          signInLinkHovered && a.underline,
-                        ]}>
-                        <Trans>Sign in</Trans>
-                      </Text>
-                    </Pressable>
-                  </Text>
-                </View>
+                  )}
+                </Button>
               </View>
             </View>
-            <Button
-              label={l`Close welcome modal`}
-              style={[
-                a.absolute,
-                {
-                  top: 8,
-                  right: 8,
-                },
-                a.bg_transparent,
-              ]}
-              hoverStyle={[a.bg_transparent]}
-              onPress={() => {
-                ax.metric('welcomeModal:dismissed', {})
-                fadeOutAndClose()
-              }}
-              color="secondary"
-              size="small"
-              variant="ghost"
-              shape="round">
-              {({hovered, pressed, focused}) => (
-                <XIcon
-                  size="md"
-                  style={{
-                    color: '#354358',
-                    opacity: hovered || pressed || focused ? 1 : 0.7,
-                  }}
-                />
-              )}
-            </Button>
-          </ImageBackground>
+          </View>
+          <Button
+            label={l`Close welcome modal`}
+            style={[
+              a.absolute,
+              {
+                top: 8,
+                right: 8,
+              },
+              a.bg_transparent,
+            ]}
+            hoverStyle={[a.bg_transparent]}
+            onPress={() => {
+              ax.metric('welcomeModal:dismissed', {})
+              fadeOutAndClose()
+            }}
+            color="secondary"
+            size="small"
+            variant="ghost"
+            shape="round">
+            {({hovered, pressed, focused}) => (
+              <XIcon
+                size="md"
+                style={[
+                  t.atoms.text,
+                  {opacity: hovered || pressed || focused ? 1 : 0.7},
+                ]}
+              />
+            )}
+          </Button>
         </View>
       </FocusScope.FocusScope>
     </View>

@@ -11,6 +11,10 @@ export function Logotype({
   const pal = usePalette('default')
   const parsedSize = Number.parseInt(String(rest.width ?? 32), 10)
   const size = Number.isFinite(parsedSize) && parsedSize > 0 ? parsedSize : 32
+  // The public Plumbline wordmark has more glyph width than the previous
+  // generic ratio allowed. Keep every existing width call site inside its own
+  // box instead of rendering an ellipsis in splash screens and compact shells.
+  const fontSize = Math.max(12, Math.min(28, size * 0.18))
 
   return (
     <Text
@@ -23,10 +27,10 @@ export function Logotype({
         {
           color: fill || pal.text.color,
           fontFamily: 'Georgia, "Times New Roman", serif',
-          fontSize: Math.max(12, Math.min(32, size * 0.2)),
+          fontSize,
           fontWeight: '700',
           letterSpacing: 0.35,
-          lineHeight: Math.max(18, size * 0.24),
+          lineHeight: Math.max(18, fontSize * 1.2),
           width: size,
         },
         rest.style,

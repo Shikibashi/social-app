@@ -5,7 +5,15 @@ import {type Device, device} from '#/storage'
 
 export type MutableTextStyle = {-readonly [K in keyof TextStyle]: TextStyle[K]}
 
-const WEB_FONT_FAMILIES = `system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji"`
+const WEB_SYSTEM_FONT_FAMILIES = `system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji"`
+
+/*
+ * The theme face is a deliberately legible, browser-native interface stack.
+ * Keep it distinct from the System preference below: the latter is an
+ * explicit user choice and must not be silently replaced by Plumbline's
+ * default typography.
+ */
+const WEB_THEME_FONT_FAMILIES = `Verdana, "DejaVu Sans", Tahoma, "Noto Sans", Arial, "Liberation Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji"`
 
 const factor = 0.0625 // 1 - (15/16)
 const fontScaleMultipliers: Record<Device['fontScale'], number> = {
@@ -44,7 +52,17 @@ export function applyFonts(
   fontFamily: 'system' | 'theme',
 ) {
   if (fontFamily === 'theme') {
-    if (IS_ANDROID) {
+    if (IS_WEB) {
+      /*
+       * Semantic display and infrastructure roles pass their own family.
+       * Preserve those explicit roles on the web, then retain the UI stack as
+       * a fallback. The old unconditional Inter assignment erased Georgia and
+       * Courier declarations before they could reach the browser.
+       */
+      style.fontFamily = style.fontFamily
+        ? `${style.fontFamily}, ${WEB_THEME_FONT_FAMILIES}`
+        : WEB_THEME_FONT_FAMILIES
+    } else if (IS_ANDROID) {
       style.fontFamily =
         {
           400: 'Inter-Regular',
@@ -76,11 +94,6 @@ export function applyFonts(
       }
     }
 
-    if (IS_WEB) {
-      // fallback families only supported on web
-      style.fontFamily += `, ${WEB_FONT_FAMILIES}`
-    }
-
     /**
      * Disable contextual alternates and emoji overrides in Inter
      * {@link https://developer.mozilla.org/en-US/docs/Web/CSS/font-variant}
@@ -96,7 +109,7 @@ export function applyFonts(
   } else {
     // fallback families only supported on web
     if (IS_WEB) {
-      style.fontFamily = style.fontFamily || WEB_FONT_FAMILIES
+      style.fontFamily = style.fontFamily || WEB_SYSTEM_FONT_FAMILIES
     }
 
     /**

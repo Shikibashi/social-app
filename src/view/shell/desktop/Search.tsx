@@ -16,12 +16,22 @@ export function DesktopSearch() {
   const navigation = useNavigation<NavigationProp>()
   const [active, setActive] = useState(false)
   const [query, setQuery] = useState<string>('')
-  const showResults = active && !!query.length
 
   const sift = useSift({
     offset: a.p_sm.padding,
     placement: 'bottom',
   })
+  const {items} = useAutocomplete({
+    type: 'profile',
+    query: active ? query : '',
+    showSearchFallback: true,
+  })
+  const showDropdown = active && !!query.length && items.length > 0
+  const {
+    ref: inputAnchorRef,
+    'aria-controls': popupId,
+    ...comboboxProps
+  } = sift.targetProps
 
   const onFocus = () => {
     if (query.length) setActive(true)
@@ -66,49 +76,24 @@ export function DesktopSearch() {
     <View collapsable={false} ref={sift.refs.setAnchor}>
       <SearchInput
         hotkey
+        {...comboboxProps}
+        aria-controls={showDropdown ? popupId : undefined}
+        ref={inputAnchorRef}
         value={query}
         onFocus={onFocus}
         onBlur={onBlur}
         onChangeText={onChangeText}
         onClearText={onClearText}
         onSubmitEditing={onSubmit}
-        {...sift.targetProps}
       />
-      {showResults && (
-        <Inner
-          query={query}
+      {showDropdown && (
+        <AutocompleteBase
           sift={sift}
+          data={items}
           onSelect={onSelect}
           onDismiss={() => setActive(false)}
         />
       )}
     </View>
   )
-}
-
-function Inner({
-  query,
-  sift,
-  onSelect,
-  onDismiss,
-}: {
-  query: string
-  sift: ReturnType<typeof useSift>
-  onSelect: (item: AutocompleteItem) => void
-  onDismiss: () => void
-}) {
-  const {items} = useAutocomplete({
-    type: 'profile',
-    query,
-    showSearchFallback: true,
-  })
-
-  return items && items.length ? (
-    <AutocompleteBase
-      sift={sift}
-      data={items}
-      onSelect={onSelect}
-      onDismiss={onDismiss}
-    />
-  ) : null
 }

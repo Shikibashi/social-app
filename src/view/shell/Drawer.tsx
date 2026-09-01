@@ -682,7 +682,7 @@ function MenuItem({icon, label, count, bold, onPress}: MenuItemProps) {
     <Button
       testID={`menuItemButton-${label}`}
       onPress={onPress}
-      accessibilityRole="tab"
+      accessibilityRole="button"
       label={label}>
       {({hovered, pressed}) => (
         <View

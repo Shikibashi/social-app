@@ -18,7 +18,7 @@ import {Button, ButtonText} from '#/components/Button'
 import {TimesLarge_Stroke2_Corner0_Rounded as TimesIcon} from '#/components/icons/Times'
 import * as Layout from '#/components/Layout'
 import {InlineLinkText} from '#/components/Link'
-import {Text} from '#/components/Typography'
+import {H1, Text} from '#/components/Typography'
 
 export const SplashScreen = ({
   onDismiss,
@@ -50,6 +50,8 @@ export const SplashScreen = ({
       {onDismiss && (
         <Pressable
           accessibilityRole="button"
+          accessibilityLabel={_(msg`Close`)}
+          accessibilityHint={_(msg`Closes this welcome screen`)}
           style={{
             position: 'absolute',
             top: 20,
@@ -62,7 +64,12 @@ export const SplashScreen = ({
         </Pressable>
       )}
 
-      <Layout.Center style={[a.h_full, a.flex_1]} ignoreTabletLayoutOffset>
+      <Layout.Center
+        role="main"
+        id="plumbline-main-content"
+        tabIndex={-1}
+        style={[a.h_full, a.flex_1]}
+        ignoreTabletLayoutOffset>
         <View
           testID="noSessionView"
           style={[
@@ -77,6 +84,9 @@ export const SplashScreen = ({
           ]}>
           <ErrorBoundary>
             <View style={[a.justify_center, a.align_center]}>
+              <H1 style={a.sr_only}>
+                <Trans>Welcome to Plumbline</Trans>
+              </H1>
               <Logo width={92} />
 
               <View style={[a.pb_sm, a.pt_5xl]}>

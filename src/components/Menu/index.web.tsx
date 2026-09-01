@@ -149,6 +149,11 @@ export function Trigger({
             },
             props: {
               ...props,
+              // Radix unmounts the menu content while it is closed. Keep the
+              // relationship present only while the controlled content exists.
+              'aria-controls': control.isOpen
+                ? props['aria-controls']
+                : undefined,
               // No-op override to prevent false positive that interprets mobile scroll as a tap.
               // This requires the custom onPress handler below to compensate.
               // https://github.com/radix-ui/primitives/issues/1912

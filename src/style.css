@@ -81,14 +81,12 @@ a[role='link'][data-no-underline='1']:hover {
 .ProseMirror .autolink {
   color: #0085ff;
 }
-/* OLLIE: TODO -- this is not accessible */
-/* Remove focus state on inputs */
-.ProseMirror-focused {
-  outline: 0;
-}
-textarea:focus,
-input:focus {
-  outline: 0;
+/* Keep keyboard focus visible on plain inputs and the rich-text composer. */
+.ProseMirror-focused:focus-visible,
+textarea:focus-visible,
+input:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: 2px;
 }
 .tippy-content .items {
   width: fit-content;

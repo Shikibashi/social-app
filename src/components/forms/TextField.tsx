@@ -122,19 +122,28 @@ export function useSharedInputStyles() {
     ]
     const focus: ViewStyle[] = [
       {
-        backgroundColor: t.palette.primary_25,
+        // The light focus fill is intentionally pale, but that same token is
+        // nearly the same luminance as dark-theme input text. Keep the focus
+        // treatment within the primary ramp while preserving readable typed
+        // values in dark and dim themes.
+        backgroundColor:
+          t.name === 'light' ? t.palette.primary_25 : t.palette.primary_950,
         borderColor: t.palette.primary_500,
       },
     ]
     const error: ViewStyle[] = [
       {
-        backgroundColor: t.palette.negative_25,
+        // Preserve the entered identifier after validation as well. The pale
+        // light-theme error fill is too close to dark-theme input text.
+        backgroundColor:
+          t.name === 'light' ? t.palette.negative_25 : t.palette.negative_950,
         borderColor: t.palette.negative_300,
       },
     ]
     const errorHover: ViewStyle[] = [
       {
-        backgroundColor: t.palette.negative_25,
+        backgroundColor:
+          t.name === 'light' ? t.palette.negative_25 : t.palette.negative_950,
         borderColor: t.palette.negative_500,
       },
     ]

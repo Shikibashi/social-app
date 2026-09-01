@@ -4,14 +4,11 @@ import {msg} from '@lingui/core/macro'
 import {useLingui} from '@lingui/react'
 import {Trans} from '@lingui/react/macro'
 
-import {PRODUCT_NAME} from '#/lib/brand'
 import {useLoggedOutViewControls} from '#/state/shell/logged-out'
 import {useCloseAllActiveElements} from '#/state/util'
-import {Logo} from '#/view/icons/Logo'
 import {atoms as a} from '#/alf'
 import {AppLanguageDropdown} from '#/components/AppLanguageDropdown'
 import {Button, ButtonText} from '#/components/Button'
-import {Link} from '#/components/Link'
 import {Text} from '#/components/Typography'
 
 let NavSignupCard = ({}: {}): React.ReactNode => {
@@ -31,14 +28,17 @@ let NavSignupCard = ({}: {}): React.ReactNode => {
   }, [requestSwitchToAccount, closeAllActiveElements])
 
   return (
-    <View style={[{maxWidth: 245}]}>
-      <Link to="/" label={`${PRODUCT_NAME} - Home`}>
-        <Logo allowVariants={false} width={32} />
-      </Link>
-
-      <View style={[a.pt_lg]}>
+    <View testID="plumbline-nav-signup-card" style={[{maxWidth: 245}]}>
+      <View>
         <Text
-          style={[a.text_3xl, a.font_bold, {lineHeight: a.text_3xl.fontSize}]}>
+          style={[
+            a.text_3xl,
+            a.font_bold,
+            {
+              fontFamily: 'Georgia, "Times New Roman", serif',
+              lineHeight: a.text_3xl.fontSize,
+            },
+          ]}>
           <Trans>Join the conversation</Trans>
         </Text>
       </View>
@@ -49,7 +49,8 @@ let NavSignupCard = ({}: {}): React.ReactNode => {
           label={_(msg`Create account`)}
           size="small"
           variant="solid"
-          color="primary">
+          color="primary"
+          shape="rectangular">
           <ButtonText>
             <Trans>Create account</Trans>
           </ButtonText>
@@ -58,8 +59,9 @@ let NavSignupCard = ({}: {}): React.ReactNode => {
           onPress={showSignIn}
           label={_(msg`Sign in`)}
           size="small"
-          variant="solid"
-          color="secondary">
+          variant="outline"
+          color="secondary"
+          shape="rectangular">
           <ButtonText>
             <Trans>Sign in</Trans>
           </ButtonText>
