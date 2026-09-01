@@ -120,7 +120,7 @@ export function NotificationsScreen({}: Props) {
   ])
 
   return (
-    <Layout.Screen testID="notificationsScreen" ecwMode="workbench">
+    <Layout.Screen testID="notificationsScreen" ecwMode="page">
       <Layout.Header.Outer noBottomBorder sticky={false}>
         <Layout.Header.MenuButton />
         <Layout.Header.Content>

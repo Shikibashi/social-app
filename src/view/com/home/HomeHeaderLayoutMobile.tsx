@@ -25,11 +25,12 @@ import {IS_DEV, IS_LIQUID_GLASS, IS_WEB} from '#/env'
 
 export function HomeHeaderLayoutMobile({
   children,
-  surfaceTitle = 'Home workspace',
+  surfaceTitle = 'Home',
 }: {
   children: React.ReactNode
   tabBarAnchor: React.ReactElement | null | undefined
   surfaceTitle?: string
+  surfaceMetadata?: string
 }) {
   const t = useTheme()
   const {_} = useLingui()

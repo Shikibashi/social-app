@@ -41,6 +41,7 @@ import {IS_NATIVE, IS_WEB} from '#/env'
 import {BottomBarWeb} from './bottom-bar/BottomBarWeb'
 import {DesktopLeftNav} from './desktop/LeftNav'
 import {DesktopRightNav} from './desktop/RightNav'
+import {PlumblinePageMasthead} from './PlumblineShellBrand'
 
 // On web, only this many screens (beyond Home + focused) stay mounted.
 // Older screens are unmounted to prevent memory growth during long sessions.
@@ -121,6 +122,7 @@ function NativeStackNavigator({
   const {setShowLoggedOut} = useLoggedOutViewControls()
   const {isMobile} = useWebMediaQueries()
   const {leftNavMinimal} = useLayoutBreakpoints()
+  const showDesktopMasthead = IS_WEB && !isMobile
 
   if (!hasSession && (activeRouteRequiresAuth || IS_NATIVE)) {
     return <LoggedOut />
@@ -191,29 +193,34 @@ function NativeStackNavigator({
 
   return (
     <NavigationContent>
-      <View
-        role="main"
-        id="plumbline-main-content"
-        tabIndex={-1}
-        style={a.flex_1}>
-        <NativeStackView
-          {...rest}
-          state={state}
-          navigation={navigation}
-          descriptors={finalDescriptors}
-          describe={describe}
-        />
-      </View>
-      {IS_WEB && (
-        <>
-          {showBottomBar ? (
-            <BottomBarWeb />
-          ) : (
-            <DesktopLeftNav routeName={activeRoute.name} />
+      <View testID="plumbline-shell" style={a.flex_1}>
+        {showDesktopMasthead && <PlumblinePageMasthead />}
+        <View testID="plumbline-page-composition" style={a.flex_1}>
+          <View
+            role="main"
+            id="plumbline-main-content"
+            tabIndex={-1}
+            style={a.flex_1}>
+            <NativeStackView
+              {...rest}
+              state={state}
+              navigation={navigation}
+              descriptors={finalDescriptors}
+              describe={describe}
+            />
+          </View>
+          {IS_WEB && (
+            <>
+              {showBottomBar ? (
+                <BottomBarWeb />
+              ) : (
+                <DesktopLeftNav routeName={activeRoute.name} />
+              )}
+              {!isMobile && <DesktopRightNav routeName={activeRoute.name} />}
+            </>
           )}
-          {!isMobile && <DesktopRightNav routeName={activeRoute.name} />}
-        </>
-      )}
+        </View>
+      </View>
 
       {/* Only shown after logged in and onboaring etc are complete */}
       {hasSession && <PolicyUpdateOverlay />}

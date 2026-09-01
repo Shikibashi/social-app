@@ -38,9 +38,15 @@ export function HomeHeader(
   const surfaceTitle = useMemo(
     () =>
       feeds[props.selectedPage]?.displayName ??
-      (hasSession ? 'Home workspace' : 'Public discovery'),
+      (hasSession ? 'Following' : 'Public discovery'),
     [feeds, hasSession, props.selectedPage],
   )
+  const surfaceMetadata = useMemo(() => {
+    const selectedFeed = feeds[props.selectedPage]
+    if (selectedFeed?.uri === 'following') return 'Chronological'
+    if (selectedFeed?.creatorHandle) return 'Curated edition'
+    return 'Public discovery'
+  }, [feeds, props.selectedPage])
 
   const onPressFeedsLink = useCallback(() => {
     navigation.navigate('Feeds')
@@ -60,6 +66,7 @@ export function HomeHeader(
   return (
     <HomeHeaderLayout
       surfaceTitle={surfaceTitle}
+      surfaceMetadata={surfaceMetadata}
       tabBarAnchor={props.tabBarAnchor}>
       <TabBar
         key={items.join(',')}

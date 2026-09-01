@@ -20,7 +20,7 @@ export const ProfileFollowsScreen = ({route}: Props) => {
   })
 
   return (
-    <Layout.Screen testID="profileFollowsScreen" ecwMode="workbench">
+    <Layout.Screen testID="profileFollowsScreen" ecwMode="page">
       <Layout.Header.Outer>
         <Layout.Header.BackButton />
         <Layout.Header.Content>

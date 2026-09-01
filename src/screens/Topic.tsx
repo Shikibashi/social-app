@@ -76,7 +76,7 @@ export default function TopicScreen({
   }, [l, topic, activeTab])
 
   return (
-    <Layout.Screen ecwMode="workbench">
+    <Layout.Screen ecwMode="page">
       <Pager
         onPageSelected={onPageSelected}
         renderTabBar={props => (

@@ -8,7 +8,6 @@ import {HITSLOP_10} from '#/lib/constants'
 import {useSession} from '#/state/session'
 import {useShellLayout} from '#/state/shell/shell-layout'
 import {HomeHeaderLayoutMobile} from '#/view/com/home/HomeHeaderLayoutMobile'
-import {PlumblineBrandMark} from '#/view/icons/PlumblineBrandMark'
 import {atoms as a, useBreakpoints, useGutters, useTheme} from '#/alf'
 import {ButtonIcon} from '#/components/Button'
 import {Hashtag_Stroke2_Corner0_Rounded as FeedsIcon} from '#/components/icons/Hashtag'
@@ -21,6 +20,7 @@ export function HomeHeaderLayout(props: {
   children: React.ReactNode
   tabBarAnchor: JSX.Element | null | undefined
   surfaceTitle: string
+  surfaceMetadata?: string
 }) {
   const {gtMobile} = useBreakpoints()
   if (!gtMobile) {
@@ -34,10 +34,12 @@ function HomeHeaderLayoutDesktopAndTablet({
   children,
   tabBarAnchor,
   surfaceTitle,
+  surfaceMetadata,
 }: {
   children: React.ReactNode
   tabBarAnchor: JSX.Element | null | undefined
   surfaceTitle: string
+  surfaceMetadata?: string
 }) {
   const t = useTheme()
   const {headerHeight} = useShellLayout()
@@ -75,18 +77,53 @@ function HomeHeaderLayoutDesktopAndTablet({
               ]}
             />
           </View>
-          <PlumblineBrandMark size={28} />
           <View
             testID="plumbline-document-stream-title-group"
-            style={[a.flex_1, a.pl_sm, {minWidth: 0}]}
+            style={[a.flex_1, {minWidth: 0}]}
             accessible={false}>
-            <Text style={styles.headingEyebrow}>DOCUMENT STREAM</Text>
+            <View style={styles.headingKicker}>
+              <Text
+                testID="plumbline-document-stream-issue"
+                style={styles.headingIssue}>
+                CURRENT EDITION
+              </Text>
+              <Text
+                aria-hidden={true}
+                style={[styles.headingDivider, t.atoms.text_contrast_low]}>
+                /
+              </Text>
+              <Text
+                testID="plumbline-document-stream-section"
+                style={[styles.headingSection, t.atoms.text_contrast_medium]}>
+                SECTION
+              </Text>
+            </View>
             <H1
               testID="plumbline-document-stream-title"
               numberOfLines={1}
               style={[styles.headingTitle, t.atoms.text]}>
               {surfaceTitle}
             </H1>
+            {surfaceMetadata && (
+              <View style={styles.headingMetadataRow}>
+                <Text
+                  style={[
+                    styles.headingMetadataLabel,
+                    t.atoms.text_contrast_low,
+                  ]}>
+                  MODE
+                </Text>
+                <Text
+                  testID="plumbline-document-stream-metadata"
+                  numberOfLines={1}
+                  style={[
+                    styles.headingMetadata,
+                    t.atoms.text_contrast_medium,
+                  ]}>
+                  {surfaceMetadata}
+                </Text>
+              </View>
+            )}
           </View>
           {hasSession && (
             <Link
@@ -120,38 +157,80 @@ function HomeHeaderLayoutDesktopAndTablet({
 
 const styles = StyleSheet.create({
   marker: {
-    width: 10,
-    height: 32,
-    marginRight: 8,
+    width: 18,
+    height: 62,
+    marginRight: 14,
     position: 'relative',
   },
   markerLine: {
     position: 'absolute',
     top: 0,
-    bottom: 5,
-    left: 4,
-    width: 1,
+    bottom: 8,
+    left: 8,
+    width: 2,
   },
   markerBob: {
     position: 'absolute',
     bottom: 0,
-    left: 1,
-    width: 7,
-    height: 7,
+    left: 4,
+    width: 9,
+    height: 9,
     borderWidth: 1,
     transform: [{rotate: '45deg'}],
   },
-  headingEyebrow: {
-    fontFamily: 'Courier New, "Liberation Mono", monospace',
+  headingKicker: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 7,
+  },
+  headingIssue: {
+    fontFamily: 'Verdana, "DejaVu Sans", sans-serif',
     fontSize: 11,
     fontWeight: '700',
-    letterSpacing: 1.2,
+    letterSpacing: 1.4,
     lineHeight: 15,
+    textTransform: 'uppercase',
+  },
+  headingDivider: {
+    fontFamily: 'Georgia, "Times New Roman", serif',
+    fontSize: 13,
+    lineHeight: 15,
+  },
+  headingSection: {
+    fontFamily: 'Courier New, "Liberation Mono", monospace',
+    fontSize: 10,
+    fontWeight: '700',
+    letterSpacing: 1.1,
+    lineHeight: 15,
+    textTransform: 'uppercase',
   },
   headingTitle: {
     fontFamily: 'Georgia, "Times New Roman", serif',
-    fontSize: 17,
+    fontSize: 30,
     fontWeight: '700',
-    lineHeight: 22,
+    lineHeight: 34,
+  },
+  headingMetadataRow: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    gap: 6,
+    minWidth: 0,
+  },
+  headingMetadataLabel: {
+    flexShrink: 0,
+    fontFamily: 'Courier New, "Liberation Mono", monospace',
+    fontSize: 10,
+    fontWeight: '700',
+    letterSpacing: 1,
+    lineHeight: 15,
+    textTransform: 'uppercase',
+  },
+  headingMetadata: {
+    flexShrink: 1,
+    fontFamily: 'Courier New, "Liberation Mono", monospace',
+    fontSize: 11,
+    fontWeight: '400',
+    letterSpacing: 0.4,
+    lineHeight: 15,
   },
 })

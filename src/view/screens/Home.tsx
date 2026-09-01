@@ -88,7 +88,7 @@ export function HomeScreen(props: Props) {
     return (
       <Layout.Screen
         testID="HomeScreen"
-        ecwMode="workbench"
+        ecwMode="page"
         noInsetTop={IS_LIQUID_GLASS}>
         <HomeHeaderModeProvider>
           <HomeScreenReady
@@ -101,7 +101,7 @@ export function HomeScreen(props: Props) {
     )
   } else {
     return (
-      <Layout.Screen ecwMode="workbench">
+      <Layout.Screen ecwMode="page">
         <Layout.Center style={styles.loading}>
           <ActivityIndicator size="large" />
         </Layout.Center>

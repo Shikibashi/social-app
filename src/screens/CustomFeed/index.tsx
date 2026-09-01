@@ -82,7 +82,7 @@ export function CustomFeedScreen(props: Props) {
 
   if (error && !isRefetching) {
     return (
-      <Layout.Screen testID="customFeedScreenError" ecwMode="workbench">
+      <Layout.Screen testID="customFeedScreenError" ecwMode="page">
         <ErrorScreen
           showHeader
           title={l`Could not load feed`}
@@ -94,14 +94,14 @@ export function CustomFeedScreen(props: Props) {
   }
 
   return resolvedUri ? (
-    <Layout.Screen testID="customFeedScreen" ecwMode="workbench">
+    <Layout.Screen testID="customFeedScreen" ecwMode="page">
       <CustomFeedScreenIntermediate
         feedUri={resolvedUri.uri}
         feedParams={feedParams}
       />
     </Layout.Screen>
   ) : (
-    <Layout.Screen testID="customFeedScreen" ecwMode="workbench">
+    <Layout.Screen testID="customFeedScreen" ecwMode="page">
       <CustomFeedHeaderSkeleton />
       <Layout.Content>
         <PostFeedLoadingPlaceholder />

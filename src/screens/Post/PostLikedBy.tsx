@@ -21,7 +21,7 @@ export const PostLikedByScreen = ({route}: Props) => {
   }
 
   return (
-    <Layout.Screen testID="postLikedByScreen" ecwMode="workbench">
+    <Layout.Screen testID="postLikedByScreen" ecwMode="page">
       <Layout.Header.Outer>
         <Layout.Header.BackButton />
         <Layout.Header.Content>

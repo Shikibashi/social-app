@@ -52,7 +52,7 @@ export function ListsScreen({}: Props) {
   )
 
   return (
-    <Layout.Screen testID="listsScreen" ecwMode="workbench">
+    <Layout.Screen testID="listsScreen" ecwMode="page">
       <Layout.Header.Outer>
         <Layout.Header.BackButton />
         <Layout.Header.Content align="left">

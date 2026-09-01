@@ -655,7 +655,7 @@ export function CommunityBoardScreen({route}: Props) {
   }
 
   return (
-    <Layout.Screen ecwMode="workbench">
+    <Layout.Screen ecwMode="page">
       <Layout.Header.Outer>
         <Layout.Header.BackButton />
         <Layout.Header.Content>

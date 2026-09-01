@@ -28,7 +28,7 @@ import {PressableWithHover} from '#/view/com/util/PressableWithHover'
 import {UserAvatar} from '#/view/com/util/UserAvatar'
 import {NavSignupCard} from '#/view/shell/NavSignupCard'
 import {PlumblineSelectionMarker} from '#/view/shell/PlumblineSelectionMarker'
-import {PlumblineShellBrand} from '#/view/shell/PlumblineShellBrand'
+import {PLUMBLINE_PAGE_MASTHEAD_HEIGHT} from '#/view/shell/PlumblineShellBrand'
 import {
   atoms as a,
   useBreakpoints,
@@ -660,14 +660,17 @@ export function DesktopLeftNav({routeName}: {routeName: string}) {
       testID="plumbline-left-nav"
       style={[
         a.fixed,
-        a.top_0,
         a.p_lg,
         styles.leftNav,
+        web({
+          top: PLUMBLINE_PAGE_MASTHEAD_HEIGHT,
+          maxHeight: `calc(100vh - ${PLUMBLINE_PAGE_MASTHEAD_HEIGHT}px)`,
+        }),
         !hasSession && !leftNavMinimal && {width: LEFT_NAV_PWI_WIDTH},
         leftNavMinimal && [
           {width: LEFT_NAV_MINIMAL_WIDTH},
-          a.h_full,
           a.align_center,
+          web({height: `calc(100vh - ${PLUMBLINE_PAGE_MASTHEAD_HEIGHT}px)`}),
           web(a.overflow_x_hidden),
         ],
         {
@@ -685,7 +688,11 @@ export function DesktopLeftNav({routeName}: {routeName: string}) {
           ],
         },
       ]}>
-      <PlumblineShellBrand minimal={leftNavMinimal} style={[a.mb_md]} />
+      {!leftNavMinimal && (
+        <View testID="plumbline-nav-index-heading" style={[a.mb_md]}>
+          <H2 style={styles.indexHeading}>Index</H2>
+        </View>
+      )}
       {hasSession ? (
         <ProfileCard minimal={leftNavMinimal} />
       ) : !leftNavMinimal ? (
@@ -695,7 +702,7 @@ export function DesktopLeftNav({routeName}: {routeName: string}) {
       ) : null}
       {hasSession && (
         <>
-          <NavSection id="workspace" label="Workspace" minimal={leftNavMinimal}>
+          <NavSection id="workspace" label="Sections" minimal={leftNavMinimal}>
             <NavItem
               label={l`Home`}
               href="/"
@@ -750,10 +757,7 @@ export function DesktopLeftNav({routeName}: {routeName: string}) {
               }}
             />
           </NavSection>
-          <NavSection
-            id="feeds"
-            label="Feeds and lists"
-            minimal={leftNavMinimal}>
+          <NavSection id="feeds" label="Reading" minimal={leftNavMinimal}>
             <NavItem
               label={l`Feeds`}
               href="/feeds"
@@ -850,6 +854,13 @@ export function DesktopLeftNav({routeName}: {routeName: string}) {
 }
 
 const styles = StyleSheet.create({
+  indexHeading: {
+    fontFamily: 'Georgia, "Times New Roman", serif',
+    fontSize: 22,
+    fontWeight: '700',
+    letterSpacing: 0.4,
+    lineHeight: 26,
+  },
   navSection: {
     marginTop: 8,
   },
@@ -865,7 +876,6 @@ const styles = StyleSheet.create({
   leftNav: {
     left: '50%',
     width: LEFT_NAV_STANDARD_WIDTH,
-    maxHeight: '100vh',
     // @ts-expect-error web only
     overflowY: 'auto',
     scrollbarWidth: 'thin',

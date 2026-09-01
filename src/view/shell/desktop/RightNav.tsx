@@ -11,6 +11,7 @@ import {useSelectedFeed} from '#/state/shell/selected-feed'
 import {DesktopFeeds} from '#/view/shell/desktop/Feeds'
 import {DesktopSearch} from '#/view/shell/desktop/Search'
 import {SidebarTrendingTopics} from '#/view/shell/desktop/SidebarTrendingTopics'
+import {PLUMBLINE_PAGE_MASTHEAD_HEIGHT} from '#/view/shell/PlumblineShellBrand'
 import {
   atoms as a,
   useGutters,
@@ -19,7 +20,7 @@ import {
   web,
 } from '#/alf'
 import {AppLanguageDropdown} from '#/components/AppLanguageDropdown'
-import {CENTER_COLUMN_OFFSET} from '#/components/Layout'
+import {CENTER_COLUMN_OFFSET, CENTER_COLUMN_WIDTH} from '#/components/Layout'
 import {InlineLinkText} from '#/components/Link'
 import {ProgressGuideList} from '#/components/ProgressGuide/List'
 import {H2, H3, Text} from '#/components/Typography'
@@ -71,7 +72,7 @@ export function DesktopRightNav({routeName}: {routeName: string}) {
     return null
   }
 
-  const width = centerColumnOffset ? 250 : 300
+  const width = centerColumnOffset ? 210 : 250
 
   return (
     <View
@@ -85,7 +86,9 @@ export function DesktopRightNav({routeName}: {routeName: string}) {
           left: '50%',
           transform: [
             {
-              translateX: 300 + (centerColumnOffset ? CENTER_COLUMN_OFFSET : 0),
+              translateX:
+                CENTER_COLUMN_WIDTH / 2 +
+                (centerColumnOffset ? CENTER_COLUMN_OFFSET : 0),
             },
             ...a.scrollbar_offset.transform,
           ],
@@ -93,7 +96,8 @@ export function DesktopRightNav({routeName}: {routeName: string}) {
            * Compensate for the right padding above (2px) to retain intended width.
            */
           width: width + gutters.paddingLeft + 2,
-          maxHeight: '100vh',
+          top: PLUMBLINE_PAGE_MASTHEAD_HEIGHT,
+          maxHeight: `calc(100vh - ${PLUMBLINE_PAGE_MASTHEAD_HEIGHT}px)`,
           overflowY: 'auto',
           scrollbarWidth: 'thin',
         }),
@@ -108,7 +112,7 @@ export function DesktopRightNav({routeName}: {routeName: string}) {
         )}
         style={styles.inspectorTools}>
         <H2 style={[styles.secondaryHeading, t.atoms.text_contrast_medium]}>
-          {_(msg`Optional read tools`)}
+          {_(msg`Adjacent sources`)}
         </H2>
         <Text
           testID="plumbline-inspector-tools-description"
@@ -598,13 +602,8 @@ function DesktopWorkbenchInspector({routeName}: {routeName: string}) {
         msg`Shows the provider, rule, and control for this surface`,
       )}
       testID="plumbline-workbench-inspector"
-      style={[
-        styles.inspector,
-        t.atoms.bg,
-        t.atoms.border_contrast_low,
-        web({borderRadius: 1}),
-      ]}>
-      <H2 style={styles.inspectorTitle}>{_(msg`Inspector`)}</H2>
+      style={[styles.inspector, t.atoms.border_contrast_low]}>
+      <H2 style={styles.inspectorTitle}>{_(msg`Marginal note`)}</H2>
       <Text
         testID="plumbline-workbench-inspector-route"
         style={[styles.inspectorRoute, t.atoms.text]}>
@@ -682,7 +681,7 @@ const styles = StyleSheet.create({
   secondaryHeading: {
     borderTopWidth: 1,
     paddingTop: 8,
-    fontFamily: 'Courier New, "Liberation Mono", monospace',
+    fontFamily: 'Verdana, "DejaVu Sans", sans-serif',
     fontSize: 11,
     fontWeight: '700',
     letterSpacing: 1,
@@ -693,27 +692,35 @@ const styles = StyleSheet.create({
     lineHeight: 16,
   },
   inspector: {
-    borderWidth: 1,
-    padding: 10,
-    gap: 4,
+    borderTopWidth: 1,
+    borderBottomWidth: 1,
+    paddingVertical: 12,
+    gap: 7,
   },
   inspectorTitle: {
-    fontSize: 12,
+    fontFamily: 'Georgia, "Times New Roman", serif',
+    fontSize: 16,
     fontWeight: '700',
-    letterSpacing: 0.8,
-    textTransform: 'uppercase',
+    letterSpacing: 0.2,
+    lineHeight: 20,
   },
   inspectorRoute: {
-    fontSize: 15,
+    fontFamily: 'Georgia, "Times New Roman", serif',
+    fontSize: 22,
     fontWeight: '700',
-    paddingBottom: 2,
+    lineHeight: 26,
+    paddingBottom: 3,
   },
   inspectorDetail: {
     fontSize: 12,
-    lineHeight: 16,
+    lineHeight: 18,
   },
   inspectorLabel: {
+    fontFamily: 'Verdana, "DejaVu Sans", sans-serif',
+    fontSize: 10,
     fontWeight: '700',
+    letterSpacing: 0.6,
+    textTransform: 'uppercase',
   },
   inspectorAction: {
     alignSelf: 'flex-start',

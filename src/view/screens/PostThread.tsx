@@ -12,7 +12,7 @@ export function PostThreadScreen({route}: Props) {
   const uri = makeRecordUri(name, 'app.bsky.feed.post', rkey)
 
   return (
-    <Layout.Screen testID="postThreadScreen" ecwMode="workbench">
+    <Layout.Screen testID="postThreadScreen" ecwMode="page">
       <PostThread uri={uri} />
     </Layout.Screen>
   )

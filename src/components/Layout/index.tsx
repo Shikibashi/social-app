@@ -1,4 +1,4 @@
-import {memo, useContext, useMemo} from 'react'
+import {memo, useContext, useEffect, useMemo} from 'react'
 import {
   type StyleProp,
   View,
@@ -11,10 +11,14 @@ import Animated, {
   useAnimatedStyle,
 } from 'react-native-reanimated'
 import {useSafeAreaInsets} from 'react-native-safe-area-context'
+import {useIsFocused} from '@react-navigation/native'
 
 import {useEnableMinimalShellModeForScreen} from '#/state/shell'
 import {useShellLayout} from '#/state/shell/shell-layout'
-import {PlumblineWorkbenchMasthead} from '#/view/shell/PlumblineShellBrand'
+import {
+  PLUMBLINE_PAGE_MASTHEAD_HEIGHT,
+  PlumblineWorkbenchMasthead,
+} from '#/view/shell/PlumblineShellBrand'
 import {useIsWithinSplitView} from '#/screens/Messages/components/splitView/context'
 import {
   atoms as a,
@@ -27,6 +31,7 @@ import {useDialogContext} from '#/components/Dialog'
 import {
   CENTER_COLUMN_OFFSET,
   CENTER_COLUMN_WIDTH,
+  PAGE_MODE_CENTER_COLUMN_WIDTH,
   SCROLLBAR_OFFSET,
 } from '#/components/Layout/const'
 import {ScrollbarOffsetContext} from '#/components/Layout/context'
@@ -57,8 +62,26 @@ export const Screen = memo(function Screen({
   const {isWithinOffsetView} = useContext(ScrollbarOffsetContext)
   const {gtMobile} = useBreakpoints()
   const {centerColumnOffset, leftNavMinimal} = useLayoutBreakpoints()
+  const isFocused = useIsFocused()
 
   useEnableMinimalShellModeForScreen({enabled: minimalShell})
+
+  useEffect(() => {
+    if (!IS_WEB || !isFocused) return
+
+    const shell = document.querySelector<HTMLElement>(
+      "[data-testid='plumbline-shell']",
+    )
+    if (!shell) return
+
+    shell.dataset.ecwShellMode = ecwMode
+
+    return () => {
+      if (shell.dataset.ecwShellMode === ecwMode) {
+        delete shell.dataset.ecwShellMode
+      }
+    }
+  }, [ecwMode, isFocused])
 
   const showResponsiveMasthead =
     IS_WEB &&
@@ -69,9 +92,9 @@ export const Screen = memo(function Screen({
 
   return (
     <>
-      {IS_WEB && !isWithinSplitView && <WebCenterBorders />}
+      {IS_WEB && !isWithinSplitView && <WebCenterBorders ecwMode={ecwMode} />}
       <View
-        {...(IS_WEB ? {dataSet: {ecwMode}} : {})}
+        {...(IS_WEB && isFocused ? {dataSet: {ecwMode}} : {})}
         style={[
           a.util_screen_outer,
           {paddingTop: noInsetTop ? 0 : top},
@@ -184,6 +207,7 @@ export const Center = memo(function LayoutCenter({
   const ctx = useMemo(() => ({isWithinOffsetView: true}), [])
   return (
     <View
+      {...(IS_WEB ? {dataSet: {ecwRegion: 'center'}} : {})}
       style={[
         a.w_full,
         !isWithinSplitView && a.mx_auto,
@@ -217,12 +241,18 @@ export const Center = memo(function LayoutCenter({
 /**
  * Only used within `Layout.Screen`, not for reuse
  */
-const WebCenterBorders = memo(function LayoutWebCenterBorders() {
+const WebCenterBorders = memo(function LayoutWebCenterBorders({
+  ecwMode,
+}: {
+  ecwMode: 'page' | 'workbench'
+}) {
   const t = useTheme()
   const {gtMobile} = useBreakpoints()
   const {centerColumnOffset} = useLayoutBreakpoints()
+  const isPageMode = ecwMode === 'page'
   return gtMobile ? (
     <View
+      testID="plumbline-center-borders"
       style={[
         a.fixed,
         a.inset_0,
@@ -230,11 +260,15 @@ const WebCenterBorders = memo(function LayoutWebCenterBorders() {
         a.border_r,
         t.atoms.border_contrast_low,
         web({
-          width: 602,
+          top: isPageMode ? PLUMBLINE_PAGE_MASTHEAD_HEIGHT : 0,
+          width: isPageMode ? PAGE_MODE_CENTER_COLUMN_WIDTH + 2 : 602,
           left: '50%',
           transform: [
             {translateX: '-50%'},
-            {translateX: centerColumnOffset ? CENTER_COLUMN_OFFSET : 0},
+            {
+              translateX:
+                !isPageMode && centerColumnOffset ? CENTER_COLUMN_OFFSET : 0,
+            },
             ...a.scrollbar_offset.transform,
           ],
         }),

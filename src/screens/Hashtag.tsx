@@ -110,7 +110,7 @@ export default function HashtagScreen({
   }, [l, fullTag, author, activeTab])
 
   return (
-    <Layout.Screen ecwMode="workbench">
+    <Layout.Screen ecwMode="page">
       <Pager
         onPageSelected={onPageSelected}
         renderTabBar={props => (

@@ -26,3 +26,10 @@ export const CENTER_COLUMN_OFFSET = -50
  * How wide the center column is
  */
 export const CENTER_COLUMN_WIDTH = 600
+
+/**
+ * Page Mode's wider editorial reading track. Workbench keeps the upstream
+ * center width above so configuration screens do not inherit Page Mode's
+ * publication geometry.
+ */
+export const PAGE_MODE_CENTER_COLUMN_WIDTH = 760

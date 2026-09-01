@@ -66,7 +66,7 @@ interface SectionRef {
 type Props = NativeStackScreenProps<CommonNavigatorParams, 'Profile'>
 export function ProfileScreen(props: Props) {
   return (
-    <Layout.Screen testID="profileScreen" ecwMode="workbench" style={[a.pt_0]}>
+    <Layout.Screen testID="profileScreen" ecwMode="page" style={[a.pt_0]}>
       <ProfileScreenInner {...props} />
     </Layout.Screen>
   )

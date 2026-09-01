@@ -36,7 +36,10 @@ export function useLayoutBreakpoints() {
   // Keep the labeled Navigator visible while the three-pane workbench still
   // fits. The compact rail is the fallback for genuinely narrow desktop
   // widths, not the default for a viewport that still has an Inspector.
-  const leftNavMinimal = useMediaQuery({maxWidth: 1180})
+  // Page Mode has room for the labeled Index exactly when the marginal
+  // Inspector is present. Keeping these thresholds aligned avoids an empty
+  // desktop gutter between the compact rail and the reading surface.
+  const leftNavMinimal = useMediaQuery({maxWidth: 1099})
 
   return {
     rightNavVisible,
