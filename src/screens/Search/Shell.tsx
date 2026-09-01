@@ -61,7 +61,7 @@ import {ArrowLeft_Stroke2_Corner0_Rounded as ArrowLeftIcon} from '#/components/i
 import {ArrowShareRight_Stroke2_Corner2_Rounded as ShareIcon} from '#/components/icons/ArrowShareRight'
 import * as Layout from '#/components/Layout'
 import * as Toast from '#/components/Toast'
-import {Text} from '#/components/Typography'
+import {H1, Text} from '#/components/Typography'
 import {useAnalytics} from '#/analytics'
 import {IS_NATIVE, IS_WEB} from '#/env'
 import {account, useStorage} from '#/storage'
@@ -518,6 +518,11 @@ export function SearchScreenShell({
 
   return (
     <Layout.Screen testID={testID} ecwMode="workbench">
+      {!showHeader && (
+        <H1 style={a.sr_only}>
+          {isExplore ? <Trans>Explore</Trans> : <Trans>Search</Trans>}
+        </H1>
+      )}
       <View
         ref={headerRef}
         onLayout={evt => {

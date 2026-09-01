@@ -294,7 +294,7 @@ function ReactionTabs({
   ]
 
   return (
-    <View accessibilityRole="tablist" style={[t.atoms.bg]}>
+    <View accessibilityRole="radiogroup" style={[t.atoms.bg]}>
       <DraggableScrollView
         ref={scrollViewRef}
         horizontal={true}
@@ -354,7 +354,7 @@ function ReactionTab({
 
   return (
     <Pressable
-      accessibilityRole="tab"
+      accessibilityRole="radio"
       accessibilityState={{selected: selected === tab.key}}
       accessibilityHint={
         tab.key === 'all'

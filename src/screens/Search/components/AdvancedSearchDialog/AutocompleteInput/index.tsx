@@ -71,16 +71,21 @@ export function AutocompleteInput({
   }, [showDropdown])
 
   /*
-   * The anchor ref is applied via inputRef (lands on the inner TextInput); the
-   * remaining combobox a11y props are spread onto the input.
+   * The anchor ref is applied via inputRef (lands on the inner TextInput). The
+   * popup ID remains on the combobox only while the portaled listbox exists.
    */
-  const {ref: anchorRef, ...comboboxProps} = sift.targetProps
+  const {
+    ref: anchorRef,
+    'aria-controls': popupId,
+    ...comboboxProps
+  } = sift.targetProps
 
   return (
     <View style={[a.relative]}>
       <TextField.Root>
         <Dialog.Input
           {...comboboxProps}
+          aria-controls={showDropdown ? popupId : undefined}
           inputRef={anchorRef}
           label={label}
           value={value}

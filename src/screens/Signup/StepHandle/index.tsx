@@ -138,6 +138,12 @@ export function StepHandle() {
   const isNotReady = isPending || !hasDebounceSettled
   const isNextDisabled =
     !validCheck.overall || !!state.error || isNotReady ? true : isHandleTaken
+  const showHandleSuggestions = Boolean(
+    IS_WEB &&
+    isHandleTaken &&
+    validCheck.overall &&
+    isHandleAvailable?.suggestions?.length,
+  )
 
   const textFieldInvalid =
     isHandleTaken ||
@@ -150,10 +156,14 @@ export function StepHandle() {
    * Web-only Sift wiring. The anchor is the input section, whose bottom edge in
    * the taken-and-valid state sits right below the availability error, so the
    * floating dropdown lands beneath it. The input ref feeds Sift's keyboard
-   * handling and the combobox a11y props describe the typeahead relationship.
-   * Native ignores all of this and renders suggestions inline.
+   * handling. The popup ID is exposed only while web suggestions are mounted;
+   * native ignores this wiring and renders suggestions inline.
    */
-  const {ref: inputAnchorRef, ...comboboxProps} = sift.targetProps
+  const {
+    ref: inputAnchorRef,
+    'aria-controls': popupId,
+    ...comboboxProps
+  } = sift.targetProps
 
   return (
     <>
@@ -167,6 +177,7 @@ export function StepHandle() {
             <TextField.Icon icon={AtIcon} />
             <TextField.Input
               {...(IS_WEB ? comboboxProps : {})}
+              aria-controls={showHandleSuggestions ? popupId : undefined}
               inputRef={IS_WEB ? inputAnchorRef : undefined}
               testID="handleInput"
               onChangeText={val => {
@@ -214,24 +225,23 @@ export function StepHandle() {
                     </Trans>
                   </RequirementText>
                 </Requirement>
-                {isHandleAvailable.suggestions &&
-                  isHandleAvailable.suggestions.length > 0 && (
-                    <HandleSuggestions
-                      sift={sift}
-                      suggestions={isHandleAvailable.suggestions}
-                      onSelect={suggestion => {
-                        setDraftValue(
-                          suggestion.handle.slice(
-                            0,
-                            state.userDomain.length * -1,
-                          ),
-                        )
-                        ax.metric('signup:handleSuggestionSelected', {
-                          method: suggestion.method,
-                        })
-                      }}
-                    />
-                  )}
+                {showHandleSuggestions && isHandleAvailable?.suggestions ? (
+                  <HandleSuggestions
+                    sift={sift}
+                    suggestions={isHandleAvailable.suggestions}
+                    onSelect={suggestion => {
+                      setDraftValue(
+                        suggestion.handle.slice(
+                          0,
+                          state.userDomain.length * -1,
+                        ),
+                      )
+                      ax.metric('signup:handleSuggestionSelected', {
+                        method: suggestion.method,
+                      })
+                    }}
+                  />
+                ) : null}
               </>
             )}
             {(!validCheck.handleChars || !validCheck.hyphenStartOrEnd) && (

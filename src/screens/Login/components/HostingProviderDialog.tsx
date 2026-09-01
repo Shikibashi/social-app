@@ -155,7 +155,7 @@ function DialogInner({
           <Trans>Choose your hosting provider</Trans>
         </Text>
         <SegmentedControl.Root
-          type="tabs"
+          type="radio"
           label={l`Hosting provider`}
           value={fixedOption}
           onChange={setFixedOption}>
@@ -176,7 +176,7 @@ function DialogInner({
         </SegmentedControl.Root>
 
         {fixedOption === 'automatic' && (
-          <View role="tabpanel">
+          <View>
             <Admonition type="tip">
               {isEmail ? (
                 <Trans>
@@ -195,7 +195,7 @@ function DialogInner({
         )}
 
         {fixedOption === 'manual' && (
-          <View role="tabpanel">
+          <View>
             <TextField.LabelText nativeID="address-input-label">
               <Trans>Server address</Trans>
             </TextField.LabelText>

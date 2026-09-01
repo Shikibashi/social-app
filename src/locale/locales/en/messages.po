@@ -67,11 +67,11 @@ msgstr "(no text)"
 msgid "(quoted post)"
 msgstr "(quoted post)"
 
-#: src/components/FeedProvenanceCard.tsx:191
+#: src/components/FeedProvenanceCard.tsx:205
 msgid "(version {version})"
 msgstr "(version {version})"
 
-#: src/components/FeedProvenanceCard.tsx:189
+#: src/components/FeedProvenanceCard.tsx:203
 msgid "(version not declared)"
 msgstr "(version not declared)"
 
@@ -86,7 +86,7 @@ msgid "{0, plural, one {# day} other {# days}}"
 msgstr ""
 
 #. placeholder {0}: evidence.distinctDocumentCount
-#: src/components/IdentityResolutionProvenance.tsx:154
+#: src/components/IdentityResolutionProvenance.tsx:169
 msgid "{0, plural, one {# distinct document state} other {# distinct document states}}"
 msgstr "{0, plural, one {# distinct document state} other {# distinct document states}}"
 
@@ -177,7 +177,7 @@ msgstr ""
 
 #. How long it takes to read an article, in minutes. Displayed in a short form, e.g. "5m" for 5 minutes.
 #. placeholder {0}: view.readingTime
-#: src/components/Post/Embed/StandardSiteEmbed/index.tsx:250
+#: src/components/Post/Embed/StandardSiteEmbed/index.tsx:254
 msgid "{0, plural, one {#m} other {#m}}"
 msgstr "{0, plural, one {#m} other {#m}}"
 
@@ -431,7 +431,7 @@ msgid "{0} unread items"
 msgstr "{0} unread items"
 
 #. placeholder {0}: resolver.verifiedOperations
-#: src/components/IdentityResolutionProvenance.tsx:187
+#: src/components/IdentityResolutionProvenance.tsx:202
 msgid "{0} verified operations"
 msgstr "{0} verified operations"
 
@@ -488,8 +488,8 @@ msgstr ""
 
 #. placeholder {0}: sanitizeDisplayName( profile.displayName || sanitizeHandle(profile.handle), )
 #. placeholder {0}: sanitizeDisplayName( profile.displayName || sanitizeHandle(profile.handle), )
-#: src/view/com/util/UserAvatar.tsx:599
-#: src/view/com/util/UserAvatar.tsx:617
+#: src/view/com/util/UserAvatar.tsx:613
+#: src/view/com/util/UserAvatar.tsx:631
 msgid "{0}'s avatar"
 msgstr ""
 
@@ -516,7 +516,7 @@ msgstr "{0}/{1} {2, plural, one {member} other {members}}"
 
 #. Badge showing the current image position out of the total number of images in a gallery.
 #. placeholder {0}: index + 1
-#: src/components/images/Gallery/index.tsx:534
+#: src/components/images/Gallery/index.tsx:542
 msgctxt "gallery-badge-image-position-numbers"
 msgid "{0}/{imageCount}"
 msgstr "{0}/{imageCount}"
@@ -565,7 +565,7 @@ msgstr ""
 msgid "{actionLabel} {surfaceLabel} surface for {0}"
 msgstr "{actionLabel} {surfaceLabel} surface for {0}"
 
-#: src/components/ProviderCompositionProvenance.tsx:315
+#: src/components/ProviderCompositionProvenance.tsx:332
 msgid "{claimSummary}; {nonClaimObservations} did not provide a usable claim"
 msgstr "{claimSummary}; {nonClaimObservations} did not provide a usable claim"
 
@@ -603,7 +603,7 @@ msgstr "{date} at {time}"
 msgid "{displayName}'s Starter Pack"
 msgstr ""
 
-#: src/components/ProviderCompositionProvenance.tsx:303
+#: src/components/ProviderCompositionProvenance.tsx:320
 msgid "{distinctClaimCount} distinct claims from {respondingProviders}"
 msgstr "{distinctClaimCount} distinct claims from {respondingProviders}"
 
@@ -879,7 +879,7 @@ msgstr "{name}'s favorite feeds and people - join me!"
 msgid "{name}'s starter pack"
 msgstr "{name}'s starter pack"
 
-#: src/components/ProviderCompositionProvenance.tsx:309
+#: src/components/ProviderCompositionProvenance.tsx:326
 msgid "{nonClaimObservationCount, plural, one {# provider observation} other {# provider observations}}"
 msgstr "{nonClaimObservationCount, plural, one {# provider observation} other {# provider observations}}"
 
@@ -891,7 +891,7 @@ msgstr ""
 msgid "{numMatches, plural, one {# contact found} other {# contacts found}}"
 msgstr ""
 
-#: src/components/ProviderCompositionProvenance.tsx:283
+#: src/components/ProviderCompositionProvenance.tsx:300
 msgid "{observedProviderCount, plural, one {# provider observation} other {# provider observations}}"
 msgstr "{observedProviderCount, plural, one {# provider observation} other {# provider observations}}"
 
@@ -944,9 +944,13 @@ msgstr "{requestCount, plural, one {# request} other {# requests}}"
 msgid "{requestCount}+ requests"
 msgstr "{requestCount}+ requests"
 
-#: src/components/ProviderCompositionProvenance.tsx:292
+#: src/components/ProviderCompositionProvenance.tsx:309
 msgid "{respondingProviderCount, plural, one {# responding provider} other {# responding providers}}"
 msgstr "{respondingProviderCount, plural, one {# responding provider} other {# responding providers}}"
+
+#: src/components/ProviderCompositionProvenance.tsx:99
+msgid "{surfaceLabel} source details"
+msgstr "{surfaceLabel} source details"
 
 #: src/components/verification/VerifierDialog.tsx:62
 msgid "{userName} is a trusted verifier"
@@ -1067,11 +1071,11 @@ msgstr ""
 msgid "⚠Invalid Handle"
 msgstr ""
 
-#: src/components/ProviderCompositionProvenance.tsx:300
+#: src/components/ProviderCompositionProvenance.tsx:317
 msgid "1 claim from 1 responding provider"
 msgstr "1 claim from 1 responding provider"
 
-#: src/components/ProviderCompositionProvenance.tsx:301
+#: src/components/ProviderCompositionProvenance.tsx:318
 msgid "1 shared claim from {respondingProviders}"
 msgstr "1 shared claim from {respondingProviders}"
 
@@ -1176,7 +1180,7 @@ msgstr "A screenshot of the post composer with a new button next to the post but
 msgid "A selected recipient is not followed by the sender."
 msgstr "A selected recipient is not followed by the sender."
 
-#: src/screens/Moderation/index.tsx:222
+#: src/screens/Moderation/index.tsx:223
 msgid "A service makes an assertion, your rule interprets it, and Plumbline applies the resulting client action. These are separate authorities; changing a local rule does not erase the underlying record or label."
 msgstr "A service makes an assertion, your rule interprets it, and Plumbline applies the resulting client action. These are separate authorities; changing a local rule does not erase the underlying record or label."
 
@@ -1241,7 +1245,7 @@ msgstr ""
 msgid "Accessibility Settings"
 msgstr ""
 
-#: src/components/AuthorizationProvenance.tsx:330
+#: src/components/AuthorizationProvenance.tsx:341
 #: src/Navigation.tsx:420
 #: src/screens/Settings/AccountSettings.tsx:53
 #: src/screens/Settings/Settings.tsx:181
@@ -1293,13 +1297,13 @@ msgstr ""
 msgid "account PDS"
 msgstr "account PDS"
 
-#: src/components/MediaDeliveryProvenance.tsx:81
+#: src/components/MediaDeliveryProvenance.tsx:95
 #: src/screens/Settings/ServicesSettings.tsx:1038
 #: src/state/session/oauth-scopes.ts:328
 msgid "Account PDS"
 msgstr "Account PDS"
 
-#: src/view/shell/desktop/RightNav.tsx:324
+#: src/view/shell/desktop/RightNav.tsx:322
 msgid "Account PDS and selected read providers"
 msgstr "Account PDS and selected read providers"
 
@@ -1315,7 +1319,7 @@ msgstr "Account PDS blob resource"
 msgid "Account PDS blob store"
 msgstr "Account PDS blob store"
 
-#: src/components/MediaDeliveryProvenance.tsx:51
+#: src/components/MediaDeliveryProvenance.tsx:54
 msgid "Account PDS profile record"
 msgstr "Account PDS profile record"
 
@@ -1324,11 +1328,11 @@ msgid "Account PDS repository"
 msgstr "Account PDS repository"
 
 #. placeholder {0}: account.pdsUrl ?? _(msg`Not advertised by this session`)
-#: src/components/AuthorizationProvenance.tsx:352
+#: src/components/AuthorizationProvenance.tsx:363
 msgid "Account PDS: {0}"
 msgstr "Account PDS: {0}"
 
-#: src/view/shell/desktop/RightNav.tsx:545
+#: src/view/shell/desktop/RightNav.tsx:543
 msgid "Account preference repository"
 msgstr "Account preference repository"
 
@@ -1340,7 +1344,7 @@ msgstr "Account records, writes, and profile media remain on the account host."
 msgid "Account removed from quick access"
 msgstr ""
 
-#: src/view/shell/desktop/RightNav.tsx:525
+#: src/view/shell/desktop/RightNav.tsx:523
 msgid "Account repository and list read provider"
 msgstr "Account repository and list read provider"
 
@@ -1654,7 +1658,7 @@ msgstr ""
 msgid "Adult Content"
 msgstr ""
 
-#: src/screens/Moderation/index.tsx:547
+#: src/screens/Moderation/index.tsx:548
 msgid "Adult content can only be enabled via the Web at <0>plumblines.uk</0>."
 msgstr "Adult content can only be enabled via the Web at <0>plumblines.uk</0>."
 
@@ -1671,11 +1675,11 @@ msgstr ""
 msgid "Adult sexual abuse content"
 msgstr ""
 
-#: src/screens/Moderation/index.tsx:590
+#: src/screens/Moderation/index.tsx:591
 msgid "Advanced"
 msgstr ""
 
-#: src/components/ProviderCompositionProvenance.tsx:240
+#: src/components/ProviderCompositionProvenance.tsx:257
 msgid "agreement"
 msgstr "agreement"
 
@@ -1683,7 +1687,7 @@ msgstr "agreement"
 msgid "Agreement, disagreement, outage, and partial results remain attributable to their sources."
 msgstr "Agreement, disagreement, outage, and partial results remain attributable to their sources."
 
-#: src/components/FeedProvenanceCard.tsx:87
+#: src/components/FeedProvenanceCard.tsx:95
 msgid "Algorithm"
 msgstr "Algorithm"
 
@@ -1729,7 +1733,7 @@ msgstr "All locally stored account sessions will be removed from this device. Th
 msgid "All of these words"
 msgstr "All of these words"
 
-#: src/view/screens/Feeds.tsx:726
+#: src/view/screens/Feeds.tsx:727
 msgid "All the feeds you've saved, right in one place."
 msgstr ""
 
@@ -1815,7 +1819,7 @@ msgstr "Already directly blocked"
 msgid "Already have a code?"
 msgstr ""
 
-#: src/components/WelcomeModal.tsx:188
+#: src/components/WelcomeModal.tsx:148
 msgid "Already have an account?"
 msgstr ""
 
@@ -1825,9 +1829,9 @@ msgid "Already signed in as @{0}"
 msgstr ""
 
 #: src/components/AltBadgeWithDialog.tsx:76
-#: src/components/images/AutoSizedImage.tsx:205
-#: src/components/images/Gallery/index.tsx:598
-#: src/components/images/ImageLayoutGridItem.tsx:135
+#: src/components/images/AutoSizedImage.tsx:212
+#: src/components/images/Gallery/index.tsx:606
+#: src/components/images/ImageLayoutGridItem.tsx:140
 #: src/view/com/composer/GifAltText.tsx:101
 #: src/view/com/composer/photos/Gallery.tsx:211
 msgid "ALT"
@@ -2008,7 +2012,8 @@ msgstr ""
 msgid "Animals"
 msgstr ""
 
-#: src/components/Post/Embed/ExternalEmbed/Gif.tsx:85
+#: src/components/Post/Embed/ExternalEmbed/Gif.tsx:35
+#: src/components/Post/Embed/ExternalEmbed/Gif.tsx:90
 msgid "Animated GIF"
 msgstr ""
 
@@ -2176,11 +2181,11 @@ msgstr "Approve protected access"
 msgid "AppView changed"
 msgstr "AppView changed"
 
-#: src/components/FeedProvenanceCard.tsx:95
+#: src/components/FeedProvenanceCard.tsx:103
 msgid "AppView provider DID"
 msgstr "AppView provider DID"
 
-#: src/components/FeedProvenanceCard.tsx:91
+#: src/components/FeedProvenanceCard.tsx:99
 msgid "AppView provider(s)"
 msgstr "AppView provider(s)"
 
@@ -2323,7 +2328,7 @@ msgstr ""
 msgid "AT Protocol FAQ"
 msgstr "AT Protocol FAQ"
 
-#: src/components/Post/PostProvenance.tsx:69
+#: src/components/Post/PostProvenance.tsx:73
 msgid "AT URI copied to clipboard"
 msgstr "AT URI copied to clipboard"
 
@@ -2349,7 +2354,7 @@ msgstr "Authenticated AppView reads"
 msgid "Author"
 msgstr "Author"
 
-#: src/view/shell/desktop/RightNav.tsx:396
+#: src/view/shell/desktop/RightNav.tsx:394
 msgid "Author repository and thread read providers"
 msgstr "Author repository and thread read providers"
 
@@ -2360,12 +2365,12 @@ msgstr "Author repository and thread read providers"
 msgid "Author's curation"
 msgstr "Author's curation"
 
-#: src/view/shell/desktop/RightNav.tsx:526
+#: src/view/shell/desktop/RightNav.tsx:524
 msgid "Authored list records and local moderation"
 msgstr "Authored list records and local moderation"
 
 #: src/components/AuthorizationProvenance.tsx:129
-#: src/components/MediaDeliveryProvenance.tsx:81
+#: src/components/MediaDeliveryProvenance.tsx:95
 msgid "Authority"
 msgstr "Authority"
 
@@ -2425,7 +2430,7 @@ msgstr "Automation Label"
 msgid "Autoplay videos and GIFs"
 msgstr ""
 
-#: src/components/ProviderCompositionProvenance.tsx:325
+#: src/components/ProviderCompositionProvenance.tsx:342
 msgid "available"
 msgstr "available"
 
@@ -2441,7 +2446,7 @@ msgstr ""
 msgid "Available on this web device"
 msgstr "Available on this web device"
 
-#: src/components/MediaDeliveryProvenance.tsx:103
+#: src/components/MediaDeliveryProvenance.tsx:117
 msgid "Avatar CID"
 msgstr "Avatar CID"
 
@@ -2498,7 +2503,7 @@ msgstr ""
 msgid "Banned user returning"
 msgstr ""
 
-#: src/components/MediaDeliveryProvenance.tsx:108
+#: src/components/MediaDeliveryProvenance.tsx:122
 msgid "Banner CID"
 msgstr "Banner CID"
 
@@ -2640,7 +2645,7 @@ msgstr ""
 msgid "Block user and/or leave this conversation"
 msgstr "Block user and/or leave this conversation"
 
-#: src/screens/Moderation/index.tsx:469
+#: src/screens/Moderation/index.tsx:470
 msgid "Blocked accounts"
 msgstr ""
 
@@ -2710,7 +2715,7 @@ msgstr "Blur the profile in lists"
 msgid "Blur the profile view"
 msgstr "Blur the profile view"
 
-#: src/view/shell/desktop/RightNav.tsx:535
+#: src/view/shell/desktop/RightNav.tsx:533
 msgid "Bookmark service and author repositories"
 msgstr "Bookmark service and author repositories"
 
@@ -2929,7 +2934,7 @@ msgstr ""
 msgid "Cancel reply"
 msgstr "Cancel reply"
 
-#: src/screens/Search/Shell.tsx:592
+#: src/screens/Search/Shell.tsx:597
 msgid "Cancel search"
 msgstr ""
 
@@ -2965,7 +2970,7 @@ msgstr ""
 msgid "CAR / JSONL · credentials excluded"
 msgstr "CAR / JSONL · credentials excluded"
 
-#: src/components/images/Gallery/index.tsx:275
+#: src/components/images/Gallery/index.tsx:276
 msgid "carousel"
 msgstr "carousel"
 
@@ -3007,7 +3012,7 @@ msgstr ""
 msgid "Change hosting provider"
 msgstr "Change hosting provider"
 
-#: src/components/FeedProvenanceCard.tsx:155
+#: src/components/FeedProvenanceCard.tsx:169
 msgid "Change local ranking"
 msgstr "Change local ranking"
 
@@ -3024,18 +3029,18 @@ msgstr ""
 msgid "Change password dialog"
 msgstr ""
 
-#: src/components/FeedProvenanceCard.tsx:176
+#: src/components/FeedProvenanceCard.tsx:190
 #: src/view/com/posts/PostFeedErrorMessage.tsx:214
 msgid "Change provider"
 msgstr "Change provider"
 
-#: src/components/FeedProvenanceCard.tsx:162
+#: src/components/FeedProvenanceCard.tsx:176
 msgid "Change ranking"
 msgstr "Change ranking"
 
-#: src/components/FeedProvenanceCard.tsx:169
-#: src/components/ProviderCompositionProvenance.tsx:145
-#: src/components/ProviderCompositionProvenance.tsx:164
+#: src/components/FeedProvenanceCard.tsx:183
+#: src/components/ProviderCompositionProvenance.tsx:162
+#: src/components/ProviderCompositionProvenance.tsx:181
 msgid "Change read provider"
 msgstr "Change read provider"
 
@@ -3047,15 +3052,15 @@ msgstr ""
 msgid "Change report reason"
 msgstr ""
 
-#: src/view/shell/desktop/RightNav.tsx:509
+#: src/view/shell/desktop/RightNav.tsx:507
 msgid "Change search provider"
 msgstr "Change search provider"
 
-#: src/view/shell/desktop/RightNav.tsx:467
+#: src/view/shell/desktop/RightNav.tsx:465
 msgid "Change the client action without erasing the source"
 msgstr "Change the client action without erasing the source"
 
-#: src/view/shell/desktop/RightNav.tsx:507
+#: src/view/shell/desktop/RightNav.tsx:505
 msgid "Change the read provider in Services"
 msgstr "Change the read provider in Services"
 
@@ -3088,7 +3093,7 @@ msgstr ""
 #: src/Navigation.tsx:587
 #: src/state/session/oauth-scopes.ts:242
 #: src/view/shell/bottom-bar/BottomBar.tsx:237
-#: src/view/shell/desktop/LeftNav.tsx:740
+#: src/view/shell/desktop/LeftNav.tsx:741
 #: src/view/shell/Drawer.tsx:529
 msgid "Chat"
 msgstr ""
@@ -3301,6 +3306,10 @@ msgstr ""
 msgid "Choose how provider claims are reconciled locally."
 msgstr "Choose how provider claims are reconciled locally."
 
+#: src/components/WelcomeModal.tsx:118
+msgid "Choose how you read, publish, and participate on the open web."
+msgstr "Choose how you read, publish, and participate on the open web."
+
 #: src/components/dialogs/LanguageSelectDialog.tsx:199
 msgid "Choose languages"
 msgstr ""
@@ -3339,7 +3348,7 @@ msgstr ""
 msgid "Choose your hosting provider"
 msgstr "Choose your hosting provider"
 
-#: src/view/screens/Feeds.tsx:752
+#: src/view/screens/Feeds.tsx:753
 msgid "Choose your own timeline! Feeds built by the community help you find content you love."
 msgstr ""
 
@@ -3351,11 +3360,11 @@ msgstr ""
 msgid "Choose your username"
 msgstr ""
 
-#: src/view/shell/desktop/RightNav.tsx:316
+#: src/view/shell/desktop/RightNav.tsx:314
 msgid "Choose, compare, or remove feeds"
 msgstr "Choose, compare, or remove feeds"
 
-#: src/components/ProviderCompositionProvenance.tsx:99
+#: src/components/ProviderCompositionProvenance.tsx:116
 msgid "Claims compared"
 msgstr "Claims compared"
 
@@ -3487,6 +3496,7 @@ msgstr "Clipboard; no credentials"
 #: src/screens/Settings/ServicesSettings.tsx:2004
 #: src/screens/Settings/ServicesSettings.tsx:2204
 #: src/screens/Settings/ServicesSettings.tsx:2316
+#: src/view/com/auth/SplashScreen.web.tsx:53
 #: src/view/com/feeds/MissingFeed.tsx:211
 #: src/view/com/feeds/MissingFeed.tsx:218
 msgid "Close"
@@ -3517,7 +3527,7 @@ msgstr "Close banner"
 msgid "Close dialog"
 msgstr ""
 
-#: src/view/shell/index.web.tsx:122
+#: src/view/shell/index.web.tsx:138
 msgid "Close drawer menu"
 msgstr ""
 
@@ -3573,7 +3583,7 @@ msgstr "Close the incoming requests banner"
 msgid "Close this dialog"
 msgstr ""
 
-#: src/components/WelcomeModal.tsx:213
+#: src/components/WelcomeModal.tsx:169
 msgid "Close welcome modal"
 msgstr ""
 
@@ -3584,6 +3594,10 @@ msgstr ""
 #: src/view/com/composer/Composer.tsx:1985
 msgid "Closes post composer and discards post draft"
 msgstr ""
+
+#: src/view/com/auth/SplashScreen.web.tsx:54
+msgid "Closes this welcome screen"
+msgstr "Closes this welcome screen"
 
 #: src/view/com/notifications/NotificationFeedItem.tsx:596
 msgid "Collapse list of users"
@@ -3616,7 +3630,7 @@ msgstr ""
 
 #: src/screens/Settings/ServicesSettings.tsx:134
 #: src/screens/Settings/ServicesSettings.tsx:1047
-#: src/view/shell/desktop/RightNav.tsx:568
+#: src/view/shell/desktop/RightNav.tsx:566
 msgid "Communities"
 msgstr "Communities"
 
@@ -3634,34 +3648,34 @@ msgstr "Community invite token"
 msgid "Community space URI"
 msgstr "Community space URI"
 
-#: src/view/shell/desktop/RightNav.tsx:398
+#: src/view/shell/desktop/RightNav.tsx:396
 msgid "Compare providers or change local rules"
 msgstr "Compare providers or change local rules"
 
-#: src/view/shell/desktop/RightNav.tsx:450
+#: src/view/shell/desktop/RightNav.tsx:448
 msgid "Compare providers or inspect the feed record"
 msgstr "Compare providers or inspect the feed record"
 
-#: src/view/shell/desktop/RightNav.tsx:368
+#: src/view/shell/desktop/RightNav.tsx:366
 msgid "Compare providers or inspect the labeler record"
 msgstr "Compare providers or inspect the labeler record"
 
-#: src/view/shell/desktop/RightNav.tsx:388
+#: src/view/shell/desktop/RightNav.tsx:386
 msgid "Compare providers or inspect the list record"
 msgstr "Compare providers or inspect the list record"
 
-#: src/view/shell/desktop/RightNav.tsx:408
-#: src/view/shell/desktop/RightNav.tsx:418
+#: src/view/shell/desktop/RightNav.tsx:406
+#: src/view/shell/desktop/RightNav.tsx:416
 msgid "Compare providers or inspect the post record"
 msgstr "Compare providers or inspect the post record"
 
-#: src/view/shell/desktop/RightNav.tsx:336
-#: src/view/shell/desktop/RightNav.tsx:346
-#: src/view/shell/desktop/RightNav.tsx:358
+#: src/view/shell/desktop/RightNav.tsx:334
+#: src/view/shell/desktop/RightNav.tsx:344
+#: src/view/shell/desktop/RightNav.tsx:356
 msgid "Compare providers or inspect the profile record"
 msgstr "Compare providers or inspect the profile record"
 
-#: src/view/shell/desktop/RightNav.tsx:430
+#: src/view/shell/desktop/RightNav.tsx:428
 msgid "Compare providers or inspect the quote records"
 msgstr "Compare providers or inspect the quote records"
 
@@ -3675,7 +3689,7 @@ msgstr ""
 
 #: src/lib/hotkeys/index.tsx:66
 #: src/view/com/feeds/ComposerPrompt.tsx:149
-#: src/view/shell/desktop/LeftNav.tsx:618
+#: src/view/shell/desktop/LeftNav.tsx:617
 msgid "Compose new post"
 msgstr ""
 
@@ -3700,7 +3714,7 @@ msgstr ""
 msgid "Configure content filtering setting for category: {name}"
 msgstr ""
 
-#: src/view/shell/desktop/RightNav.tsx:519
+#: src/view/shell/desktop/RightNav.tsx:517
 msgid "Configure feeds"
 msgstr "Configure feeds"
 
@@ -3715,7 +3729,7 @@ msgstr "Configure read surfaces for {0}"
 msgid "Configure surfaces"
 msgstr "Configure surfaces"
 
-#: src/components/IdentityResolutionProvenance.tsx:261
+#: src/components/IdentityResolutionProvenance.tsx:276
 msgid "Configured identity policy"
 msgstr "Configured identity policy"
 
@@ -3727,15 +3741,15 @@ msgstr "Configured identity-capable resolver providers"
 msgid "Configured in <0>moderation settings</0>."
 msgstr ""
 
-#: src/screens/Moderation/index.tsx:313
+#: src/screens/Moderation/index.tsx:314
 msgid "Configured label sources"
 msgstr "Configured label sources"
 
-#: src/screens/Moderation/index.tsx:318
+#: src/screens/Moderation/index.tsx:319
 msgid "Configured label sources available"
 msgstr "Configured label sources available"
 
-#: src/view/shell/desktop/RightNav.tsx:314
+#: src/view/shell/desktop/RightNav.tsx:312
 msgid "Configured read provider"
 msgstr "Configured read provider"
 
@@ -3786,13 +3800,37 @@ msgstr ""
 msgid "Contacts removed"
 msgstr ""
 
-#: src/view/shell/desktop/RightNav.tsx:176
+#: src/components/AuthorizationProvenance.tsx:336
+msgid "Contains OAuth session information, delegated capabilities, and revocation options"
+msgstr "Contains OAuth session information, delegated capabilities, and revocation options"
+
+#: src/view/shell/desktop/RightNav.tsx:175
 msgid "Contains optional external signals for this surface"
 msgstr "Contains optional external signals for this surface"
+
+#: src/components/ProviderCompositionProvenance.tsx:101
+msgid "Contains provider observations and the local reconciliation policy"
+msgstr "Contains provider observations and the local reconciliation policy"
 
 #: src/view/shell/desktop/RightNav.tsx:101
 msgid "Contains replaceable read tools for this surface"
 msgstr "Contains replaceable read tools for this surface"
+
+#: src/components/IdentityResolutionProvenance.tsx:77
+msgid "Contains resolver claims, document verification sources, and the local reconciliation policy"
+msgstr "Contains resolver claims, document verification sources, and the local reconciliation policy"
+
+#: src/components/FeedProvenanceCard.tsx:88
+msgid "Contains the feed's provider, ordering, policy, and service state"
+msgstr "Contains the feed's provider, ordering, policy, and service state"
+
+#: src/components/Post/PostProvenance.tsx:110
+msgid "Contains the placement reasons, read-provider evidence, and stable post record address"
+msgstr "Contains the placement reasons, read-provider evidence, and stable post record address"
+
+#: src/components/MediaDeliveryProvenance.tsx:89
+msgid "Contains the profile record, account PDS, and direct blob delivery references"
+msgstr "Contains the profile record, account PDS, and direct blob delivery references"
 
 #: src/screens/Settings/ContentAndMediaSettings.tsx:53
 msgid "Content & Media"
@@ -3811,7 +3849,7 @@ msgstr ""
 msgid "Content Blocked"
 msgstr ""
 
-#: src/screens/Moderation/index.tsx:501
+#: src/screens/Moderation/index.tsx:502
 msgid "Content filters"
 msgstr ""
 
@@ -3891,7 +3929,7 @@ msgstr ""
 msgid "Continue with OAuth"
 msgstr "Continue with OAuth"
 
-#: src/view/shell/desktop/RightNav.tsx:623
+#: src/view/shell/desktop/RightNav.tsx:622
 msgid "Control"
 msgstr "Control"
 
@@ -3966,8 +4004,8 @@ msgstr ""
 msgid "Copy App Password"
 msgstr ""
 
-#: src/components/Post/PostProvenance.tsx:190
-#: src/components/Post/PostProvenance.tsx:202
+#: src/components/Post/PostProvenance.tsx:204
+#: src/components/Post/PostProvenance.tsx:216
 msgid "Copy AT URI"
 msgstr "Copy AT URI"
 
@@ -4050,7 +4088,7 @@ msgstr ""
 msgid "Copy QR code"
 msgstr ""
 
-#: src/components/Post/PostProvenance.tsx:192
+#: src/components/Post/PostProvenance.tsx:206
 msgid "Copy the post's stable AT Protocol address to the clipboard"
 msgstr "Copy the post's stable AT Protocol address to the clipboard"
 
@@ -4218,8 +4256,8 @@ msgstr ""
 msgid "Create a starter pack"
 msgstr ""
 
-#: src/view/screens/Profile.tsx:603
-#: src/view/screens/Profile.tsx:604
+#: src/view/screens/Profile.tsx:608
+#: src/view/screens/Profile.tsx:609
 msgid "Create a Starter Pack"
 msgstr ""
 
@@ -4227,13 +4265,13 @@ msgstr ""
 msgid "Create a starter pack for me"
 msgstr ""
 
-#: src/components/WelcomeModal.tsx:154
-#: src/components/WelcomeModal.tsx:162
+#: src/components/WelcomeModal.tsx:126
+#: src/components/WelcomeModal.tsx:131
 #: src/screens/Messages/JoinRequest.tsx:318
 #: src/screens/Signup/index.tsx:139
 #: src/screens/Signup/OAuthSignup.tsx:53
 #: src/view/com/auth/SplashScreen.tsx:108
-#: src/view/com/auth/SplashScreen.web.tsx:110
+#: src/view/com/auth/SplashScreen.web.tsx:120
 #: src/view/shell/bottom-bar/BottomBar.tsx:346
 #: src/view/shell/bottom-bar/BottomBar.tsx:350
 #: src/view/shell/bottom-bar/BottomBarWeb.tsx:232
@@ -4287,7 +4325,7 @@ msgstr ""
 
 #: src/screens/Messages/JoinRequest.tsx:312
 #: src/view/com/auth/SplashScreen.tsx:89
-#: src/view/com/auth/SplashScreen.web.tsx:102
+#: src/view/com/auth/SplashScreen.web.tsx:112
 msgid "Create new account"
 msgstr ""
 
@@ -4311,7 +4349,7 @@ msgstr ""
 msgid "Create user list"
 msgstr ""
 
-#: src/view/shell/desktop/RightNav.tsx:527
+#: src/view/shell/desktop/RightNav.tsx:525
 msgid "Create, edit, compare, or remove lists"
 msgstr "Create, edit, compare, or remove lists"
 
@@ -4392,7 +4430,7 @@ msgstr "Current state"
 msgid "Custom"
 msgstr ""
 
-#: src/view/shell/desktop/RightNav.tsx:437
+#: src/view/shell/desktop/RightNav.tsx:435
 msgid "Custom feed"
 msgstr "Custom feed"
 
@@ -4450,7 +4488,7 @@ msgstr ""
 msgid "Debug Moderation"
 msgstr ""
 
-#: src/components/Post/PostProvenance.tsx:134
+#: src/components/Post/PostProvenance.tsx:148
 msgid "Declared operator"
 msgstr "Declared operator"
 
@@ -4463,11 +4501,11 @@ msgstr "Declared operator ID"
 msgid "Declared operator: {0}"
 msgstr "Declared operator: {0}"
 
-#: src/components/ProviderCompositionProvenance.tsx:123
+#: src/components/ProviderCompositionProvenance.tsx:140
 msgid "Declared operators"
 msgstr "Declared operators"
 
-#: src/view/shell/desktop/RightNav.tsx:475
+#: src/view/shell/desktop/RightNav.tsx:473
 msgid "Declared providers and identity services"
 msgstr "Declared providers and identity services"
 
@@ -4495,6 +4533,10 @@ msgstr ""
 #: src/screens/Settings/ServicesSettings.tsx:1029
 msgid "Delegated"
 msgstr "Delegated"
+
+#: src/components/AuthorizationProvenance.tsx:334
+msgid "Delegated authority details"
+msgstr "Delegated authority details"
 
 #: src/components/dms/MessageOverlays.tsx:184
 #: src/components/PostControls/PostMenu/PostMenuItems.tsx:839
@@ -4611,7 +4653,7 @@ msgstr ""
 msgid "Deleted list"
 msgstr ""
 
-#: src/components/MediaDeliveryProvenance.tsx:93
+#: src/components/MediaDeliveryProvenance.tsx:107
 msgid "Delivery endpoint"
 msgstr "Delivery endpoint"
 
@@ -4671,7 +4713,7 @@ msgstr ""
 msgid "Dialog: Set search filters"
 msgstr "Dialog: Set search filters"
 
-#: src/components/IdentityResolutionProvenance.tsx:100
+#: src/components/IdentityResolutionProvenance.tsx:115
 #: src/screens/Settings/IdentitySovereigntySettings.tsx:469
 msgid "DID"
 msgstr "DID"
@@ -4760,18 +4802,18 @@ msgstr "Disable this invite link?"
 #: src/lib/moderation/useLabelBehaviorDescription.ts:36
 #: src/lib/moderation/useLabelBehaviorDescription.ts:46
 #: src/lib/moderation/useLabelBehaviorDescription.ts:72
-#: src/screens/Moderation/index.tsx:537
+#: src/screens/Moderation/index.tsx:538
 #: src/screens/Settings/ServicesSettings.tsx:1472
 #: src/screens/Settings/ServicesSettings.tsx:2256
 #: src/screens/Settings/ServicesSettings.tsx:2284
 msgid "Disabled"
 msgstr ""
 
-#: src/components/IdentityResolutionProvenance.tsx:225
+#: src/components/IdentityResolutionProvenance.tsx:240
 msgid "disagreement; no default claim selected"
 msgstr "disagreement; no default claim selected"
 
-#: src/components/ProviderCompositionProvenance.tsx:242
+#: src/components/ProviderCompositionProvenance.tsx:259
 msgid "disagreement; provider results differ"
 msgstr "disagreement; provider results differ"
 
@@ -4817,7 +4859,7 @@ msgstr "Discover feeds"
 msgid "Discover new custom feeds"
 msgstr ""
 
-#: src/view/screens/Feeds.tsx:749
+#: src/view/screens/Feeds.tsx:750
 msgid "Discover New Feeds"
 msgstr ""
 
@@ -4869,13 +4911,13 @@ msgstr ""
 msgid "Display name"
 msgstr ""
 
-#: src/components/FeedProvenanceCard.tsx:119
-#: src/components/IdentityResolutionProvenance.tsx:165
+#: src/components/FeedProvenanceCard.tsx:127
+#: src/components/IdentityResolutionProvenance.tsx:180
 msgid "distinct operator IDs declared; independent control not proven"
 msgstr "distinct operator IDs declared; independent control not proven"
 
-#: src/components/Post/PostProvenance.tsx:156
-#: src/components/ProviderCompositionProvenance.tsx:116
+#: src/components/Post/PostProvenance.tsx:170
+#: src/components/ProviderCompositionProvenance.tsx:133
 msgid "Distinct operator IDs declared; independent control not proven"
 msgstr "Distinct operator IDs declared; independent control not proven"
 
@@ -4892,7 +4934,7 @@ msgstr ""
 msgid "Do not apply this mute word to users you follow"
 msgstr ""
 
-#: src/components/IdentityResolutionProvenance.tsx:120
+#: src/components/IdentityResolutionProvenance.tsx:135
 msgid "Document verification sources"
 msgstr "Document verification sources"
 
@@ -5073,10 +5115,13 @@ msgctxt "action"
 msgid "Edit"
 msgstr ""
 
-#: src/view/com/util/UserAvatar.tsx:464
-#: src/view/com/util/UserBanner.tsx:125
+#: src/view/com/util/UserAvatar.tsx:478
 msgid "Edit avatar"
 msgstr ""
+
+#: src/view/com/util/UserBanner.tsx:125
+msgid "Edit banner"
+msgstr "Edit banner"
 
 #: src/components/StarterPack/Wizard/WizardEditListDialog.tsx:113
 msgid "Edit Feeds"
@@ -5131,7 +5176,7 @@ msgid "Edit moderation list"
 msgstr ""
 
 #: src/Navigation.tsx:377
-#: src/view/screens/Feeds.tsx:537
+#: src/view/screens/Feeds.tsx:538
 msgid "Edit My Feeds"
 msgstr ""
 
@@ -5165,7 +5210,7 @@ msgstr ""
 msgid "Edit Profile"
 msgstr ""
 
-#: src/view/shell/desktop/RightNav.tsx:549
+#: src/view/shell/desktop/RightNav.tsx:547
 msgid "Edit saved feeds"
 msgstr "Edit saved feeds"
 
@@ -5255,8 +5300,8 @@ msgstr ""
 msgid "Embedded video player"
 msgstr ""
 
-#: src/components/IdentityResolutionProvenance.tsx:299
-#: src/components/ProviderCompositionProvenance.tsx:248
+#: src/components/IdentityResolutionProvenance.tsx:314
+#: src/components/ProviderCompositionProvenance.tsx:265
 msgid "empty"
 msgstr "empty"
 
@@ -5271,7 +5316,7 @@ msgstr ""
 msgid "Enable {0} only"
 msgstr ""
 
-#: src/screens/Moderation/index.tsx:522
+#: src/screens/Moderation/index.tsx:523
 msgid "Enable adult content"
 msgstr ""
 
@@ -5337,7 +5382,7 @@ msgstr ""
 msgid "Enable trending videos in your Discover feed"
 msgstr ""
 
-#: src/screens/Moderation/index.tsx:535
+#: src/screens/Moderation/index.tsx:536
 #: src/screens/Settings/ServicesSettings.tsx:1472
 #: src/screens/Settings/ServicesSettings.tsx:2256
 #: src/screens/Settings/ServicesSettings.tsx:2284
@@ -5537,8 +5582,8 @@ msgstr ""
 
 #. placeholder {0}: observation.error
 #. placeholder {0}: resolver.error
-#: src/components/IdentityResolutionProvenance.tsx:193
-#: src/components/ProviderCompositionProvenance.tsx:210
+#: src/components/IdentityResolutionProvenance.tsx:208
+#: src/components/ProviderCompositionProvenance.tsx:227
 msgid "Error: {0}"
 msgstr "Error: {0}"
 
@@ -5589,8 +5634,8 @@ msgstr ""
 msgid "Everything look right?"
 msgstr "Everything look right?"
 
-#: src/components/IdentityResolutionProvenance.tsx:70
-#: src/components/ProviderCompositionProvenance.tsx:91
+#: src/components/IdentityResolutionProvenance.tsx:85
+#: src/components/ProviderCompositionProvenance.tsx:108
 msgid "Evidence status"
 msgstr "Evidence status"
 
@@ -5632,7 +5677,7 @@ msgstr ""
 msgid "Exit utilities"
 msgstr "Exit utilities"
 
-#: src/components/Lightbox/chrome/Footer.tsx:69
+#: src/components/Lightbox/chrome/Footer.tsx:85
 #: src/components/Lightbox/Lightbox.web.tsx:245
 msgid "Expand alt text"
 msgstr ""
@@ -5701,14 +5746,15 @@ msgid "Explicit sexual images."
 msgstr ""
 
 #: src/Navigation.tsx:847
-#: src/screens/Search/Shell.tsx:549
-#: src/view/shell/desktop/LeftNav.tsx:719
+#: src/screens/Search/Shell.tsx:523
+#: src/screens/Search/Shell.tsx:554
+#: src/view/shell/desktop/LeftNav.tsx:720
 #: src/view/shell/Drawer.tsx:477
 msgid "Explore"
 msgstr ""
 
-#: src/components/WelcomeModal.tsx:167
-#: src/components/WelcomeModal.tsx:176
+#: src/components/WelcomeModal.tsx:136
+#: src/components/WelcomeModal.tsx:143
 msgid "Explore the app"
 msgstr ""
 
@@ -5773,7 +5819,7 @@ msgstr ""
 msgid "External Media Preferences"
 msgstr ""
 
-#: src/view/shell/desktop/RightNav.tsx:188
+#: src/view/shell/desktop/RightNav.tsx:186
 msgid "External signals may be unavailable and are not authoritative."
 msgstr "External signals may be unavailable and are not authoritative."
 
@@ -6121,11 +6167,11 @@ msgstr ""
 msgid "Feature"
 msgstr "Feature"
 
-#: src/components/AuthorizationProvenance.tsx:358
+#: src/components/AuthorizationProvenance.tsx:369
 msgid "Feature authority"
 msgstr "Feature authority"
 
-#: src/components/AuthorizationProvenance.tsx:372
+#: src/components/AuthorizationProvenance.tsx:383
 msgid "Feature upgrades are supported individually. The current session integration revokes the OAuth session as a whole; it does not claim to revoke one feature independently."
 msgstr "Feature upgrades are supported individually. The current session integration revokes the OAuth session as a whole; it does not claim to revoke one feature independently."
 
@@ -6169,15 +6215,19 @@ msgstr ""
 msgid "Feed customization & data"
 msgstr "Feed customization & data"
 
-#: src/view/shell/desktop/RightNav.tsx:438
+#: src/components/FeedProvenanceCard.tsx:86
+msgid "Feed details"
+msgstr "Feed details"
+
+#: src/view/shell/desktop/RightNav.tsx:436
 msgid "Feed generator and selected read provider"
 msgstr "Feed generator and selected read provider"
 
-#: src/view/shell/desktop/RightNav.tsx:448
+#: src/view/shell/desktop/RightNav.tsx:446
 msgid "Feed generator record and engagement read provider"
 msgstr "Feed generator record and engagement read provider"
 
-#: src/view/shell/desktop/RightNav.tsx:515
+#: src/view/shell/desktop/RightNav.tsx:513
 msgid "Feed generators, lists, and account preferences"
 msgstr "Feed generators, lists, and account preferences"
 
@@ -6185,7 +6235,7 @@ msgstr "Feed generators, lists, and account preferences"
 msgid "Feed identifier"
 msgstr ""
 
-#: src/view/shell/desktop/RightNav.tsx:447
+#: src/view/shell/desktop/RightNav.tsx:445
 msgid "Feed liked by"
 msgstr "Feed liked by"
 
@@ -6197,27 +6247,27 @@ msgstr ""
 msgid "Feed metadata and custom-feed reads retain provider provenance and outage state."
 msgstr "Feed metadata and custom-feed reads retain provider provenance and outage state."
 
-#: src/components/Post/PostProvenance.tsx:168
+#: src/components/Post/PostProvenance.tsx:182
 msgid "Feed owner"
 msgstr "Feed owner"
 
-#: src/components/FeedProvenanceCard.tsx:130
+#: src/components/FeedProvenanceCard.tsx:138
 msgid "Feed owner DID"
 msgstr "Feed owner DID"
 
-#: src/components/FeedProvenanceCard.tsx:64
+#: src/components/FeedProvenanceCard.tsx:61
 msgid "Feed provenance details are hidden until expanded"
 msgstr "Feed provenance details are hidden until expanded"
 
-#: src/components/Post/PostProvenance.tsx:107
+#: src/components/Post/PostProvenance.tsx:121
 msgid "Feed provider"
 msgstr "Feed provider"
 
-#: src/components/FeedProvenanceCard.tsx:125
+#: src/components/FeedProvenanceCard.tsx:133
 msgid "Feed provider DID"
 msgstr "Feed provider DID"
 
-#: src/components/Post/PostProvenance.tsx:172
+#: src/components/Post/PostProvenance.tsx:186
 msgid "Feed record"
 msgstr "Feed record"
 
@@ -6229,11 +6279,11 @@ msgstr "Feed results retain source and reconciliation state."
 msgid "Feed search"
 msgstr "Feed search"
 
-#: src/components/Post/PostProvenance.tsx:164
+#: src/components/Post/PostProvenance.tsx:178
 msgid "Feed source"
 msgstr "Feed source"
 
-#: src/components/Post/PostProvenance.tsx:179
+#: src/components/Post/PostProvenance.tsx:193
 msgid "Feed surface"
 msgstr "Feed surface"
 
@@ -6245,12 +6295,12 @@ msgstr ""
 msgid "Feed unavailable"
 msgstr ""
 
-#: src/components/FeedProvenanceCard.tsx:135
+#: src/components/FeedProvenanceCard.tsx:143
 msgid "Feed URI"
 msgstr "Feed URI"
 
-#: src/view/shell/desktop/RightNav.tsx:205
-#: src/view/shell/desktop/RightNav.tsx:206
+#: src/view/shell/desktop/RightNav.tsx:203
+#: src/view/shell/desktop/RightNav.tsx:204
 #: src/view/shell/Drawer.tsx:431
 msgid "Feedback"
 msgstr ""
@@ -6259,15 +6309,15 @@ msgstr ""
 #: src/screens/SavedFeeds.tsx:112
 #: src/screens/SavedFeeds.tsx:303
 #: src/screens/Search/SearchResults.tsx:117
-#: src/screens/Search/SearchResults.tsx:723
-#: src/screens/Search/SearchResults.tsx:741
+#: src/screens/Search/SearchResults.tsx:727
+#: src/screens/Search/SearchResults.tsx:746
 #: src/screens/Settings/ServicesSettings.tsx:124
 #: src/screens/Settings/ServicesSettings.tsx:989
 #: src/screens/StarterPack/StarterPackScreen.tsx:194
-#: src/view/screens/Feeds.tsx:530
+#: src/view/screens/Feeds.tsx:531
 #: src/view/screens/Profile.tsx:258
-#: src/view/shell/desktop/LeftNav.tsx:757
-#: src/view/shell/desktop/RightNav.tsx:514
+#: src/view/shell/desktop/LeftNav.tsx:758
+#: src/view/shell/desktop/RightNav.tsx:512
 #: src/view/shell/Drawer.tsx:593
 msgid "Feeds"
 msgstr ""
@@ -6319,7 +6369,7 @@ msgid "Filter who can opt to receive notifications for your activity"
 msgstr ""
 
 #: src/screens/Settings/NotificationSettings/components/PreferenceControls.tsx:165
-#: src/view/shell/desktop/RightNav.tsx:560
+#: src/view/shell/desktop/RightNav.tsx:558
 msgid "Filter who you receive notifications from"
 msgstr ""
 
@@ -6383,7 +6433,7 @@ msgstr ""
 msgid "Find people you know"
 msgstr "Find people you know"
 
-#: src/screens/Search/Shell.tsx:765
+#: src/screens/Search/Shell.tsx:770
 msgid "Find posts, users, and feeds on Plumbline"
 msgstr "Find posts, users, and feeds on Plumbline"
 
@@ -6504,8 +6554,8 @@ msgstr ""
 msgid "Follow back"
 msgstr ""
 
-#: src/view/shell/desktop/RightNav.tsx:335
-#: src/view/shell/desktop/RightNav.tsx:345
+#: src/view/shell/desktop/RightNav.tsx:333
+#: src/view/shell/desktop/RightNav.tsx:343
 msgid "Follow records with local moderation and block boundaries"
 msgstr "Follow records with local moderation and block boundaries"
 
@@ -6541,7 +6591,7 @@ msgstr ""
 msgid "Followed by <0>{0}</0>, <1>{1}</1>, and {2, plural, one {# other} other {# others}}"
 msgstr ""
 
-#: src/view/shell/desktop/RightNav.tsx:333
+#: src/view/shell/desktop/RightNav.tsx:331
 msgid "Followers"
 msgstr "Followers"
 
@@ -6556,7 +6606,7 @@ msgstr ""
 
 #: src/screens/Profile/KnownFollowers.tsx:98
 #: src/screens/Profile/KnownFollowers.tsx:115
-#: src/view/shell/desktop/RightNav.tsx:353
+#: src/view/shell/desktop/RightNav.tsx:351
 msgid "Followers you know"
 msgstr ""
 
@@ -6571,12 +6621,12 @@ msgstr ""
 #: src/screens/VideoFeed/index.tsx:956
 #: src/view/com/notifications/NotificationFeedItem.tsx:868
 #: src/view/com/notifications/NotificationFeedItem.tsx:884
-#: src/view/shell/desktop/RightNav.tsx:343
+#: src/view/shell/desktop/RightNav.tsx:341
 msgid "Following"
 msgstr ""
 
 #: src/screens/SavedFeeds.tsx:618
-#: src/view/screens/Feeds.tsx:622
+#: src/view/screens/Feeds.tsx:623
 msgctxt "feed-name"
 msgid "Following"
 msgstr ""
@@ -6712,7 +6762,7 @@ msgstr "Generate new link"
 msgid "Generating non-exportable key…"
 msgstr "Generating non-exportable key…"
 
-#: src/view/shell/desktop/RightNav.tsx:439
+#: src/view/shell/desktop/RightNav.tsx:437
 msgid "Generator ordering and local feed policy"
 msgstr "Generator ordering and local feed policy"
 
@@ -6818,7 +6868,7 @@ msgstr ""
 msgid "Get started"
 msgstr ""
 
-#: src/components/MediaPreview.tsx:188
+#: src/components/MediaPreview.tsx:191
 #: src/components/Post/Embed/VideoEmbed/GifPresentationControls.tsx:93
 msgid "GIF"
 msgstr ""
@@ -6848,7 +6898,7 @@ msgstr ""
 #: src/screens/VideoFeed/components/Header.tsx:163
 #: src/screens/VideoFeed/index.tsx:1260
 #: src/screens/VideoFeed/index.tsx:1264
-#: src/view/com/auth/LoggedOut.tsx:127
+#: src/view/com/auth/LoggedOut.tsx:142
 #: src/view/com/profile/ProfileFollowers.tsx:225
 #: src/view/com/profile/ProfileFollowers.tsx:226
 #: src/view/screens/NotFound.tsx:51
@@ -7123,11 +7173,11 @@ msgid "Having trouble?"
 msgstr ""
 
 #. placeholder {0}: resolver.headCid
-#: src/components/IdentityResolutionProvenance.tsx:191
+#: src/components/IdentityResolutionProvenance.tsx:206
 msgid "head {0}"
 msgstr "head {0}"
 
-#: src/components/FeedProvenanceCard.tsx:148
+#: src/components/FeedProvenanceCard.tsx:156
 msgid "Health"
 msgstr "Health"
 
@@ -7137,8 +7187,8 @@ msgstr "Held by Plumbline for 7 days to prevent abuse, then deleted"
 
 #: src/screens/Settings/Settings.tsx:291
 #: src/screens/Settings/Settings.tsx:295
-#: src/view/shell/desktop/RightNav.tsx:226
-#: src/view/shell/desktop/RightNav.tsx:229
+#: src/view/shell/desktop/RightNav.tsx:224
+#: src/view/shell/desktop/RightNav.tsx:227
 #: src/view/shell/Drawer.tsx:444
 msgid "Help"
 msgstr ""
@@ -7187,8 +7237,8 @@ msgctxt "action"
 msgid "Hide"
 msgstr ""
 
-#: src/components/ProviderCompositionProvenance.tsx:69
-#: src/components/ProviderCompositionProvenance.tsx:80
+#: src/components/ProviderCompositionProvenance.tsx:76
+#: src/components/ProviderCompositionProvenance.tsx:89
 msgid "Hide {surfaceLabel} source details"
 msgstr "Hide {surfaceLabel} source details"
 
@@ -7196,13 +7246,13 @@ msgstr "Hide {surfaceLabel} source details"
 msgid "Hide customization options"
 msgstr ""
 
-#: src/components/AuthorizationProvenance.tsx:305
-#: src/components/AuthorizationProvenance.tsx:322
+#: src/components/AuthorizationProvenance.tsx:306
+#: src/components/AuthorizationProvenance.tsx:325
 msgid "Hide delegated authority"
 msgstr "Hide delegated authority"
 
-#: src/components/FeedProvenanceCard.tsx:61
-#: src/components/FeedProvenanceCard.tsx:79
+#: src/components/FeedProvenanceCard.tsx:58
+#: src/components/FeedProvenanceCard.tsx:78
 msgid "Hide feed details"
 msgstr "Hide feed details"
 
@@ -7210,8 +7260,8 @@ msgstr "Hide feed details"
 msgid "Hide group chat updates"
 msgstr "Hide group chat updates"
 
-#: src/components/IdentityResolutionProvenance.tsx:47
-#: src/components/IdentityResolutionProvenance.tsx:58
+#: src/components/IdentityResolutionProvenance.tsx:52
+#: src/components/IdentityResolutionProvenance.tsx:65
 msgid "Hide identity resolution details"
 msgstr "Hide identity resolution details"
 
@@ -7219,7 +7269,7 @@ msgstr "Hide identity resolution details"
 msgid "Hide lists"
 msgstr ""
 
-#: src/view/shell/desktop/RightNav.tsx:121
+#: src/view/shell/desktop/RightNav.tsx:120
 #: src/view/shell/desktop/RightNav.tsx:139
 msgid "Hide more context"
 msgstr "Hide more context"
@@ -7229,8 +7279,8 @@ msgstr "Hide more context"
 msgid "Hide post for me"
 msgstr ""
 
-#: src/components/MediaDeliveryProvenance.tsx:60
-#: src/components/MediaDeliveryProvenance.tsx:71
+#: src/components/MediaDeliveryProvenance.tsx:64
+#: src/components/MediaDeliveryProvenance.tsx:77
 msgid "Hide profile media source details"
 msgstr "Hide profile media source details"
 
@@ -7295,8 +7345,8 @@ msgstr ""
 msgid "Hide verification badges"
 msgstr ""
 
-#: src/components/Post/PostProvenance.tsx:81
-#: src/components/Post/PostProvenance.tsx:93
+#: src/components/Post/PostProvenance.tsx:85
+#: src/components/Post/PostProvenance.tsx:99
 msgid "Hide why this post"
 msgstr "Hide why this post"
 
@@ -7353,7 +7403,7 @@ msgstr ""
 #: src/Navigation.tsx:842
 #: src/Navigation.tsx:863
 #: src/view/shell/bottom-bar/BottomBar.tsx:193
-#: src/view/shell/desktop/LeftNav.tsx:699
+#: src/view/shell/desktop/LeftNav.tsx:700
 #: src/view/shell/Drawer.tsx:503
 msgid "Home"
 msgstr ""
@@ -7383,7 +7433,7 @@ msgstr "Hosting provider: {PRODUCT_NAME}"
 msgid "hosting provider's Terms of Service"
 msgstr "hosting provider's Terms of Service"
 
-#: src/screens/Moderation/index.tsx:219
+#: src/screens/Moderation/index.tsx:220
 msgid "How a moderation decision reaches your screen"
 msgstr "How a moderation decision reaches your screen"
 
@@ -7442,6 +7492,7 @@ msgstr "I understand this does not unlink my identity"
 msgid "I'm on Plumbline as {0} - come find me!"
 msgstr "I'm on Plumbline as {0} - come find me!"
 
+#: src/components/IdentityResolutionProvenance.tsx:41
 #: src/screens/Settings/ServicesSettings.tsx:282
 #: src/screens/Settings/ServicesSettings.tsx:962
 msgid "Identity"
@@ -7464,7 +7515,7 @@ msgstr "Identity and recovery"
 msgid "Identity authority"
 msgstr "Identity authority"
 
-#: src/components/IdentityResolutionProvenance.tsx:93
+#: src/components/IdentityResolutionProvenance.tsx:108
 msgid "Identity claims"
 msgstr "Identity claims"
 
@@ -7480,7 +7531,7 @@ msgstr "Identity provider not changed"
 msgid "Identity recovery and rotation"
 msgstr "Identity recovery and rotation"
 
-#: src/components/IdentityResolutionProvenance.tsx:67
+#: src/components/IdentityResolutionProvenance.tsx:81
 #: src/screens/Settings/ServicesSettings.tsx:118
 msgid "Identity resolution"
 msgstr "Identity resolution"
@@ -7488,6 +7539,10 @@ msgstr "Identity resolution"
 #: src/screens/Settings/ServicesSettings.tsx:1626
 msgid "Identity resolution allowed"
 msgstr "Identity resolution allowed"
+
+#: src/components/IdentityResolutionProvenance.tsx:75
+msgid "Identity resolution details"
+msgstr "Identity resolution details"
 
 #: src/screens/Settings/ServicesSettings.tsx:2048
 #: src/screens/Settings/ServicesSettings.tsx:2063
@@ -7560,12 +7615,17 @@ msgstr ""
 msgid "If you're trying to change your handle or email, do so before you deactivate."
 msgstr ""
 
-#: src/components/images/ImageLayoutGridItem.tsx:91
+#: src/components/images/AutoSizedImage.tsx:124
+#: src/components/images/ImageLayoutGridItem.tsx:57
+#: src/components/Lightbox/Lightbox.web.tsx:173
+#: src/components/Lightbox/pager/ImageItem/ImageItem.android.tsx:78
+#: src/components/Lightbox/pager/ImageItem/ImageItem.ios.tsx:76
+#: src/components/MediaPreview.tsx:146
 msgid "Image"
 msgstr ""
 
 #. placeholder {0}: index + 1
-#: src/components/images/Gallery/index.tsx:459
+#: src/components/images/Gallery/index.tsx:433
 msgid "Image {0}"
 msgstr "Image {0}"
 
@@ -7576,7 +7636,7 @@ msgid "Image {0} of {1}"
 msgstr ""
 
 #. placeholder {0}: index + 1
-#: src/components/images/Gallery/index.tsx:444
+#: src/components/images/Gallery/index.tsx:451
 msgid "Image {0} of {imageCount}"
 msgstr "Image {0} of {imageCount}"
 
@@ -7591,7 +7651,7 @@ msgid "Image cache cleared, freed {0}"
 msgstr ""
 
 #. placeholder {0}: images.length
-#: src/components/images/Gallery/index.tsx:276
+#: src/components/images/Gallery/index.tsx:277
 msgid "Image gallery, {0} images"
 msgstr "Image gallery, {0} images"
 
@@ -7742,7 +7802,7 @@ msgstr "Include posts made until this date"
 msgid "Include video timestamp ({videoTimestamp})"
 msgstr "Include video timestamp ({videoTimestamp})"
 
-#: src/components/IdentityResolutionProvenance.tsx:68
+#: src/components/IdentityResolutionProvenance.tsx:83
 msgid "Input"
 msgstr "Input"
 
@@ -7773,7 +7833,7 @@ msgstr "Inspect {0} service"
 msgid "Inspect {surfaceLabel} reconciliation policy"
 msgstr "Inspect {surfaceLabel} reconciliation policy"
 
-#: src/components/ProviderCompositionProvenance.tsx:81
+#: src/components/ProviderCompositionProvenance.tsx:90
 msgid "Inspect {surfaceLabel} sources"
 msgstr "Inspect {surfaceLabel} sources"
 
@@ -7785,35 +7845,35 @@ msgstr "Inspect and manage independently declared resolver sources."
 msgid "Inspect authorization settings"
 msgstr "Inspect authorization settings"
 
-#: src/components/AuthorizationProvenance.tsx:306
-#: src/components/AuthorizationProvenance.tsx:323
+#: src/components/AuthorizationProvenance.tsx:307
+#: src/components/AuthorizationProvenance.tsx:326
 msgid "Inspect delegated authority"
 msgstr "Inspect delegated authority"
 
-#: src/view/shell/desktop/RightNav.tsx:370
-#: src/view/shell/desktop/RightNav.tsx:410
-#: src/view/shell/desktop/RightNav.tsx:420
-#: src/view/shell/desktop/RightNav.tsx:452
+#: src/view/shell/desktop/RightNav.tsx:368
+#: src/view/shell/desktop/RightNav.tsx:408
+#: src/view/shell/desktop/RightNav.tsx:418
+#: src/view/shell/desktop/RightNav.tsx:450
 msgid "Inspect engagement providers"
 msgstr "Inspect engagement providers"
 
-#: src/view/shell/desktop/RightNav.tsx:442
+#: src/view/shell/desktop/RightNav.tsx:440
 msgid "Inspect feed providers"
 msgstr "Inspect feed providers"
 
-#: src/view/shell/desktop/RightNav.tsx:338
-#: src/view/shell/desktop/RightNav.tsx:348
-#: src/view/shell/desktop/RightNav.tsx:360
+#: src/view/shell/desktop/RightNav.tsx:336
+#: src/view/shell/desktop/RightNav.tsx:346
+#: src/view/shell/desktop/RightNav.tsx:358
 msgid "Inspect graph providers"
 msgstr "Inspect graph providers"
 
-#: src/screens/Moderation/index.tsx:347
-#: src/screens/Moderation/index.tsx:364
+#: src/screens/Moderation/index.tsx:348
+#: src/screens/Moderation/index.tsx:365
 msgid "Inspect label sources in Services"
 msgstr "Inspect label sources in Services"
 
-#: src/view/shell/desktop/RightNav.tsx:390
-#: src/view/shell/desktop/RightNav.tsx:529
+#: src/view/shell/desktop/RightNav.tsx:388
+#: src/view/shell/desktop/RightNav.tsx:527
 msgid "Inspect list providers"
 msgstr "Inspect list providers"
 
@@ -7827,19 +7887,19 @@ msgstr "Inspect or change read providers"
 msgid "Inspect PLC resolver {0}"
 msgstr "Inspect PLC resolver {0}"
 
-#: src/components/MediaDeliveryProvenance.tsx:72
+#: src/components/MediaDeliveryProvenance.tsx:78
 msgid "Inspect profile media source"
 msgstr "Inspect profile media source"
 
-#: src/view/shell/desktop/RightNav.tsx:400
+#: src/view/shell/desktop/RightNav.tsx:398
 msgid "Inspect providers"
 msgstr "Inspect providers"
 
-#: src/view/shell/desktop/RightNav.tsx:326
+#: src/view/shell/desktop/RightNav.tsx:324
 msgid "Inspect providers and identity evidence"
 msgstr "Inspect providers and identity evidence"
 
-#: src/view/shell/desktop/RightNav.tsx:539
+#: src/view/shell/desktop/RightNav.tsx:537
 msgid "Inspect saved-post services"
 msgstr "Inspect saved-post services"
 
@@ -7847,21 +7907,21 @@ msgstr "Inspect saved-post services"
 msgid "Inspect the service identity and endpoint before choosing it for new reads. This choice never moves account writes away from the repository PDS."
 msgstr "Inspect the service identity and endpoint before choosing it for new reads. This choice never moves account writes away from the repository PDS."
 
-#: src/view/shell/desktop/RightNav.tsx:432
+#: src/view/shell/desktop/RightNav.tsx:430
 msgid "Inspect thread providers"
 msgstr "Inspect thread providers"
 
-#: src/view/shell/desktop/RightNav.tsx:477
-#: src/view/shell/desktop/RightNav.tsx:573
+#: src/view/shell/desktop/RightNav.tsx:475
+#: src/view/shell/desktop/RightNav.tsx:571
 msgid "Inspect, change, export, or reset a boundary"
 msgstr "Inspect, change, export, or reset a boundary"
 
-#: src/view/shell/desktop/RightNav.tsx:440
+#: src/view/shell/desktop/RightNav.tsx:438
 msgid "Inspect, compare, or change the feed provider"
 msgstr "Inspect, compare, or change the feed provider"
 
 #: src/screens/Settings/ServicesSettings.tsx:2419
-#: src/view/shell/desktop/RightNav.tsx:604
+#: src/view/shell/desktop/RightNav.tsx:603
 msgid "Inspector"
 msgstr "Inspector"
 
@@ -7869,7 +7929,7 @@ msgstr "Inspector"
 msgid "Interaction limited"
 msgstr ""
 
-#: src/screens/Moderation/index.tsx:409
+#: src/screens/Moderation/index.tsx:410
 msgid "Interaction settings"
 msgstr ""
 
@@ -7893,9 +7953,9 @@ msgstr "Introducing group chats"
 msgid "Introducing saved posts AKA bookmarks"
 msgstr ""
 
-#: src/components/IdentityResolutionProvenance.tsx:281
-#: src/components/IdentityResolutionProvenance.tsx:297
-#: src/components/ProviderCompositionProvenance.tsx:329
+#: src/components/IdentityResolutionProvenance.tsx:296
+#: src/components/IdentityResolutionProvenance.tsx:312
+#: src/components/ProviderCompositionProvenance.tsx:346
 msgid "invalid"
 msgstr "invalid"
 
@@ -7903,7 +7963,7 @@ msgstr "invalid"
 msgid "Invalid 2FA confirmation code."
 msgstr ""
 
-#: src/components/ProviderCompositionProvenance.tsx:345
+#: src/components/ProviderCompositionProvenance.tsx:362
 msgid "invalid evidence"
 msgstr "invalid evidence"
 
@@ -7915,7 +7975,7 @@ msgstr "Invalid group chat code."
 msgid "Invalid handle. Please try a different one."
 msgstr ""
 
-#: src/components/IdentityResolutionProvenance.tsx:229
+#: src/components/IdentityResolutionProvenance.tsx:244
 msgid "invalid input"
 msgstr "invalid input"
 
@@ -8100,7 +8160,7 @@ msgstr "Keep identity; move portable state separately"
 msgid "Keep me posted"
 msgstr ""
 
-#: src/view/shell/desktop/RightNav.tsx:356
+#: src/view/shell/desktop/RightNav.tsx:354
 msgid "Known relationship results with local moderation and blocks"
 msgstr "Known relationship results with local moderation and blocks"
 
@@ -8126,15 +8186,15 @@ msgstr ""
 msgid "Labeled by the author."
 msgstr ""
 
-#: src/view/shell/desktop/RightNav.tsx:365
+#: src/view/shell/desktop/RightNav.tsx:363
 msgid "Labeler liked by"
 msgstr "Labeler liked by"
 
-#: src/view/shell/desktop/RightNav.tsx:366
+#: src/view/shell/desktop/RightNav.tsx:364
 msgid "Labeler service record and engagement read provider"
 msgstr "Labeler service record and engagement read provider"
 
-#: src/view/shell/desktop/RightNav.tsx:465
+#: src/view/shell/desktop/RightNav.tsx:463
 msgid "Labelers and attributable assertions"
 msgstr "Labelers and attributable assertions"
 
@@ -8160,7 +8220,7 @@ msgstr ""
 msgid "Labels are claims; local rules decide warning, hiding, or ranking."
 msgstr "Labels are claims; local rules decide warning, hiding, or ranking."
 
-#: src/screens/Moderation/index.tsx:342
+#: src/screens/Moderation/index.tsx:343
 msgid "Labels are claims; your rules determine warning, hiding, filtering, or allowing."
 msgstr "Labels are claims; your rules determine warning, hiding, filtering, or allowing."
 
@@ -8378,12 +8438,12 @@ msgstr ""
 msgid "Like 10 posts to train the Discover feed"
 msgstr ""
 
-#: src/view/shell/desktop/RightNav.tsx:449
+#: src/view/shell/desktop/RightNav.tsx:447
 msgid "Like records for this feed with local moderation"
 msgstr "Like records for this feed with local moderation"
 
-#: src/view/shell/desktop/RightNav.tsx:367
-#: src/view/shell/desktop/RightNav.tsx:407
+#: src/view/shell/desktop/RightNav.tsx:365
+#: src/view/shell/desktop/RightNav.tsx:405
 msgid "Like records with local moderation and block boundaries"
 msgstr "Like records with local moderation and block boundaries"
 
@@ -8397,7 +8457,7 @@ msgstr ""
 
 #: src/Navigation.tsx:312
 #: src/Navigation.tsx:317
-#: src/view/shell/desktop/RightNav.tsx:405
+#: src/view/shell/desktop/RightNav.tsx:403
 msgid "Liked by"
 msgstr ""
 
@@ -8466,7 +8526,7 @@ msgid "Link copied to clipboard"
 msgstr "Link copied to clipboard"
 
 #: src/Navigation.tsx:267
-#: src/view/shell/desktop/RightNav.tsx:385
+#: src/view/shell/desktop/RightNav.tsx:383
 msgid "List"
 msgstr ""
 
@@ -8535,11 +8595,11 @@ msgstr ""
 msgid "List name is too long. {DISPLAY_NAME_MAX_GRAPHEMES, plural, other {The maximum number of characters is #.}}"
 msgstr ""
 
-#: src/view/shell/desktop/RightNav.tsx:387
+#: src/view/shell/desktop/RightNav.tsx:385
 msgid "List purpose, member records, and local moderation"
 msgstr "List purpose, member records, and local moderation"
 
-#: src/view/shell/desktop/RightNav.tsx:386
+#: src/view/shell/desktop/RightNav.tsx:384
 msgid "List record and selected read provider"
 msgstr "List record and selected read provider"
 
@@ -8553,8 +8613,8 @@ msgstr ""
 #: src/view/screens/Lists.tsx:60
 #: src/view/screens/Profile.tsx:252
 #: src/view/screens/Profile.tsx:260
-#: src/view/shell/desktop/LeftNav.tsx:767
-#: src/view/shell/desktop/RightNav.tsx:524
+#: src/view/shell/desktop/LeftNav.tsx:768
+#: src/view/shell/desktop/RightNav.tsx:522
 #: src/view/shell/Drawer.tsx:608
 msgid "Lists"
 msgstr ""
@@ -8611,7 +8671,7 @@ msgstr ""
 #: src/screens/CustomFeed/index.tsx:316
 #: src/screens/Profile/Sections/Feed.tsx:121
 #: src/screens/ProfileList/FeedSection.tsx:113
-#: src/view/com/feeds/FeedPage.tsx:312
+#: src/view/com/feeds/FeedPage.tsx:331
 msgid "Load new posts"
 msgstr ""
 
@@ -8620,7 +8680,7 @@ msgctxt "placeholder"
 msgid "Loading chat…"
 msgstr "Loading chat…"
 
-#: src/screens/Moderation/index.tsx:315
+#: src/screens/Moderation/index.tsx:316
 msgid "Loading label sources"
 msgstr "Loading label sources"
 
@@ -8640,7 +8700,7 @@ msgstr ""
 msgid "Local account controls"
 msgstr "Local account controls"
 
-#: src/components/Post/PostProvenance.tsx:101
+#: src/components/Post/PostProvenance.tsx:115
 #: src/screens/Settings/ServicesSettings.tsx:999
 msgid "Local policy"
 msgstr "Local policy"
@@ -8728,7 +8788,7 @@ msgstr "Manage follows, blocks, mutes, lists, and starter packs."
 msgid "Manage saved feeds"
 msgstr ""
 
-#: src/screens/Moderation/index.tsx:479
+#: src/screens/Moderation/index.tsx:480
 msgid "Manage verification settings"
 msgstr ""
 
@@ -8736,7 +8796,7 @@ msgstr ""
 msgid "Manage your muted words and tags"
 msgstr ""
 
-#: src/components/FeedProvenanceCard.tsx:139
+#: src/components/FeedProvenanceCard.tsx:147
 msgid "Manifest"
 msgstr "Manifest"
 
@@ -8835,7 +8895,7 @@ msgid "Members can still read chat history but can’t send new messages."
 msgstr "Members can still read chat history but can’t send new messages."
 
 #: src/screens/Settings/ServicesSettings.tsx:182
-#: src/view/shell/desktop/RightNav.tsx:571
+#: src/view/shell/desktop/RightNav.tsx:569
 msgid "Membership and community records use the declared Spaces/Radlib transport, not AppView fan-out."
 msgstr "Membership and community records use the declared Spaces/Radlib transport, not AppView fan-out."
 
@@ -8859,7 +8919,7 @@ msgstr "Mentions of these people"
 msgid "Menu"
 msgstr ""
 
-#: src/components/ProviderCompositionProvenance.tsx:262
+#: src/components/ProviderCompositionProvenance.tsx:279
 #: src/screens/Settings/ServicesSettings.tsx:77
 #: src/screens/Settings/ServicesSettings.tsx:91
 msgid "Merge attributable results"
@@ -8965,7 +9025,7 @@ msgstr ""
 msgid "Mismatch"
 msgstr "Mismatch"
 
-#: src/components/IdentityResolutionProvenance.tsx:277
+#: src/components/IdentityResolutionProvenance.tsx:292
 msgid "mismatched"
 msgstr "mismatched"
 
@@ -8975,11 +9035,11 @@ msgstr ""
 
 #: src/Navigation.tsx:188
 #: src/screens/Moderation/index.tsx:98
-#: src/screens/Moderation/index.tsx:340
+#: src/screens/Moderation/index.tsx:341
 #: src/screens/Settings/ServicesSettings.tsx:997
 #: src/screens/Settings/Settings.tsx:225
 #: src/screens/Settings/Settings.tsx:228
-#: src/view/shell/desktop/RightNav.tsx:464
+#: src/view/shell/desktop/RightNav.tsx:462
 msgid "Moderation & Reach"
 msgstr "Moderation & Reach"
 
@@ -8992,7 +9052,7 @@ msgid "Moderation details"
 msgstr ""
 
 #: src/Navigation.tsx:193
-#: src/screens/Moderation/index.tsx:377
+#: src/screens/Moderation/index.tsx:378
 #: src/screens/ModerationInbox/index.tsx:20
 #: src/screens/ModerationInbox/index.tsx:45
 msgid "Moderation inbox"
@@ -9028,7 +9088,7 @@ msgctxt "toast"
 msgid "Moderation list updated"
 msgstr ""
 
-#: src/screens/Moderation/index.tsx:439
+#: src/screens/Moderation/index.tsx:440
 msgid "Moderation lists"
 msgstr ""
 
@@ -9045,7 +9105,7 @@ msgstr ""
 msgid "Moderation states"
 msgstr ""
 
-#: src/screens/Moderation/index.tsx:394
+#: src/screens/Moderation/index.tsx:395
 msgid "Moderation tools"
 msgstr ""
 
@@ -9180,7 +9240,7 @@ msgstr "Mute, leave, or remove people anytime. It’s your chat."
 msgid "Muted"
 msgstr "Muted"
 
-#: src/screens/Moderation/index.tsx:454
+#: src/screens/Moderation/index.tsx:455
 msgid "Muted accounts"
 msgstr ""
 
@@ -9198,7 +9258,7 @@ msgstr ""
 msgid "Muted by \"{0}\""
 msgstr ""
 
-#: src/screens/Moderation/index.tsx:424
+#: src/screens/Moderation/index.tsx:425
 msgid "Muted words & tags"
 msgstr ""
 
@@ -9219,7 +9279,7 @@ msgstr "My birthdate"
 msgid "My favorite feeds and people - join me!"
 msgstr "My favorite feeds and people - join me!"
 
-#: src/view/screens/Feeds.tsx:723
+#: src/view/screens/Feeds.tsx:724
 msgid "My Feeds"
 msgstr ""
 
@@ -9397,14 +9457,14 @@ msgstr ""
 #: src/screens/CustomFeed/index.tsx:326
 #: src/screens/ProfileList/index.tsx:234
 #: src/screens/ProfileList/index.tsx:277
-#: src/view/screens/Feeds.tsx:571
+#: src/view/screens/Feeds.tsx:572
 #: src/view/screens/Notifications.tsx:165
-#: src/view/screens/Profile.tsx:634
+#: src/view/screens/Profile.tsx:639
 msgid "New post"
 msgstr ""
 
-#: src/view/com/feeds/FeedPage.tsx:323
-#: src/view/shell/desktop/LeftNav.tsx:629
+#: src/view/com/feeds/FeedPage.tsx:342
+#: src/view/shell/desktop/LeftNav.tsx:628
 msgctxt "action"
 msgid "New post"
 msgstr ""
@@ -9470,7 +9530,7 @@ msgstr ""
 msgid "Next"
 msgstr ""
 
-#: src/components/Lightbox/Lightbox.web.tsx:218
+#: src/components/Lightbox/Lightbox.web.tsx:219
 msgid "Next image"
 msgstr ""
 
@@ -9522,15 +9582,15 @@ msgstr ""
 msgid "No custom feeds yet"
 msgstr ""
 
-#: src/components/IdentityResolutionProvenance.tsx:78
+#: src/components/IdentityResolutionProvenance.tsx:93
 msgid "no DID"
 msgstr "no DID"
 
-#: src/components/IdentityResolutionProvenance.tsx:133
+#: src/components/IdentityResolutionProvenance.tsx:148
 msgid "No DID-document resolver evidence was queried for this direct DID input."
 msgstr "No DID-document resolver evidence was queried for this direct DID input."
 
-#: src/components/IdentityResolutionProvenance.tsx:136
+#: src/components/IdentityResolutionProvenance.tsx:151
 msgid "No DID-document resolver evidence was returned by the configured identity providers."
 msgstr "No DID-document resolver evidence was returned by the configured identity providers."
 
@@ -9585,7 +9645,7 @@ msgstr "No language filter"
 
 #: src/components/LikedByList.tsx:90
 #: src/view/com/post-thread/PostLikedBy.tsx:90
-#: src/view/screens/Profile.tsx:566
+#: src/view/screens/Profile.tsx:571
 msgid "No likes yet"
 msgstr ""
 
@@ -9611,7 +9671,7 @@ msgstr ""
 msgid "No media filter"
 msgstr "No media filter"
 
-#: src/view/screens/Profile.tsx:512
+#: src/view/screens/Profile.tsx:517
 msgid "No media yet"
 msgstr ""
 
@@ -9666,7 +9726,7 @@ msgid "No posts here"
 msgstr ""
 
 #: src/screens/Profile/Sections/Feed.tsx:84
-#: src/view/screens/Profile.tsx:470
+#: src/view/screens/Profile.tsx:475
 msgid "No posts yet"
 msgstr ""
 
@@ -9674,7 +9734,7 @@ msgstr ""
 msgid "No presentation change"
 msgstr "No presentation change"
 
-#: src/components/ProviderCompositionProvenance.tsx:48
+#: src/components/ProviderCompositionProvenance.tsx:53
 msgid "No provider answered"
 msgstr "No provider answered"
 
@@ -9686,7 +9746,7 @@ msgstr "No provider enabled"
 msgid "No provider is enabled for this surface."
 msgstr "No provider is enabled for this surface."
 
-#: src/components/FeedProvenanceCard.tsx:239
+#: src/components/FeedProvenanceCard.tsx:253
 msgid "No provider result"
 msgstr "No provider result"
 
@@ -9707,7 +9767,7 @@ msgstr ""
 msgid "No recent GIFs yet. Pick one to see it here."
 msgstr "No recent GIFs yet. Pick one to see it here."
 
-#: src/view/screens/Profile.tsx:497
+#: src/view/screens/Profile.tsx:502
 msgid "No replies yet"
 msgstr ""
 
@@ -9719,7 +9779,7 @@ msgstr "No repository PDS"
 msgid "No reposts yet"
 msgstr ""
 
-#: src/components/IdentityResolutionProvenance.tsx:245
+#: src/components/IdentityResolutionProvenance.tsx:260
 msgid "No resolver answered"
 msgstr "No resolver answered"
 
@@ -9745,7 +9805,7 @@ msgstr ""
 msgid "No results found"
 msgstr ""
 
-#: src/view/screens/Feeds.tsx:489
+#: src/view/screens/Feeds.tsx:490
 msgid "No results found for \"{query}\""
 msgstr ""
 
@@ -9765,7 +9825,7 @@ msgstr "No results found for your query with advanced search filters applied."
 msgid "No results."
 msgstr ""
 
-#: src/view/screens/Profile.tsx:598
+#: src/view/screens/Profile.tsx:603
 msgid "No Starter Packs yet"
 msgstr ""
 
@@ -9778,11 +9838,11 @@ msgstr ""
 msgid "No translation received from your device."
 msgstr "No translation received from your device."
 
-#: src/components/ProviderCompositionProvenance.tsx:288
+#: src/components/ProviderCompositionProvenance.tsx:305
 msgid "No usable claims from {observations}"
 msgstr "No usable claims from {observations}"
 
-#: src/view/screens/Profile.tsx:539
+#: src/view/screens/Profile.tsx:544
 msgid "No video posts yet"
 msgstr ""
 
@@ -9829,15 +9889,15 @@ msgstr "None"
 msgid "None of these words"
 msgstr "None of these words"
 
-#: src/components/ProviderCompositionProvenance.tsx:107
+#: src/components/ProviderCompositionProvenance.tsx:124
 msgid "None; no provider result was promoted"
 msgstr "None; no provider result was promoted"
 
-#: src/components/IdentityResolutionProvenance.tsx:86
+#: src/components/IdentityResolutionProvenance.tsx:101
 msgid "None; the current identity policy did not select a claim"
 msgstr "None; the current identity policy did not select a claim"
 
-#: src/components/AuthorizationProvenance.tsx:352
+#: src/components/AuthorizationProvenance.tsx:363
 msgid "Not advertised by this session"
 msgstr "Not advertised by this session"
 
@@ -9864,17 +9924,17 @@ msgstr ""
 
 #: src/components/FeedProvenanceCard.tsx:41
 #: src/components/FeedProvenanceCard.tsx:49
-#: src/components/FeedProvenanceCard.tsx:221
+#: src/components/FeedProvenanceCard.tsx:235
 msgid "Not declared"
 msgstr "Not declared"
 
-#: src/components/FeedProvenanceCard.tsx:121
-#: src/components/IdentityResolutionProvenance.tsx:167
+#: src/components/FeedProvenanceCard.tsx:129
+#: src/components/IdentityResolutionProvenance.tsx:182
 msgid "not established"
 msgstr "not established"
 
-#: src/components/Post/PostProvenance.tsx:158
-#: src/components/ProviderCompositionProvenance.tsx:118
+#: src/components/Post/PostProvenance.tsx:172
+#: src/components/ProviderCompositionProvenance.tsx:135
 msgid "Not established"
 msgstr "Not established"
 
@@ -9912,8 +9972,8 @@ msgstr "Not registered"
 msgid "Not selected"
 msgstr "Not selected"
 
-#: src/components/MediaDeliveryProvenance.tsx:104
-#: src/components/MediaDeliveryProvenance.tsx:109
+#: src/components/MediaDeliveryProvenance.tsx:118
+#: src/components/MediaDeliveryProvenance.tsx:123
 msgid "Not set"
 msgstr "Not set"
 
@@ -9922,7 +9982,7 @@ msgstr "Not set"
 msgid "Not signed in"
 msgstr "Not signed in"
 
-#: src/components/IdentityResolutionProvenance.tsx:101
+#: src/components/IdentityResolutionProvenance.tsx:116
 msgid "not supplied"
 msgstr "not supplied"
 
@@ -9951,7 +10011,7 @@ msgid "notification service"
 msgstr "notification service"
 
 #: src/state/session/oauth-scopes.ts:334
-#: src/view/shell/desktop/RightNav.tsx:559
+#: src/view/shell/desktop/RightNav.tsx:557
 msgid "Notification service"
 msgstr "Notification service"
 
@@ -9959,8 +10019,8 @@ msgstr "Notification service"
 #: src/Navigation.tsx:531
 #: src/Navigation.tsx:618
 #: src/view/screens/Notifications.tsx:134
+#: src/view/shell/desktop/RightNav.tsx:559
 #: src/view/shell/desktop/RightNav.tsx:561
-#: src/view/shell/desktop/RightNav.tsx:563
 msgid "Notification settings"
 msgstr ""
 
@@ -9983,8 +10043,8 @@ msgstr ""
 #: src/view/com/notifications/NotificationFeed.tsx:189
 #: src/view/screens/Notifications.tsx:128
 #: src/view/shell/bottom-bar/BottomBar.tsx:274
-#: src/view/shell/desktop/LeftNav.tsx:729
-#: src/view/shell/desktop/RightNav.tsx:558
+#: src/view/shell/desktop/LeftNav.tsx:730
+#: src/view/shell/desktop/RightNav.tsx:556
 #: src/view/shell/Drawer.tsx:556
 msgid "Notifications"
 msgstr ""
@@ -10007,15 +10067,15 @@ msgid "OAuth permission upgrades"
 msgstr "OAuth permission upgrades"
 
 #. placeholder {0}: account.service
-#: src/components/AuthorizationProvenance.tsx:347
+#: src/components/AuthorizationProvenance.tsx:358
 msgid "OAuth service recorded by this session: {0}"
 msgstr "OAuth service recorded by this session: {0}"
 
-#: src/components/AuthorizationProvenance.tsx:344
+#: src/components/AuthorizationProvenance.tsx:355
 msgid "OAuth session"
 msgstr "OAuth session"
 
-#: src/components/FeedProvenanceCard.tsx:142
+#: src/components/FeedProvenanceCard.tsx:150
 msgid "Objective"
 msgstr "Objective"
 
@@ -10202,13 +10262,13 @@ msgstr "Open advanced search options"
 msgid "Open avatar creator"
 msgstr ""
 
-#: src/components/MediaDeliveryProvenance.tsx:122
-#: src/components/MediaDeliveryProvenance.tsx:126
+#: src/components/MediaDeliveryProvenance.tsx:136
+#: src/components/MediaDeliveryProvenance.tsx:140
 msgid "Open avatar from account PDS"
 msgstr "Open avatar from account PDS"
 
-#: src/components/MediaDeliveryProvenance.tsx:134
-#: src/components/MediaDeliveryProvenance.tsx:138
+#: src/components/MediaDeliveryProvenance.tsx:148
+#: src/components/MediaDeliveryProvenance.tsx:152
 msgid "Open banner from account PDS"
 msgstr "Open banner from account PDS"
 
@@ -10253,7 +10313,7 @@ msgstr ""
 msgid "Open feed options menu"
 msgstr ""
 
-#: src/view/shell/desktop/RightNav.tsx:318
+#: src/view/shell/desktop/RightNav.tsx:316
 msgid "Open feed settings"
 msgstr "Open feed settings"
 
@@ -10288,7 +10348,7 @@ msgstr ""
 msgid "Open message options"
 msgstr ""
 
-#: src/view/shell/desktop/RightNav.tsx:469
+#: src/view/shell/desktop/RightNav.tsx:467
 msgid "Open Moderation & Reach"
 msgstr "Open Moderation & Reach"
 
@@ -10296,7 +10356,7 @@ msgstr "Open Moderation & Reach"
 msgid "Open moderation debug page"
 msgstr ""
 
-#: src/screens/Moderation/index.tsx:420
+#: src/screens/Moderation/index.tsx:421
 msgid "Open muted words and tags settings"
 msgstr ""
 
@@ -10321,17 +10381,17 @@ msgstr ""
 msgid "Open QR code scanner"
 msgstr "Open QR code scanner"
 
-#: src/view/shell/desktop/RightNav.tsx:479
+#: src/view/shell/desktop/RightNav.tsx:477
 msgid "Open service workbench"
 msgstr "Open service workbench"
 
 #: src/components/AuthorizationProvenance.tsx:280
-#: src/view/shell/desktop/RightNav.tsx:328
-#: src/view/shell/desktop/RightNav.tsx:575
+#: src/view/shell/desktop/RightNav.tsx:326
+#: src/view/shell/desktop/RightNav.tsx:573
 msgid "Open Services"
 msgstr "Open Services"
 
-#: src/components/ProviderCompositionProvenance.tsx:147
+#: src/components/ProviderCompositionProvenance.tsx:164
 msgid "Open Services to choose which providers can answer this surface"
 msgstr "Open Services to choose which providers can answer this surface"
 
@@ -10340,11 +10400,11 @@ msgstr "Open Services to choose which providers can answer this surface"
 msgid "Open settings"
 msgstr "Open settings"
 
-#: src/components/FeedProvenanceCard.tsx:171
+#: src/components/FeedProvenanceCard.tsx:185
 msgid "Open settings for explicit read provider choices"
 msgstr "Open settings for explicit read provider choices"
 
-#: src/components/FeedProvenanceCard.tsx:157
+#: src/components/FeedProvenanceCard.tsx:171
 msgid "Open settings for local ranking choices"
 msgstr "Open settings for local ranking choices"
 
@@ -10352,7 +10412,7 @@ msgstr "Open settings for local ranking choices"
 msgid "Open share menu"
 msgstr ""
 
-#: src/components/MediaDeliveryProvenance.tsx:115
+#: src/components/MediaDeliveryProvenance.tsx:129
 msgid "Open source media"
 msgstr "Open source media"
 
@@ -10368,11 +10428,11 @@ msgstr ""
 msgid "Open system log"
 msgstr ""
 
-#: src/components/MediaDeliveryProvenance.tsx:124
+#: src/components/MediaDeliveryProvenance.tsx:138
 msgid "Open the avatar blob served directly by the account PDS"
 msgstr "Open the avatar blob served directly by the account PDS"
 
-#: src/components/MediaDeliveryProvenance.tsx:136
+#: src/components/MediaDeliveryProvenance.tsx:150
 msgid "Open the banner blob served directly by the account PDS"
 msgstr "Open the banner blob served directly by the account PDS"
 
@@ -10457,17 +10517,17 @@ msgstr "Opens device gallery to select up to {MAX_GALLERY_IMAGES, plural, other 
 
 #: src/screens/Messages/JoinRequest.tsx:313
 #: src/view/com/auth/SplashScreen.tsx:91
-#: src/view/com/auth/SplashScreen.web.tsx:104
+#: src/view/com/auth/SplashScreen.web.tsx:114
 msgid "Opens flow to create a new ATmosphere account"
 msgstr "Opens flow to create a new ATmosphere account"
 
 #: src/screens/Messages/JoinRequest.tsx:299
 #: src/view/com/auth/SplashScreen.tsx:120
-#: src/view/com/auth/SplashScreen.web.tsx:118
+#: src/view/com/auth/SplashScreen.web.tsx:128
 msgid "Opens flow to sign in to your existing ATmosphere account"
 msgstr "Opens flow to sign in to your existing ATmosphere account"
 
-#: src/components/images/Gallery/index.tsx:460
+#: src/components/images/Gallery/index.tsx:468
 msgid "Opens full image"
 msgstr "Opens full image"
 
@@ -10484,7 +10544,7 @@ msgstr ""
 msgid "Opens link {0}"
 msgstr ""
 
-#: src/view/com/util/UserAvatar.tsx:603
+#: src/view/com/util/UserAvatar.tsx:617
 msgid "Opens live status dialog"
 msgstr ""
 
@@ -10521,7 +10581,7 @@ msgstr "Opens the private post composer"
 msgid "Opens this draft in the composer"
 msgstr ""
 
-#: src/view/com/util/UserAvatar.tsx:621
+#: src/view/com/util/UserAvatar.tsx:635
 msgid "Opens this profile"
 msgstr ""
 
@@ -10532,26 +10592,26 @@ msgstr "Opens your private PDS feed"
 #. placeholder {0}: observation.provider.operatorId
 #. placeholder {0}: provider.operatorId
 #. placeholder {0}: resolver.operatorId
-#: src/components/FeedProvenanceCard.tsx:102
-#: src/components/IdentityResolutionProvenance.tsx:183
-#: src/components/ProviderCompositionProvenance.tsx:200
+#: src/components/FeedProvenanceCard.tsx:110
+#: src/components/IdentityResolutionProvenance.tsx:198
+#: src/components/ProviderCompositionProvenance.tsx:217
 msgid "operator {0}"
 msgstr "operator {0}"
 
-#: src/components/FeedProvenanceCard.tsx:116
-#: src/components/IdentityResolutionProvenance.tsx:162
-#: src/components/Post/PostProvenance.tsx:152
-#: src/components/ProviderCompositionProvenance.tsx:112
+#: src/components/FeedProvenanceCard.tsx:124
+#: src/components/IdentityResolutionProvenance.tsx:177
+#: src/components/Post/PostProvenance.tsx:166
+#: src/components/ProviderCompositionProvenance.tsx:129
 msgid "Operator independence"
 msgstr "Operator independence"
 
-#: src/view/shell/desktop/RightNav.tsx:174
-#: src/view/shell/desktop/RightNav.tsx:182
+#: src/view/shell/desktop/RightNav.tsx:173
+#: src/view/shell/desktop/RightNav.tsx:180
 msgid "Optional discovery sources"
 msgstr "Optional discovery sources"
 
 #: src/view/shell/desktop/RightNav.tsx:99
-#: src/view/shell/desktop/RightNav.tsx:107
+#: src/view/shell/desktop/RightNav.tsx:106
 msgid "Optional read tools"
 msgstr "Optional read tools"
 
@@ -10559,7 +10619,7 @@ msgstr "Optional read tools"
 msgid "Optional sources remain separate from the selected surface"
 msgstr "Optional sources remain separate from the selected surface"
 
-#: src/view/shell/desktop/RightNav.tsx:112
+#: src/view/shell/desktop/RightNav.tsx:111
 msgid "Optional sources remain separate from the selected surface."
 msgstr "Optional sources remain separate from the selected surface."
 
@@ -10663,11 +10723,11 @@ msgstr "Owner must lock the group before leaving."
 msgid "Page not found"
 msgstr ""
 
-#: src/components/FeedProvenanceCard.tsx:235
+#: src/components/FeedProvenanceCard.tsx:249
 msgid "Partial provider response"
 msgstr "Partial provider response"
 
-#: src/components/ProviderCompositionProvenance.tsx:244
+#: src/components/ProviderCompositionProvenance.tsx:261
 msgid "partial; at least one provider did not answer"
 msgstr "partial; at least one provider did not answer"
 
@@ -10717,7 +10777,7 @@ msgid "Pause video"
 msgstr ""
 
 #. placeholder {0}: claim.endpoint
-#: src/components/IdentityResolutionProvenance.tsx:103
+#: src/components/IdentityResolutionProvenance.tsx:118
 msgid "PDS {0}"
 msgstr "PDS {0}"
 
@@ -10727,8 +10787,8 @@ msgstr "PDS status unavailable; no migration claim was made"
 
 #: src/screens/ProfileList/index.tsx:164
 #: src/screens/Search/SearchResults.tsx:111
-#: src/screens/Search/SearchResults.tsx:602
-#: src/screens/Search/SearchResults.tsx:620
+#: src/screens/Search/SearchResults.tsx:604
+#: src/screens/Search/SearchResults.tsx:623
 #: src/screens/StarterPack/StarterPackScreen.tsx:193
 msgid "People"
 msgstr ""
@@ -10877,7 +10937,7 @@ msgstr ""
 msgid "Pin to your profile"
 msgstr ""
 
-#: src/view/shell/desktop/RightNav.tsx:517
+#: src/view/shell/desktop/RightNav.tsx:515
 msgid "Pin, reorder, compare, or remove"
 msgstr "Pin, reorder, compare, or remove"
 
@@ -10891,7 +10951,7 @@ msgstr ""
 msgid "Pinned {0} to Home"
 msgstr ""
 
-#: src/view/shell/desktop/RightNav.tsx:315
+#: src/view/shell/desktop/RightNav.tsx:313
 msgid "Pinned feed choice; feed ordering is provider-defined"
 msgstr "Pinned feed choice; feed ordering is provider-defined"
 
@@ -10900,7 +10960,7 @@ msgstr "Pinned feed choice; feed ordering is provider-defined"
 msgid "Pinned Feeds"
 msgstr ""
 
-#: src/view/shell/desktop/RightNav.tsx:546
+#: src/view/shell/desktop/RightNav.tsx:544
 msgid "Pinned order and saved-feed selection"
 msgstr "Pinned order and saved-feed selection"
 
@@ -11233,7 +11293,7 @@ msgctxt "action"
 msgid "Post"
 msgstr ""
 
-#: src/screens/PostThread/index.tsx:567
+#: src/screens/PostThread/index.tsx:583
 msgctxt "description"
 msgid "Post"
 msgstr ""
@@ -11244,13 +11304,13 @@ msgctxt "post-number-in-thread"
 msgid "Post {index} of {count}"
 msgstr "Post {index} of {count}"
 
-#: src/view/screens/Profile.tsx:516
-#: src/view/screens/Profile.tsx:517
+#: src/view/screens/Profile.tsx:521
+#: src/view/screens/Profile.tsx:522
 msgid "Post a photo"
 msgstr ""
 
-#: src/view/screens/Profile.tsx:543
-#: src/view/screens/Profile.tsx:544
+#: src/view/screens/Profile.tsx:548
+#: src/view/screens/Profile.tsx:549
 msgid "Post a video"
 msgstr ""
 
@@ -11338,16 +11398,16 @@ msgctxt "toast"
 msgid "Post pinned"
 msgstr ""
 
-#: src/components/Post/PostProvenance.tsx:184
+#: src/components/Post/PostProvenance.tsx:198
 msgid "Post record"
 msgstr "Post record"
 
-#: src/view/shell/desktop/RightNav.tsx:406
-#: src/view/shell/desktop/RightNav.tsx:416
+#: src/view/shell/desktop/RightNav.tsx:404
+#: src/view/shell/desktop/RightNav.tsx:414
 msgid "Post record and engagement read provider"
 msgstr "Post record and engagement read provider"
 
-#: src/view/shell/desktop/RightNav.tsx:395
+#: src/view/shell/desktop/RightNav.tsx:393
 msgid "Post thread"
 msgstr "Post thread"
 
@@ -11397,8 +11457,8 @@ msgstr ""
 #. placeholder {0}: composition.policy.preferredProviderId
 #. placeholder {0}: policy.preferredProviderId
 #. placeholder {0}: providers.find( provider => provider.id === identityPolicy.preferredProviderId, )?.displayName ?? identityPolicy.preferredProviderId
-#: src/components/IdentityResolutionProvenance.tsx:259
-#: src/components/ProviderCompositionProvenance.tsx:265
+#: src/components/IdentityResolutionProvenance.tsx:274
+#: src/components/ProviderCompositionProvenance.tsx:282
 #: src/screens/Settings/ServicesSettings.tsx:913
 msgid "Prefer {0}"
 msgstr "Prefer {0}"
@@ -11423,7 +11483,7 @@ msgstr "Prefer one provider"
 msgid "Prefer one provider for {surfaceLabel}"
 msgstr "Prefer one provider for {surfaceLabel}"
 
-#: src/components/ProviderCompositionProvenance.tsx:266
+#: src/components/ProviderCompositionProvenance.tsx:283
 msgid "Prefer provider not specified"
 msgstr "Prefer provider not specified"
 
@@ -11465,7 +11525,7 @@ msgstr ""
 msgid "Preview"
 msgstr ""
 
-#: src/components/Lightbox/Lightbox.web.tsx:197
+#: src/components/Lightbox/Lightbox.web.tsx:198
 msgid "Previous image"
 msgstr ""
 
@@ -11474,13 +11534,17 @@ msgstr ""
 msgid "Primary language"
 msgstr ""
 
+#: src/view/shell/desktop/LeftNav.tsx:658
+msgid "Primary navigation"
+msgstr "Primary navigation"
+
 #: src/screens/Settings/ServicesSettings.tsx:2233
 msgid "Primary resolver"
 msgstr "Primary resolver"
 
-#: src/components/FeedProvenanceCard.tsx:145
-#: src/view/shell/desktop/RightNav.tsx:214
-#: src/view/shell/desktop/RightNav.tsx:215
+#: src/components/FeedProvenanceCard.tsx:153
+#: src/view/shell/desktop/RightNav.tsx:212
+#: src/view/shell/desktop/RightNav.tsx:213
 msgid "Privacy"
 msgstr ""
 
@@ -11550,10 +11614,10 @@ msgid "profile"
 msgstr ""
 
 #: src/view/screens/Profile.tsx:137
-#: src/view/screens/Profile.tsx:412
+#: src/view/screens/Profile.tsx:416
 #: src/view/shell/bottom-bar/BottomBar.tsx:317
-#: src/view/shell/desktop/LeftNav.tsx:824
-#: src/view/shell/desktop/RightNav.tsx:323
+#: src/view/shell/desktop/LeftNav.tsx:825
+#: src/view/shell/desktop/RightNav.tsx:321
 #: src/view/shell/Drawer.tsx:92
 #: src/view/shell/Drawer.tsx:659
 msgid "Profile"
@@ -11567,17 +11631,21 @@ msgstr "Profile banner placeholder"
 msgid "Profile editing"
 msgstr "Profile editing"
 
-#: src/view/shell/desktop/RightNav.tsx:354
+#: src/view/shell/desktop/RightNav.tsx:352
 msgid "Profile graph and viewer relationship provider"
 msgstr "Profile graph and viewer relationship provider"
 
-#: src/components/MediaDeliveryProvenance.tsx:50
+#: src/components/MediaDeliveryProvenance.tsx:53
 msgid "Profile media"
 msgstr "Profile media"
 
-#: src/components/MediaDeliveryProvenance.tsx:79
+#: src/components/MediaDeliveryProvenance.tsx:93
 msgid "Profile media delivery"
 msgstr "Profile media delivery"
+
+#: src/components/MediaDeliveryProvenance.tsx:87
+msgid "Profile media source details"
+msgstr "Profile media source details"
 
 #: src/features/inviteFriends/InviteScannerScreen.tsx:210
 #: src/lib/strings/errors.ts:74
@@ -11588,20 +11656,20 @@ msgstr ""
 msgid "Profile reads retain provider observations and use the local reconciliation policy."
 msgstr "Profile reads retain provider observations and use the local reconciliation policy."
 
-#: src/components/MediaDeliveryProvenance.tsx:88
+#: src/components/MediaDeliveryProvenance.tsx:102
 msgid "Profile record"
 msgstr "Profile record"
 
-#: src/view/shell/desktop/RightNav.tsx:334
-#: src/view/shell/desktop/RightNav.tsx:344
+#: src/view/shell/desktop/RightNav.tsx:332
+#: src/view/shell/desktop/RightNav.tsx:342
 msgid "Profile record and graph read provider"
 msgstr "Profile record and graph read provider"
 
-#: src/components/MediaDeliveryProvenance.tsx:52
+#: src/components/MediaDeliveryProvenance.tsx:55
 msgid "Profile record determines blob CID"
 msgstr "Profile record determines blob CID"
 
-#: src/view/shell/desktop/RightNav.tsx:325
+#: src/view/shell/desktop/RightNav.tsx:323
 msgid "Profile record, identity resolution, and local moderation"
 msgstr "Profile record, identity resolution, and local moderation"
 
@@ -11640,7 +11708,7 @@ msgstr "Protected account DID"
 msgid "Protected accounts are unavailable on this PDS. No private account state was changed."
 msgstr "Protected accounts are unavailable on this PDS. No private account state was changed."
 
-#: src/components/MediaDeliveryProvenance.tsx:98
+#: src/components/MediaDeliveryProvenance.tsx:112
 msgid "Protocol method"
 msgstr "Protocol method"
 
@@ -11652,7 +11720,7 @@ msgstr "provider"
 msgid "Provider added"
 msgstr "Provider added"
 
-#: src/components/FeedProvenanceCard.tsx:231
+#: src/components/FeedProvenanceCard.tsx:245
 msgid "Provider agreement"
 msgstr "Provider agreement"
 
@@ -11660,12 +11728,12 @@ msgstr "Provider agreement"
 msgid "Provider capability not changed"
 msgstr "Provider capability not changed"
 
-#: src/components/FeedProvenanceCard.tsx:108
-#: src/components/Post/PostProvenance.tsx:145
+#: src/components/FeedProvenanceCard.tsx:116
+#: src/components/Post/PostProvenance.tsx:159
 msgid "Provider composition"
 msgstr "Provider composition"
 
-#: src/components/FeedProvenanceCard.tsx:206
+#: src/components/FeedProvenanceCard.tsx:220
 msgid "Provider degraded"
 msgstr "Provider degraded"
 
@@ -11673,7 +11741,7 @@ msgstr "Provider degraded"
 msgid "Provider details required"
 msgstr "Provider details required"
 
-#: src/components/FeedProvenanceCard.tsx:233
+#: src/components/FeedProvenanceCard.tsx:247
 msgid "Provider disagreement"
 msgstr "Provider disagreement"
 
@@ -11694,7 +11762,7 @@ msgstr "Provider not added"
 msgid "Provider not removed"
 msgstr "Provider not removed"
 
-#: src/components/ProviderCompositionProvenance.tsx:131
+#: src/components/ProviderCompositionProvenance.tsx:148
 msgid "Provider observations"
 msgstr "Provider observations"
 
@@ -11734,12 +11802,12 @@ msgstr "Provider Terms of Service"
 msgid "Provider unavailable"
 msgstr "Provider unavailable"
 
-#: src/components/FeedProvenanceCard.tsx:202
+#: src/components/FeedProvenanceCard.tsx:216
 msgid "Provider unavailable; showing your selected fallback"
 msgstr "Provider unavailable; showing your selected fallback"
 
 #. placeholder {0}: providerContext.algorithm
-#: src/components/FeedProvenanceCard.tsx:309
+#: src/components/FeedProvenanceCard.tsx:323
 msgid "Provider-supplied {0}"
 msgstr "Provider-supplied {0}"
 
@@ -11751,7 +11819,7 @@ msgstr "Providers"
 msgid "Providers start with public-read only. Public profile links can use an anonymous handle lookup from those providers; allowing identity resolution separately opts a provider into broader identity claims and remains revocable on this device."
 msgstr "Providers start with public-read only. Public profile links can use an anonymous handle lookup from those providers; allowing identity resolution separately opts a provider into broader identity claims and remains revocable on this device."
 
-#: src/components/FeedProvenanceCard.tsx:237
+#: src/components/FeedProvenanceCard.tsx:251
 msgid "Providers unavailable"
 msgstr "Providers unavailable"
 
@@ -11827,7 +11895,7 @@ msgstr ""
 msgid "QR code saved to your camera roll!"
 msgstr ""
 
-#: src/view/shell/desktop/RightNav.tsx:506
+#: src/view/shell/desktop/RightNav.tsx:504
 msgid "Query and provider reconciliation policy"
 msgstr "Query and provider reconciliation policy"
 
@@ -11854,11 +11922,11 @@ msgstr ""
 msgid "Quote posts disabled"
 msgstr ""
 
-#: src/view/shell/desktop/RightNav.tsx:428
+#: src/view/shell/desktop/RightNav.tsx:426
 msgid "Quote visibility with local moderation and block boundaries"
 msgstr "Quote visibility with local moderation and block boundaries"
 
-#: src/view/shell/desktop/RightNav.tsx:426
+#: src/view/shell/desktop/RightNav.tsx:424
 msgid "Quoted-post records and thread read providers"
 msgstr "Quoted-post records and thread read providers"
 
@@ -11866,7 +11934,7 @@ msgstr "Quoted-post records and thread read providers"
 #: src/screens/Post/PostQuotes.tsx:31
 #: src/screens/Settings/NotificationSettings/index.tsx:203
 #: src/screens/Settings/NotificationSettings/index.tsx:346
-#: src/view/shell/desktop/RightNav.tsx:425
+#: src/view/shell/desktop/RightNav.tsx:423
 msgid "Quotes"
 msgstr ""
 
@@ -11971,7 +12039,7 @@ msgstr "Read private record"
 msgid "Read provider (AppView)"
 msgstr "Read provider (AppView)"
 
-#: src/components/Post/PostProvenance.tsx:114
+#: src/components/Post/PostProvenance.tsx:128
 msgid "Read provider(s)"
 msgstr "Read provider(s)"
 
@@ -11994,11 +12062,11 @@ msgstr "Read the Privacy Policy"
 msgid "Read the Terms of Service"
 msgstr "Read the Terms of Service"
 
-#: src/components/WelcomeModal.tsx:145
+#: src/components/WelcomeModal.tsx:113
 msgid "Real conversations."
 msgstr ""
 
-#: src/components/WelcomeModal.tsx:143
+#: src/components/WelcomeModal.tsx:111
 msgid "Real people."
 msgstr ""
 
@@ -12028,8 +12096,8 @@ msgstr "Recent searches"
 msgid "Recently used"
 msgstr ""
 
-#: src/components/IdentityResolutionProvenance.tsx:73
-#: src/components/ProviderCompositionProvenance.tsx:95
+#: src/components/IdentityResolutionProvenance.tsx:88
+#: src/components/ProviderCompositionProvenance.tsx:112
 msgid "Reconciliation"
 msgstr "Reconciliation"
 
@@ -12045,7 +12113,7 @@ msgstr "Reconciliation policy not saved"
 msgid "Reconnect"
 msgstr ""
 
-#: src/components/MediaDeliveryProvenance.tsx:53
+#: src/components/MediaDeliveryProvenance.tsx:56
 msgid "Record available; direct PDS delivery"
 msgstr "Record available; direct PDS delivery"
 
@@ -12057,7 +12125,7 @@ msgstr "Record collection"
 msgid "Record key"
 msgstr "Record key"
 
-#: src/components/MediaDeliveryProvenance.tsx:83
+#: src/components/MediaDeliveryProvenance.tsx:97
 msgid "Record owner"
 msgstr "Record owner"
 
@@ -12077,7 +12145,11 @@ msgstr "Recovery and rotation"
 msgid "Refresh communities"
 msgstr "Refresh communities"
 
-#: src/view/shell/desktop/RightNav.tsx:537
+#: src/view/com/home/HomeHeaderLayoutMobile.tsx:75
+msgid "Refresh current feed"
+msgstr "Refresh current feed"
+
+#: src/view/shell/desktop/RightNav.tsx:535
 msgid "Refresh, inspect, or remove saved posts"
 msgstr "Refresh, inspect, or remove saved posts"
 
@@ -12158,7 +12230,7 @@ msgstr ""
 #: src/screens/Bookmarks.tsx:256
 #: src/screens/Messages/ConversationSettings/Member.tsx:162
 #: src/screens/Messages/ConversationSettings/prompts.tsx:178
-#: src/screens/Moderation/index.tsx:609
+#: src/screens/Moderation/index.tsx:610
 #: src/screens/Settings/ServicesSettings.tsx:550
 #: src/screens/Settings/Settings.tsx:727
 #: src/view/com/posts/PostFeedErrorMessage.tsx:280
@@ -12209,13 +12281,13 @@ msgstr "Remove approved protected access"
 msgid "Remove attachment"
 msgstr ""
 
-#: src/view/com/util/UserAvatar.tsx:523
-#: src/view/com/util/UserAvatar.tsx:526
+#: src/view/com/util/UserAvatar.tsx:537
+#: src/view/com/util/UserAvatar.tsx:540
 msgid "Remove Avatar"
 msgstr ""
 
-#: src/view/com/util/UserBanner.tsx:193
 #: src/view/com/util/UserBanner.tsx:196
+#: src/view/com/util/UserBanner.tsx:199
 msgid "Remove Banner"
 msgstr ""
 
@@ -12327,7 +12399,7 @@ msgstr ""
 msgid "Remove this feed from your saved feeds"
 msgstr ""
 
-#: src/screens/Moderation/index.tsx:605
+#: src/screens/Moderation/index.tsx:606
 msgid "Remove unavailable moderation services"
 msgstr ""
 
@@ -12378,7 +12450,7 @@ msgstr ""
 msgid "Removed from your feeds"
 msgstr ""
 
-#: src/screens/Moderation/index.tsx:284
+#: src/screens/Moderation/index.tsx:285
 msgid "Removed unavailable services"
 msgstr ""
 
@@ -12398,7 +12470,7 @@ msgstr ""
 msgid "Renew mute word"
 msgstr ""
 
-#: src/view/shell/desktop/RightNav.tsx:547
+#: src/view/shell/desktop/RightNav.tsx:545
 msgid "Reorder, compare, or remove feed preferences"
 msgstr "Reorder, compare, or remove feed preferences"
 
@@ -12627,11 +12699,11 @@ msgstr ""
 msgid "Repost or quote post"
 msgstr ""
 
-#: src/view/shell/desktop/RightNav.tsx:417
+#: src/view/shell/desktop/RightNav.tsx:415
 msgid "Repost records with local moderation and block boundaries"
 msgstr "Repost records with local moderation and block boundaries"
 
-#: src/view/shell/desktop/RightNav.tsx:415
+#: src/view/shell/desktop/RightNav.tsx:413
 msgid "Reposted by"
 msgstr "Reposted by"
 
@@ -12740,8 +12812,8 @@ msgstr "Requests"
 msgid "Requests to join"
 msgstr "Requests to join"
 
-#: src/components/IdentityResolutionProvenance.tsx:255
-#: src/components/ProviderCompositionProvenance.tsx:258
+#: src/components/IdentityResolutionProvenance.tsx:270
+#: src/components/ProviderCompositionProvenance.tsx:275
 #: src/screens/Settings/ServicesSettings.tsx:75
 #: src/screens/Settings/ServicesSettings.tsx:85
 #: src/screens/Settings/ServicesSettings.tsx:2111
@@ -12862,7 +12934,7 @@ msgstr "Resolver name"
 msgid "Resolver result"
 msgstr "Resolver result"
 
-#: src/components/IdentityResolutionProvenance.tsx:279
+#: src/components/IdentityResolutionProvenance.tsx:294
 msgid "resolver unavailable"
 msgstr "resolver unavailable"
 
@@ -12870,7 +12942,7 @@ msgstr "resolver unavailable"
 msgid "Resolver unavailable"
 msgstr "Resolver unavailable"
 
-#: src/components/IdentityResolutionProvenance.tsx:227
+#: src/components/IdentityResolutionProvenance.tsx:242
 msgid "resolver unavailable or incomplete"
 msgstr "resolver unavailable or incomplete"
 
@@ -12893,7 +12965,7 @@ msgid "Retries the last action, which errored out"
 msgstr ""
 
 #. placeholder {0}: observation.retrievedAt
-#: src/components/ProviderCompositionProvenance.tsx:205
+#: src/components/ProviderCompositionProvenance.tsx:222
 msgid "Retrieved: {0}"
 msgstr "Retrieved: {0}"
 
@@ -12950,6 +13022,10 @@ msgstr ""
 msgid "Returns to the previous step"
 msgstr ""
 
+#: src/view/com/home/HomeHeaderLayoutMobile.tsx:77
+msgid "Returns to the top and loads the latest posts"
+msgstr "Returns to the top and loads the latest posts"
+
 #: src/components/dialogs/lists/ReviewListMembersDialog.tsx:112
 #: src/screens/ProfileList/components/SubscribeMenu.tsx:75
 #: src/screens/ProfileList/components/SubscribeMenu.tsx:78
@@ -12973,21 +13049,21 @@ msgstr "Revoke optional surfaces"
 msgid "Revoke session"
 msgstr "Revoke session"
 
-#: src/components/AuthorizationProvenance.tsx:377
+#: src/components/AuthorizationProvenance.tsx:388
 msgid "Revoke this OAuth session"
 msgstr "Revoke this OAuth session"
 
-#: src/components/AuthorizationProvenance.tsx:383
+#: src/components/AuthorizationProvenance.tsx:394
 msgid "Revoke whole session"
 msgstr "Revoke whole session"
 
-#: src/components/IdentityResolutionProvenance.tsx:283
+#: src/components/IdentityResolutionProvenance.tsx:298
 msgid "revoked"
 msgstr "revoked"
 
-#: src/components/PlumblineAuthoritySummary.tsx:64
+#: src/components/PlumblineAuthoritySummary.tsx:90
 #: src/screens/Settings/ServicesSettings.tsx:2435
-#: src/view/shell/desktop/RightNav.tsx:618
+#: src/view/shell/desktop/RightNav.tsx:617
 msgid "Rule"
 msgstr "Rule"
 
@@ -13054,7 +13130,7 @@ msgid "Save draft?"
 msgstr ""
 
 #: src/components/Lightbox/chrome/ImageMenu.tsx:99
-#: src/components/MediaPreview.tsx:237
+#: src/components/MediaPreview.tsx:240
 #: src/components/Post/Embed/ImageContextMenu.tsx:70
 #: src/components/StarterPack/ShareDialog.tsx:144
 #: src/components/StarterPack/ShareDialog.tsx:150
@@ -13079,13 +13155,13 @@ msgstr ""
 msgid "Save to my feeds"
 msgstr ""
 
-#: src/view/shell/desktop/LeftNav.tsx:777
+#: src/view/shell/desktop/LeftNav.tsx:778
 #: src/view/shell/Drawer.tsx:634
 msgctxt "link to bookmarks screen"
 msgid "Saved"
 msgstr ""
 
-#: src/view/shell/desktop/RightNav.tsx:544
+#: src/view/shell/desktop/RightNav.tsx:542
 msgid "Saved feeds"
 msgstr "Saved feeds"
 
@@ -13097,7 +13173,7 @@ msgstr ""
 #: src/components/dialogs/nuxs/BookmarksAnnouncement.tsx:145
 #: src/Navigation.tsx:657
 #: src/screens/Bookmarks.tsx:57
-#: src/view/shell/desktop/RightNav.tsx:534
+#: src/view/shell/desktop/RightNav.tsx:532
 msgid "Saved Posts"
 msgstr ""
 
@@ -13106,7 +13182,7 @@ msgstr ""
 msgid "Saved to your feeds"
 msgstr ""
 
-#: src/view/shell/desktop/RightNav.tsx:516
+#: src/view/shell/desktop/RightNav.tsx:514
 msgid "Saved-feed order and moderation policy"
 msgstr "Saved-feed order and moderation policy"
 
@@ -13161,14 +13237,15 @@ msgstr ""
 #: src/screens/Search/components/AdvancedSearchDialog/index.tsx:218
 #: src/screens/Search/components/AdvancedSearchDialog/index.tsx:224
 #: src/screens/Search/SearchResults.tsx:445
-#: src/screens/Search/SearchResults.tsx:463
-#: src/screens/Search/Shell.tsx:549
-#: src/screens/Search/Shell.tsx:612
-#: src/screens/Search/Shell.tsx:753
+#: src/screens/Search/SearchResults.tsx:464
+#: src/screens/Search/Shell.tsx:523
+#: src/screens/Search/Shell.tsx:554
+#: src/screens/Search/Shell.tsx:617
+#: src/screens/Search/Shell.tsx:758
 #: src/screens/Settings/ServicesSettings.tsx:126
 #: src/screens/Settings/ServicesSettings.tsx:1007
 #: src/view/shell/bottom-bar/BottomBar.tsx:213
-#: src/view/shell/desktop/RightNav.tsx:504
+#: src/view/shell/desktop/RightNav.tsx:502
 msgid "Search"
 msgstr ""
 
@@ -13556,16 +13633,16 @@ msgstr "Selected AppView service"
 msgid "Selected authenticated AppView providers"
 msgstr "Selected authenticated AppView providers"
 
-#: src/components/IdentityResolutionProvenance.tsx:76
-#: src/components/IdentityResolutionProvenance.tsx:84
+#: src/components/IdentityResolutionProvenance.tsx:91
+#: src/components/IdentityResolutionProvenance.tsx:99
 msgid "Selected claim"
 msgstr "Selected claim"
 
-#: src/components/IdentityResolutionProvenance.tsx:172
+#: src/components/IdentityResolutionProvenance.tsx:187
 msgid "Selected document source"
 msgstr "Selected document source"
 
-#: src/view/shell/desktop/RightNav.tsx:311
+#: src/view/shell/desktop/RightNav.tsx:309
 msgid "Selected feed"
 msgstr "Selected feed"
 
@@ -13581,7 +13658,7 @@ msgstr "Selected for new reads"
 msgid "Selected labeler/AppView providers"
 msgstr "Selected labeler/AppView providers"
 
-#: src/components/ProviderCompositionProvenance.tsx:103
+#: src/components/ProviderCompositionProvenance.tsx:120
 msgid "Selected providers"
 msgstr "Selected providers"
 
@@ -13590,7 +13667,7 @@ msgstr "Selected providers"
 msgid "Selected read provider · {0}"
 msgstr "Selected read provider · {0}"
 
-#: src/view/shell/desktop/RightNav.tsx:505
+#: src/view/shell/desktop/RightNav.tsx:503
 msgid "Selected search provider"
 msgstr "Selected search provider"
 
@@ -13677,7 +13754,7 @@ msgstr "separate from identity"
 msgid "Server address"
 msgstr ""
 
-#: src/components/Post/PostProvenance.tsx:127
+#: src/components/Post/PostProvenance.tsx:141
 msgid "Service DID"
 msgstr "Service DID"
 
@@ -13690,11 +13767,11 @@ msgstr "Service DID: {0}"
 msgid "Service fragment"
 msgstr "Service fragment"
 
-#: src/components/FeedProvenanceCard.tsx:208
+#: src/components/FeedProvenanceCard.tsx:222
 msgid "Service health unknown"
 msgstr "Service health unknown"
 
-#: src/components/FeedProvenanceCard.tsx:200
+#: src/components/FeedProvenanceCard.tsx:214
 msgid "Service healthy"
 msgstr "Service healthy"
 
@@ -13702,7 +13779,7 @@ msgstr "Service healthy"
 #: src/screens/Settings/ServicesSettings.tsx:1271
 #: src/screens/Settings/Settings.tsx:195
 #: src/screens/Settings/Settings.tsx:198
-#: src/view/shell/desktop/RightNav.tsx:474
+#: src/view/shell/desktop/RightNav.tsx:472
 msgid "Services"
 msgstr "Services"
 
@@ -13753,7 +13830,7 @@ msgstr ""
 
 #: src/Navigation.tsx:229
 #: src/screens/Settings/Settings.tsx:108
-#: src/view/shell/desktop/LeftNav.tsx:834
+#: src/view/shell/desktop/LeftNav.tsx:835
 #: src/view/shell/Drawer.tsx:672
 msgid "Settings"
 msgstr ""
@@ -13826,7 +13903,7 @@ msgid "Sexually Suggestive"
 msgstr ""
 
 #: src/components/Link.tsx:428
-#: src/components/MediaPreview.tsx:243
+#: src/components/MediaPreview.tsx:246
 #: src/components/Post/Embed/ImageContextMenu.tsx:74
 #: src/components/StarterPack/QrCodeDialog.tsx:196
 #: src/screens/Hashtag.tsx:132
@@ -13899,8 +13976,8 @@ msgstr ""
 msgid "Share this feed"
 msgstr ""
 
-#: src/screens/Search/Shell.tsx:565
-#: src/screens/Search/Shell.tsx:634
+#: src/screens/Search/Shell.tsx:570
+#: src/screens/Search/Shell.tsx:639
 msgid "Share this search"
 msgstr "Share this search"
 
@@ -13941,7 +14018,7 @@ msgstr ""
 msgid "Show"
 msgstr ""
 
-#: src/components/ProviderCompositionProvenance.tsx:70
+#: src/components/ProviderCompositionProvenance.tsx:77
 msgid "Show {surfaceLabel} source details"
 msgstr "Show {surfaceLabel} source details"
 
@@ -14013,8 +14090,8 @@ msgstr ""
 msgid "Show customization options"
 msgstr ""
 
-#: src/components/FeedProvenanceCard.tsx:61
-#: src/components/FeedProvenanceCard.tsx:79
+#: src/components/FeedProvenanceCard.tsx:58
+#: src/components/FeedProvenanceCard.tsx:78
 msgid "Show feed details"
 msgstr "Show feed details"
 
@@ -14022,8 +14099,8 @@ msgstr "Show feed details"
 msgid "Show group chat updates"
 msgstr "Show group chat updates"
 
-#: src/components/IdentityResolutionProvenance.tsx:48
-#: src/components/IdentityResolutionProvenance.tsx:59
+#: src/components/IdentityResolutionProvenance.tsx:53
+#: src/components/IdentityResolutionProvenance.tsx:66
 msgid "Show identity resolution details"
 msgstr "Show identity resolution details"
 
@@ -14045,7 +14122,7 @@ msgstr ""
 msgid "Show more"
 msgstr "Show more"
 
-#: src/view/shell/desktop/RightNav.tsx:122
+#: src/view/shell/desktop/RightNav.tsx:121
 msgid "Show more context"
 msgstr "Show more context"
 
@@ -14059,7 +14136,7 @@ msgstr ""
 msgid "Show more replies"
 msgstr ""
 
-#: src/view/shell/desktop/RightNav.tsx:125
+#: src/view/shell/desktop/RightNav.tsx:124
 msgid "Show optional feeds, guides, live events, and discovery sources"
 msgstr "Show optional feeds, guides, live events, and discovery sources"
 
@@ -14067,11 +14144,11 @@ msgstr "Show optional feeds, guides, live events, and discovery sources"
 msgid "Show post replies in a threaded tree view"
 msgstr ""
 
-#: src/components/MediaDeliveryProvenance.tsx:61
+#: src/components/MediaDeliveryProvenance.tsx:65
 msgid "Show profile media source details"
 msgstr "Show profile media source details"
 
-#: src/components/ProviderCompositionProvenance.tsx:73
+#: src/components/ProviderCompositionProvenance.tsx:80
 msgid "Show provider observations and the local reconciliation policy"
 msgstr "Show provider observations and the local reconciliation policy"
 
@@ -14109,15 +14186,15 @@ msgstr "Show reposts in feeds"
 msgid "Show samples of your saved feeds in your Following feed"
 msgstr ""
 
-#: src/components/MediaDeliveryProvenance.tsx:64
+#: src/components/MediaDeliveryProvenance.tsx:68
 msgid "Show the account PDS and blob references used for profile media"
 msgstr "Show the account PDS and blob references used for profile media"
 
-#: src/components/Post/PostProvenance.tsx:84
+#: src/components/Post/PostProvenance.tsx:88
 msgid "Show the public reasons and sources for this post's placement"
 msgstr "Show the public reasons and sources for this post's placement"
 
-#: src/components/IdentityResolutionProvenance.tsx:51
+#: src/components/IdentityResolutionProvenance.tsx:56
 msgid "Show the resolver claims and document verification sources for this identity"
 msgstr "Show the resolver claims and document verification sources for this identity"
 
@@ -14142,7 +14219,7 @@ msgstr ""
 msgid "Show when you’re live"
 msgstr ""
 
-#: src/components/FeedProvenanceCard.tsx:204
+#: src/components/FeedProvenanceCard.tsx:218
 msgid "Showing stale data"
 msgstr "Showing stale data"
 
@@ -14159,18 +14236,22 @@ msgstr ""
 msgid "Shows the content"
 msgstr ""
 
-#: src/components/AuthorizationProvenance.tsx:309
+#: src/components/Lightbox/chrome/Footer.tsx:86
+msgid "Shows the full image description"
+msgstr "Shows the full image description"
+
+#: src/components/AuthorizationProvenance.tsx:310
 msgid "Shows the OAuth permissions, service authority, and revocation boundary for this session"
 msgstr "Shows the OAuth permissions, service authority, and revocation boundary for this session"
 
-#: src/view/shell/desktop/RightNav.tsx:594
+#: src/view/shell/desktop/RightNav.tsx:592
 msgid "Shows the provider, rule, and control for this surface"
 msgstr "Shows the provider, rule, and control for this surface"
 
 #: src/components/dialogs/Signin.tsx:98
 #: src/components/dialogs/Signin.tsx:100
-#: src/components/WelcomeModal.tsx:194
-#: src/components/WelcomeModal.tsx:205
+#: src/components/WelcomeModal.tsx:154
+#: src/components/WelcomeModal.tsx:162
 #: src/screens/Hashtag.tsx:233
 #: src/screens/Login/index.tsx:138
 #: src/screens/Login/index.tsx:159
@@ -14180,8 +14261,8 @@ msgstr "Shows the provider, rule, and control for this surface"
 #: src/screens/Search/SearchResults.tsx:420
 #: src/view/com/auth/SplashScreen.tsx:118
 #: src/view/com/auth/SplashScreen.tsx:125
-#: src/view/com/auth/SplashScreen.web.tsx:116
-#: src/view/com/auth/SplashScreen.web.tsx:124
+#: src/view/com/auth/SplashScreen.web.tsx:126
+#: src/view/com/auth/SplashScreen.web.tsx:134
 #: src/view/shell/bottom-bar/BottomBar.tsx:355
 #: src/view/shell/bottom-bar/BottomBar.tsx:359
 #: src/view/shell/bottom-bar/BottomBarWeb.tsx:242
@@ -14323,7 +14404,7 @@ msgstr ""
 msgid "Skip to next step"
 msgstr ""
 
-#: src/components/images/Gallery/index.tsx:443
+#: src/components/images/Gallery/index.tsx:448
 msgid "slide"
 msgstr "slide"
 
@@ -14343,7 +14424,7 @@ msgstr ""
 msgid "Social graph"
 msgstr "Social graph"
 
-#: src/components/WelcomeModal.tsx:147
+#: src/components/WelcomeModal.tsx:115
 msgid "Social media you control."
 msgstr ""
 
@@ -14355,7 +14436,7 @@ msgstr ""
 msgid "Some accounts could not be blocked. Review the selection and try again."
 msgstr "Some accounts could not be blocked. Review the selection and try again."
 
-#: src/screens/Moderation/index.tsx:598
+#: src/screens/Moderation/index.tsx:599
 msgid "Some moderation services in your list are no longer available."
 msgstr ""
 
@@ -14479,14 +14560,15 @@ msgid "Sort replies to the same post by:"
 msgstr ""
 
 #: src/components/moderation/ModerationDetailsDialog.tsx:316
-#: src/components/PlumblineAuthoritySummary.tsx:58
+#: src/components/PlumblineAuthoritySummary.tsx:68
+#: src/components/PlumblineAuthoritySummary.tsx:84
 #: src/screens/Moderation/index.tsx:189
 #: src/screens/Settings/ServicesSettings.tsx:2423
-#: src/view/shell/desktop/RightNav.tsx:613
+#: src/view/shell/desktop/RightNav.tsx:612
 msgid "Source"
 msgstr "Source"
 
-#: src/screens/Moderation/index.tsx:317
+#: src/screens/Moderation/index.tsx:318
 msgid "Source unavailable; local rules remain active"
 msgstr "Source unavailable; local rules remain active"
 
@@ -14503,7 +14585,7 @@ msgid "Spaces authority"
 msgstr "Spaces authority"
 
 #: src/screens/Settings/ServicesSettings.tsx:1048
-#: src/view/shell/desktop/RightNav.tsx:569
+#: src/view/shell/desktop/RightNav.tsx:567
 msgid "Spaces transport and community authority"
 msgstr "Spaces transport and community authority"
 
@@ -14524,11 +14606,11 @@ msgstr ""
 msgid "Sports"
 msgstr ""
 
-#: src/components/ProviderCompositionProvenance.tsx:331
+#: src/components/ProviderCompositionProvenance.tsx:348
 msgid "stale"
 msgstr "stale"
 
-#: src/components/IdentityResolutionProvenance.tsx:275
+#: src/components/IdentityResolutionProvenance.tsx:290
 msgid "stale cache"
 msgstr "stale cache"
 
@@ -14605,11 +14687,12 @@ msgstr ""
 msgid "Starter packs let you share your favorite feeds and people with your friends."
 msgstr ""
 
-#: src/view/screens/Profile.tsx:596
+#: src/view/screens/Profile.tsx:601
 msgid "Starter Packs let you share your favorite feeds and people with your friends."
 msgstr ""
 
-#: src/components/PlumblineAuthoritySummary.tsx:67
+#: src/components/PlumblineAuthoritySummary.tsx:71
+#: src/components/PlumblineAuthoritySummary.tsx:93
 msgid "State"
 msgstr "State"
 
@@ -14698,13 +14781,13 @@ msgid "Subscribe"
 msgstr ""
 
 #. placeholder {0}: highlightedPublisher.name
-#: src/components/Post/Embed/StandardSiteEmbed/index.tsx:446
-#: src/components/Post/Embed/StandardSiteEmbed/index.tsx:475
+#: src/components/Post/Embed/StandardSiteEmbed/index.tsx:450
+#: src/components/Post/Embed/StandardSiteEmbed/index.tsx:479
 msgid "Subscribe on {0}"
 msgstr "Subscribe on {0}"
 
 #. placeholder {0}: highlightedPublisher.name
-#: src/components/Post/Embed/StandardSiteEmbed/index.tsx:474
+#: src/components/Post/Embed/StandardSiteEmbed/index.tsx:478
 msgid "Subscribe to {publicationTitle} on {0}"
 msgstr "Subscribe to {publicationTitle} on {0}"
 
@@ -14941,8 +15024,8 @@ msgstr ""
 msgid "Temporarily deactivate your account"
 msgstr "Temporarily deactivate your account"
 
-#: src/view/shell/desktop/RightNav.tsx:221
-#: src/view/shell/desktop/RightNav.tsx:222
+#: src/view/shell/desktop/RightNav.tsx:219
+#: src/view/shell/desktop/RightNav.tsx:220
 msgid "Terms"
 msgstr ""
 
@@ -15115,7 +15198,7 @@ msgstr "The moderation service is temporarily unavailable. Please try again late
 msgid "The PDS remains the write and account authority; read providers do not become identity authorities."
 msgstr "The PDS remains the write and account authority; read providers do not become identity authorities."
 
-#: src/screens/Moderation/index.tsx:550
+#: src/screens/Moderation/index.tsx:551
 msgid "The Plumbline web application"
 msgstr "The Plumbline web application"
 
@@ -15308,7 +15391,7 @@ msgstr "There's been a rush of new users to Plumbline! We'll activate your accou
 msgid "These are your default settings"
 msgstr ""
 
-#: src/components/MediaDeliveryProvenance.tsx:145
+#: src/components/MediaDeliveryProvenance.tsx:159
 msgid "These CIDs come from the account profile record. The links above open the derived PDS delivery URLs. An AppView or CDN may provide a cached view, but it cannot replace the account PDS as the record authority."
 msgstr "These CIDs come from the account profile record. The links above open the derived PDS delivery URLs. An AppView or CDN may provide a cached view, but it cannot replace the account PDS as the record authority."
 
@@ -15774,7 +15857,7 @@ msgstr ""
 msgid "This will remove your post from this quote post for all users, and replace it with a placeholder."
 msgstr ""
 
-#: src/view/shell/desktop/RightNav.tsx:397
+#: src/view/shell/desktop/RightNav.tsx:395
 msgid "Thread composition and local moderation rules"
 msgstr "Thread composition and local moderation rules"
 
@@ -15841,7 +15924,7 @@ msgstr ""
 msgid "Today"
 msgstr ""
 
-#: src/screens/Moderation/index.tsx:525
+#: src/screens/Moderation/index.tsx:526
 msgid "Toggle to enable or disable adult content"
 msgstr ""
 
@@ -15849,7 +15932,7 @@ msgstr ""
 msgid "Toggles the sound"
 msgstr ""
 
-#: src/components/IdentityResolutionProvenance.tsx:295
+#: src/components/IdentityResolutionProvenance.tsx:310
 msgid "tombstoned"
 msgstr "tombstoned"
 
@@ -16056,9 +16139,9 @@ msgstr ""
 msgid "Unapply Pull Request {currentChannel}"
 msgstr ""
 
-#: src/components/IdentityResolutionProvenance.tsx:301
-#: src/components/ProviderCompositionProvenance.tsx:246
-#: src/components/ProviderCompositionProvenance.tsx:327
+#: src/components/IdentityResolutionProvenance.tsx:316
+#: src/components/ProviderCompositionProvenance.tsx:263
+#: src/components/ProviderCompositionProvenance.tsx:344
 msgid "unavailable"
 msgstr "unavailable"
 
@@ -16076,7 +16159,7 @@ msgstr "Unavailable"
 msgid "Unavailable feed information"
 msgstr ""
 
-#: src/components/IdentityResolutionProvenance.tsx:112
+#: src/components/IdentityResolutionProvenance.tsx:127
 msgid "Unavailable resolvers"
 msgstr "Unavailable resolvers"
 
@@ -16288,7 +16371,7 @@ msgstr ""
 msgid "Unpinned list"
 msgstr ""
 
-#: src/components/IdentityResolutionProvenance.tsx:273
+#: src/components/IdentityResolutionProvenance.tsx:288
 msgid "unresolved"
 msgstr "unresolved"
 
@@ -16327,7 +16410,7 @@ msgstr ""
 msgid "Until"
 msgstr "Until"
 
-#: src/components/ProviderCompositionProvenance.tsx:343
+#: src/components/ProviderCompositionProvenance.tsx:360
 msgid "unverified"
 msgstr "unverified"
 
@@ -16410,22 +16493,22 @@ msgstr ""
 msgid "Upload blobs to the account’s hosting service for profile or post media."
 msgstr "Upload blobs to the account’s hosting service for profile or post media."
 
-#: src/view/com/util/UserAvatar.tsx:494
-#: src/view/com/util/UserAvatar.tsx:497
-#: src/view/com/util/UserBanner.tsx:164
+#: src/view/com/util/UserAvatar.tsx:508
+#: src/view/com/util/UserAvatar.tsx:511
 #: src/view/com/util/UserBanner.tsx:167
+#: src/view/com/util/UserBanner.tsx:170
 msgid "Upload from Camera"
 msgstr ""
 
-#: src/view/com/util/UserAvatar.tsx:511
-#: src/view/com/util/UserBanner.tsx:181
+#: src/view/com/util/UserAvatar.tsx:525
+#: src/view/com/util/UserBanner.tsx:184
 msgid "Upload from Files"
 msgstr ""
 
-#: src/view/com/util/UserAvatar.tsx:505
-#: src/view/com/util/UserAvatar.tsx:509
-#: src/view/com/util/UserBanner.tsx:175
-#: src/view/com/util/UserBanner.tsx:179
+#: src/view/com/util/UserAvatar.tsx:519
+#: src/view/com/util/UserAvatar.tsx:523
+#: src/view/com/util/UserBanner.tsx:178
+#: src/view/com/util/UserBanner.tsx:182
 msgid "Upload from Library"
 msgstr ""
 
@@ -16485,11 +16568,11 @@ msgstr "Use Filtered Following"
 msgid "Use Filtered Following. This applies your local hard content policy to followed and unfollowed candidates without changing relationships."
 msgstr "Use Filtered Following. This applies your local hard content policy to followed and unfollowed candidates without changing relationships."
 
-#: src/components/IdentityResolutionProvenance.tsx:257
+#: src/components/IdentityResolutionProvenance.tsx:272
 msgid "Use first verified claim"
 msgstr "Use first verified claim"
 
-#: src/components/ProviderCompositionProvenance.tsx:260
+#: src/components/ProviderCompositionProvenance.tsx:277
 #: src/screens/Settings/ServicesSettings.tsx:76
 #: src/screens/Settings/ServicesSettings.tsx:87
 msgid "Use first verified result"
@@ -16547,7 +16630,7 @@ msgstr "Use this community for membership controls"
 msgid "Use this to sign in to the other app along with your handle."
 msgstr ""
 
-#: src/view/screens/Profile.tsx:423
+#: src/view/screens/Profile.tsx:428
 msgid "user"
 msgstr "user"
 
@@ -16619,7 +16702,7 @@ msgstr "User-held PLC key prepared; authorization still required"
 msgid "User-held PLC rotation custody"
 msgstr "User-held PLC rotation custody"
 
-#: src/view/shell/desktop/RightNav.tsx:476
+#: src/view/shell/desktop/RightNav.tsx:474
 msgid "User-selected capability and reconciliation policy"
 msgstr "User-selected capability and reconciliation policy"
 
@@ -16658,7 +16741,7 @@ msgstr ""
 msgid "Verification failed, please try again."
 msgstr ""
 
-#: src/screens/Moderation/index.tsx:484
+#: src/screens/Moderation/index.tsx:485
 msgid "Verification settings"
 msgstr ""
 
@@ -16671,10 +16754,10 @@ msgstr ""
 msgid "Verifications on Plumbline work differently than on other platforms. <0>Learn more here.</0>"
 msgstr "Verifications on Plumbline work differently than on other platforms. <0>Learn more here.</0>"
 
-#: src/components/IdentityResolutionProvenance.tsx:223
-#: src/components/IdentityResolutionProvenance.tsx:271
-#: src/components/IdentityResolutionProvenance.tsx:293
-#: src/components/ProviderCompositionProvenance.tsx:341
+#: src/components/IdentityResolutionProvenance.tsx:238
+#: src/components/IdentityResolutionProvenance.tsx:286
+#: src/components/IdentityResolutionProvenance.tsx:308
+#: src/components/ProviderCompositionProvenance.tsx:358
 msgid "verified"
 msgstr "verified"
 
@@ -16819,8 +16902,8 @@ msgid "View"
 msgstr ""
 
 #. placeholder {0}: view.source.title
-#: src/components/Post/Embed/StandardSiteEmbed/index.tsx:339
-#: src/components/Post/Embed/StandardSiteEmbed/index.tsx:669
+#: src/components/Post/Embed/StandardSiteEmbed/index.tsx:343
+#: src/components/Post/Embed/StandardSiteEmbed/index.tsx:673
 msgid "View {0}"
 msgstr "View {0}"
 
@@ -16849,7 +16932,7 @@ msgstr "View {0}’s profile"
 msgid "View {displayName}’s profile"
 msgstr "View {displayName}’s profile"
 
-#: src/components/Post/Embed/StandardSiteEmbed/index.tsx:477
+#: src/components/Post/Embed/StandardSiteEmbed/index.tsx:481
 msgid "View {publicationTitle}"
 msgstr "View {publicationTitle}"
 
@@ -16923,10 +17006,10 @@ msgstr ""
 msgid "View profile banner"
 msgstr "View profile banner"
 
-#: src/components/Post/Embed/StandardSiteEmbed/index.tsx:339
-#: src/components/Post/Embed/StandardSiteEmbed/index.tsx:447
-#: src/components/Post/Embed/StandardSiteEmbed/index.tsx:478
-#: src/components/Post/Embed/StandardSiteEmbed/index.tsx:669
+#: src/components/Post/Embed/StandardSiteEmbed/index.tsx:343
+#: src/components/Post/Embed/StandardSiteEmbed/index.tsx:451
+#: src/components/Post/Embed/StandardSiteEmbed/index.tsx:482
+#: src/components/Post/Embed/StandardSiteEmbed/index.tsx:673
 msgid "View publication"
 msgstr "View publication"
 
@@ -16955,28 +17038,28 @@ msgstr ""
 msgid "View video"
 msgstr ""
 
-#: src/screens/Moderation/index.tsx:464
+#: src/screens/Moderation/index.tsx:465
 msgid "View your blocked accounts"
 msgstr ""
 
-#: src/screens/Moderation/index.tsx:404
+#: src/screens/Moderation/index.tsx:405
 msgid "View your default post interaction settings"
 msgstr ""
 
-#: src/view/com/home/HomeHeaderLayout.web.tsx:96
-#: src/view/com/home/HomeHeaderLayoutMobile.tsx:85
+#: src/view/com/home/HomeHeaderLayout.web.tsx:95
+#: src/view/com/home/HomeHeaderLayoutMobile.tsx:97
 msgid "View your feeds and explore more"
 msgstr ""
 
-#: src/screens/Moderation/index.tsx:371
+#: src/screens/Moderation/index.tsx:372
 msgid "View your moderation inbox"
 msgstr "View your moderation inbox"
 
-#: src/screens/Moderation/index.tsx:434
+#: src/screens/Moderation/index.tsx:435
 msgid "View your moderation lists"
 msgstr ""
 
-#: src/screens/Moderation/index.tsx:449
+#: src/screens/Moderation/index.tsx:450
 msgid "View your muted accounts"
 msgstr ""
 
@@ -16984,8 +17067,8 @@ msgstr ""
 msgid "View your verifications"
 msgstr ""
 
-#: src/components/images/AutoSizedImage.tsx:222
-#: src/components/images/AutoSizedImage.tsx:254
+#: src/components/images/AutoSizedImage.tsx:228
+#: src/components/images/AutoSizedImage.tsx:259
 msgid "Views full image"
 msgstr ""
 
@@ -17001,7 +17084,7 @@ msgstr ""
 msgid "Violent or threatening content"
 msgstr ""
 
-#: src/view/com/auth/SplashScreen.web.tsx:161
+#: src/view/com/auth/SplashScreen.web.tsx:171
 msgid "Visit Plumbline at plumblines.uk"
 msgstr "Visit Plumbline at plumblines.uk"
 
@@ -17135,7 +17218,7 @@ msgstr ""
 msgid "We were unable to load your birthdate preferences. Please try again."
 msgstr ""
 
-#: src/screens/Moderation/index.tsx:629
+#: src/screens/Moderation/index.tsx:630
 msgid "We were unable to load your configured labelers at this time."
 msgstr ""
 
@@ -17194,23 +17277,23 @@ msgstr ""
 msgid "We're sorry, but we weren't able to load your muted words at this time. Please try again."
 msgstr ""
 
-#: src/screens/Search/SearchResults.tsx:730
+#: src/screens/Search/SearchResults.tsx:735
 msgid "We’re sorry, but your feed search could not be completed."
 msgstr "We’re sorry, but your feed search could not be completed."
 
-#: src/screens/Search/SearchResults.tsx:729
+#: src/screens/Search/SearchResults.tsx:734
 msgid "We’re sorry, but your feed search could not be completed. Please try again in a few minutes."
 msgstr "We’re sorry, but your feed search could not be completed. Please try again in a few minutes."
 
-#: src/screens/Search/SearchResults.tsx:452
-#: src/screens/Search/SearchResults.tsx:609
-#: src/screens/Search/SearchResults.tsx:859
+#: src/screens/Search/SearchResults.tsx:453
+#: src/screens/Search/SearchResults.tsx:612
+#: src/screens/Search/SearchResults.tsx:865
 msgid "We’re sorry, but your search could not be completed."
 msgstr "We’re sorry, but your search could not be completed."
 
-#: src/screens/Search/SearchResults.tsx:451
-#: src/screens/Search/SearchResults.tsx:608
-#: src/screens/Search/SearchResults.tsx:858
+#: src/screens/Search/SearchResults.tsx:452
+#: src/screens/Search/SearchResults.tsx:611
+#: src/screens/Search/SearchResults.tsx:864
 msgid "We’re sorry, but your search could not be completed. Please try again in a few minutes."
 msgstr "We’re sorry, but your search could not be completed. Please try again in a few minutes."
 
@@ -17245,13 +17328,18 @@ msgstr ""
 
 #: src/screens/Profile/Header/EditProfileDialog.tsx:381
 #: src/screens/Profile/Header/EditProfileDialog.tsx:387
-#: src/view/com/auth/SplashScreen.web.tsx:163
+#: src/view/com/auth/SplashScreen.web.tsx:173
 msgid "Website"
 msgstr "Website"
 
 #: src/screens/Deactivated.tsx:122
 msgid "Welcome back!"
 msgstr ""
+
+#: src/components/WelcomeModal.tsx:67
+#: src/view/com/auth/SplashScreen.web.tsx:88
+msgid "Welcome to Plumbline"
+msgstr "Welcome to Plumbline"
 
 #: src/components/NewskieDialog.tsx:142
 msgid "Welcome, friend!"
@@ -17270,7 +17358,7 @@ msgstr ""
 msgid "what’s up"
 msgstr "what’s up"
 
-#: src/view/com/auth/SplashScreen.web.tsx:92
+#: src/view/com/auth/SplashScreen.web.tsx:102
 #: src/view/com/composer/Composer.tsx:1764
 #: src/view/com/feeds/ComposerPrompt.tsx:194
 msgid "What's up?"
@@ -17345,12 +17433,16 @@ msgstr ""
 msgid "Why should this user be reviewed?"
 msgstr ""
 
-#: src/components/Post/PostProvenance.tsx:81
-#: src/components/Post/PostProvenance.tsx:93
+#: src/components/Post/PostProvenance.tsx:108
+msgid "Why this post details"
+msgstr "Why this post details"
+
+#: src/components/Post/PostProvenance.tsx:85
+#: src/components/Post/PostProvenance.tsx:99
 msgid "Why this post?"
 msgstr "Why this post?"
 
-#: src/view/shell/desktop/RightNav.tsx:592
+#: src/view/shell/desktop/RightNav.tsx:590
 msgid "Workbench inspector"
 msgstr "Workbench inspector"
 
@@ -17370,8 +17462,8 @@ msgstr ""
 msgid "Would you like to save this as a draft to edit later?"
 msgstr ""
 
-#: src/view/screens/Profile.tsx:474
-#: src/view/screens/Profile.tsx:475
+#: src/view/screens/Profile.tsx:479
+#: src/view/screens/Profile.tsx:480
 msgid "Write a post"
 msgstr ""
 
@@ -18092,7 +18184,7 @@ msgstr ""
 msgid "Your interests help us find what you like!"
 msgstr ""
 
-#: src/view/shell/desktop/RightNav.tsx:466
+#: src/view/shell/desktop/RightNav.tsx:464
 msgid "Your moderation and reach policy"
 msgstr "Your moderation and reach policy"
 
@@ -18154,7 +18246,7 @@ msgstr ""
 msgid "Your rule"
 msgstr "Your rule"
 
-#: src/view/shell/desktop/RightNav.tsx:536
+#: src/view/shell/desktop/RightNav.tsx:534
 msgid "Your saved-post collection and local moderation"
 msgstr "Your saved-post collection and local moderation"
 

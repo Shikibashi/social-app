@@ -425,7 +425,7 @@ function OwnHandlePage({goToServiceHandle}: {goToServiceHandle: () => void}) {
         </View>
         <SegmentedControl.Root
           label={_(msg`Choose domain verification method`)}
-          type="tabs"
+          type="radio"
           value={dnsPanel ? 'dns' : 'file'}
           onChange={values => setDNSPanel(values === 'dns')}>
           <SegmentedControl.Item value="dns" label={_(msg`DNS Panel`)}>

@@ -134,7 +134,7 @@ function DialogInner({
           <Trans>Choose your hosting provider</Trans>
         </Text>
         <SegmentedControl.Root
-          type="tabs"
+          type="radio"
           label={_(msg`Hosting provider`)}
           value={fixedOption}
           onChange={setFixedOption}>
@@ -157,7 +157,7 @@ function DialogInner({
         </SegmentedControl.Root>
 
         {fixedOption === BSKY_SERVICE && isFirstTimeUser && (
-          <View role="tabpanel">
+          <View>
             <Admonition type="tip">
               <Trans>
                 The AT Protocol is an open network where you can choose your own
@@ -169,7 +169,7 @@ function DialogInner({
         )}
 
         {fixedOption === 'custom' && (
-          <View role="tabpanel">
+          <View>
             <TextField.LabelText nativeID="address-input-label">
               <Trans>Server address</Trans>
             </TextField.LabelText>

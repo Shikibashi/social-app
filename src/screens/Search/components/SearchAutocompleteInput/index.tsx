@@ -71,11 +71,16 @@ export function SearchAutocompleteInput({
   /*
    * setAnchor goes on the full-width wrapper View so the dropdown matches the
    * input's container width; the input ref (targetProps.ref) lands on the inner
-   * TextInput for Sift's positioning math, and the remaining combobox a11y
-   * props are spread onto the input.
+   * TextInput for Sift's positioning math. The popup reference is added only
+   * while the listbox is mounted below; a collapsed combobox must not point at
+   * an absent DOM node.
    */
   const {setAnchor} = sift.refs
-  const {ref: inputAnchorRef, ...comboboxProps} = sift.targetProps
+  const {
+    ref: inputAnchorRef,
+    'aria-controls': popupId,
+    ...comboboxProps
+  } = sift.targetProps
 
   return (
     <View
@@ -92,6 +97,7 @@ export function SearchAutocompleteInput({
       <SearchInput
         {...rest}
         {...comboboxProps}
+        aria-controls={showDropdown ? popupId : undefined}
         ref={mergeRefs([ref, inputAnchorRef, inputRef])}
         value={value}
         onChangeText={text => {

@@ -34,6 +34,7 @@ export function SystemMessageGroup({
   const t = useTheme()
   const {t: l} = useLingui()
   const count = item.items.length
+  const detailsId = `system-message-group-details-${item.key}`
 
   const label = plural(count, {
     one: '# chat update',
@@ -57,6 +58,8 @@ export function SystemMessageGroup({
           expanded ? l`Hide group chat updates` : l`Show group chat updates`
         }
         accessibilityState={{expanded}}
+        aria-expanded={expanded}
+        aria-controls={detailsId}
         hitSlop={HITSLOP_10}
         onPress={() => onToggle(item.key)}
         style={[
@@ -64,6 +67,7 @@ export function SystemMessageGroup({
           a.flex_row,
           a.align_center,
           a.justify_center,
+          {minHeight: 30},
           a.px_md,
           a.mt_md,
         ]}>
@@ -80,7 +84,9 @@ export function SystemMessageGroup({
           <ChevronDown size="xs" style={t.atoms.text_contrast_medium} />
         </Animated.View>
       </Pressable>
-      <Animated.View layout={LinearTransition.duration(ANIMATION_DURATION_MS)}>
+      <Animated.View
+        nativeID={detailsId}
+        layout={LinearTransition.duration(ANIMATION_DURATION_MS)}>
         {expanded
           ? item.items.map(child => (
               <Animated.View
