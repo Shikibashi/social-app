@@ -9,7 +9,7 @@ import {
   PUBLIC_WEB_ORIGIN,
 } from '#/lib/brand'
 import {CHAT_PROXY_SERVICE, NOTIF_SERVICE} from '#/lib/constants'
-import {APPVIEW_PROXY_SERVICE} from '#/env'
+import {APPVIEW_PROXY_SERVICE, ENV} from '#/env'
 
 /**
  * Direct repo permissions used by the ordinary posting and interaction path.
@@ -613,6 +613,107 @@ function buildOAuthClientMetadata(publicWebOrigin: string) {
   } as const satisfies OAuthClientMetadataInput
 }
 
+type DevelopmentLoopbackOAuthConfig = {
+  metadata: OAuthClientMetadataInput
+  redirectUri: string
+}
+
+/**
+ * Normalize every localhost development route before the browser OAuth client
+ * creates its IndexedDB-backed state. AT Protocol loopback callbacks must use
+ * an IP address, and the browser storage namespace for localhost is different
+ * from the namespace for 127.0.0.1.
+ */
+export function getDevelopmentLoopbackRedirectUrl(
+  environment: string,
+  runtimeHref: string | undefined,
+): string | undefined {
+  if (environment !== 'development' || !runtimeHref) return undefined
+
+  let runtime: URL
+  try {
+    runtime = new URL(runtimeHref)
+  } catch {
+    return undefined
+  }
+
+  if (runtime.protocol !== 'http:' || runtime.hostname !== 'localhost') {
+    return undefined
+  }
+
+  runtime.hostname = '127.0.0.1'
+  return runtime.href
+}
+
+/**
+ * AT Protocol OAuth has a deliberately narrow development exception for
+ * loopback browser clients. The client ID must remain `http://localhost`
+ * without a port, while the app itself and callback must use an IP loopback
+ * origin. Keeping this construction here prevents a development web bundle
+ * from accidentally presenting a normal, non-discoverable HTTP client ID to
+ * an authorization server.
+ *
+ * The bootstrap redirect exists so the official browser OAuth client can move
+ * a developer from `localhost` to the equivalent IP address before it creates
+ * IndexedDB-backed state. The callback stays stable so that PAR and token
+ * exchange use the same client ID throughout the authorization flow.
+ */
+export function getDevelopmentLoopbackOAuthConfig(
+  environment: string,
+  runtimeOrigin: string | undefined,
+): DevelopmentLoopbackOAuthConfig | undefined {
+  if (environment !== 'development' || !runtimeOrigin) return undefined
+
+  let runtime: URL
+  try {
+    runtime = new URL(runtimeOrigin)
+  } catch {
+    return undefined
+  }
+
+  if (runtime.protocol !== 'http:') return undefined
+
+  const hostname = runtime.hostname.toLowerCase()
+  const loopbackHost =
+    hostname === 'localhost'
+      ? '127.0.0.1'
+      : hostname === '127.0.0.1'
+        ? '127.0.0.1'
+        : hostname === '::1' || hostname === '[::1]'
+          ? '[::1]'
+          : undefined
+  if (!loopbackHost) return undefined
+
+  const origin = `http://${loopbackHost}${runtime.port ? `:${runtime.port}` : ''}`
+  const bootstrapRedirectUri = `${origin}/`
+  const redirectUri = `${origin}/oauth/callback`
+  const parameters = new URLSearchParams()
+  parameters.append('redirect_uri', bootstrapRedirectUri)
+  parameters.append('redirect_uri', redirectUri)
+  parameters.set('scope', OAUTH_METADATA_SCOPE)
+
+  return {
+    metadata: {
+      client_id: `http://localhost?${parameters.toString()}`,
+      redirect_uris: [bootstrapRedirectUri, redirectUri],
+      response_types: ['code'],
+      grant_types: ['authorization_code', 'refresh_token'],
+      scope: OAUTH_METADATA_SCOPE,
+      application_type: 'native',
+      token_endpoint_auth_method: 'none',
+      dpop_bound_access_tokens: true,
+    },
+    redirectUri,
+  }
+}
+
+function getRuntimeDevelopmentLoopbackOAuthConfig() {
+  return getDevelopmentLoopbackOAuthConfig(
+    ENV,
+    typeof window === 'undefined' ? undefined : window.location?.origin,
+  )
+}
+
 /**
  * The build-time object is also the checked-in public metadata contract. The
  * runtime variant protects the hosted web client from a stale local origin in
@@ -621,8 +722,24 @@ function buildOAuthClientMetadata(publicWebOrigin: string) {
 export const OAUTH_CLIENT_METADATA = buildOAuthClientMetadata(PUBLIC_WEB_ORIGIN)
 
 export function getRuntimeOAuthClientMetadata() {
+  const loopbackConfig = getRuntimeDevelopmentLoopbackOAuthConfig()
+  if (loopbackConfig) return loopbackConfig.metadata
+
   const publicWebOrigin = getRuntimePublicWebOrigin()
   return publicWebOrigin === PUBLIC_WEB_ORIGIN
     ? OAUTH_CLIENT_METADATA
     : buildOAuthClientMetadata(publicWebOrigin)
+}
+
+/**
+ * The authorization request must use the same stable callback declared in
+ * the active client metadata. In development this is the IP loopback callback
+ * required by the AT Protocol browser OAuth client; hosted builds keep their
+ * canonical HTTPS callback.
+ */
+export function getRuntimeOAuthRedirectUri() {
+  return (
+    getRuntimeDevelopmentLoopbackOAuthConfig()?.redirectUri ??
+    `${getRuntimePublicWebOrigin()}/oauth/callback`
+  )
 }

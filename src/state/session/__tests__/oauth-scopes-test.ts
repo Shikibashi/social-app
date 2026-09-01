@@ -1,6 +1,8 @@
 import {describe, expect, it} from '@jest/globals'
 
 import {
+  getDevelopmentLoopbackOAuthConfig,
+  getDevelopmentLoopbackRedirectUrl,
   getMissingOAuthScopes,
   getOAuthFeatureGrant,
   getOAuthFeatureGrantPresentations,
@@ -328,5 +330,61 @@ describe('OAuth permission contract', () => {
     expect(runtimeMetadata.client_uri).toBe('https://plumblines.uk')
     expect(runtimeMetadata.client_id).not.toContain('127.0.0.1')
     expect(runtimeMetadata.client_id).not.toContain('localhost')
+  })
+
+  it('uses the AT Protocol loopback client exception for local browser OAuth', () => {
+    const config = getDevelopmentLoopbackOAuthConfig(
+      'development',
+      'http://localhost:19006',
+    )
+    expect(config).toBeDefined()
+
+    const clientId = new URL(config!.metadata.client_id as string)
+    expect(clientId.protocol).toBe('http:')
+    expect(clientId.hostname).toBe('localhost')
+    expect(clientId.port).toBe('')
+    expect(clientId.pathname).toBe('/')
+    expect(clientId.searchParams.getAll('redirect_uri')).toEqual([
+      'http://127.0.0.1:19006/',
+      'http://127.0.0.1:19006/oauth/callback',
+    ])
+    expect(clientId.searchParams.get('scope')).toBe(OAUTH_METADATA_SCOPE)
+    expect(config!.metadata.redirect_uris).toEqual([
+      'http://127.0.0.1:19006/',
+      'http://127.0.0.1:19006/oauth/callback',
+    ])
+    expect(config!.redirectUri).toBe('http://127.0.0.1:19006/oauth/callback')
+  })
+
+  it('normalizes every localhost route before browser OAuth state is created', () => {
+    expect(
+      getDevelopmentLoopbackRedirectUrl(
+        'development',
+        'http://localhost:19006/profile/cato.org/post/example?view=thread#reply',
+      ),
+    ).toBe(
+      'http://127.0.0.1:19006/profile/cato.org/post/example?view=thread#reply',
+    )
+    expect(
+      getDevelopmentLoopbackRedirectUrl(
+        'development',
+        'http://127.0.0.1:19006/',
+      ),
+    ).toBeUndefined()
+    expect(
+      getDevelopmentLoopbackRedirectUrl(
+        'production',
+        'http://localhost:19006/',
+      ),
+    ).toBeUndefined()
+  })
+
+  it('does not expose the loopback OAuth exception outside local development', () => {
+    expect(
+      getDevelopmentLoopbackOAuthConfig('production', 'http://127.0.0.1:19006'),
+    ).toBeUndefined()
+    expect(
+      getDevelopmentLoopbackOAuthConfig('development', 'https://plumblines.uk'),
+    ).toBeUndefined()
   })
 })

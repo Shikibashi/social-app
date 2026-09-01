@@ -3,7 +3,6 @@ import {
   type OAuthSession as AtprotoOAuthSession,
 } from '@atproto/oauth-client-expo'
 
-import {getRuntimePublicWebOrigin} from '#/lib/brand'
 import {PUBLIC_ACCOUNT_SERVICE} from '#/lib/constants'
 import {createLexClient} from '#/lib/lexClient'
 import {IS_WEB} from '#/env'
@@ -13,6 +12,7 @@ import {ExpoOAuthClient} from './oauth-client'
 import {
   getOAuthFeatureUpgradeScopes,
   getRuntimeOAuthClientMetadata,
+  getRuntimeOAuthRedirectUri,
   mergeOAuthScopes,
   normalizeOAuthScopes,
   OAUTH_NATIVE_REDIRECT_URI,
@@ -26,9 +26,17 @@ import {type SessionAccount} from './types'
 
 export {OAUTH_NATIVE_REDIRECT_URI} from './oauth-scopes'
 
-type OAuthRedirectUri = `https://${string}` | `${string}.${string}:/${string}`
+type OAuthRedirectUri =
+  | `https://${string}`
+  | 'http://127.0.0.1'
+  | `http://127.0.0.1/${string}`
+  | `http://127.0.0.1:${string}`
+  | `http://127.0.0.1?${string}`
+  | `http://127.0.0.1#${string}`
+  | `http://[::1]${string}`
+  | `${string}.${string}:/${string}`
 
-export const OAUTH_WEB_REDIRECT_URI = `${getRuntimePublicWebOrigin()}/oauth/callback`
+export const OAUTH_WEB_REDIRECT_URI = getRuntimeOAuthRedirectUri()
 
 export type OAuthSessionHooks = {
   onUpdated?: (data: SessionData) => void
