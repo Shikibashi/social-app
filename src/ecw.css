@@ -1698,6 +1698,829 @@ body {
   }
 }
 
+/*
+ * Publication Ledger: the final Page Mode boundary.
+ *
+ * The older Page Mode rules above describe individual pieces of the shell. This
+ * boundary rule defines their relationship in one place: a quiet index, a
+ * dominant paper/document surface, and a contextual marginal note. Workbench
+ * routes intentionally do not match this scope and retain their stronger
+ * configuration affordances.
+ */
+@media (min-width: 800px) {
+  #root
+    [data-testid='plumbline-shell'][data-ecw-shell-mode='page']
+    > [data-testid='plumbline-page-masthead'] {
+    display: flex !important;
+    width: 100% !important;
+    min-height: 132px !important;
+    border-top: 1px solid var(--ecw-border-strong) !important;
+    border-bottom: 0 !important;
+    background-color: var(--ecw-surface) !important;
+    box-shadow: none !important;
+  }
+
+  #root
+    [data-testid='plumbline-shell'][data-ecw-shell-mode='page']
+    > [data-testid='plumbline-page-masthead']
+    [data-testid='plumbline-page-masthead-top-rule'] {
+    display: block !important;
+    height: 1px !important;
+    background-color: var(--ecw-border-strong) !important;
+  }
+
+  #root
+    [data-testid='plumbline-shell'][data-ecw-shell-mode='page']
+    > [data-testid='plumbline-page-masthead']
+    [data-testid='plumbline-page-masthead-bottom-rule'] {
+    display: block !important;
+    height: 2px !important;
+    background-color: var(--ecw-border-strong) !important;
+  }
+
+  #root [data-testid='plumbline-page-masthead-content'] {
+    width: min(100%, 1400px) !important;
+    max-width: none !important;
+    padding-inline: clamp(24px, 4vw, 56px) !important;
+  }
+
+  #root [data-testid='plumbline-page-identity'] {
+    gap: 14px !important;
+  }
+
+  #root [data-testid='plumbline-page-wordmark'] {
+    font-family: var(--ecw-font-display) !important;
+    font-size: clamp(3rem, 5.2vw, 4.35rem) !important;
+    letter-spacing: 0.035em !important;
+    line-height: 0.98 !important;
+  }
+
+  #root [data-testid='plumbline-page-descriptor'] {
+    font-family: var(--ecw-font-ui) !important;
+    font-size: 0.68rem !important;
+    letter-spacing: 0.16em !important;
+    line-height: 1.35 !important;
+  }
+
+  #root [data-testid='plumbline-page-motto'] {
+    font-family: var(--ecw-font-display) !important;
+    font-size: 0.88rem !important;
+    font-style: italic !important;
+    letter-spacing: 0.02em !important;
+    line-height: 1.35 !important;
+  }
+
+  #root [data-testid='plumbline-page-composition'] {
+    --plumbline-composition-columns: 220px minmax(0, 760px) 252px;
+    --plumbline-composition-gap: 30px;
+    display: grid !important;
+    grid-template-columns: var(--plumbline-composition-columns) !important;
+    column-gap: var(--plumbline-composition-gap) !important;
+    align-items: start !important;
+    width: min(100%, 1400px) !important;
+    max-width: 1400px !important;
+    min-height: calc(100dvh - 132px) !important;
+    margin-inline: auto !important;
+    padding-inline: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  #root [data-testid='plumbline-page-composition'] > #plumbline-main-content {
+    grid-column: 2 !important;
+    grid-row: 1 !important;
+    align-self: stretch !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    min-height: calc(100dvh - 132px) !important;
+    background-color: var(--ecw-surface) !important;
+    border-inline: 0 !important;
+    box-sizing: border-box !important;
+    flex: none !important;
+  }
+
+  #root
+    [data-testid='plumbline-page-composition']
+    > [data-testid='plumbline-left-nav'],
+  #root
+    [data-testid='plumbline-page-composition']
+    > [data-testid='plumbline-right-nav'] {
+    position: sticky !important;
+    top: 16px !important;
+    left: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    width: 100% !important;
+    max-width: none !important;
+    height: auto !important;
+    max-height: calc(100dvh - 32px) !important;
+    transform: none !important;
+    box-sizing: border-box !important;
+    align-self: start !important;
+  }
+
+  #root
+    [data-testid='plumbline-page-composition']
+    > [data-testid='plumbline-left-nav'] {
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+    overflow-y: auto !important;
+    padding: 16px 18px 48px 0 !important;
+    background-color: transparent !important;
+    border-right: 1px solid var(--ecw-rule-decorative) !important;
+    box-shadow: none !important;
+  }
+
+  #root
+    [data-testid='plumbline-page-composition']
+    > [data-testid='plumbline-right-nav'] {
+    grid-column: 3 !important;
+    grid-row: 1 !important;
+    overflow-y: auto !important;
+    padding: 16px 0 48px 24px !important;
+    background-color: transparent !important;
+    border-left: 1px solid var(--ecw-rule-decorative) !important;
+    box-shadow: none !important;
+  }
+
+  #root [data-testid='plumbline-nav-index-heading'] {
+    margin-bottom: 16px !important;
+    padding: 8px 0 10px !important;
+    border-top: 2px solid var(--ecw-border-strong) !important;
+    border-bottom: 1px solid var(--ecw-rule-decorative) !important;
+  }
+
+  #root [data-testid='plumbline-nav-index-heading'] [role='heading'] {
+    font-family: var(--ecw-font-display) !important;
+    font-size: 1.42rem !important;
+    letter-spacing: 0.01em !important;
+    line-height: 1.05 !important;
+  }
+
+  #root [data-testid='plumbline-nav-group-workspace'],
+  #root [data-testid='plumbline-nav-group-feeds'],
+  #root [data-testid='plumbline-nav-group-services'],
+  #root [data-testid='plumbline-nav-group-account'] {
+    margin-top: 18px !important;
+    padding-top: 0 !important;
+    border-top: 0 !important;
+  }
+
+  #root [data-testid^='plumbline-nav-section-label-'] {
+    padding: 8px 0 5px !important;
+    border-top: 1px solid var(--ecw-rule-decorative) !important;
+    color: var(--ecw-text-muted) !important;
+    font-family: var(--ecw-font-ui) !important;
+    font-size: 0.65rem !important;
+    letter-spacing: 0.16em !important;
+    line-height: 1.3 !important;
+    text-transform: uppercase !important;
+  }
+
+  #root
+    [data-testid^='plumbline-nav-group-']
+    > [data-testid^='plumbline-nav-'] {
+    position: relative !important;
+    min-height: 36px !important;
+    padding: 6px 8px 6px 20px !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background-color: transparent !important;
+    box-shadow: none !important;
+  }
+
+  #root
+    [data-testid^='plumbline-nav-group-']
+    > [data-testid^='plumbline-nav-'][aria-current='page'] {
+    color: var(--ecw-text) !important;
+    font-weight: 700 !important;
+  }
+
+  #root
+    [data-testid^='plumbline-nav-group-']
+    > [data-testid^='plumbline-nav-'][aria-current='page']::after {
+    position: absolute;
+    top: 5px;
+    bottom: 5px;
+    left: 5px;
+    width: 2px;
+    background-color: var(--ecw-marker);
+    content: '';
+  }
+
+  #root [data-testid='plumbline-account-context'] > [role='button'] {
+    min-height: 56px !important;
+    padding: 8px 0 !important;
+    border-top: 0 !important;
+    border-bottom: 1px solid var(--ecw-rule-decorative) !important;
+    border-radius: 0 !important;
+    background-color: transparent !important;
+    box-shadow: none !important;
+  }
+
+  #root
+    [data-testid='plumbline-page-composition']
+    > #plumbline-main-content
+    [data-testid='plumbline-document-stream-heading'] {
+    min-height: 102px !important;
+    align-items: flex-end !important;
+    padding: 22px 28px 16px !important;
+    border-top: 0 !important;
+    border-bottom: 1px solid var(--ecw-border-strong) !important;
+    background-color: transparent !important;
+  }
+
+  #root [data-testid='plumbline-document-stream-title'] {
+    max-width: 100% !important;
+    color: var(--ecw-text) !important;
+    font-family: var(--ecw-font-display) !important;
+    font-size: clamp(2rem, 3.2vw, 2.55rem) !important;
+    font-weight: 700 !important;
+    letter-spacing: 0 !important;
+    line-height: 1.03 !important;
+  }
+
+  #root [data-testid='plumbline-document-stream-issue'],
+  #root [data-testid='plumbline-document-stream-section'],
+  #root [data-testid='plumbline-document-stream-metadata'] {
+    color: var(--ecw-text-muted) !important;
+    font-family: var(--ecw-font-ui) !important;
+    font-size: 0.64rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.15em !important;
+    line-height: 1.35 !important;
+    text-transform: uppercase !important;
+  }
+
+  #root [data-testid='plumbline-document-stream-metadata'] {
+    font-family: var(--ecw-font-system) !important;
+    letter-spacing: 0.08em !important;
+  }
+
+  #root
+    [data-testid='plumbline-document-stream-heading']
+    [data-testid='plumbline-document-stream-marker'] {
+    width: 16px !important;
+    height: 68px !important;
+    margin-right: 18px !important;
+  }
+
+  #root [data-testid='plumbline-document-stream-marker'] > div:first-child {
+    width: 1px !important;
+    background-color: var(--ecw-border-strong) !important;
+  }
+
+  #root [data-testid='plumbline-document-stream-marker'] > div:last-child {
+    border-color: var(--ecw-border-strong) !important;
+    background-color: var(--ecw-marker) !important;
+  }
+
+  #root
+    [data-testid='plumbline-page-composition']
+    > #plumbline-main-content
+    [role='tablist'] {
+    position: relative !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    align-items: stretch !important;
+    overflow: visible !important;
+    border-top: 1px solid var(--ecw-rule-decorative) !important;
+    border-bottom: 1px solid var(--ecw-border-strong) !important;
+    background-color: transparent !important;
+    box-shadow: none !important;
+  }
+
+  #root
+    [data-testid='plumbline-page-composition']
+    > #plumbline-main-content
+    [role='tablist']::before {
+    display: flex !important;
+    align-items: center;
+    flex: 0 0 auto;
+    padding: 0 14px 0 28px;
+    color: var(--ecw-text-muted);
+    content: 'EDITIONS';
+    font-family: var(--ecw-font-ui);
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+
+  #root
+    [data-testid='plumbline-page-composition']
+    > #plumbline-main-content
+    [role='tablist']
+    > [data-testid$='-selector'] {
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    scrollbar-width: thin;
+  }
+
+  #root
+    [data-testid='plumbline-page-composition']
+    > #plumbline-main-content
+    [role='tablist']
+    [role='tab'] {
+    min-width: max-content !important;
+    padding: 12px 13px 10px !important;
+    border-radius: 0 !important;
+    background-color: transparent !important;
+    box-shadow: none !important;
+    font-family: var(--ecw-font-display) !important;
+    font-size: 0.98rem !important;
+    font-weight: 700 !important;
+    text-transform: none !important;
+  }
+
+  #root
+    [data-testid='plumbline-page-composition']
+    > #plumbline-main-content
+    [role='tab'][aria-selected='true'] {
+    border-bottom: 2px solid var(--ecw-border-strong) !important;
+  }
+
+  #root
+    [data-testid='plumbline-page-composition']
+    > #plumbline-main-content
+    [data-testid='feed-provenance-summary'] {
+    min-width: 0 !important;
+    padding: 8px 28px !important;
+    border: 0 !important;
+    background-color: transparent !important;
+    color: var(--ecw-text-muted) !important;
+    font-family: var(--ecw-font-ui) !important;
+    font-size: 0.68rem !important;
+    line-height: 1.45 !important;
+  }
+
+  #root
+    [data-testid='plumbline-page-composition']
+    > #plumbline-main-content
+    [data-testid='feed-provenance-summary-marker'] {
+    width: 7px !important;
+    height: 7px !important;
+    background-color: var(--ecw-marker) !important;
+  }
+
+  #root
+    [data-testid='plumbline-page-composition']
+    > #plumbline-main-content
+    [data-testid='feed-provenance-details-toggle'] {
+    margin: 3px 28px 6px !important;
+    padding: 2px 0 !important;
+    border: 0 !important;
+    border-bottom: 1px solid var(--ecw-link) !important;
+    border-radius: 0 !important;
+    background-color: transparent !important;
+    font-family: var(--ecw-font-ui) !important;
+    font-size: 0.72rem !important;
+  }
+
+  #root
+    [data-testid='plumbline-page-composition']
+    > #plumbline-main-content
+    [data-testid^='feedItem-by-'] {
+    position: relative !important;
+    margin: 0 !important;
+    padding: 22px 28px 24px 20px !important;
+    border: 0 !important;
+    border-bottom: 1px solid var(--ecw-rule-decorative) !important;
+    border-radius: 0 !important;
+    background-color: transparent !important;
+    box-shadow: none !important;
+  }
+
+  #root
+    [data-testid='plumbline-page-composition']
+    > #plumbline-main-content
+    [data-testid^='feedItem-by-']::before {
+    position: absolute;
+    top: 0;
+    bottom: -1px;
+    left: 28px;
+    width: 1px;
+    background-color: var(--ecw-border-structural);
+    content: '';
+    pointer-events: none;
+  }
+
+  #root
+    [data-testid='plumbline-page-composition']
+    > #plumbline-main-content
+    [data-testid^='feedItem-by-']::after {
+    position: absolute;
+    top: 20px;
+    left: 24px;
+    width: 8px;
+    height: 8px;
+    border: 1px solid var(--ecw-border-strong);
+    background-color: var(--ecw-marker);
+    content: '';
+    pointer-events: none;
+    transform: rotate(45deg);
+  }
+
+  #root
+    [data-testid='plumbline-page-composition']
+    > #plumbline-main-content
+    [data-testid^='feedItem-by-']
+    > div {
+    position: relative !important;
+    z-index: 1;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background-color: transparent !important;
+    box-shadow: none !important;
+  }
+
+  #root
+    [data-testid='plumbline-page-composition']
+    > #plumbline-main-content
+    [data-testid^='feedItem-by-']
+    [data-testid='postText'] {
+    max-width: 66ch;
+    font-family: var(--ecw-font-ui) !important;
+    font-size: 1rem !important;
+    line-height: 1.58 !important;
+  }
+
+  #root
+    [data-testid='plumbline-page-composition']
+    > #plumbline-main-content
+    [data-testid^='feedItem-by-']
+    img,
+  #root
+    [data-testid='plumbline-page-composition']
+    > #plumbline-main-content
+    [data-testid^='feedItem-by-']
+    video {
+    max-width: 100% !important;
+    border-radius: 0 !important;
+  }
+
+  #root
+    [data-testid='plumbline-page-composition']
+    > #plumbline-main-content
+    [data-testid='plumbline-quote-embed'],
+  #root
+    [data-testid='plumbline-page-composition']
+    > #plumbline-main-content
+    [data-testid='plumbline-external-embed'],
+  #root
+    [data-testid='plumbline-page-composition']
+    > #plumbline-main-content
+    [data-testid='plumbline-standard-site-embed'],
+  #root
+    [data-testid='plumbline-page-composition']
+    > #plumbline-main-content
+    [data-testid='plumbline-publication-embed'] {
+    margin-top: 14px !important;
+    padding: 10px 0 10px 14px !important;
+    border: 0 !important;
+    border-left: 3px solid var(--ecw-rule-decorative) !important;
+    border-radius: 0 !important;
+    background-color: transparent !important;
+    box-shadow: none !important;
+  }
+
+  #root
+    [data-testid='plumbline-page-composition']
+    > #plumbline-main-content
+    [data-testid='plumbline-quote-embed']
+    [data-testid='contentHider-post'] {
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background-color: transparent !important;
+    box-shadow: none !important;
+  }
+
+  #root
+    [data-testid='plumbline-page-composition']
+    > #plumbline-main-content
+    [data-testid='plumbline-post-actions'] {
+    min-height: 34px;
+    padding-top: 4px !important;
+    border-top: 0 !important;
+  }
+
+  #root
+    [data-testid='plumbline-page-composition']
+    > #plumbline-main-content
+    [data-testid='plumbline-post-actions']
+    button {
+    min-width: 34px !important;
+    min-height: 34px !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background-color: transparent !important;
+    box-shadow: none !important;
+  }
+
+  #root
+    [data-testid='plumbline-page-composition']
+    > [data-testid='plumbline-right-nav']
+    [data-testid='plumbline-workbench-inspector'] {
+    padding: 0 0 18px !important;
+    border: 0 !important;
+    border-top: 2px solid var(--ecw-border-strong) !important;
+    border-bottom: 1px solid var(--ecw-rule-decorative) !important;
+    border-radius: 0 !important;
+    background-color: transparent !important;
+    box-shadow: none !important;
+    gap: 8px !important;
+  }
+
+  #root [data-testid='plumbline-workbench-inspector'] > [role='heading'] {
+    padding-top: 10px !important;
+    color: var(--ecw-text) !important;
+    font-family: var(--ecw-font-display) !important;
+    font-size: 1.35rem !important;
+    font-weight: 700 !important;
+    line-height: 1.15 !important;
+  }
+
+  #root [data-testid='plumbline-workbench-inspector-route'] {
+    padding-bottom: 6px !important;
+    color: var(--ecw-text) !important;
+    font-family: var(--ecw-font-display) !important;
+    font-size: 1.25rem !important;
+    font-weight: 700 !important;
+    line-height: 1.18 !important;
+  }
+
+  #root [data-testid='plumbline-workbench-inspector-source'],
+  #root [data-testid='plumbline-workbench-inspector-rule'],
+  #root [data-testid='plumbline-workbench-inspector-control'] {
+    color: var(--ecw-text-secondary) !important;
+    font-family: var(--ecw-font-ui) !important;
+    font-size: 0.76rem !important;
+    line-height: 1.5 !important;
+  }
+
+  #root [data-testid='plumbline-workbench-inspector-source']::first-line,
+  #root [data-testid='plumbline-workbench-inspector-rule']::first-line,
+  #root [data-testid='plumbline-workbench-inspector-control']::first-line {
+    color: var(--ecw-text) !important;
+  }
+
+  #root [data-testid='plumbline-inspector-tools'],
+  #root [data-testid='plumbline-inspector-discovery'],
+  #root [data-testid='plumbline-inspector-secondary-context'] {
+    padding: 14px 0 0 !important;
+    border: 0 !important;
+    border-top: 1px solid var(--ecw-rule-decorative) !important;
+    background-color: transparent !important;
+  }
+
+  #root [data-testid='plumbline-inspector-tools'] > [role='heading'],
+  #root [data-testid='plumbline-inspector-discovery'] > [role='heading'],
+  #root
+    [data-testid='plumbline-inspector-secondary-context']
+    > [role='heading'] {
+    border: 0 !important;
+    padding: 0 !important;
+    color: var(--ecw-text-muted) !important;
+    font-family: var(--ecw-font-ui) !important;
+    font-size: 0.64rem !important;
+    letter-spacing: 0.15em !important;
+    text-transform: uppercase !important;
+  }
+
+  #root [data-testid='plumbline-more-context-toggle'] {
+    align-self: flex-start;
+    min-height: 30px !important;
+    padding: 3px 0 !important;
+    border: 0 !important;
+    border-bottom: 1px solid var(--ecw-link) !important;
+    border-radius: 0 !important;
+    background-color: transparent !important;
+  }
+
+  #root [data-testid='plumbline-trending-panel'] {
+    padding: 10px 0 !important;
+    border: 0 !important;
+    border-top: 1px solid var(--ecw-rule-decorative) !important;
+    border-radius: 0 !important;
+    background-color: transparent !important;
+    box-shadow: none !important;
+  }
+}
+
+@media (min-width: 1100px) and (max-width: 1359px) {
+  #root [data-testid='plumbline-page-composition'] {
+    --plumbline-composition-columns: 188px minmax(0, 760px) 220px;
+    --plumbline-composition-gap: 24px;
+    width: min(100%, 1236px) !important;
+    max-width: 1236px !important;
+  }
+}
+
+@media (min-width: 800px) and (max-width: 1099px) {
+  #root [data-testid='plumbline-page-composition'] {
+    --plumbline-composition-columns: 72px minmax(0, 760px);
+    --plumbline-composition-gap: 22px;
+    width: min(100%, 920px) !important;
+    max-width: 920px !important;
+  }
+
+  #root
+    [data-testid='plumbline-page-composition']
+    > [data-testid='plumbline-right-nav'] {
+    display: none !important;
+  }
+
+  #root
+    [data-testid='plumbline-page-composition']
+    > [data-testid='plumbline-left-nav'] {
+    border-right: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  #root
+    [data-testid='plumbline-page-composition']
+    > #plumbline-main-content
+    [data-testid='plumbline-document-stream-heading'] {
+    padding-inline: 24px !important;
+  }
+}
+
+@media (max-width: 799px) {
+  #root [data-testid='plumbline-mobile-masthead-lockup'] {
+    gap: 6px;
+  }
+
+  #root
+    [data-testid='plumbline-mobile-masthead-lockup']
+    [data-testid='plumbline-mobile-wordmark'] {
+    font-family: var(--ecw-font-display) !important;
+  }
+
+  #root [data-testid='plumbline-page-composition'] {
+    min-height: 100dvh !important;
+    background-color: var(--ecw-surface) !important;
+  }
+
+  #root [data-testid='plumbline-page-composition'] > #plumbline-main-content {
+    min-height: 100dvh !important;
+    background-color: var(--ecw-surface) !important;
+  }
+
+  #root
+    [data-testid='plumbline-page-composition']
+    > #plumbline-main-content
+    [role='tablist'] {
+    overflow: hidden !important;
+    border-top: 1px solid var(--ecw-rule-decorative) !important;
+    border-bottom: 1px solid var(--ecw-border-strong) !important;
+  }
+
+  #root
+    [data-testid='plumbline-page-composition']
+    > #plumbline-main-content
+    [role='tablist']::before {
+    display: none !important;
+  }
+
+  #root
+    [data-testid='plumbline-page-composition']
+    > #plumbline-main-content
+    [role='tablist']
+    [role='tab'] {
+    padding-inline: 12px !important;
+    font-size: 0.96rem !important;
+  }
+
+  #root
+    [data-testid='plumbline-page-composition']
+    > #plumbline-main-content
+    [data-testid^='feedItem-by-'] {
+    padding: 18px 16px 20px 12px !important;
+  }
+
+  #root
+    [data-testid='plumbline-page-composition']
+    > #plumbline-main-content
+    [data-testid^='feedItem-by-']::before {
+    left: 20px;
+  }
+
+  #root
+    [data-testid='plumbline-page-composition']
+    > #plumbline-main-content
+    [data-testid^='feedItem-by-']::after {
+    top: 16px;
+    left: 16px;
+    width: 7px;
+    height: 7px;
+  }
+
+  #root
+    [data-testid='plumbline-page-composition']
+    > #plumbline-main-content
+    [data-testid='feed-provenance-summary'] {
+    padding-inline: 16px !important;
+  }
+}
+
+/* Direction A restores the structural markers that an older HomeScreen rule
+ * hid when the feed was treated as a simplified card list. These markers are
+ * part of the document's provenance grammar, so they remain visible without
+ * exposing implementation vocabulary in the ordinary interface. */
+#root
+  [data-ecw-mode='page'][data-testid='HomeScreen']
+  [data-testid='plumbline-document-stream-marker'] {
+  display: flex !important;
+}
+
+#root
+  [data-ecw-mode='page'][data-testid='HomeScreen']
+  [data-testid='feed-provenance-summary-marker'] {
+  display: block !important;
+}
+
+#root
+  [data-ecw-mode='page'][data-testid='HomeScreen']
+  [data-testid^='feedItem-by-']::before,
+#root
+  [data-ecw-mode='page'][data-testid='HomeScreen']
+  [data-testid^='feedItem-by-']::after {
+  display: block !important;
+  content: '' !important;
+}
+
+/* The Home margin is an optional context note, not a second permanent
+ * dashboard. Its collapsed state keeps the route discoverable while returning
+ * visual weight to the document stream. Mobile content also reserves the
+ * bottom-bar safe area so the account action row cannot cover a post. */
+@media (max-width: 799px) {
+  #root
+    [data-testid='plumbline-shell'][data-ecw-shell-mode='page']
+    > [data-testid='plumbline-page-composition']
+    > #plumbline-main-content {
+    padding-bottom: calc(76px + env(safe-area-inset-bottom)) !important;
+    scroll-padding-bottom: calc(76px + env(safe-area-inset-bottom));
+  }
+
+  #root
+    [data-testid='plumbline-shell'][data-ecw-shell-mode='page']
+    [data-testid='plumbline-bottom-bar'] {
+    z-index: 50 !important;
+  }
+}
+
+@media (min-width: 1100px) {
+  #root [data-testid='plumbline-workbench-inspector-collapsed'] {
+    display: flex !important;
+    min-height: 66px !important;
+    justify-content: center !important;
+    padding: 10px 0 12px !important;
+    border: 0 !important;
+    border-top: 2px solid var(--ecw-border-strong) !important;
+    border-bottom: 1px solid var(--ecw-rule-decorative) !important;
+    border-radius: 0 !important;
+    background-color: transparent !important;
+    box-shadow: none !important;
+    gap: 4px !important;
+  }
+
+  #root
+    [data-testid='plumbline-workbench-inspector-collapsed']
+    [data-testid='plumbline-workbench-inspector-open'] {
+    min-height: 30px !important;
+    padding: 3px 0 !important;
+    border: 0 !important;
+    border-bottom: 1px solid var(--ecw-link) !important;
+    border-radius: 0 !important;
+    background-color: transparent !important;
+    box-shadow: none !important;
+  }
+
+  #root [data-testid='plumbline-workbench-inspector-collapsed'] > * {
+    font-family: var(--ecw-font-display) !important;
+  }
+
+  #root [data-testid='plumbline-workbench-inspector'] > div:first-child {
+    display: flex !important;
+    align-items: baseline !important;
+    justify-content: space-between !important;
+    gap: 8px !important;
+  }
+
+  #root
+    [data-testid='plumbline-workbench-inspector']
+    [data-testid='plumbline-workbench-inspector-close'] {
+    min-height: 30px !important;
+    padding: 3px 0 !important;
+    border: 0 !important;
+    border-bottom: 1px solid var(--ecw-link) !important;
+    border-radius: 0 !important;
+    background-color: transparent !important;
+  }
+}
+
 [data-ecw-mode='workbench'] h1,
 [data-ecw-mode='workbench'] h2,
 [data-ecw-mode='workbench'] h3 {

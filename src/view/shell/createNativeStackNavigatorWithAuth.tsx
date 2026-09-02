@@ -212,7 +212,12 @@ function NativeStackNavigator({
           {IS_WEB && (
             <>
               {showBottomBar ? (
-                <BottomBarWeb />
+                <>
+                  <BottomBarWeb />
+                  {!hasSession && !isMobile && (
+                    <DesktopLeftNav routeName={activeRoute.name} />
+                  )}
+                </>
               ) : (
                 <DesktopLeftNav routeName={activeRoute.name} />
               )}

@@ -61,12 +61,15 @@ export function DesktopRightNav({routeName}: {routeName: string}) {
     !isSearchScreen || (isSearchScreen && !!searchQuery)
   const {rightNavVisible, centerColumnOffset, leftNavMinimal} =
     useLayoutBreakpoints()
+  const isHomeRoute = routeName === 'Home'
+  const [showInspector, setShowInspector] = useState(!isHomeRoute)
   const [showMoreContext, setShowMoreContext] = useState(false)
   const moreContextId = `plumbline-inspector-secondary-context-${useId()}`
 
   useEffect(() => {
+    setShowInspector(!isHomeRoute)
     setShowMoreContext(false)
-  }, [routeName])
+  }, [isHomeRoute, routeName])
 
   if (!rightNavVisible || isMessagesRelatedScreen || usesPageOwnedInspector) {
     return null
@@ -102,17 +105,24 @@ export function DesktopRightNav({routeName}: {routeName: string}) {
           scrollbarWidth: 'thin',
         }),
       ]}>
-      <DesktopWorkbenchInspector routeName={routeName} />
+      {showInspector ? (
+        <DesktopWorkbenchInspector
+          routeName={routeName}
+          onClose={isHomeRoute ? () => setShowInspector(false) : undefined}
+        />
+      ) : (
+        <CollapsedInspector onOpen={() => setShowInspector(true)} />
+      )}
       <View
         testID="plumbline-inspector-tools"
         role="region"
-        accessibilityLabel={_(msg`Optional read tools`)}
+        accessibilityLabel={_(msg`Reference shelf`)}
         accessibilityHint={_(
           msg`Contains replaceable read tools for this surface`,
         )}
         style={styles.inspectorTools}>
         <H2 style={[styles.secondaryHeading, t.atoms.text_contrast_medium]}>
-          {_(msg`Adjacent sources`)}
+          {_(msg`Reference shelf`)}
         </H2>
         <Text
           testID="plumbline-inspector-tools-description"
@@ -167,7 +177,7 @@ export function DesktopRightNav({routeName}: {routeName: string}) {
                     styles.secondaryHeading,
                     t.atoms.text_contrast_medium,
                   ]}>
-                  Available feeds
+                  Other editions
                 </H3>
                 <DesktopFeeds />
                 <ProgressGuideList />
@@ -181,13 +191,13 @@ export function DesktopRightNav({routeName}: {routeName: string}) {
         <View
           testID="plumbline-inspector-discovery"
           role="region"
-          accessibilityLabel={_(msg`Optional discovery sources`)}
+          accessibilityLabel={_(msg`Further reading`)}
           accessibilityHint={_(
             msg`Contains optional external signals for this surface`,
           )}
           style={styles.inspectorDiscovery}>
           <H2 style={[styles.secondaryHeading, t.atoms.text_contrast_medium]}>
-            {_(msg`Optional discovery sources`)}
+            {_(msg`Further reading`)}
           </H2>
           <Text
             testID="plumbline-inspector-discovery-description"
@@ -303,7 +313,13 @@ const WORKBENCH_ROUTE_LABELS: Record<string, string> = {
   NotFound: 'Page not found',
 }
 
-function DesktopWorkbenchInspector({routeName}: {routeName: string}) {
+function DesktopWorkbenchInspector({
+  routeName,
+  onClose,
+}: {
+  routeName: string
+  onClose?: () => void
+}) {
   const {_} = useLingui()
   const t = useTheme()
   const {data: pinnedFeeds} = usePinnedFeedsInfos()
@@ -597,13 +613,28 @@ function DesktopWorkbenchInspector({routeName}: {routeName: string}) {
   return (
     <View
       role="complementary"
-      accessibilityLabel={_(msg`Workbench inspector`)}
+      accessibilityLabel={_(msg`Marginal note`)}
       accessibilityHint={_(
         msg`Shows the provider, rule, and control for this surface`,
       )}
       testID="plumbline-workbench-inspector"
       style={[styles.inspector, t.atoms.border_contrast_low]}>
-      <H2 style={styles.inspectorTitle}>{_(msg`Marginal note`)}</H2>
+      <View style={styles.inspectorHeadingRow}>
+        <H2 style={styles.inspectorTitle}>{_(msg`Marginal note`)}</H2>
+        {onClose ? (
+          <Pressable
+            testID="plumbline-workbench-inspector-close"
+            accessibilityRole="button"
+            accessibilityLabel={_(msg`Close marginal note`)}
+            accessibilityHint={_(msg`Collapse the current edition context`)}
+            onPress={onClose}
+            style={({pressed}) => [pressed && styles.pressed]}>
+            <Text style={[styles.inspectorClose, t.atoms.text_link]}>
+              {_(msg`Close`)}
+            </Text>
+          </Pressable>
+        ) : null}
+      </View>
       <Text
         testID="plumbline-workbench-inspector-route"
         style={[styles.inspectorRoute, t.atoms.text]}>
@@ -630,6 +661,37 @@ function DesktopWorkbenchInspector({routeName}: {routeName: string}) {
         style={[styles.inspectorAction, t.atoms.text_link]}>
         {context.action}
       </InlineLinkText>
+    </View>
+  )
+}
+
+function CollapsedInspector({onOpen}: {onOpen: () => void}) {
+  const {_} = useLingui()
+  const t = useTheme()
+
+  return (
+    <View
+      testID="plumbline-workbench-inspector-collapsed"
+      role="region"
+      accessibilityLabel={_(msg`Edition context`)}
+      accessibilityHint={_(
+        msg`Contains the collapsed context note for this surface`,
+      )}
+      style={styles.inspectorCollapsed}>
+      <Text style={styles.inspectorCollapsedLabel}>
+        {_(msg`Edition context`)}
+      </Text>
+      <Pressable
+        testID="plumbline-workbench-inspector-open"
+        accessibilityRole="button"
+        accessibilityLabel={_(msg`Inspect current edition`)}
+        accessibilityHint={_(msg`Open the source, rule, and control note`)}
+        onPress={onOpen}
+        style={({pressed}) => [pressed && styles.pressed]}>
+        <Text style={[styles.inspectorAction, t.atoms.text_link]}>
+          {_(msg`Inspect current edition`)}
+        </Text>
+      </Pressable>
     </View>
   )
 }
@@ -697,12 +759,35 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     gap: 7,
   },
+  inspectorCollapsed: {
+    borderTopWidth: 1,
+    borderBottomWidth: 1,
+    paddingVertical: 12,
+    gap: 7,
+  },
+  inspectorCollapsedLabel: {
+    fontFamily: 'Georgia, "Times New Roman", serif',
+    fontSize: 16,
+    fontWeight: '700',
+    letterSpacing: 0.2,
+    lineHeight: 20,
+  },
+  inspectorHeadingRow: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    justifyContent: 'space-between',
+    gap: 8,
+  },
   inspectorTitle: {
     fontFamily: 'Georgia, "Times New Roman", serif',
     fontSize: 16,
     fontWeight: '700',
     letterSpacing: 0.2,
     lineHeight: 20,
+  },
+  inspectorClose: {
+    fontSize: 11,
+    fontWeight: '700',
   },
   inspectorRoute: {
     fontFamily: 'Georgia, "Times New Roman", serif',

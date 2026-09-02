@@ -461,6 +461,7 @@ function NavItem({
       testID={`plumbline-nav-${navItem}`}
       accessibilityLabel={label}
       accessibilityHint=""
+      aria-current={isCurrent ? 'page' : undefined}
       accessibilityState={{selected: isSelected}}>
       {isSelected ? (
         <PlumblineSelectionMarker testID={`plumbline-nav-marker-${navItem}`} />
@@ -655,7 +656,7 @@ export function DesktopLeftNav({routeName}: {routeName: string}) {
   return (
     <View
       role="navigation"
-      accessibilityLabel={l(msg`Primary navigation`)}
+      accessibilityLabel={l(msg`Index`)}
       accessibilityHint=""
       testID="plumbline-left-nav"
       style={[
@@ -693,14 +694,51 @@ export function DesktopLeftNav({routeName}: {routeName: string}) {
           <H2 style={styles.indexHeading}>Index</H2>
         </View>
       )}
-      {hasSession ? (
-        <ProfileCard minimal={leftNavMinimal} />
-      ) : !leftNavMinimal ? (
-        <View style={[a.pt_xl]}>
-          <NavSignupCard />
-        </View>
-      ) : null}
-      {hasSession && (
+      {hasSession ? <ProfileCard minimal={leftNavMinimal} /> : null}
+      {!hasSession ? (
+        <>
+          <NavSection
+            id="public-reading"
+            label="Reading"
+            minimal={leftNavMinimal}>
+            <NavItem
+              label={l`Home`}
+              href="/"
+              navItem="home"
+              minimal={leftNavMinimal}
+              icons={{
+                inactive: HomeIcon,
+                active: HomeFilledIcon,
+              }}
+            />
+            <NavItem
+              label={l`Explore`}
+              href="/search"
+              navItem="search"
+              minimal={leftNavMinimal}
+              icons={{
+                inactive: MagnifyingGlassIcon,
+                active: MagnifyingGlassFilledIcon,
+              }}
+            />
+            <NavItem
+              label="Communities"
+              href="/community"
+              navItem="community"
+              minimal={leftNavMinimal}
+              icons={{
+                inactive: PinIcon,
+                active: PinFilledIcon,
+              }}
+            />
+          </NavSection>
+          {!leftNavMinimal && (
+            <View style={[a.pt_xl]}>
+              <NavSignupCard />
+            </View>
+          )}
+        </>
+      ) : (
         <>
           <NavSection id="workspace" label="Sections" minimal={leftNavMinimal}>
             <NavItem

@@ -85,7 +85,7 @@ function HomeHeaderLayoutDesktopAndTablet({
               <Text
                 testID="plumbline-document-stream-issue"
                 style={styles.headingIssue}>
-                CURRENT EDITION
+                THE EDITION
               </Text>
               <Text
                 aria-hidden={true}
@@ -111,7 +111,7 @@ function HomeHeaderLayoutDesktopAndTablet({
                     styles.headingMetadataLabel,
                     t.atoms.text_contrast_low,
                   ]}>
-                  MODE
+                  ORDER
                 </Text>
                 <Text
                   testID="plumbline-document-stream-metadata"

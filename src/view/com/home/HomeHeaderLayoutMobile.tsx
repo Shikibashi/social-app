@@ -5,6 +5,7 @@ import {msg} from '@lingui/core/macro'
 import {useLingui} from '@lingui/react'
 import {useNavigation} from '@react-navigation/native'
 
+import {PRODUCT_NAME} from '#/lib/brand'
 import {HITSLOP_10} from '#/lib/constants'
 import {PressableScale} from '#/lib/custom-animations/PressableScale'
 import {useHaptics} from '#/lib/haptics'
@@ -19,7 +20,7 @@ import {ButtonIcon} from '#/components/Button'
 import {Hashtag_Stroke2_Corner0_Rounded as FeedsIcon} from '#/components/icons/Hashtag'
 import * as Layout from '#/components/Layout'
 import {Link} from '#/components/Link'
-import {H1} from '#/components/Typography'
+import {H1, Text} from '#/components/Typography'
 import {useAnalytics} from '#/analytics'
 import {IS_DEV, IS_LIQUID_GLASS, IS_WEB} from '#/env'
 
@@ -68,7 +69,7 @@ export function HomeHeaderLayoutMobile({
         <View style={[a.flex_1, a.align_center]}>
           <PressableScale
             targetScale={0.9}
-            accessibilityLabel={_(msg`Refresh current feed`)}
+            accessibilityLabel={_(msg`Refresh current Plumbline edition`)}
             accessibilityHint={_(
               msg`Returns to the top and loads the latest posts`,
             )}
@@ -80,7 +81,17 @@ export function HomeHeaderLayoutMobile({
                 emitSoftReset()
               }
             }}>
-            <PlumblineMastheadSymbol size={22} />
+            <View
+              testID="plumbline-mobile-masthead-lockup"
+              style={styles.mobileMastheadLockup}
+              accessible={false}>
+              <PlumblineMastheadSymbol size={22} />
+              <Text
+                testID="plumbline-mobile-wordmark"
+                style={styles.mobileWordmark}>
+                {PRODUCT_NAME}
+              </Text>
+            </View>
           </PressableScale>
         </View>
 
@@ -111,4 +122,20 @@ export function HomeHeaderLayoutMobile({
       {children}
     </Animated.View>
   )
+}
+
+const styles = {
+  mobileMastheadLockup: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    gap: 6,
+  },
+  mobileWordmark: {
+    fontFamily: 'Georgia, "Times New Roman", serif',
+    fontSize: 18,
+    fontWeight: '700' as const,
+    letterSpacing: 0.5,
+    lineHeight: 22,
+    textTransform: 'uppercase' as const,
+  },
 }

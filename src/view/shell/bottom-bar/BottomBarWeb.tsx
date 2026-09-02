@@ -87,6 +87,7 @@ export function BottomBarWeb() {
 
       <Animated.View
         role="navigation"
+        testID="plumbline-bottom-bar"
         style={[
           styles.bottomBar,
           styles.bottomBarWeb,
