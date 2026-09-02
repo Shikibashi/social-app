@@ -1,8 +1,8 @@
 import {type StyleProp, View, type ViewStyle} from 'react-native'
-import {type ModerationCause, type ModerationUI} from '#/lib/moderation'
 import {plural} from '@lingui/core/macro'
 import {useLingui} from '@lingui/react/macro'
 
+import {type ModerationCause, type ModerationUI} from '#/lib/moderation'
 import {
   filterUserFacingLabels,
   getModerationCauseKey,

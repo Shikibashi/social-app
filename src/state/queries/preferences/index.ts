@@ -1,4 +1,3 @@
-import {useCallback} from 'react'
 import {type DidString} from '@atproto/syntax'
 import {
   addSavedFeeds,
@@ -21,11 +20,11 @@ import {
   updateSavedFeeds,
   upsertMutedWords,
 } from '@bsky/sdk'
-import {type LabelPreference} from '#/lib/moderation'
 import {useMutation, useQuery, useQueryClient} from '@tanstack/react-query'
 
 import {PROD_DEFAULT_FEED} from '#/lib/constants'
 import {replaceEqualDeep} from '#/lib/functions'
+import {type LabelPreference} from '#/lib/moderation'
 import {getAge} from '#/lib/strings/time'
 import {GCTIME, STALE} from '#/state/queries'
 import {

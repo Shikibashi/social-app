@@ -1,11 +1,11 @@
 import {memo, useEffect} from 'react'
 import {View} from 'react-native'
-import {type ModerationOpts} from '#/lib/moderation'
 import {msg} from '@lingui/core/macro'
 import {useLingui} from '@lingui/react'
 import {type InfiniteData} from '@tanstack/react-query'
 
 import {popularInterests, useInterestsDisplayNames} from '#/lib/interests'
+import {type ModerationOpts} from '#/lib/moderation'
 import {logger} from '#/logger'
 import {usePreferencesQuery} from '#/state/queries/preferences'
 import {atoms as a, useTheme} from '#/alf'

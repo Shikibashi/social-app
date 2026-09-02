@@ -1,8 +1,8 @@
-import {type SessionData} from '@atproto/lex-password-session'
 import {describe, expect, it, jest} from '@jest/globals'
 
 import {type Action, getInitialState, reducer, type State} from '../reducer'
 import {sessionDataToSessionAccount} from '../session-core'
+import {type SessionData} from '../session-data'
 import {type SessionAccount} from '../types'
 
 jest.mock('jwt-decode', () => ({
@@ -15,7 +15,7 @@ jest.mock('jwt-decode', () => ({
 // configuration. The production account/PDS host is tested by the deployment
 // contract; this suite is testing reducer transitions and bundle identity.
 jest.mock('#/lib/constants', () => ({
-  ...jest.requireActual('#/lib/constants'),
+  ...jest.requireActual<typeof import('#/lib/constants')>('#/lib/constants'),
   DEFAULT_SERVICE: 'https://account-entryway.test',
   PUBLIC_ACCOUNT_SERVICE: 'https://account-entryway.test',
 }))

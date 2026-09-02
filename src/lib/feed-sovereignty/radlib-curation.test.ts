@@ -1,6 +1,6 @@
 import {
-  defaultContentFilterPolicy,
   contextualContentFilterPolicy,
+  defaultContentFilterPolicy,
   matchContentFilter,
   validateContentFilterPolicy,
 } from './content-filter'
@@ -276,7 +276,10 @@ describe('opt-in radical-liberal curation', () => {
       termPacks: [],
       customTerms: ['field recording', 'room treatment'],
     }
-    for (const text of ['field recording microphones', 'room treatment notes']) {
+    for (const text of [
+      'field recording microphones',
+      'room treatment notes',
+    ]) {
       const trace = matchContentFilter(
         {text, authorDid: 'did:example:author'},
         policy,
@@ -301,7 +304,11 @@ describe('opt-in radical-liberal curation', () => {
         text: 'Legacy pack labels are not a content policy',
         authorDid: 'did:example:web',
       },
-      {...contextualContentFilterPolicy, enabled: true, strictProgressive: true},
+      {
+        ...contextualContentFilterPolicy,
+        enabled: true,
+        strictProgressive: true,
+      },
     )
     expect(trace.included).toBe(true)
     expect(trace.matchedTerms).toEqual([])

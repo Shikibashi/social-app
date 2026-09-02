@@ -1,7 +1,7 @@
 import {type $Typed} from '@atproto/lex'
-import {moderateProfile, type ModerationOpts} from '#/lib/moderation'
 
 import {EMOJI_REACTION_LIMIT} from '#/lib/constants'
+import {moderateProfile, type ModerationOpts} from '#/lib/moderation'
 import {isBlockedOrBlocking} from '#/lib/moderation/blocked-and-muted'
 import {logger} from '#/logger'
 import {type Shadow} from '#/state/cache/profile-shadow'

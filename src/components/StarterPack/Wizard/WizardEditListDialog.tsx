@@ -1,12 +1,12 @@
 import {useRef} from 'react'
 import {type ListRenderItemInfo} from 'react-native'
 import {View} from 'react-native'
-import {type ModerationOpts} from '#/lib/moderation'
 import {msg} from '@lingui/core/macro'
 import {useLingui} from '@lingui/react'
 import {Trans} from '@lingui/react/macro'
 
 import {useInitialNumToRender} from '#/lib/hooks/useInitialNumToRender'
+import {type ModerationOpts} from '#/lib/moderation'
 import {type ListMethods} from '#/view/com/util/List'
 import {
   type WizardAction,

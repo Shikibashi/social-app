@@ -7,10 +7,10 @@ import Animated, {
 } from 'react-native-reanimated'
 import {useSafeAreaInsets} from 'react-native-safe-area-context'
 import {scheduleOnRN} from 'react-native-worklets'
-import {moderateProfile, type ModerationOpts} from '#/lib/moderation'
 import {type RichText as RichTextAPI} from '@bsky/sdk/richtext'
 import {useIsFocused} from '@react-navigation/native'
 
+import {moderateProfile, type ModerationOpts} from '#/lib/moderation'
 import {sanitizeHandle} from '#/lib/strings/handles'
 import {useProfileShadow} from '#/state/cache/profile-shadow'
 import {useModerationOpts} from '#/state/preferences/moderation-opts'

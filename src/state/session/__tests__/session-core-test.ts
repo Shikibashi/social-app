@@ -1,7 +1,6 @@
 import {
   PasswordSession,
   type PasswordSessionOptions,
-  type SessionData,
 } from '@atproto/lex-password-session'
 import {beforeEach, describe, expect, it, jest} from '@jest/globals'
 
@@ -236,6 +235,7 @@ import {
   sessionDataToSessionAccount,
   switchAppViewProvider,
 } from '../session-core'
+import {type SessionData} from '../session-data'
 import {
   asFetch,
   DID,
@@ -244,6 +244,7 @@ import {
   makeAccount,
   makeDidDoc,
   makeMockFetch,
+  makePasswordSessionData,
   PDS_HOST as PDS_URL,
   SERVICE,
   urlsOf,
@@ -545,10 +546,10 @@ describe('createSessionBundleFromStoredAccount', () => {
     }
     const fetchMock = makeMockFetch()
     const session = new PasswordSession(
-      {
-        ...sessionAccountToSessionData(makeAccount({pdsUrl: `${PDS_URL}/`})),
-        didDoc: makeDidDoc(PDS_URL),
-      },
+      makePasswordSessionData(
+        makeAccount({pdsUrl: `${PDS_URL}/`}),
+        makeDidDoc(PDS_URL),
+      ),
       {fetch: asFetch(fetchMock)},
     )
     const original = buildBundle(session, PDS_URL)
@@ -643,11 +644,7 @@ describe('makeSessionHooks arm-latch + event mapping', () => {
   it("maps onUpdateFailure -> 'network-error' after arm()", () => {
     const {onSessionChange, hooks} = setup()
     hooks.arm()
-    void hooks.onUpdateFailure?.call(
-      fakeSession,
-      fakeData,
-      {} as Parameters<NonNullable<typeof hooks.onUpdateFailure>>[1],
-    )
+    void hooks.onUpdateFailure?.call(fakeSession)
     expect(onSessionChange.mock.calls[0][2]).toBe('network-error')
   })
 
@@ -715,7 +712,7 @@ describe('session-hook payload threading (pre-commit ordering)', () => {
       getBundle: () => ({}) as SessionBundle,
       getDid: () => DID,
     })
-    session = new PasswordSession(sessionAccountToSessionData(makeAccount()), {
+    session = new PasswordSession(makePasswordSessionData(makeAccount()), {
       ...hooks,
       fetch: asFetch(fetchMock),
     })
@@ -761,7 +758,7 @@ describe('session-hook payload threading (pre-commit ordering)', () => {
       getDid: () => DID,
     })
     const session = new PasswordSession(
-      sessionAccountToSessionData(makeAccount()),
+      makePasswordSessionData(makeAccount()),
       {...hooks, fetch: asFetch(fetchMock)},
     )
     hooks.arm()
@@ -801,7 +798,7 @@ describe('disposeBundle kill-switch', () => {
      * a null/destroyed session).
      */
     const session = new PasswordSession(
-      sessionAccountToSessionData(makeAccount()),
+      makePasswordSessionData(makeAccount()),
       {...hooks},
     )
     const bundle = buildBundle(session)
@@ -834,7 +831,7 @@ describe('PasswordSession lifecycle over mocked fetch', () => {
   it('resume fast path: constructing does not hit the network', () => {
     const fetchMock = makeMockFetch()
     /* not expired -> new PasswordSession(...) with no refresh */
-    void new PasswordSession(sessionAccountToSessionData(makeAccount()), {
+    void new PasswordSession(makePasswordSessionData(makeAccount()), {
       fetch: asFetch(fetchMock),
     })
     expect(fetchMock.mock.calls.length).toBe(0)
@@ -845,7 +842,7 @@ describe('PasswordSession lifecycle over mocked fetch', () => {
     const onUpdated =
       jest.fn<NonNullable<PasswordSessionOptions['onUpdated']>>()
     const session = await PasswordSession.resume(
-      sessionAccountToSessionData(makeAccount()),
+      makePasswordSessionData(makeAccount()),
       {fetch: asFetch(fetchMock), onUpdated},
     )
     expect(onUpdated).toHaveBeenCalledTimes(1)
@@ -865,7 +862,7 @@ describe('PasswordSession lifecycle over mocked fetch', () => {
         ),
     })
     const session = new PasswordSession(
-      sessionAccountToSessionData(makeAccount()),
+      makePasswordSessionData(makeAccount()),
       {fetch: asFetch(fetchMock), onDeleted, onUpdated},
     )
     await expect(session.refresh()).rejects.toBeDefined()
@@ -886,7 +883,7 @@ describe('PasswordSession lifecycle over mocked fetch', () => {
         }),
     })
     const session = new PasswordSession(
-      sessionAccountToSessionData(makeAccount()),
+      makePasswordSessionData(makeAccount()),
       {
         fetch: asFetch(fetchMock),
         onDeleted,
@@ -927,7 +924,7 @@ describe('PasswordSession.refresh through armed hooks', () => {
      * close over the same `armed` flag, so hooks.arm() below still applies).
      */
     const session = new PasswordSession(
-      sessionAccountToSessionData(makeAccount()),
+      makePasswordSessionData(makeAccount()),
       {...hooks, fetch: asFetch(fetchMock)},
     )
     hooks.arm()
@@ -958,7 +955,7 @@ describe('PasswordSession.refresh through armed hooks', () => {
         ),
     })
     const session = new PasswordSession(
-      sessionAccountToSessionData(makeAccount()),
+      makePasswordSessionData(makeAccount()),
       {fetch: asFetch(fetchMock)},
     )
     await expect(session.refresh()).rejects.toBeDefined()
@@ -1230,7 +1227,7 @@ describe('a session destroyed or rejected during preparation', () => {
       getDid: () => DID,
     })
     const session = new PasswordSession(
-      sessionAccountToSessionData(makeAccount()),
+      makePasswordSessionData(makeAccount()),
       /*
        * The hooks' own `fetch` is what the kill switch disables, so it must not
        * be overridden here. Nothing in this test reaches the network: the
@@ -1277,7 +1274,7 @@ describe('a throwing onSessionChange does not brick the session', () => {
       getDid: () => DID,
     })
     const session = new PasswordSession(
-      sessionAccountToSessionData(makeAccount()),
+      makePasswordSessionData(makeAccount()),
       {...hooks, fetch: asFetch(fetchMock)},
     )
     bundle = buildBundle(session)

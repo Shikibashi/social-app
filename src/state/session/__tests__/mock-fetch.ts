@@ -1,3 +1,4 @@
+import {type SessionData as PasswordSessionData} from '@atproto/lex-password-session'
 import {jest} from '@jest/globals'
 
 import {type SessionAccount} from '../types'
@@ -55,6 +56,41 @@ export function makeAccount(
     pdsUrl: undefined,
     isSelfHosted: false,
     ...overrides,
+  }
+}
+
+/**
+ * Produce the strict legacy-password-session snapshot from an account fixture.
+ *
+ * The application persistence shape intentionally also represents OAuth
+ * accounts, whose credentials and claims are not constrained to the legacy
+ * createSession response. The real PasswordSession tests need that narrower
+ * response shape instead, so keep the conversion in their shared fixture
+ * layer rather than narrowing the production persistence contract.
+ */
+export function makePasswordSessionData(
+  account: SessionAccount,
+  didDoc?: unknown,
+): PasswordSessionData {
+  const status =
+    account.status === 'takendown' ||
+    account.status === 'suspended' ||
+    account.status === 'deactivated'
+      ? account.status
+      : undefined
+
+  return {
+    accessJwt: account.accessJwt ?? '',
+    refreshJwt: account.refreshJwt ?? '',
+    handle: account.handle as PasswordSessionData['handle'],
+    did: account.did,
+    email: account.email,
+    emailConfirmed: account.emailConfirmed,
+    emailAuthFactor: account.emailAuthFactor,
+    active: account.active,
+    ...(status ? {status} : {}),
+    ...(didDoc ? {didDoc: didDoc} : {}),
+    service: account.service,
   }
 }
 

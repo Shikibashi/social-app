@@ -75,8 +75,12 @@ import {
   getUnauthenticatedThrowingClient,
 } from '../clients'
 import {type SessionBundle} from '../session-core'
-import {sessionAccountToSessionData} from '../session-data'
-import {asFetch, makeAccount, makeMockFetch} from './mock-fetch'
+import {
+  asFetch,
+  makeAccount,
+  makeMockFetch,
+  makePasswordSessionData,
+} from './mock-fetch'
 
 type Clients = {
   appview: Client
@@ -92,12 +96,13 @@ type Clients = {
  */
 function makeBundle(account: SessionAccount): SessionBundle {
   const fetchMock = makeMockFetch()
-  const session = new PasswordSession(sessionAccountToSessionData(account), {
+  const session = new PasswordSession(makePasswordSessionData(account), {
     fetch: asFetch(fetchMock),
   })
   return {
     session,
     appviewClient: buildAppviewClient(session),
+    appviewClientForProvider: provider => buildAppviewClient(session, provider),
     pdsClient: buildPdsClient(session),
     chatClient: buildChatClient(session),
     service: new URL(account.service),

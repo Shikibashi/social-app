@@ -1,6 +1,5 @@
 import {memo, useCallback, useMemo, useState} from 'react'
 import {View} from 'react-native'
-import {moderateProfile, type ModerationOpts} from '#/lib/moderation'
 import {type RichText as RichTextAPI} from '@bsky/sdk/richtext'
 import {msg, plural} from '@lingui/core/macro'
 import {useLingui} from '@lingui/react'
@@ -9,6 +8,7 @@ import {Plural, Trans} from '@lingui/react/macro'
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import {MAX_LABELERS} from '#/lib/constants'
 import {useHaptics} from '#/lib/haptics'
+import {moderateProfile, type ModerationOpts} from '#/lib/moderation'
 import {isAppLabeler} from '#/lib/moderation'
 import {useProfileShadow} from '#/state/cache/profile-shadow'
 import {type Shadow} from '#/state/cache/types'
@@ -284,11 +284,9 @@ export function HeaderLabelerButtons({
     })
   return (
     <>
-      {hasSession &&
-        !isMe &&
-        !hasViewerInteractionBoundary(profile) && (
-          <MessageProfileButton profile={profile} />
-        )}
+      {hasSession && !isMe && !hasViewerInteractionBoundary(profile) && (
+        <MessageProfileButton profile={profile} />
+      )}
 
       {isMe ? (
         <>

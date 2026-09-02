@@ -1,7 +1,7 @@
 import {useCallback, useMemo} from 'react'
-import {moderateProfile, type ModerationOpts} from '#/lib/moderation'
 import {keepPreviousData, useQuery} from '@tanstack/react-query'
 
+import {moderateProfile, type ModerationOpts} from '#/lib/moderation'
 import {isJustAMute, moduiContainsHideableOffense} from '#/lib/moderation'
 import {useModerationOpts} from '#/state/preferences/moderation-opts'
 import {STALE} from '#/state/queries'

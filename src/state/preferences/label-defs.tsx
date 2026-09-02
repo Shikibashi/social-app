@@ -1,6 +1,6 @@
 import {createContext, useContext} from 'react'
-import {type InterpretedLabelValueDefinition} from '#/lib/moderation'
 
+import {type InterpretedLabelValueDefinition} from '#/lib/moderation'
 import {type app} from '#/lexicons'
 import {useLabelDefinitionsQuery} from '../queries/preferences'
 

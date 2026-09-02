@@ -25,7 +25,6 @@ import {
   routeSessionToPds,
 } from '../clients'
 import {DEFAULT_APPVIEW_PROVIDER} from '../providers'
-import {sessionAccountToSessionData} from '../session-data'
 import {
   asFetch,
   DID,
@@ -35,6 +34,7 @@ import {
   makeAccount,
   makeDidDoc,
   makeMockFetch,
+  makePasswordSessionData,
   type MockFetch,
   PDS_HOST,
   SERVICE,
@@ -57,10 +57,10 @@ function makeProfileFetch(): MockFetch {
 function makeSession(fetchMock: MockFetch, didDocPdsUrl?: string) {
   const account = makeAccount()
   return new PasswordSession(
-    {
-      ...sessionAccountToSessionData(account),
-      ...(didDocPdsUrl ? {didDoc: makeDidDoc(didDocPdsUrl)} : {}),
-    },
+    makePasswordSessionData(
+      account,
+      didDocPdsUrl ? makeDidDoc(didDocPdsUrl) : undefined,
+    ),
     {fetch: asFetch(fetchMock)},
   )
 }

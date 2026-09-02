@@ -9,6 +9,7 @@ import {
 } from '#/lib/strings/starter-pack'
 import {messages} from '#/locale/locales/en/messages'
 import {klipyUrlToBskyGifUrl} from '#/features/gifPicker/utils'
+import {getRuntimePublicWebOrigin} from '../../src/lib/brand'
 import {cleanError} from '../../src/lib/strings/errors'
 import {createFullHandle, makeValidHandle} from '../../src/lib/strings/handles'
 import {enforceLen} from '../../src/lib/strings/helpers'
@@ -274,12 +275,12 @@ describe('toShortUrl', () => {
 describe('toShareUrl', () => {
   const inputs = ['https://bsky.app', '/3jk7x4irgv52r', 'item/test/123']
   const outputs = [
-    'https://bsky.app',
-    'https://bsky.app/3jk7x4irgv52r',
-    'https://bsky.app/item/test/123',
+    'https://bsky.app/',
+    `${getRuntimePublicWebOrigin()}/3jk7x4irgv52r`,
+    `${getRuntimePublicWebOrigin()}/item/test/123`,
   ]
 
-  it('appends https, when not present', () => {
+  it('preserves absolute URLs and resolves application paths on the public origin', () => {
     for (let i = 0; i < inputs.length; i++) {
       const result = toShareUrl(inputs[i])
       expect(result).toEqual(outputs[i])

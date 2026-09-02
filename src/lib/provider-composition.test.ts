@@ -275,7 +275,7 @@ describe('provider result composition', () => {
         providers,
         () => {
           invoked = true
-          return {value: 'unexpected'}
+          return Promise.resolve({value: 'unexpected'})
         },
         {surface: 'profiles', signal: controller.signal},
       ),

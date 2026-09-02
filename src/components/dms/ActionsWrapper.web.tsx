@@ -1,10 +1,10 @@
 import {useCallback, useRef, useState} from 'react'
 import {Pressable, View} from 'react-native'
-import {type ModerationOpts} from '#/lib/moderation'
 import {plural} from '@lingui/core/macro'
 import {useLingui} from '@lingui/react/macro'
 
 import {EMOJI_REACTION_LIMIT} from '#/lib/constants'
+import {type ModerationOpts} from '#/lib/moderation'
 import {useMaybeProfileShadow} from '#/state/cache/profile-shadow'
 import {useConvoActive} from '#/state/messages/convo'
 import {useSession} from '#/state/session'

@@ -1,10 +1,10 @@
 import {useEffect} from 'react'
 import {View} from 'react-native'
-import {moderateProfile} from '#/lib/moderation'
 import {Plural, Trans, useLingui} from '@lingui/react/macro'
 import {useNavigation} from '@react-navigation/native'
 import {useQueryClient} from '@tanstack/react-query'
 
+import {moderateProfile} from '#/lib/moderation'
 import {createSanitizedDisplayName} from '#/lib/moderation/create-sanitized-display-name'
 import {useCallOnce} from '#/lib/once'
 import {makeProfileLink} from '#/lib/routes/links'

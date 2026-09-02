@@ -1,8 +1,8 @@
 import {useCallback, useMemo} from 'react'
 import {View} from 'react-native'
-import {type ModerationDecision} from '#/lib/moderation'
 import {Trans, useLingui} from '@lingui/react/macro'
 
+import {type ModerationDecision} from '#/lib/moderation'
 import {useProfileShadow} from '#/state/cache/profile-shadow'
 import {useProfileBlockMutationQueue} from '#/state/queries/profile'
 import {atoms as a, useTheme} from '#/alf'

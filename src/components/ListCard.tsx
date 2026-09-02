@@ -1,12 +1,12 @@
 import {useEffect, useMemo} from 'react'
 import {View} from 'react-native'
 import {AtUri} from '@atproto/syntax'
-import {moderateUserList, type ModerationUI} from '#/lib/moderation'
 import {msg} from '@lingui/core/macro'
 import {useLingui} from '@lingui/react'
 import {Trans} from '@lingui/react/macro'
 import {useQueryClient} from '@tanstack/react-query'
 
+import {moderateUserList, type ModerationUI} from '#/lib/moderation'
 import {sanitizeHandle} from '#/lib/strings/handles'
 import {useModerationOpts} from '#/state/preferences/moderation-opts'
 import {precacheList} from '#/state/queries/feed'

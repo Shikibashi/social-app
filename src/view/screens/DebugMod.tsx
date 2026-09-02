@@ -1,6 +1,10 @@
 import {useMemo, useState} from 'react'
 import {View} from 'react-native'
 import {useSharedValue} from 'react-native-reanimated'
+import {RichText} from '@bsky/sdk/richtext'
+import {msg} from '@lingui/core/macro'
+import {useLingui} from '@lingui/react'
+
 import {
   interpretLabelValueDefinition,
   type LabelPreference,
@@ -11,10 +15,6 @@ import {
   type ModerationDecision,
   type ModerationOpts,
 } from '#/lib/moderation'
-import {RichText} from '@bsky/sdk/richtext'
-import {msg} from '@lingui/core/macro'
-import {useLingui} from '@lingui/react'
-
 import {useGlobalLabelStrings} from '#/lib/moderation/useGlobalLabelStrings'
 import {
   type CommonNavigatorParams,

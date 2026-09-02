@@ -1,8 +1,8 @@
 import {useMemo} from 'react'
 import {Pressable, View} from 'react-native'
-import {moderateProfile} from '#/lib/moderation'
 import {Plural, Trans, useLingui} from '@lingui/react/macro'
 
+import {moderateProfile} from '#/lib/moderation'
 import {useModerationOpts} from '#/state/preferences/moderation-opts'
 import {
   useTrendingSettings,

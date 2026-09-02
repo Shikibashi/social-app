@@ -25,21 +25,27 @@ const blockedItem: ApiThreadItem = {
   },
 }
 
-const post: app.bsky.feed.defs.PostView = {
-  $type: 'app.bsky.feed.defs#postView',
-  uri: blockedUri,
-  cid: 'bafyreifakecid',
-  author: {
-    did: 'did:plc:parent',
-    handle: 'parent.example.com',
-  },
-  record: {
-    $type: 'app.bsky.feed.post',
-    text: 'The parent post is visible to an unrelated viewer.',
-    createdAt: '2026-01-01T00:00:00.000Z',
-  },
-  indexedAt: '2026-01-01T00:00:00.000Z',
+function makePost(
+  uri: AtUriString,
+  did: string,
+  handle: string,
+): app.bsky.feed.defs.PostView {
+  /* The visibility tests exercise thread boundaries, not lexicon decoding. */
+  return {
+    $type: 'app.bsky.feed.defs#postView',
+    uri,
+    cid: 'bafyreifakecid',
+    author: {did, handle},
+    record: {
+      $type: 'app.bsky.feed.post',
+      text: 'The parent post is visible to an unrelated viewer.',
+      createdAt: '2026-01-01T00:00:00.000Z',
+    },
+    indexedAt: '2026-01-01T00:00:00.000Z',
+  } as unknown as app.bsky.feed.defs.PostView
 }
+
+const post = makePost(blockedUri, 'did:plc:parent', 'parent.example.com')
 
 describe('pairwise thread visibility', () => {
   it('hydrates a provider tombstone when the viewer is unrelated', async () => {
@@ -155,14 +161,11 @@ describe('pairwise thread visibility', () => {
   it('converts directly blocked posts in an anonymous thread fallback to tombstones', async () => {
     const visibleUri =
       'at://did:plc:visible/app.bsky.feed.post/visible' as AtUriString
-    const visiblePost = {
-      ...post,
-      uri: visibleUri,
-      author: {
-        did: 'did:plc:visible',
-        handle: 'visible.example.com',
-      },
-    }
+    const visiblePost = makePost(
+      visibleUri,
+      'did:plc:visible',
+      'visible.example.com',
+    )
     const thread = [
       {
         $type: 'app.bsky.unspecced.getPostThreadV2#threadItem' as const,
@@ -218,14 +221,11 @@ describe('pairwise thread visibility', () => {
   it('filters directly blocked posts from additional public replies', async () => {
     const visibleUri =
       'at://did:plc:visible/app.bsky.feed.post/visible' as AtUriString
-    const visiblePost = {
-      ...post,
-      uri: visibleUri,
-      author: {
-        did: 'did:plc:visible',
-        handle: 'visible.example.com',
-      },
-    }
+    const visiblePost = makePost(
+      visibleUri,
+      'did:plc:visible',
+      'visible.example.com',
+    )
     const thread = [
       {
         $type: 'app.bsky.unspecced.getPostThreadOtherV2#threadItem' as const,
@@ -234,6 +234,11 @@ describe('pairwise thread visibility', () => {
         value: {
           $type: 'app.bsky.unspecced.defs#threadItemPost' as const,
           post,
+          opThread: false,
+          moreParents: false,
+          moreReplies: 0,
+          hiddenByThreadgate: false,
+          mutedByViewer: false,
         },
       },
       {
@@ -243,6 +248,11 @@ describe('pairwise thread visibility', () => {
         value: {
           $type: 'app.bsky.unspecced.defs#threadItemPost' as const,
           post: visiblePost,
+          opThread: false,
+          moreParents: false,
+          moreReplies: 0,
+          hiddenByThreadgate: false,
+          mutedByViewer: false,
         },
       },
     ] satisfies app.bsky.unspecced.getPostThreadOtherV2.ThreadItem[]

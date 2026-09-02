@@ -1,11 +1,11 @@
 import {useCallback, useMemo} from 'react'
-import {hasMutedWord} from '#/lib/moderation'
 import {useQuery} from '@tanstack/react-query'
 
 import {
   aggregateUserInterests,
   createBskyTopicsHeader,
 } from '#/lib/api/feed/utils'
+import {hasMutedWord} from '#/lib/moderation'
 import {logger} from '#/logger'
 import {getContentLanguages} from '#/state/preferences/languages'
 import {STALE} from '#/state/queries'

@@ -3,6 +3,7 @@ import {useFocusEffect} from '@react-navigation/native'
 import debounce from 'lodash.debounce'
 
 import {useCallOnce} from '#/lib/once'
+import * as persisted from '#/state/persisted'
 import {
   usePreferencesQuery,
   useSetThreadViewPreferencesMutation,
@@ -11,7 +12,6 @@ import {type ThreadViewPreferences} from '#/state/queries/preferences/types'
 import {useAnalytics} from '#/analytics'
 import {type app} from '#/lexicons'
 import {type Literal} from '#/types/utils'
-import * as persisted from '#/state/persisted'
 
 export type ThreadSortOption = Literal<
   app.bsky.unspecced.getPostThreadV2.$Params['sort'],

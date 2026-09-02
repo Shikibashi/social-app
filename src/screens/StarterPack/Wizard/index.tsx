@@ -4,7 +4,6 @@ import {KeyboardAwareScrollView} from 'react-native-keyboard-controller'
 import {useSafeAreaInsets} from 'react-native-safe-area-context'
 import {Image} from 'expo-image'
 import {AtUri} from '@atproto/syntax'
-import {type ModerationOpts} from '#/lib/moderation'
 import {msg} from '@lingui/core/macro'
 import {useLingui} from '@lingui/react'
 import {Plural, Trans} from '@lingui/react/macro'
@@ -12,6 +11,7 @@ import {useNavigation} from '@react-navigation/native'
 import {type NativeStackScreenProps} from '@react-navigation/native-stack'
 
 import {STARTER_PACK_MAX_SIZE} from '#/lib/constants'
+import {type ModerationOpts} from '#/lib/moderation'
 import {createSanitizedDisplayName} from '#/lib/moderation/create-sanitized-display-name'
 import {
   type CommonNavigatorParams,

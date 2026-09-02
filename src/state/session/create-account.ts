@@ -40,7 +40,7 @@ export class LegacySignupRequiresOAuthError extends Error {
   }
 }
 
-export async function createSessionBundleAndCreateAccount(
+export function createSessionBundleAndCreateAccount(
   {
     service,
   }: {
@@ -60,7 +60,7 @@ export async function createSessionBundleAndCreateAccount(
   // credential that the provider accepted.
   void service
   void onSessionChange
-  throw new LegacySignupRequiresOAuthError()
+  return Promise.reject(new LegacySignupRequiresOAuthError())
 }
 
 /** Create an account through the provider-owned OAuth signup surface. */

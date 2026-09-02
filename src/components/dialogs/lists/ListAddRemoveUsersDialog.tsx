@@ -1,10 +1,10 @@
 import {useCallback, useMemo} from 'react'
 import {View} from 'react-native'
-import {type ModerationOpts} from '#/lib/moderation'
 import {msg} from '@lingui/core/macro'
 import {useLingui} from '@lingui/react'
 import {Trans} from '@lingui/react/macro'
 
+import {type ModerationOpts} from '#/lib/moderation'
 import {cleanError} from '#/lib/strings/errors'
 import {useModerationOpts} from '#/state/preferences/moderation-opts'
 import {useAllListMembersQuery} from '#/state/queries/list-members'

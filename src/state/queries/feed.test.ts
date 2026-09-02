@@ -4,8 +4,8 @@ import {callSameProviderPublicFallback} from './feed-provider-fallback'
 
 describe('callSameProviderPublicFallback', () => {
   it('uses the authenticated read when it succeeds', async () => {
-    const authenticatedRead = jest.fn(async () => 'authenticated')
-    const publicRead = jest.fn(async () => 'public')
+    const authenticatedRead = jest.fn(() => Promise.resolve('authenticated'))
+    const publicRead = jest.fn(() => Promise.resolve('public'))
 
     await expect(
       callSameProviderPublicFallback(authenticatedRead, publicRead),
@@ -15,10 +15,10 @@ describe('callSameProviderPublicFallback', () => {
   })
 
   it('retries the same provider without viewer credentials', async () => {
-    const authenticatedRead = jest.fn(async () => {
-      throw new Error('viewer is not indexed')
-    })
-    const publicRead = jest.fn(async () => 'public')
+    const authenticatedRead = jest.fn(() =>
+      Promise.reject(new Error('viewer is not indexed')),
+    )
+    const publicRead = jest.fn(() => Promise.resolve('public'))
 
     await expect(
       callSameProviderPublicFallback(authenticatedRead, publicRead),
@@ -28,13 +28,11 @@ describe('callSameProviderPublicFallback', () => {
   })
 
   it('surfaces the selected provider failure when both reads fail', async () => {
-    const authenticatedRead = jest.fn(async () => {
-      throw new Error('viewer is not indexed')
-    })
+    const authenticatedRead = jest.fn(() =>
+      Promise.reject(new Error('viewer is not indexed')),
+    )
     const publicError = new Error('provider is unavailable')
-    const publicRead = jest.fn(async () => {
-      throw publicError
-    })
+    const publicRead = jest.fn(() => Promise.reject(publicError))
 
     await expect(
       callSameProviderPublicFallback(authenticatedRead, publicRead),

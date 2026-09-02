@@ -7,12 +7,12 @@ import {
   View,
   type ViewStyle,
 } from 'react-native'
-import {type ModerationCause, type ModerationUI} from '#/lib/moderation'
 import {msg} from '@lingui/core/macro'
 import {useLingui} from '@lingui/react'
 import {Trans} from '@lingui/react/macro'
 import {useQueryClient} from '@tanstack/react-query'
 
+import {type ModerationCause, type ModerationUI} from '#/lib/moderation'
 import {useModerationCauseDescription} from '#/lib/moderation/useModerationCauseDescription'
 import {addStyle} from '#/lib/styles'
 import {unstableCacheProfileView} from '#/state/queries/unstable-profile-cache'

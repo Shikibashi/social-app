@@ -1,10 +1,10 @@
 import {ScrollView, View} from 'react-native'
-import {moderateProfile, type ModerationOpts} from '#/lib/moderation'
 import {msg} from '@lingui/core/macro'
 import {useLingui} from '@lingui/react'
 import {Trans} from '@lingui/react/macro'
 import {useNavigation} from '@react-navigation/native'
 
+import {moderateProfile, type ModerationOpts} from '#/lib/moderation'
 import {isBlockedOrBlocking, isMuted} from '#/lib/moderation/blocked-and-muted'
 import {createSanitizedDisplayName} from '#/lib/moderation/create-sanitized-display-name'
 import {type NavigationProp} from '#/lib/routes/types'

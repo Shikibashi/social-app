@@ -1,8 +1,8 @@
 import {useMemo} from 'react'
 import {View} from 'react-native'
-import {moderateProfile, type ModerationOpts} from '#/lib/moderation'
 import {useLingui} from '@lingui/react/macro'
 
+import {moderateProfile, type ModerationOpts} from '#/lib/moderation'
 import {createSanitizedDisplayName} from '#/lib/moderation/create-sanitized-display-name'
 import {makeProfileLink} from '#/lib/routes/links'
 import {sanitizeHandle} from '#/lib/strings/handles'

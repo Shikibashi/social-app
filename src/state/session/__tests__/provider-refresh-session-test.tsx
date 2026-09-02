@@ -61,7 +61,6 @@ import {Provider, useSession, useSessionApi} from '#/state/session'
 import {type SessionApiContext} from '#/state/session/types'
 import {buildAppviewClient, buildChatClient, buildPdsClient} from '../clients'
 import {type SessionBundle} from '../session-core'
-import {sessionAccountToSessionData} from '../session-data'
 import {
   asFetch,
   DID,
@@ -69,6 +68,7 @@ import {
   json,
   makeAccount,
   makeMockFetch,
+  makePasswordSessionData,
   type MockFetch,
 } from './mock-fetch'
 
@@ -80,12 +80,13 @@ function makeBundle(
   account: SessionAccount,
   fetchMock: MockFetch,
 ): SessionBundle {
-  const session = new PasswordSession(sessionAccountToSessionData(account), {
+  const session = new PasswordSession(makePasswordSessionData(account), {
     fetch: asFetch(fetchMock),
   })
   return {
     session,
     appviewClient: buildAppviewClient(session),
+    appviewClientForProvider: provider => buildAppviewClient(session, provider),
     pdsClient: buildPdsClient(session),
     chatClient: buildChatClient(session),
     service: new URL(account.service),

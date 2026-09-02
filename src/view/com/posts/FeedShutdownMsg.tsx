@@ -5,8 +5,8 @@ import {useLingui} from '@lingui/react'
 import {Trans} from '@lingui/react/macro'
 
 import {PROD_DEFAULT_FEED} from '#/lib/constants'
-import {logger} from '#/logger'
 import {feedUriToHref} from '#/lib/strings/url-helpers'
+import {logger} from '#/logger'
 import {
   usePreferencesQuery,
   useRemoveFeedMutation,

@@ -1,5 +1,4 @@
 import {DEFAULT_LABEL_SETTINGS} from '#/lib/moderation'
-
 import {
   type ThreadViewPreferences,
   type UsePreferencesQueryResponse,

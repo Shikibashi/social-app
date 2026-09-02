@@ -1,6 +1,5 @@
 import {forwardRef, useEffect, useImperativeHandle, useState} from 'react'
 import {Pressable, View} from 'react-native'
-import {type ModerationOpts} from '#/lib/moderation'
 import {Trans} from '@lingui/react/macro'
 import {ReactRenderer} from '@tiptap/react'
 import {
@@ -10,6 +9,7 @@ import {
 } from '@tiptap/suggestion'
 import tippy, {type Instance as TippyInstance} from 'tippy.js'
 
+import {type ModerationOpts} from '#/lib/moderation'
 import {useModerationOpts} from '#/state/preferences/moderation-opts'
 import {type ActorAutocompleteFn} from '#/state/queries/actor-autocomplete'
 import {atoms as a, useTheme} from '#/alf'

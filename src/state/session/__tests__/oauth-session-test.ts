@@ -12,7 +12,9 @@ describe('browser OAuth initialization', () => {
 
   it('adopts the session returned by the callback/restore initializer', async () => {
     const session = {} as never
-    const init = jest.fn().mockResolvedValue({session, state: 'oauth-state'})
+    const init = jest
+      .fn<() => Promise<{session: never; state: string} | undefined>>()
+      .mockResolvedValue({session, state: 'oauth-state'})
 
     await expect(initializeBrowserOAuthClient({init} as never)).resolves.toBe(
       session,
@@ -21,7 +23,9 @@ describe('browser OAuth initialization', () => {
   })
 
   it('keeps a normal logged-out startup without a restored session', async () => {
-    const init = jest.fn().mockResolvedValue(undefined)
+    const init = jest
+      .fn<() => Promise<undefined>>()
+      .mockResolvedValue(undefined)
 
     await expect(initializeBrowserOAuthClient({init} as never)).resolves.toBe(
       undefined,
@@ -33,7 +37,9 @@ describe('browser OAuth initialization', () => {
     const requests: string[] = []
     const providerSession = {
       serverMetadata: {issuer: 'https://plumblines.uk'},
-      getTokenInfo: jest.fn().mockResolvedValue({scope: 'atproto'}),
+      getTokenInfo: jest
+        .fn<() => Promise<{scope: string}>>()
+        .mockResolvedValue({scope: 'atproto'}),
       fetchHandler: jest.fn((path: string) => {
         requests.push(path)
         return Promise.resolve(
@@ -93,7 +99,9 @@ describe('browser OAuth initialization', () => {
     )
     const providerSession = {
       serverMetadata: {issuer: 'https://plumblines.uk'},
-      getTokenInfo: jest.fn().mockResolvedValue({scope: 'atproto'}),
+      getTokenInfo: jest
+        .fn<() => Promise<{scope: string}>>()
+        .mockResolvedValue({scope: 'atproto'}),
       fetchHandler: jest.fn((path: string) =>
         Promise.resolve(
           new Response(

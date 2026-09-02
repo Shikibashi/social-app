@@ -1,9 +1,9 @@
 import {createContext, useContext, useMemo} from 'react'
-import {hasMutedWord} from '#/lib/moderation'
 import {QueryClient, useQuery} from '@tanstack/react-query'
 
 import {useOnAppStateChange} from '#/lib/appState'
 import {useIsBskyTeam} from '#/lib/hooks/useIsBskyTeam'
+import {hasMutedWord} from '#/lib/moderation'
 import {
   convertBskyAppUrlIfNeeded,
   isBskyCustomFeedUrl,

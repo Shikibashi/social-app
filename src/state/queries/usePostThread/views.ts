@@ -1,7 +1,7 @@
 import {type $Typed} from '@atproto/lex'
 import {AtUri} from '@atproto/syntax'
-import {moderatePost, type ModerationOpts} from '#/lib/moderation'
 
+import {moderatePost, type ModerationOpts} from '#/lib/moderation'
 import {makeProfileLink} from '#/lib/routes/links'
 import {stripNonLocalBlockVisibility} from '#/state/queries/public-visibility'
 import {

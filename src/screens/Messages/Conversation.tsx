@@ -5,7 +5,6 @@ import {
   ScrollEdgeEffect,
   ScrollEdgeEffectProvider,
 } from '@bsky.app/expo-scroll-edge-effect'
-import {moderateProfile} from '#/lib/moderation'
 import {Trans, useLingui} from '@lingui/react/macro'
 import {
   type RouteProp,
@@ -18,6 +17,7 @@ import {type NativeStackScreenProps} from '@react-navigation/native-stack'
 
 import {useNonReactiveCallback} from '#/lib/hooks/useNonReactiveCallback'
 import {useViewportZoomLock} from '#/lib/hooks/useViewportZoomLock'
+import {moderateProfile} from '#/lib/moderation'
 import {
   type CommonNavigatorParams,
   type NavigationProp,

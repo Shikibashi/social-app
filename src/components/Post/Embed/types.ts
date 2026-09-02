@@ -1,6 +1,6 @@
 import {type StyleProp, type ViewStyle} from 'react-native'
-import {type ModerationDecision} from '#/lib/moderation'
 
+import {type ModerationDecision} from '#/lib/moderation'
 import {type app} from '#/lexicons'
 
 export enum PostEmbedViewContext {

@@ -1,10 +1,10 @@
 import {useMemo, useState} from 'react'
 import {type ListRenderItemInfo, View} from 'react-native'
 import {KeyboardAwareScrollView} from 'react-native-keyboard-controller'
-import {type ModerationOpts} from '#/lib/moderation'
 import {Trans} from '@lingui/react/macro'
 
 import {DISCOVER_FEED_URI} from '#/lib/constants'
+import {type ModerationOpts} from '#/lib/moderation'
 import {useA11y} from '#/state/a11y'
 import {
   useGetPopularFeedsQuery,

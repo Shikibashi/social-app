@@ -1,9 +1,9 @@
 import {useMemo} from 'react'
 import {View} from 'react-native'
 import {api} from '@bsky/sdk'
-import {type ModerationCause} from '#/lib/moderation'
 import {Trans, useLingui} from '@lingui/react/macro'
 
+import {type ModerationCause} from '#/lib/moderation'
 import {useModerationCauseDescription} from '#/lib/moderation/useModerationCauseDescription'
 import {UserAvatar} from '#/view/com/util/UserAvatar'
 import {atoms as a, useTheme, type ViewStyleProp} from '#/alf'

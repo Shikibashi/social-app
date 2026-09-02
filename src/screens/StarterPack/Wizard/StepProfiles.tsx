@@ -1,9 +1,9 @@
 import {useState} from 'react'
 import {type ListRenderItemInfo, View} from 'react-native'
 import {KeyboardAwareScrollView} from 'react-native-keyboard-controller'
-import {type ModerationOpts} from '#/lib/moderation'
 import {Trans} from '@lingui/react/macro'
 
+import {type ModerationOpts} from '#/lib/moderation'
 import {useA11y} from '#/state/a11y'
 import {useActorAutocompleteQuery} from '#/state/queries/actor-autocomplete'
 import {useActorSearch} from '#/state/queries/actor-search'

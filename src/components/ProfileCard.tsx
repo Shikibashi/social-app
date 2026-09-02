@@ -6,10 +6,10 @@ import {
   View,
   type ViewStyle,
 } from 'react-native'
-import {moderateProfile, type ModerationOpts} from '#/lib/moderation'
 import {RichText as RichTextApi} from '@bsky/sdk/richtext'
 import {useLingui} from '@lingui/react/macro'
 
+import {moderateProfile, type ModerationOpts} from '#/lib/moderation'
 import {getModerationCauseKey} from '#/lib/moderation'
 import {makeProfileLink} from '#/lib/routes/links'
 import {forceLTR} from '#/lib/strings/bidi'
@@ -407,11 +407,7 @@ export function Description({
     return rt
   }, [profile])
   if (!rt) return null
-  if (
-    profile.viewer &&
-    hasDirectViewerBlock(profile)
-  )
-    return null
+  if (profile.viewer && hasDirectViewerBlock(profile)) return null
   return (
     <View style={[a.pt_xs]}>
       <RichText
@@ -550,8 +546,7 @@ export function FollowButtonInner({
       })
 
   if (!profile.viewer) return null
-  if (hasViewerInteractionBoundary(profile))
-    return null
+  if (hasViewerInteractionBoundary(profile)) return null
 
   return (
     <View>

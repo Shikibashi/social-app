@@ -1,8 +1,8 @@
 import {View} from 'react-native'
 import {AtUri} from '@atproto/syntax'
-import {moderateProfile} from '#/lib/moderation'
 import {Plural, Trans, useLingui} from '@lingui/react/macro'
 
+import {moderateProfile} from '#/lib/moderation'
 import {makeProfileLink} from '#/lib/routes/links'
 import {sanitizeDisplayName} from '#/lib/strings/display-names'
 import {useModerationOpts} from '#/state/preferences/moderation-opts'

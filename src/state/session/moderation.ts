@@ -1,7 +1,8 @@
 import {Client, type Client as ClientType} from '@atproto/lex'
 import {type DidString} from '@atproto/syntax'
-import {DEFAULT_LABELER_DIDS} from '#/env'
+
 import {IS_TEST_USER} from '#/lib/constants'
+import {DEFAULT_LABELER_DIDS} from '#/env'
 import {com} from '#/lexicons'
 import {account as accountStorage} from '#/storage'
 import {
@@ -51,7 +52,9 @@ export function applyLabelersToClient(
   subscribedDids: string[],
 ) {
   client.setLabelers(
-    subscribedDids.filter(did => !Client.appLabelers.includes(did as DidString)) as DidString[],
+    subscribedDids.filter(
+      did => !Client.appLabelers.includes(did as DidString),
+    ) as DidString[],
   )
 }
 

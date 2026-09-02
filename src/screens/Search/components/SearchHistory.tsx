@@ -1,8 +1,8 @@
 import {ScrollView, View} from 'react-native'
-import {moderateProfile, type ModerationOpts} from '#/lib/moderation'
 import {Plural, Trans, useLingui} from '@lingui/react/macro'
 
 import {createHitslop} from '#/lib/constants'
+import {moderateProfile, type ModerationOpts} from '#/lib/moderation'
 import {makeProfileLink} from '#/lib/routes/links'
 import {sanitizeDisplayName} from '#/lib/strings/display-names'
 import {sanitizeHandle} from '#/lib/strings/handles'

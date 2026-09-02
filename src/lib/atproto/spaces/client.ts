@@ -1,9 +1,9 @@
 import {type Client, type LexMap} from '@atproto/lex'
 import {
+  type DidString,
   isValidDid,
   isValidNsid,
   isValidRecordKey,
-  type DidString,
   type NsidString,
   type RecordKeyString,
 } from '@atproto/syntax'
@@ -62,17 +62,17 @@ export function assertSpaceRef(value: string): string {
 
 export function assertDid(value: string): DidString {
   if (!isValidDid(value)) throw new Error(`Invalid DID: ${value}`)
-  return value as DidString
+  return value
 }
 
 export function assertNsid(value: string): NsidString {
   if (!isValidNsid(value)) throw new Error(`Invalid NSID: ${value}`)
-  return value as NsidString
+  return value
 }
 
 function assertRecordKey(value: string): RecordKeyString {
-  if (!isValidRecordKey(value)) throw new Error(`Invalid record key: ${value}`)
-  return value as RecordKeyString
+  if (!isValidRecordKey(value)) throw new Error('Invalid record key')
+  return value
 }
 
 function assertSpaceOp(value: unknown): SpaceRepoOp {
@@ -94,9 +94,7 @@ function assertSpaceOp(value: unknown): SpaceRepoOp {
     rkey: assertRecordKey(op.rkey),
     cid: op.cid,
     prev: op.prev,
-    ...(op.value && typeof op.value === 'object'
-      ? {value: op.value as LexMap}
-      : {}),
+    ...(op.value && typeof op.value === 'object' ? {value: op.value} : {}),
   }
 }
 

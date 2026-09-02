@@ -1,8 +1,8 @@
 import {useCallback, useEffect, useState} from 'react'
-import {type ModerationOpts} from '#/lib/moderation'
 import {Trans, useLingui} from '@lingui/react/macro'
 
 import {useRequireEmailVerification} from '#/lib/hooks/useRequireEmailVerification'
+import {type ModerationOpts} from '#/lib/moderation'
 import {createSanitizedDisplayName} from '#/lib/moderation/create-sanitized-display-name'
 import {Button, ButtonIcon} from '#/components/Button'
 import {useDialogControl} from '#/components/Dialog'

@@ -1,7 +1,7 @@
 import {View} from 'react-native'
-import {type ModerationOpts} from '#/lib/moderation'
 import {useLingui} from '@lingui/react/macro'
 
+import {type ModerationOpts} from '#/lib/moderation'
 import {MessageContextMenu} from '#/components/dms/MessageContextMenu'
 import {useMessageReplies} from '#/components/dms/MessageReplies'
 import {SwipeToReply} from '#/components/dms/SwipeToReply'

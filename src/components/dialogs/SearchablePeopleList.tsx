@@ -7,9 +7,9 @@ import {
   useState,
 } from 'react'
 import {TextInput, View} from 'react-native'
-import {moderateProfile, type ModerationOpts} from '#/lib/moderation'
 import {Plural, Trans, useLingui} from '@lingui/react/macro'
 
+import {moderateProfile, type ModerationOpts} from '#/lib/moderation'
 import {createSanitizedDisplayName} from '#/lib/moderation/create-sanitized-display-name'
 import {sanitizeHandle} from '#/lib/strings/handles'
 import {useModerationOpts} from '#/state/preferences/moderation-opts'

@@ -7,10 +7,10 @@ import {
   useState,
 } from 'react'
 import {LayoutAnimation, type TextInput, View} from 'react-native'
-import {moderateProfile, type ModerationOpts} from '#/lib/moderation'
 import {Plural, Trans, useLingui} from '@lingui/react/macro'
 
 import {MAX_GROUP_NAME_GRAPHEME_LENGTH} from '#/lib/constants'
+import {moderateProfile, type ModerationOpts} from '#/lib/moderation'
 import {createSanitizedDisplayName} from '#/lib/moderation/create-sanitized-display-name'
 import {sanitizeDisplayName} from '#/lib/strings/display-names'
 import {sanitizeHandle} from '#/lib/strings/handles'

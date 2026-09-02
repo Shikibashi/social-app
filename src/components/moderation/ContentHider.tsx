@@ -5,9 +5,9 @@ import {
   View,
   type ViewStyle,
 } from 'react-native'
-import {type ModerationUI} from '#/lib/moderation'
 import {Trans, useLingui} from '@lingui/react/macro'
 
+import {type ModerationUI} from '#/lib/moderation'
 import {
   ADULT_CONTENT_LABELS,
   type AdultSelfLabel,

@@ -1,10 +1,10 @@
 import {forwardRef, useCallback, useImperativeHandle, useState} from 'react'
 import {type ListRenderItemInfo, View} from 'react-native'
 import {AtUri} from '@atproto/syntax'
-import {type ModerationOpts} from '#/lib/moderation'
 
 import {useBottomBarOffset} from '#/lib/hooks/useBottomBarOffset'
 import {useInitialNumToRender} from '#/lib/hooks/useInitialNumToRender'
+import {type ModerationOpts} from '#/lib/moderation'
 import {isViewerHidingActor} from '#/lib/moderation/blocked-and-muted'
 import {useAllListMembersQuery} from '#/state/queries/list-members'
 import {useSession} from '#/state/session'
@@ -44,8 +44,7 @@ export const ProfilesList = forwardRef<SectionRef, ProfilesListProps>(
 
     const profiles = data
       ?.filter(
-        p =>
-          !isViewerHidingActor(p.subject) && !p.subject.associated?.labeler,
+        p => !isViewerHidingActor(p.subject) && !p.subject.associated?.labeler,
       )
       .map(p => p.subject)
       .reverse()

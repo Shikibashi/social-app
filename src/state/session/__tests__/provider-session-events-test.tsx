@@ -1,8 +1,8 @@
-import {type SessionData} from '@atproto/lex-password-session'
 import {beforeEach, describe, expect, it, jest} from '@jest/globals'
 import {act, render} from '@testing-library/react-native'
 
 import {type Schema} from '#/state/persisted/schema'
+import {type SessionData} from '../session-data'
 import {type SessionAccount} from '../types'
 
 /*
@@ -127,7 +127,7 @@ function makeBundle(account: SessionAccount): FakeBundle {
         accessJwt: account.accessJwt ?? '',
         refreshJwt: account.refreshJwt ?? '',
         /* SessionData types these as branded strings; the values are fixtures */
-        handle: account.handle as `${string}.${string}`,
+        handle: account.handle,
         did: account.did,
         active: true,
         service: account.service,

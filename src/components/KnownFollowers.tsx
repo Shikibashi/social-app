@@ -1,8 +1,8 @@
 import {useRef} from 'react'
 import {View} from 'react-native'
-import {moderateProfile, type ModerationOpts} from '#/lib/moderation'
 import {Plural, Trans, useLingui} from '@lingui/react/macro'
 
+import {moderateProfile, type ModerationOpts} from '#/lib/moderation'
 import {makeProfileLink} from '#/lib/routes/links'
 import {sanitizeDisplayName} from '#/lib/strings/display-names'
 import {UserAvatar} from '#/view/com/util/UserAvatar'

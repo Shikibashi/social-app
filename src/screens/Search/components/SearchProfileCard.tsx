@@ -1,10 +1,10 @@
 import {useCallback} from 'react'
 import {View} from 'react-native'
-import {type ModerationOpts} from '#/lib/moderation'
 import {msg} from '@lingui/core/macro'
 import {useLingui} from '@lingui/react'
 import {useQueryClient} from '@tanstack/react-query'
 
+import {type ModerationOpts} from '#/lib/moderation'
 import {makeProfileLink} from '#/lib/routes/links'
 import {unstableCacheProfileView} from '#/state/queries/unstable-profile-cache'
 import {atoms as a, useTheme} from '#/alf'

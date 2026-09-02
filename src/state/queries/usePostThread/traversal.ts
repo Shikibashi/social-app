@@ -1,5 +1,4 @@
 import {type ModerationOpts} from '#/lib/moderation'
-
 import {
   type ApiThreadItem,
   type PostThreadParams,

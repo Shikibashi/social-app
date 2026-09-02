@@ -1,10 +1,10 @@
 import {useState} from 'react'
 import {View} from 'react-native'
-import {moderateProfile} from '#/lib/moderation'
 import {msg} from '@lingui/core/macro'
 import {useLingui} from '@lingui/react'
 import {Trans} from '@lingui/react/macro'
 
+import {moderateProfile} from '#/lib/moderation'
 import {sanitizeHandle} from '#/lib/strings/handles'
 import {useModerationOpts} from '#/state/preferences/moderation-opts'
 import {useSession} from '#/state/session'

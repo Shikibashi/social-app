@@ -19,7 +19,7 @@ describe('route links', () => {
       makeStarterPackLink({
         uri,
         creator: {handle: 'alice.example'},
-      } as Parameters<typeof makeStarterPackLink>[0]),
+      } as unknown as Parameters<typeof makeStarterPackLink>[0]),
     ).toBe(`${getRuntimePublicWebOrigin()}/start/alice.example/3starter`)
   })
 })

@@ -5,14 +5,14 @@ import {DEFAULT_SERVICE} from '#/lib/constants'
 import {cleanError, isNetworkError} from '#/lib/strings/errors'
 import {useSessionApi} from '#/state/session'
 import {useLoggedOutViewControls} from '#/state/shell/logged-out'
-import {Button, ButtonIcon, ButtonText} from '#/components/Button'
+import {LoggedOutLayout} from '#/view/com/util/layouts/LoggedOutLayout'
+import {FormContainer} from '#/screens/Login/FormContainer'
+import {atoms as a} from '#/alf'
 import * as Admonition from '#/components/Admonition'
+import {Button, ButtonIcon, ButtonText} from '#/components/Button'
 import {HostingProvider} from '#/components/forms/HostingProvider'
 import {Loader} from '#/components/Loader'
 import {Text} from '#/components/Typography'
-import {LoggedOutLayout} from '#/view/com/util/layouts/LoggedOutLayout'
-import {atoms as a} from '#/alf'
-import {FormContainer} from '#/screens/Login/FormContainer'
 
 /** Provider-owned account creation; credentials never pass through the app. */
 export function OAuthSignup({onPressBack}: {onPressBack: () => void}) {

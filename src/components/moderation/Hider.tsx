@@ -1,6 +1,6 @@
 import {createContext, useContext, useState} from 'react'
-import {type ModerationUI} from '#/lib/moderation'
 
+import {type ModerationUI} from '#/lib/moderation'
 import {
   type ModerationCauseDescription,
   useModerationCauseDescription,

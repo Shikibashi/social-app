@@ -1,7 +1,6 @@
 import {useMemo, useState} from 'react'
 import {View} from 'react-native'
 import {type Un$Typed} from '@atproto/lex'
-import {type ModerationOpts} from '#/lib/moderation'
 import {msg} from '@lingui/core/macro'
 import {useLingui} from '@lingui/react'
 import {Trans} from '@lingui/react/macro'
@@ -11,6 +10,7 @@ import {
   useQueryClient,
 } from '@tanstack/react-query'
 
+import {type ModerationOpts} from '#/lib/moderation'
 import {createSanitizedDisplayName} from '#/lib/moderation/create-sanitized-display-name'
 import {cleanError} from '#/lib/strings/errors'
 import {sanitizeHandle} from '#/lib/strings/handles'
