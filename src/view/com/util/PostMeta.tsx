@@ -99,7 +99,12 @@ let PostMeta = (opts: PostMetaOpts): React.ReactNode => {
                 t.atoms.text,
                 a.leading_tight,
                 a.flex_shrink_0,
-                {maxWidth: '70%'},
+                {
+                  maxWidth: '70%',
+                  fontFamily: 'Georgia, "Times New Roman", serif',
+                  fontSize: 16,
+                  letterSpacing: 0.05,
+                },
                 web({direction: 'ltr', unicodeBidi: 'isolate'}),
               ]}>
               {forceLTR(
@@ -126,7 +131,12 @@ let PostMeta = (opts: PostMetaOpts): React.ReactNode => {
                 a.text_md,
                 t.atoms.text_contrast_medium,
                 a.leading_tight,
-                {flexShrink: 10},
+                {
+                  flexShrink: 10,
+                  fontFamily: 'Verdana, "DejaVu Sans", sans-serif',
+                  fontSize: 13,
+                  letterSpacing: 0.05,
+                },
               ]}>
               {NON_BREAKING_SPACE + sanitizeHandle(handle, '@')}
             </MaybeLinkText>
@@ -149,6 +159,11 @@ let PostMeta = (opts: PostMetaOpts): React.ReactNode => {
                 IS_ANDROID && a.flex_grow,
                 a.text_right,
                 t.atoms.text_contrast_medium,
+                {
+                  fontFamily: 'Courier New, "Liberation Mono", monospace',
+                  fontSize: 12,
+                  letterSpacing: 0.15,
+                },
                 web({
                   whiteSpace: 'nowrap',
                 }),
@@ -159,6 +174,10 @@ let PostMeta = (opts: PostMetaOpts): React.ReactNode => {
                     a.text_md,
                     a.leading_tight,
                     t.atoms.text_contrast_medium,
+                    {
+                      fontFamily: 'Courier New, "Liberation Mono", monospace',
+                      fontSize: 12,
+                    },
                   ]}
                   accessible={false}>
                   &middot;{' '}

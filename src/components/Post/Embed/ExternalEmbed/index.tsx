@@ -1,5 +1,5 @@
 import {useMemo} from 'react'
-import {type StyleProp, View, type ViewStyle} from 'react-native'
+import {type StyleProp, StyleSheet, View, type ViewStyle} from 'react-native'
 import {Image} from 'expo-image'
 import {msg} from '@lingui/core/macro'
 import {useLingui} from '@lingui/react'
@@ -89,7 +89,7 @@ export const ExternalEmbed = ({
       to={link.uri}
       shouldProxy={true}
       peek
-      style={[a.rounded_md]}
+      style={[styles.previewLink]}
       onPress={onPress}
       onLongPress={onShareExternal}>
       {({hovered, pressed}) => (
@@ -97,10 +97,10 @@ export const ExternalEmbed = ({
           style={[
             a.transition_color,
             a.flex_col,
-            a.rounded_md,
             a.overflow_hidden,
             a.w_full,
             a.border,
+            styles.preview,
             pressed && t.atoms.bg,
             style,
             hovered
@@ -143,7 +143,7 @@ export const ExternalEmbed = ({
                 <Text
                   emoji
                   numberOfLines={3}
-                  style={[a.text_md, a.font_semi_bold, a.leading_snug]}>
+                  style={[styles.previewTitle, t.atoms.text]}>
                   {link.title || link.uri}
                 </Text>
               )}
@@ -183,6 +183,7 @@ export const ExternalEmbed = ({
                     a.transition_color,
                     a.text_xs,
                     a.leading_snug,
+                    styles.previewDomain,
                     hovered
                       ? t.atoms.text_contrast_high
                       : t.atoms.text_contrast_medium,
@@ -197,3 +198,23 @@ export const ExternalEmbed = ({
     </Link>
   )
 }
+
+const styles = StyleSheet.create({
+  previewLink: {
+    borderRadius: 0,
+  },
+  preview: {
+    borderRadius: 0,
+    borderLeftWidth: 2,
+  },
+  previewTitle: {
+    fontFamily: 'Georgia, "Times New Roman", serif',
+    fontSize: 16,
+    fontWeight: '700',
+    lineHeight: 21,
+  },
+  previewDomain: {
+    fontFamily: 'Courier New, "Liberation Mono", monospace',
+    letterSpacing: 0.15,
+  },
+})

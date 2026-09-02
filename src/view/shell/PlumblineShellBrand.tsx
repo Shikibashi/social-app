@@ -117,7 +117,7 @@ export function PlumblinePageMasthead() {
       <View testID="plumbline-page-masthead-content" style={styles.pageContent}>
         <View testID="plumbline-page-masthead-meta" style={styles.pageMeta}>
           <Text style={[styles.pageMetaText, t.atoms.text_contrast_medium]}>
-            OPEN WEB EDITION
+            LIBERTY / OPEN WEB EDITION
           </Text>
           <Text style={[styles.pageMetaText, t.atoms.text_contrast_medium]}>
             AT PROTOCOL / USER AGENT
@@ -158,7 +158,7 @@ export function PlumblinePageMasthead() {
             />
           </View>
           <Text style={[styles.pageMotto, t.atoms.text_contrast_medium]}>
-            Align · Inspect · Understand
+            Exit · Voice · Association
           </Text>
         </View>
       </View>

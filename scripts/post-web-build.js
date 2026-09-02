@@ -1,70 +1,14 @@
 const path = require('path')
 const fs = require('fs')
+const {
+  assertProductionPublicWebConfig,
+} = require('./validate-production-web-config')
 
 const projectRoot = path.join(__dirname, '..')
-const expectedPublicWebOrigin = 'https://plumblines.uk'
-const expectedAccountService = 'https://plumblines.uk'
 const isProductionBuild = process.env.EXPO_PUBLIC_ENV === 'production'
 
-/**
- * @param {string} name
- * @returns {string | undefined}
- */
-function readEnv(name) {
-  const value = process.env[name]
-  return typeof value === 'string' ? value.trim() : undefined
-}
-
-/**
- * @param {string} name
- * @returns {string | undefined}
- */
-function readProjectEnvValue(name) {
-  const fromProcess = readEnv(name)
-  if (fromProcess) return fromProcess
-
-  for (const filename of ['.env.local', '.env']) {
-    const file = path.join(projectRoot, filename)
-    if (!fs.existsSync(file)) continue
-    const line = fs
-      .readFileSync(file, 'utf8')
-      .split(/\r?\n/)
-      .find(entry => entry.trim().startsWith(`${name}=`))
-    if (!line) continue
-    const value = line.slice(line.indexOf('=') + 1).trim()
-    if (value) return value
-  }
-
-  return undefined
-}
-
 if (isProductionBuild) {
-  const configuredPublicWebOrigin =
-    readEnv('EXPO_PUBLIC_PUBLIC_WEB_ORIGIN') || expectedPublicWebOrigin
-  if (configuredPublicWebOrigin !== expectedPublicWebOrigin) {
-    throw new Error(
-      `Production web builds must use ${expectedPublicWebOrigin} as EXPO_PUBLIC_PUBLIC_WEB_ORIGIN; received ${configuredPublicWebOrigin}`,
-    )
-  }
-  const configuredAccountService =
-    readEnv('EXPO_PUBLIC_ACCOUNT_SERVICE') || expectedAccountService
-  if (configuredAccountService !== expectedAccountService) {
-    throw new Error(
-      `Production web builds must use ${expectedAccountService} as EXPO_PUBLIC_ACCOUNT_SERVICE; received ${configuredAccountService}`,
-    )
-  }
-
-  const configuredDefaultFeedOwner = readProjectEnvValue(
-    'EXPO_PUBLIC_DEFAULT_FEED_OWNER_DID',
-  )
-  const configuredDefaultFeedRkey = readProjectEnvValue(
-    'EXPO_PUBLIC_DEFAULT_FEED_RKEY',
-  )
-  if (!configuredDefaultFeedOwner || !configuredDefaultFeedRkey) {
-    throw new Error(
-      'Production web builds must configure EXPO_PUBLIC_DEFAULT_FEED_OWNER_DID and EXPO_PUBLIC_DEFAULT_FEED_RKEY',
-    )
-  }
+  assertProductionPublicWebConfig()
 }
 
 const templateFile = path.join(
@@ -113,6 +57,7 @@ if (fs.existsSync(oauthMetadataSource)) {
   if (isProductionBuild) {
     /** @type {{client_id?: string, client_uri?: string, redirect_uris?: string[]}} */
     const metadata = JSON.parse(fs.readFileSync(oauthMetadataTarget, 'utf8'))
+    const expectedPublicWebOrigin = 'https://plumblines.uk'
     const expectedClientId = `${expectedPublicWebOrigin}/oauth-client-metadata.json`
     const expectedCallback = `${expectedPublicWebOrigin}/oauth/callback`
     if (

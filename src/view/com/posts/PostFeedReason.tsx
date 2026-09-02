@@ -4,12 +4,13 @@ import {useLingui} from '@lingui/react'
 import {Trans} from '@lingui/react/macro'
 
 import {isReasonFeedSource, type ReasonFeedSource} from '#/lib/api/feed/types'
+import {PLUMBLINE_BRASS} from '#/lib/brand'
 import {publicProviderReason} from '#/lib/feed-provider-security'
 import {type ModerationDecision} from '#/lib/moderation'
 import {createSanitizedDisplayName} from '#/lib/moderation/create-sanitized-display-name'
 import {makeProfileLink} from '#/lib/routes/links'
 import {useSession} from '#/state/session'
-import {atoms as a, useTheme} from '#/alf'
+import {useTheme} from '#/alf'
 import {Pin_Stroke2_Corner0_Rounded as PinIcon} from '#/components/icons/Pin'
 import {Repost_Stroke2_Corner3_Rounded as RepostIcon} from '#/components/icons/Repost'
 import {Link} from '#/components/Link'
@@ -42,7 +43,7 @@ export function PostFeedReason({
     return (
       <View style={styles.includeReason}>
         <Text
-          style={[t.atoms.text_contrast_medium, a.font_medium, a.leading_snug]}
+          style={[styles.reasonLabel, t.atoms.text_contrast_medium]}
           numberOfLines={2}>
           From feed provider · {providerReason}
         </Text>
@@ -54,23 +55,14 @@ export function PostFeedReason({
     return (
       <Link label={_(msg`Go to feed`)} to={reason.href}>
         <Text
-          style={[
-            t.atoms.text_contrast_medium,
-            a.font_medium,
-            a.leading_snug,
-            a.leading_snug,
-          ]}
+          style={[styles.reasonLabel, t.atoms.text_contrast_medium]}
           numberOfLines={1}>
           <Trans context="from-feed">
             From{' '}
             <FeedNameText
               uri={reason.uri}
               href={reason.href}
-              style={[
-                t.atoms.text_contrast_medium,
-                a.font_medium,
-                a.leading_snug,
-              ]}
+              style={[styles.reasonLabel, t.atoms.text_contrast_medium]}
               numberOfLines={1}
             />
           </Trans>
@@ -95,17 +87,13 @@ export function PostFeedReason({
         }
         onPress={onOpenReposter}>
         <RepostIcon
-          style={[t.atoms.text_contrast_medium, {marginRight: 3}]}
+          style={[{color: PLUMBLINE_BRASS, marginRight: 3}]}
           width={13}
           height={13}
         />
         <ProfileHoverCard did={reason.by.did}>
           <Text
-            style={[
-              t.atoms.text_contrast_medium,
-              a.font_medium,
-              a.leading_snug,
-            ]}
+            style={[styles.reasonLabel, t.atoms.text_contrast_medium]}
             numberOfLines={1}>
             {isOwner ? (
               <Trans>Reposted by you</Trans>
@@ -122,12 +110,12 @@ export function PostFeedReason({
     return (
       <View style={styles.includeReason}>
         <PinIcon
-          style={[t.atoms.text_contrast_medium, {marginRight: 3}]}
+          style={[{color: PLUMBLINE_BRASS, marginRight: 3}]}
           width={13}
           height={13}
         />
         <Text
-          style={[t.atoms.text_contrast_medium, a.font_medium, a.leading_snug]}
+          style={[styles.reasonLabel, t.atoms.text_contrast_medium]}
           numberOfLines={1}>
           <Trans>Pinned</Trans>
         </Text>
@@ -140,7 +128,14 @@ const styles = StyleSheet.create({
   includeReason: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 2,
+    marginBottom: 5,
     marginLeft: -16,
+  },
+  reasonLabel: {
+    fontFamily: 'Georgia, "Times New Roman", serif',
+    fontSize: 14,
+    fontStyle: 'italic',
+    lineHeight: 19,
+    letterSpacing: 0.05,
   },
 })

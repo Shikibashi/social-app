@@ -1,5 +1,5 @@
 import {memo, useMemo, useState} from 'react'
-import {type StyleProp, View, type ViewStyle} from 'react-native'
+import {type StyleProp, StyleSheet, View, type ViewStyle} from 'react-native'
 import {type RichText as RichTextAPI} from '@bsky/sdk/richtext'
 import {plural} from '@lingui/core/macro'
 import {useLingui} from '@lingui/react/macro'
@@ -217,6 +217,8 @@ let PostControls = ({
     <View style={[a.gap_2xs, style]}>
       <View
         style={[
+          styles.actionRow,
+          {borderTopColor: t.palette.contrast_200},
           a.flex_row,
           a.justify_between,
           a.align_center,
@@ -466,3 +468,10 @@ function useSecondaryControlSpacingStyles({
     return {gap}
   }, [variant, big, gtPhone])
 }
+
+const styles = StyleSheet.create({
+  actionRow: {
+    borderTopWidth: StyleSheet.hairlineWidth,
+    paddingTop: 3,
+  },
+})
