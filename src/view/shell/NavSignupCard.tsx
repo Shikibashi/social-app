@@ -31,6 +31,7 @@ let NavSignupCard = ({}: {}): React.ReactNode => {
     <View testID="plumbline-nav-signup-card" style={[{maxWidth: 245}]}>
       <View>
         <Text
+          testID="plumbline-nav-signup-heading"
           style={[
             a.text_3xl,
             a.font_bold,

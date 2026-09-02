@@ -81,23 +81,6 @@ function HomeHeaderLayoutDesktopAndTablet({
             testID="plumbline-document-stream-title-group"
             style={[a.flex_1, {minWidth: 0}]}
             accessible={false}>
-            <View style={styles.headingKicker}>
-              <Text
-                testID="plumbline-document-stream-issue"
-                style={styles.headingIssue}>
-                THE EDITION
-              </Text>
-              <Text
-                aria-hidden={true}
-                style={[styles.headingDivider, t.atoms.text_contrast_low]}>
-                /
-              </Text>
-              <Text
-                testID="plumbline-document-stream-section"
-                style={[styles.headingSection, t.atoms.text_contrast_medium]}>
-                SECTION
-              </Text>
-            </View>
             <H1
               testID="plumbline-document-stream-title"
               numberOfLines={1}
@@ -105,24 +88,12 @@ function HomeHeaderLayoutDesktopAndTablet({
               {surfaceTitle}
             </H1>
             {surfaceMetadata && (
-              <View style={styles.headingMetadataRow}>
-                <Text
-                  style={[
-                    styles.headingMetadataLabel,
-                    t.atoms.text_contrast_low,
-                  ]}>
-                  ORDER
-                </Text>
-                <Text
-                  testID="plumbline-document-stream-metadata"
-                  numberOfLines={1}
-                  style={[
-                    styles.headingMetadata,
-                    t.atoms.text_contrast_medium,
-                  ]}>
-                  {surfaceMetadata}
-                </Text>
-              </View>
+              <Text
+                testID="plumbline-document-stream-metadata"
+                numberOfLines={1}
+                style={[styles.headingMetadata, t.atoms.text_contrast_medium]}>
+                {surfaceMetadata}
+              </Text>
             )}
           </View>
           {hasSession && (
@@ -158,7 +129,7 @@ function HomeHeaderLayoutDesktopAndTablet({
 const styles = StyleSheet.create({
   marker: {
     width: 18,
-    height: 62,
+    height: 46,
     marginRight: 14,
     position: 'relative',
   },
@@ -178,59 +149,19 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     transform: [{rotate: '45deg'}],
   },
-  headingKicker: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 7,
-  },
-  headingIssue: {
-    fontFamily: 'Verdana, "DejaVu Sans", sans-serif',
-    fontSize: 11,
-    fontWeight: '700',
-    letterSpacing: 1.4,
-    lineHeight: 15,
-    textTransform: 'uppercase',
-  },
-  headingDivider: {
-    fontFamily: 'Georgia, "Times New Roman", serif',
-    fontSize: 13,
-    lineHeight: 15,
-  },
-  headingSection: {
-    fontFamily: 'Courier New, "Liberation Mono", monospace',
-    fontSize: 10,
-    fontWeight: '700',
-    letterSpacing: 1.1,
-    lineHeight: 15,
-    textTransform: 'uppercase',
-  },
   headingTitle: {
     fontFamily: 'Georgia, "Times New Roman", serif',
     fontSize: 30,
     fontWeight: '700',
     lineHeight: 34,
   },
-  headingMetadataRow: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-    gap: 6,
-    minWidth: 0,
-  },
-  headingMetadataLabel: {
-    flexShrink: 0,
-    fontFamily: 'Courier New, "Liberation Mono", monospace',
-    fontSize: 10,
-    fontWeight: '700',
-    letterSpacing: 1,
-    lineHeight: 15,
-    textTransform: 'uppercase',
-  },
   headingMetadata: {
     flexShrink: 1,
-    fontFamily: 'Courier New, "Liberation Mono", monospace',
+    fontFamily: 'Verdana, "DejaVu Sans", sans-serif',
     fontSize: 11,
-    fontWeight: '400',
-    letterSpacing: 0.4,
+    fontWeight: '700',
+    letterSpacing: 0.8,
     lineHeight: 15,
+    textTransform: 'uppercase',
   },
 })

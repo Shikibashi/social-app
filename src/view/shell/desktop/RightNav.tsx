@@ -64,6 +64,7 @@ export function DesktopRightNav({routeName}: {routeName: string}) {
   const isHomeRoute = routeName === 'Home'
   const [showInspector, setShowInspector] = useState(!isHomeRoute)
   const [showMoreContext, setShowMoreContext] = useState(false)
+  const showPeripheralReference = !isHomeRoute || showInspector
   const moreContextId = `plumbline-inspector-secondary-context-${useId()}`
 
   useEffect(() => {
@@ -113,140 +114,153 @@ export function DesktopRightNav({routeName}: {routeName: string}) {
       ) : (
         <CollapsedInspector onOpen={() => setShowInspector(true)} />
       )}
-      <View
-        testID="plumbline-inspector-tools"
-        role="region"
-        accessibilityLabel={_(msg`Reference shelf`)}
-        accessibilityHint={_(
-          msg`Contains replaceable read tools for this surface`,
-        )}
-        style={styles.inspectorTools}>
-        <H2 style={[styles.secondaryHeading, t.atoms.text_contrast_medium]}>
-          {_(msg`Reference shelf`)}
-        </H2>
-        <Text
-          testID="plumbline-inspector-tools-description"
-          style={[styles.secondaryDescription, t.atoms.text_contrast_medium]}>
-          {_(msg`Optional sources remain separate from the selected surface.`)}
-        </Text>
-        {!isSearchScreen && <DesktopSearch />}
-
-        <Pressable
-          testID="plumbline-more-context-toggle"
-          accessibilityRole="button"
-          accessibilityLabel={
-            showMoreContext
-              ? _(msg`Hide more context`)
-              : _(msg`Show more context`)
-          }
-          accessibilityHint={_(
-            msg`Show optional feeds, guides, live events, and discovery sources`,
-          )}
-          accessibilityState={{expanded: showMoreContext}}
-          aria-expanded={showMoreContext}
-          aria-controls={showMoreContext ? moreContextId : undefined}
-          onPress={() => setShowMoreContext(value => !value)}
-          style={({pressed}) => [
-            styles.contextToggle,
-            {borderColor: t.palette.contrast_200},
-            pressed && styles.pressed,
-          ]}>
-          <Text
-            style={[
-              styles.contextToggleText,
-              {color: t.atoms.text_link.color},
-            ]}>
-            {showMoreContext ? _(msg`Hide more context`) : _(msg`More context`)}
-          </Text>
-        </Pressable>
-
-        {showMoreContext && (
-          <View
-            testID="plumbline-inspector-secondary-context"
-            nativeID={moreContextId}
-            role="region"
-            accessibilityLabel={_(msg`More context`)}
-            accessibilityHint={_(
-              msg`Optional sources remain separate from the selected surface`,
-            )}
-            style={styles.secondaryContext}>
-            {hasSession && (
-              <>
-                <H3
-                  style={[
-                    styles.secondaryHeading,
-                    t.atoms.text_contrast_medium,
-                  ]}>
-                  Other editions
-                </H3>
-                <DesktopFeeds />
-                <ProgressGuideList />
-              </>
-            )}
-          </View>
-        )}
-      </View>
-
-      {showMoreContext && showExploreScreenDuplicatedContent && (
+      {showPeripheralReference && (
         <View
-          testID="plumbline-inspector-discovery"
+          testID="plumbline-inspector-tools"
           role="region"
-          accessibilityLabel={_(msg`Further reading`)}
+          accessibilityLabel={_(msg`Reference shelf`)}
           accessibilityHint={_(
-            msg`Contains optional external signals for this surface`,
+            msg`Contains replaceable read tools for this surface`,
           )}
-          style={styles.inspectorDiscovery}>
+          style={styles.inspectorTools}>
           <H2 style={[styles.secondaryHeading, t.atoms.text_contrast_medium]}>
-            {_(msg`Further reading`)}
+            {_(msg`Reference shelf`)}
           </H2>
           <Text
-            testID="plumbline-inspector-discovery-description"
+            testID="plumbline-inspector-tools-description"
             style={[styles.secondaryDescription, t.atoms.text_contrast_medium]}>
             {_(
-              msg`External signals may be unavailable and are not authoritative.`,
+              msg`Optional sources remain separate from the selected surface.`,
             )}
           </Text>
-          <SidebarLiveEventFeedsBanner />
-          <SidebarTrendingTopics />
+          {!isSearchScreen && <DesktopSearch />}
+
+          <Pressable
+            testID="plumbline-more-context-toggle"
+            accessibilityRole="button"
+            accessibilityLabel={
+              showMoreContext
+                ? _(msg`Hide more context`)
+                : _(msg`Show more context`)
+            }
+            accessibilityHint={_(
+              msg`Show optional feeds, guides, live events, and discovery sources`,
+            )}
+            accessibilityState={{expanded: showMoreContext}}
+            aria-expanded={showMoreContext}
+            aria-controls={showMoreContext ? moreContextId : undefined}
+            onPress={() => setShowMoreContext(value => !value)}
+            style={({pressed}) => [
+              styles.contextToggle,
+              {borderColor: t.palette.contrast_200},
+              pressed && styles.pressed,
+            ]}>
+            <Text
+              style={[
+                styles.contextToggleText,
+                {color: t.atoms.text_link.color},
+              ]}>
+              {showMoreContext
+                ? _(msg`Hide more context`)
+                : _(msg`More context`)}
+            </Text>
+          </Pressable>
+
+          {showMoreContext && (
+            <View
+              testID="plumbline-inspector-secondary-context"
+              nativeID={moreContextId}
+              role="region"
+              accessibilityLabel={_(msg`More context`)}
+              accessibilityHint={_(
+                msg`Optional sources remain separate from the selected surface`,
+              )}
+              style={styles.secondaryContext}>
+              {hasSession && (
+                <>
+                  <H3
+                    style={[
+                      styles.secondaryHeading,
+                      t.atoms.text_contrast_medium,
+                    ]}>
+                    Other editions
+                  </H3>
+                  <DesktopFeeds />
+                  <ProgressGuideList />
+                </>
+              )}
+            </View>
+          )}
         </View>
       )}
 
-      <Text style={[a.leading_snug, t.atoms.text_contrast_low]}>
-        {hasSession && (
-          <>
-            <InlineLinkText
-              to={FEEDBACK_FORM_URL({
-                email: currentAccount?.email,
-                handle: currentAccount?.handle,
-              })}
-              style={[t.atoms.text_contrast_medium]}
-              label={_(msg`Feedback`)}>
-              {_(msg`Feedback`)}
-            </InlineLinkText>
-            <Text style={[t.atoms.text_contrast_low]}>{' ∙ '}</Text>
-          </>
+      {showPeripheralReference &&
+        showMoreContext &&
+        showExploreScreenDuplicatedContent && (
+          <View
+            testID="plumbline-inspector-discovery"
+            role="region"
+            accessibilityLabel={_(msg`Further reading`)}
+            accessibilityHint={_(
+              msg`Contains optional external signals for this surface`,
+            )}
+            style={styles.inspectorDiscovery}>
+            <H2 style={[styles.secondaryHeading, t.atoms.text_contrast_medium]}>
+              {_(msg`Further reading`)}
+            </H2>
+            <Text
+              testID="plumbline-inspector-discovery-description"
+              style={[
+                styles.secondaryDescription,
+                t.atoms.text_contrast_medium,
+              ]}>
+              {_(
+                msg`External signals may be unavailable and are not authoritative.`,
+              )}
+            </Text>
+            <SidebarLiveEventFeedsBanner />
+            <SidebarTrendingTopics />
+          </View>
         )}
-        <InlineLinkText
-          to="/support/privacy"
-          style={[t.atoms.text_contrast_medium]}
-          label={_(msg`Privacy`)}>
-          {_(msg`Privacy`)}
-        </InlineLinkText>
-        <Text style={[t.atoms.text_contrast_low]}>{' ∙ '}</Text>
-        <InlineLinkText
-          to="/support/tos"
-          style={[t.atoms.text_contrast_medium]}
-          label={_(msg`Terms`)}>
-          {_(msg`Terms`)}
-        </InlineLinkText>
-        <Text style={[t.atoms.text_contrast_low]}>{' ∙ '}</Text>
-        <InlineLinkText
-          label={_(msg`Help`)}
-          to={HELP_DESK_URL}
-          style={[t.atoms.text_contrast_medium]}>
-          {_(msg`Help`)}
-        </InlineLinkText>
-      </Text>
+
+      {showPeripheralReference && (
+        <Text style={[a.leading_snug, t.atoms.text_contrast_low]}>
+          {hasSession && (
+            <>
+              <InlineLinkText
+                to={FEEDBACK_FORM_URL({
+                  email: currentAccount?.email,
+                  handle: currentAccount?.handle,
+                })}
+                style={[t.atoms.text_contrast_medium]}
+                label={_(msg`Feedback`)}>
+                {_(msg`Feedback`)}
+              </InlineLinkText>
+              <Text style={[t.atoms.text_contrast_low]}>{' ∙ '}</Text>
+            </>
+          )}
+          <InlineLinkText
+            to="/support/privacy"
+            style={[t.atoms.text_contrast_medium]}
+            label={_(msg`Privacy`)}>
+            {_(msg`Privacy`)}
+          </InlineLinkText>
+          <Text style={[t.atoms.text_contrast_low]}>{' ∙ '}</Text>
+          <InlineLinkText
+            to="/support/tos"
+            style={[t.atoms.text_contrast_medium]}
+            label={_(msg`Terms`)}>
+            {_(msg`Terms`)}
+          </InlineLinkText>
+          <Text style={[t.atoms.text_contrast_low]}>{' ∙ '}</Text>
+          <InlineLinkText
+            label={_(msg`Help`)}
+            to={HELP_DESK_URL}
+            style={[t.atoms.text_contrast_medium]}>
+            {_(msg`Help`)}
+          </InlineLinkText>
+        </Text>
+      )}
 
       {!hasSession && leftNavMinimal && (
         <View style={[a.w_full, {height: 32}]}>

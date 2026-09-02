@@ -16,7 +16,7 @@ import {Text} from '#/components/Typography'
  * Desktop Page Mode reserves this measured strip for the product masthead.
  * Keep layout callers on the same baseline as its rules and metadata.
  */
-export const PLUMBLINE_PAGE_MASTHEAD_HEIGHT = 132
+export const PLUMBLINE_PAGE_MASTHEAD_HEIGHT = 112
 
 /**
  * Shared shell identity for the web workbench and the native drawer.
@@ -123,7 +123,7 @@ export function PlumblinePageMasthead() {
       />
       <View testID="plumbline-page-masthead-content" style={styles.pageContent}>
         <View testID="plumbline-page-identity" style={styles.pageIdentity}>
-          <PlumblineMastheadSymbol size={40} />
+          <PlumblineMastheadSymbol size={34} />
           <View style={styles.pageWordmarkBlock}>
             <Text testID="plumbline-page-wordmark" style={styles.pageWordmark}>
               {PRODUCT_NAME}
@@ -223,28 +223,28 @@ const styles = StyleSheet.create({
   },
   pageWordmark: {
     fontFamily: 'Georgia, "Times New Roman", serif',
-    fontSize: 46,
+    fontSize: 42,
     fontWeight: '700',
     letterSpacing: 1.2,
-    lineHeight: 48,
+    lineHeight: 44,
     textAlign: 'center',
     textTransform: 'uppercase',
   },
   pageDescriptor: {
     fontFamily: 'Verdana, "DejaVu Sans", sans-serif',
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '700',
     letterSpacing: 1.1,
-    lineHeight: 15,
+    lineHeight: 13,
     textAlign: 'center',
     textTransform: 'uppercase',
   },
   pageMotto: {
     fontFamily: 'Georgia, "Times New Roman", serif',
-    fontSize: 13.5,
+    fontSize: 12.5,
     fontStyle: 'italic',
     letterSpacing: 0.1,
-    lineHeight: 18,
+    lineHeight: 16,
     maxWidth: 760,
     textAlign: 'center',
   },

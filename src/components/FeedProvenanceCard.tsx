@@ -45,7 +45,6 @@ export function FeedProvenanceCard({
     <View style={{paddingVertical: 2}}>
       <PlumblineAuthoritySummary
         testID="feed-provenance-summary"
-        title={provenance.feedName}
         source={provenance.provider || _(msg`Not declared`)}
         rule={rule}
         state={state}
