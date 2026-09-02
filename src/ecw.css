@@ -1618,6 +1618,15 @@ body {
   padding-left: 0 !important;
 }
 
+[data-ecw-mode='page'][data-testid='HomeScreen']
+  [data-testid='plumbline-quote-embed']
+  [style*='border-radius: 12px'][style*='border-width: 1px'] {
+  background-color: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
 /* The publication frame owns its column rules. The legacy centered border
  * would otherwise draw a second, misaligned set of rails behind the stream. */
 @media (min-width: 800px) {
