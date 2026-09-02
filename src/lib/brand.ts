@@ -5,22 +5,16 @@ const DEFAULT_PUBLIC_WEB_ORIGIN = 'https://plumblines.uk'
 export const PLUMBLINE_BRASS = '#B79A5A'
 
 /**
- * Plumbline's masthead motto records the phrase Tucker used for Liberty's
- * banner. The phrase itself predates Tucker; this is an attribution of use,
- * not a claim that he originated the wording.
+ * Plumbline's masthead motto is kept as a standalone publication mark.
  */
 export const PLUMBLINE_TUCKER_MOTTO = 'Liberty the Mother of Order'
-export const PLUMBLINE_TUCKER_MOTTO_CITATION =
-  'Benjamin R. Tucker · Liberty masthead motto'
 
 /**
- * Keep the longer historical quotation for the About surface, where its
+ * Keep the longer self-government quotation for the About surface, where its
  * argument can be read without crowding the masthead.
  */
 export const PLUMBLINE_TUCKER_SELF_GOVERNMENT_QUOTE =
   'The right of self-government means with me the right of every individual to govern himself, or it means nothing.'
-export const PLUMBLINE_TUCKER_SELF_GOVERNMENT_CITATION =
-  'Benjamin R. Tucker · Liberty, Vol. V, No. 22'
 
 export function resolveProductName(value: string | undefined): string {
   const name = value?.trim()

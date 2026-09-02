@@ -8,10 +8,7 @@ import {Trans} from '@lingui/react/macro'
 import {type NativeStackScreenProps} from '@react-navigation/native-stack'
 import {useMutation} from '@tanstack/react-query'
 
-import {
-  PLUMBLINE_TUCKER_SELF_GOVERNMENT_CITATION,
-  PLUMBLINE_TUCKER_SELF_GOVERNMENT_QUOTE,
-} from '#/lib/brand'
+import {PLUMBLINE_TUCKER_SELF_GOVERNMENT_QUOTE} from '#/lib/brand'
 import {STATUS_PAGE_URL} from '#/lib/constants'
 import {type CommonNavigatorParams} from '#/lib/routes/types'
 import {purgeTemporaryImageFiles} from '#/state/gallery'
@@ -106,10 +103,6 @@ export function AboutSettingsScreen({}: Props) {
           </H2>
           <Text style={styles.statementQuote}>
             “{PLUMBLINE_TUCKER_SELF_GOVERNMENT_QUOTE}”
-          </Text>
-          <Text
-            style={[styles.statementCitation, t.atoms.text_contrast_medium]}>
-            — {PLUMBLINE_TUCKER_SELF_GOVERNMENT_CITATION}
           </Text>
         </View>
         <SettingsList.Container>
@@ -250,13 +243,5 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
     lineHeight: 25,
     maxWidth: 760,
-  },
-  statementCitation: {
-    fontFamily: 'Courier New, "Liberation Mono", monospace',
-    fontSize: 10,
-    fontWeight: '700',
-    letterSpacing: 0.6,
-    lineHeight: 15,
-    textTransform: 'uppercase',
   },
 })

@@ -3,7 +3,6 @@ import {type StyleProp, StyleSheet, View, type ViewStyle} from 'react-native'
 import {
   PLUMBLINE_BRASS,
   PLUMBLINE_TUCKER_MOTTO,
-  PLUMBLINE_TUCKER_MOTTO_CITATION,
   PRODUCT_NAME,
 } from '#/lib/brand'
 import {
@@ -139,11 +138,6 @@ export function PlumblinePageMasthead() {
               style={[styles.pageMotto, t.atoms.text_contrast_medium]}>
               {PLUMBLINE_TUCKER_MOTTO}
             </Text>
-            <Text
-              testID="plumbline-page-motto-citation"
-              style={[styles.pageMottoCitation, t.atoms.text_contrast_medium]}>
-              — {PLUMBLINE_TUCKER_MOTTO_CITATION}
-            </Text>
           </View>
         </View>
       </View>
@@ -253,15 +247,6 @@ const styles = StyleSheet.create({
     lineHeight: 18,
     maxWidth: 760,
     textAlign: 'center',
-  },
-  pageMottoCitation: {
-    fontFamily: 'Verdana, "DejaVu Sans", sans-serif',
-    fontSize: 8.5,
-    fontWeight: '700',
-    letterSpacing: 0.9,
-    lineHeight: 12,
-    textAlign: 'center',
-    textTransform: 'uppercase',
   },
   mastheadMarker: {
     width: 12,
