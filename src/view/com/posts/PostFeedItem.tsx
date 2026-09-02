@@ -384,6 +384,7 @@ let FeedItemInner = ({
           <View style={{width: 42}}>
             {isThreadChild && (
               <View
+                testID="plumbline-feed-thread-line"
                 style={[
                   styles.replyLine,
                   {
@@ -432,6 +433,7 @@ let FeedItemInner = ({
             />
             {isThreadParent && (
               <View
+                testID="plumbline-feed-thread-line"
                 style={[
                   styles.replyLine,
                   {

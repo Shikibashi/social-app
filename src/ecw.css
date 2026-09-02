@@ -1539,6 +1539,85 @@ body {
   }
 }
 
+/* Section feeds are reading surfaces, not diagrams. Keep their information
+ * hierarchy and controls, but let type, whitespace, and content provide the
+ * structure. Thread pages keep the ancestry treatment above because their
+ * lines explain reply relationships rather than decorate a feed. */
+[data-ecw-mode='page'][data-testid='HomeScreen']
+  [data-testid='plumbline-document-stream-marker'],
+[data-ecw-mode='page'][data-testid='HomeScreen']
+  [data-testid='feed-provenance-summary-marker'],
+[data-ecw-mode='page'][data-testid='HomeScreen']
+  [data-testid^='plumbline-feed-thread-line'] {
+  display: none !important;
+}
+
+[data-ecw-mode='page'][data-testid='HomeScreen']
+  [data-testid='plumbline-document-stream-heading'] {
+  border-bottom: 0 !important;
+  padding-bottom: 12px !important;
+}
+
+[data-ecw-mode='page'][data-testid='HomeScreen']
+  [data-testid='plumbline-document-stream-heading']
+  a {
+  background-color: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+[data-ecw-mode='page'][data-testid='HomeScreen'] [role='tablist'] {
+  border-bottom: 0 !important;
+}
+
+[data-ecw-mode='page'][data-testid='HomeScreen'] [role='tablist']::before,
+[data-ecw-mode='page'][data-testid='HomeScreen']
+  [data-testid^='homeScreenFeedTabs-indicator-'],
+[data-ecw-mode='page'][data-testid='HomeScreen']
+  [data-testid^='homeScreenFeedTabs-marker-'] {
+  display: none !important;
+}
+
+[data-ecw-mode='page'][data-testid='HomeScreen']
+  [data-testid='homeScreenFeedTabs']
+  > div:last-child,
+[data-ecw-mode='page'][data-testid='HomeScreen'] [role='tab'] {
+  border-bottom: 0 !important;
+}
+
+[data-ecw-mode='page'][data-testid='HomeScreen']
+  [data-testid='feed-provenance-summary'] {
+  border-left: 0 !important;
+  padding-left: 0 !important;
+}
+
+[data-ecw-mode='page'][data-testid='HomeScreen']
+  [data-testid='feed-provenance-details-toggle'] {
+  border-bottom: 0 !important;
+}
+
+[data-ecw-mode='page'][data-testid='HomeScreen'] [data-testid^='feedItem-by-'] {
+  border-top: 0 !important;
+  border-bottom: 0 !important;
+  margin-bottom: 12px !important;
+  padding-bottom: 24px !important;
+}
+
+[data-ecw-mode='page'][data-testid='HomeScreen']
+  [data-testid^='feedItem-by-']::before,
+[data-ecw-mode='page'][data-testid='HomeScreen']
+  [data-testid^='feedItem-by-']::after {
+  display: none !important;
+  content: none !important;
+}
+
+[data-ecw-mode='page'][data-testid='HomeScreen']
+  [data-testid='post-provenance'] {
+  border-left: 0 !important;
+  padding-left: 0 !important;
+}
+
 /* The publication frame owns its column rules. The legacy centered border
  * would otherwise draw a second, misaligned set of rails behind the stream. */
 @media (min-width: 800px) {
