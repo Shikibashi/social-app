@@ -1,4 +1,8 @@
 import {
+  PLUMBLINE_TUCKER_MOTTO,
+  PLUMBLINE_TUCKER_MOTTO_CITATION,
+  PLUMBLINE_TUCKER_SELF_GOVERNMENT_CITATION,
+  PLUMBLINE_TUCKER_SELF_GOVERNMENT_QUOTE,
   PRODUCT_NAME,
   PRODUCT_WORDMARK,
   PUBLIC_WEB_ORIGIN,
@@ -8,6 +12,19 @@ import {
 } from './brand'
 
 describe('public product identity', () => {
+  it('keeps the masthead motto and About quotation attribution stable', () => {
+    expect(PLUMBLINE_TUCKER_MOTTO).toBe('Liberty the Mother of Order')
+    expect(PLUMBLINE_TUCKER_MOTTO_CITATION).toBe(
+      'Benjamin R. Tucker · Liberty masthead motto',
+    )
+    expect(PLUMBLINE_TUCKER_SELF_GOVERNMENT_QUOTE).toBe(
+      'The right of self-government means with me the right of every individual to govern himself, or it means nothing.',
+    )
+    expect(PLUMBLINE_TUCKER_SELF_GOVERNMENT_CITATION).toBe(
+      'Benjamin R. Tucker · Liberty, Vol. V, No. 22',
+    )
+  })
+
   it('uses the Plumbline default product name', () => {
     expect(resolveProductName(undefined)).toBe('Plumbline')
     expect(resolveProductName('  My Social  ')).toBe('My Social')

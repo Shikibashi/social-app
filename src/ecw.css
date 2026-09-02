@@ -379,8 +379,8 @@ body {
 
 [data-testid='plumbline-page-masthead'] {
   background-color: var(--ecw-surface) !important;
-  border-top: 2px solid var(--ecw-border-strong);
-  border-bottom: 2px solid var(--ecw-border-strong);
+  border-top: 1px solid var(--ecw-border-strong);
+  border-bottom: 0;
   box-shadow: none !important;
 }
 
@@ -400,8 +400,12 @@ body {
 
 [data-testid='plumbline-page-masthead-top-rule'],
 [data-testid='plumbline-page-masthead-bottom-rule'] {
-  height: 1px !important;
+  height: 0 !important;
   background-color: var(--ecw-border-strong) !important;
+}
+
+[data-testid='plumbline-page-masthead-bottom-rule'] {
+  height: 2px !important;
 }
 
 [data-testid='plumbline-page-wordmark'] {
@@ -678,9 +682,9 @@ body {
 @media (min-width: 1100px) and (max-width: 1279px) {
   [data-testid='plumbline-shell'][data-ecw-shell-mode='page']
     > [data-testid='plumbline-page-composition'] {
-    --plumbline-composition-columns: 190px minmax(0, 640px) 220px;
-    --plumbline-composition-gap: 18px;
-    max-width: 1120px;
+    --plumbline-composition-columns: 176px minmax(0, 1fr) 196px;
+    --plumbline-composition-gap: 20px;
+    max-width: 1198px;
   }
 }
 
@@ -721,32 +725,32 @@ body {
   [data-testid='plumbline-page-composition']:has([data-ecw-mode='page'])
     > #plumbline-main-content {
     background-color: var(--ecw-surface);
-    border-inline: 1px solid var(--ecw-rule-decorative);
+    border-inline: 0 !important;
   }
 
   [data-testid='plumbline-page-composition']:has([data-ecw-mode='page'])
     > [data-testid='plumbline-left-nav'] {
     background-color: transparent !important;
-    border-right: 1px solid var(--ecw-rule-decorative);
+    border-right: 0 !important;
     box-shadow: none !important;
-    padding-right: 20px !important;
+    padding-right: 0 !important;
   }
 
   [data-testid='plumbline-page-composition']:has([data-ecw-mode='page'])
     > [data-testid='plumbline-right-nav'] {
     background-color: transparent !important;
-    border-left: 1px solid var(--ecw-rule-decorative);
+    border-left: 0 !important;
     box-shadow: none !important;
-    padding-left: 20px !important;
+    padding-left: 0 !important;
   }
 
   [data-testid='plumbline-page-composition']:has([data-ecw-mode='page'])
     > [data-testid='plumbline-left-nav']
     [data-testid='plumbline-nav-index-heading'] {
     border-top: 2px solid var(--ecw-border-strong) !important;
-    border-bottom: 1px solid var(--ecw-rule-decorative) !important;
-    margin-bottom: 16px !important;
-    padding: 8px 10px 10px !important;
+    border-bottom: 0 !important;
+    margin-bottom: 14px !important;
+    padding: 8px 0 4px !important;
   }
 
   [data-testid='plumbline-page-composition']:has([data-ecw-mode='page'])
@@ -842,7 +846,7 @@ body {
     [data-testid='plumbline-workbench-inspector'] {
     border-top: 2px solid var(--ecw-border-strong) !important;
     border-right: 0 !important;
-    border-bottom: 1px solid var(--ecw-rule-decorative) !important;
+    border-bottom: 0 !important;
     border-left: 0 !important;
     border-radius: 0 !important;
     background-color: transparent !important;
@@ -879,12 +883,25 @@ body {
   }
 
   [data-testid='plumbline-page-composition']:has([data-ecw-mode='page'])
+    [data-testid='plumbline-inspector-tools']
+    > [role='heading'],
+  [data-testid='plumbline-page-composition']:has([data-ecw-mode='page'])
+    [data-testid='plumbline-inspector-discovery']
+    > [role='heading'],
+  [data-testid='plumbline-page-composition']:has([data-ecw-mode='page'])
+    [data-testid='plumbline-inspector-secondary-context']
+    > [role='heading'] {
+    border-top: 0 !important;
+    padding-top: 0 !important;
+  }
+
+  [data-testid='plumbline-page-composition']:has([data-ecw-mode='page'])
     [data-testid='plumbline-workbench-inspector-route'] {
-    border-bottom: 1px solid var(--ecw-rule-decorative);
+    border-bottom: 0;
     font-family: var(--ecw-font-display) !important;
     font-size: 1.35rem !important;
     line-height: 1.18 !important;
-    padding-bottom: 8px;
+    padding-bottom: 0;
   }
 
   [data-testid='plumbline-page-composition']:has([data-ecw-mode='page'])
@@ -894,13 +911,13 @@ body {
   [data-testid='plumbline-page-composition']:has([data-ecw-mode='page'])
     [data-testid='plumbline-workbench-inspector-control'] {
     display: block !important;
-    border-top: 1px solid var(--ecw-rule-decorative);
+    border-top: 0;
     color: var(--ecw-text-secondary);
     font-family: var(--ecw-font-ui) !important;
     font-size: var(--ecw-font-size-meta) !important;
     line-height: 1.5 !important;
     overflow-wrap: anywhere;
-    padding: 6px 0;
+    padding: 3px 0 0;
   }
 
   [data-testid='plumbline-page-composition']:has([data-ecw-mode='page'])
@@ -919,7 +936,7 @@ body {
   [data-testid='plumbline-page-composition']:has([data-ecw-mode='page'])
     [data-testid='plumbline-inspector-discovery'] {
     border-top: 1px solid var(--ecw-rule-decorative);
-    border-bottom: 1px solid var(--ecw-rule-decorative);
+    border-bottom: 0;
     background-color: transparent !important;
     padding: 14px 0 12px;
   }
@@ -935,7 +952,7 @@ body {
   [data-testid='plumbline-page-composition']:has([data-ecw-mode='page'])
     [data-testid='plumbline-more-context-toggle'] {
     border: 0 !important;
-    border-bottom: 1px solid var(--ecw-border-structural) !important;
+    border-bottom: 0 !important;
     border-radius: 0 !important;
     background-color: transparent !important;
     padding: 5px 0 !important;
@@ -1015,10 +1032,46 @@ body {
 [data-ecw-mode='page'] [data-testid='plumbline-document-stream-heading'] {
   min-height: 84px;
   align-items: flex-end !important;
-  border-top: 2px solid var(--ecw-border-strong) !important;
+  border-top: 0 !important;
   border-bottom: 1px solid var(--ecw-border-strong) !important;
   background-color: transparent !important;
   padding: 18px 28px 14px !important;
+}
+
+/* A thread is correspondence in the publication, not a second application
+ * chrome layer. Keep the browser-native back action and view controls, but
+ * let the route header recede into the paper instead of forming a boxed bar. */
+[data-ecw-mode='page'][data-testid='postThreadScreen']
+  > [data-ecw-region='header'] {
+  max-width: none !important;
+  min-height: 64px !important;
+  transform: none !important;
+  border-bottom: 0 !important;
+  background-color: transparent !important;
+  padding: 12px 28px 8px !important;
+}
+
+[data-ecw-mode='page'][data-testid='postThreadScreen']
+  > [data-ecw-region='header']
+  h1,
+[data-ecw-mode='page'][data-testid='postThreadScreen']
+  > [data-ecw-region='header']
+  h2,
+[data-ecw-mode='page'][data-testid='postThreadScreen']
+  > [data-ecw-region='header']
+  h3 {
+  font-family: var(--ecw-font-display) !important;
+  font-size: 1.45rem !important;
+  letter-spacing: 0.01em !important;
+}
+
+[data-ecw-mode='page'][data-testid='postThreadScreen']
+  > [data-ecw-region='header']
+  button {
+  border: 0 !important;
+  border-radius: 0 !important;
+  background-color: transparent !important;
+  box-shadow: none !important;
 }
 
 [data-ecw-mode='page'] [data-testid='plumbline-document-stream-marker'] {
@@ -1065,8 +1118,8 @@ body {
   align-items: stretch;
   display: flex !important;
   overflow: hidden;
-  border-top: 1px solid var(--ecw-rule-decorative) !important;
-  border-bottom: 2px solid var(--ecw-border-strong) !important;
+  border-top: 0 !important;
+  border-bottom: 1px solid var(--ecw-border-strong) !important;
   background-color: transparent !important;
   box-shadow: none !important;
 }
@@ -1109,13 +1162,13 @@ body {
 }
 
 [data-ecw-mode='page'] [role='tab'][aria-selected='true'] {
-  border-bottom: 3px solid var(--ecw-border-strong) !important;
+  border-bottom: 2px solid var(--ecw-border-strong) !important;
   box-shadow: none !important;
 }
 
 [data-ecw-mode='page'] [data-testid='feed-provenance-summary'] {
   align-items: flex-start;
-  border-bottom: 1px solid var(--ecw-rule-decorative);
+  border-bottom: 0;
   color: var(--ecw-text-muted);
   font-family: var(--ecw-font-system) !important;
   font-size: 0.68rem !important;
@@ -1209,13 +1262,237 @@ body {
   border-radius: 0 !important;
 }
 
+/* A newspaper can carry clippings, quotations, and photographs without
+ * turning every item into a floating card. Keep the source components and
+ * their links intact; flatten only their Page Mode presentation. */
+[data-ecw-mode='page'] [data-testid='plumbline-external-embed'],
+[data-ecw-mode='page'] [data-testid='plumbline-standard-site-embed'],
+[data-ecw-mode='page'] [data-testid='plumbline-publication-embed'] {
+  background-color: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  margin-top: 12px !important;
+  overflow: visible !important;
+  padding: 0 !important;
+}
+
+[data-ecw-mode='page'] [data-testid='plumbline-external-embed'] > div,
+[data-ecw-mode='page'] [data-testid='plumbline-standard-site-embed'] > div,
+[data-ecw-mode='page'] [data-testid='plumbline-publication-embed'] > div,
+[data-ecw-mode='page']
+  [data-testid='plumbline-external-embed']
+  [style*='border-top-width'],
+[data-ecw-mode='page']
+  [data-testid='plumbline-standard-site-embed']
+  [style*='border-top-width'],
+[data-ecw-mode='page']
+  [data-testid='plumbline-publication-embed']
+  [style*='border-top-width'] {
+  border-top-width: 0 !important;
+}
+
+[data-ecw-mode='page'] [data-testid='plumbline-external-embed'] a,
+[data-ecw-mode='page'] [data-testid='plumbline-standard-site-embed'] a,
+[data-ecw-mode='page'] [data-testid='plumbline-publication-embed'] a {
+  border-radius: 0 !important;
+}
+
+[data-ecw-mode='page']
+  [data-testid='plumbline-external-embed']
+  [style*='padding-left: 12px'],
+[data-ecw-mode='page']
+  [data-testid='plumbline-external-embed']
+  [style*='padding-right: 12px'],
+[data-ecw-mode='page']
+  [data-testid='plumbline-standard-site-embed']
+  [style*='padding-left: 12px'],
+[data-ecw-mode='page']
+  [data-testid='plumbline-standard-site-embed']
+  [style*='padding-right: 12px'] {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+[data-ecw-mode='page']
+  [data-testid='plumbline-external-embed']
+  [style*='border-radius: 12px'],
+[data-ecw-mode='page']
+  [data-testid='plumbline-external-embed']
+  [style*='border-radius: 8px'],
+[data-ecw-mode='page']
+  [data-testid='plumbline-standard-site-embed']
+  [style*='border-radius: 12px'],
+[data-ecw-mode='page']
+  [data-testid='plumbline-standard-site-embed']
+  [style*='border-radius: 8px'],
+[data-ecw-mode='page']
+  [data-testid='plumbline-publication-embed']
+  [style*='border-radius: 12px'],
+[data-ecw-mode='page']
+  [data-testid='plumbline-publication-embed']
+  [style*='border-radius: 8px'],
+[data-ecw-mode='page']
+  [data-testid='plumbline-media-embed']
+  [style*='border-radius: 12px'],
+[data-ecw-mode='page']
+  [data-testid='plumbline-media-embed']
+  [style*='border-radius: 8px'] {
+  border-radius: 0 !important;
+}
+
+[data-ecw-mode='page'] [data-testid='plumbline-standard-article-title'] {
+  font-family: var(--ecw-font-display) !important;
+  font-size: 1.12rem !important;
+  line-height: 1.25 !important;
+}
+
+[data-ecw-mode='page'] [data-testid='plumbline-quote-embed'] {
+  margin-top: 14px !important;
+}
+
+[data-ecw-mode='page']
+  [data-testid='plumbline-quote-embed']
+  [data-testid='contentHider-post'] {
+  background-color: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  overflow: visible !important;
+}
+
+[data-ecw-mode='page']
+  [data-testid='plumbline-quote-embed']
+  [data-testid='contentHider-post']
+  > a,
+[data-ecw-mode='page']
+  [data-testid='plumbline-quote-embed']
+  [data-testid='contentHider-post']
+  > div {
+  background-color: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+
+@supports selector(:has(*)) {
+  [data-ecw-mode='page']
+    [data-testid='contentHider-post']:has(video)
+    [style*='border-radius: 12px'],
+  [data-ecw-mode='page']
+    [data-testid='contentHider-post']:has(video)
+    [style*='border-radius: 8px'] {
+    border-radius: 0 !important;
+  }
+
+  /* Thread entries use a different wrapper from feed items. Keep their
+   * ancestry lines, but make each reply read as part of one ruled document. */
+  [data-ecw-mode='page'] [data-testid^='postThreadItem-by-'] {
+    border-bottom: 1px solid var(--ecw-rule-decorative) !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
+
+  [data-ecw-mode='page'][data-testid='postThreadScreen'] {
+    position: relative;
+  }
+
+  [data-ecw-mode='page'][data-testid='postThreadScreen']::before {
+    position: absolute;
+    top: 70px;
+    bottom: 0;
+    left: 37px;
+    width: 1px;
+    background-color: var(--ecw-border-structural);
+    content: '';
+    opacity: 0.75;
+    pointer-events: none;
+  }
+
+  [data-ecw-mode='page'] div:has(> [data-testid^='postThreadItem-by-']) {
+    border-top: 0 !important;
+    border-bottom: 0 !important;
+    background-color: transparent !important;
+  }
+
+  /* Keep the action row as one quiet line instead of a bordered control. */
+  [data-ecw-mode='page'] [data-testid='plumbline-post-actions'] {
+    border-top: 0 !important;
+    padding-top: 0 !important;
+  }
+
+  [data-ecw-mode='page'] [data-testid='plumbline-post-vote-control'] {
+    border: 0 !important;
+    border-radius: 0 !important;
+    margin-left: 0 !important;
+    overflow: visible !important;
+  }
+
+  [data-ecw-mode='page'] [data-testid='plumbline-post-vote-control'] > div {
+    display: none !important;
+  }
+
+  [data-ecw-mode='page'] [data-testid='plumbline-post-vote-control'] > button {
+    border-radius: 0 !important;
+  }
+
+  #root [data-ecw-mode='page'] [data-testid='plumbline-post-actions'] button,
+  #root
+    [data-ecw-mode='page']
+    [data-testid='plumbline-media-embed']
+    [style*='border-radius: 12px'],
+  #root
+    [data-ecw-mode='page']
+    [data-testid='plumbline-media-embed']
+    [style*='border-radius: 8px'] {
+    border-radius: 0 !important;
+  }
+
+  #root
+    [data-ecw-mode='page']
+    [data-testid='plumbline-media-embed']
+    [style*='border-width: 1px'] {
+    border-width: 0 !important;
+  }
+
+  /* Expanded thread counts are metadata, not a second boxed panel. */
+  [data-ecw-mode='page'] div:has(> a > [data-testid='likeCount-expanded']) {
+    border-top: 0 !important;
+    border-bottom: 0 !important;
+    margin-top: 10px !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+  }
+
+  /* The margin is a reference column, not a stack of boxed widgets. Give it
+   * one opening rule and let its labels and whitespace do the grouping. */
+  [data-testid='plumbline-inspector-tools'],
+  [data-testid='plumbline-inspector-discovery'],
+  [data-testid='plumbline-inspector-secondary-context'] {
+    border-top: 0 !important;
+    padding-top: 8px !important;
+  }
+
+  [data-testid='plumbline-trending-panel'] {
+    border-top: 0 !important;
+  }
+
+  [data-testid='plumbline-inspector-discovery'] input,
+  [data-testid='plumbline-inspector-discovery'] [role='searchbox'],
+  [data-testid='plumbline-inspector-tools'] [style*='border-radius: 10px'] {
+    background-color: transparent !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+}
+
 @media (max-width: 1099px) {
   [data-testid='plumbline-page-masthead-content'] {
     padding-inline: 24px !important;
-  }
-
-  [data-testid='plumbline-page-motto'] {
-    display: none !important;
   }
 }
 

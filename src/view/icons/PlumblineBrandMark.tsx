@@ -88,3 +88,56 @@ export function PlumblineBrandMark({
     </Svg>
   )
 }
+
+/**
+ * An unboxed masthead symbol. The application mark remains a square tile for
+ * browser/app identity, while the publication masthead uses the underlying
+ * line-and-bob geometry without adding another little panel around it.
+ */
+export function PlumblineMastheadSymbol({
+  size,
+  style,
+}: {
+  size: number
+  style?: StyleProp<ImageStyle>
+}) {
+  return (
+    <Svg
+      width={size}
+      height={size * 1.32}
+      viewBox="0 0 64 84"
+      style={style}
+      accessible={false}
+      accessibilityIgnoresInvertColors>
+      <Path
+        d="M32 5v46"
+        fill="none"
+        stroke="#151F3A"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+      />
+      <Path
+        d="M25 6h14"
+        fill="none"
+        stroke={PLUMBLINE_BRASS}
+        strokeWidth="3"
+        strokeLinecap="round"
+      />
+      <Rect x="26.5" y="49" width="11" height="5" fill={PLUMBLINE_BRASS} />
+      <Path
+        d="M23 54h18l-4.5 9.5L32 79l-4.5-15.5z"
+        fill={PLUMBLINE_BRASS}
+        stroke="#151F3A"
+        strokeWidth="1.5"
+        strokeLinejoin="round"
+      />
+      <Path
+        d="M32 56v19"
+        fill="none"
+        stroke="#F6F4EF"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+    </Svg>
+  )
+}

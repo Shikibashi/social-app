@@ -216,6 +216,7 @@ let PostControls = ({
   return (
     <View style={[a.gap_2xs, style]}>
       <View
+        testID="plumbline-post-actions"
         style={[
           styles.actionRow,
           {borderTopColor: t.palette.contrast_200},

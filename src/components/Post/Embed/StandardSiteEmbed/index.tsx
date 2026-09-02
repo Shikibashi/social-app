@@ -124,6 +124,7 @@ export const StandardSiteEmbed = ({
 
   return (
     <View
+      testID="plumbline-standard-site-embed"
       style={[
         a.flex_col,
         a.rounded_lg,
@@ -205,6 +206,7 @@ export const StandardSiteEmbed = ({
                   isStandard && [{gap: 5}, a.pb_sm],
                 ]}>
                 <Text
+                  testID="plumbline-standard-article-title"
                   emoji
                   numberOfLines={3}
                   style={[
@@ -325,6 +327,7 @@ export function PublicationCard({
 
   return (
     <View
+      testID="plumbline-publication-embed"
       style={[
         a.rounded_lg,
         a.overflow_hidden,

@@ -94,6 +94,7 @@ export const ExternalEmbed = ({
       onLongPress={onShareExternal}>
       {({hovered, pressed}) => (
         <View
+          testID="plumbline-external-embed"
           style={[
             a.transition_color,
             a.flex_col,

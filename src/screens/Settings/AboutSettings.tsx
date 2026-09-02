@@ -1,4 +1,4 @@
-import {Platform} from 'react-native'
+import {Platform, StyleSheet, View} from 'react-native'
 import {setStringAsync} from 'expo-clipboard'
 import * as FileSystem from 'expo-file-system/legacy'
 import {Image} from 'expo-image'
@@ -8,10 +8,15 @@ import {Trans} from '@lingui/react/macro'
 import {type NativeStackScreenProps} from '@react-navigation/native-stack'
 import {useMutation} from '@tanstack/react-query'
 
+import {
+  PLUMBLINE_TUCKER_SELF_GOVERNMENT_CITATION,
+  PLUMBLINE_TUCKER_SELF_GOVERNMENT_QUOTE,
+} from '#/lib/brand'
 import {STATUS_PAGE_URL} from '#/lib/constants'
 import {type CommonNavigatorParams} from '#/lib/routes/types'
 import {purgeTemporaryImageFiles} from '#/state/gallery'
 import * as SettingsList from '#/screens/Settings/components/SettingsList'
+import {useTheme} from '#/alf'
 import {Atom_Stroke2_Corner0_Rounded as AtomIcon} from '#/components/icons/Atom'
 import {BroomSparkle_Stroke2_Corner2_Rounded as BroomSparkleIcon} from '#/components/icons/BroomSparkle'
 import {Bubbles_Stroke2_Corner2_Rounded as BubblesIcon} from '#/components/icons/Bubble'
@@ -24,6 +29,7 @@ import {Loader} from '#/components/Loader'
 import * as Prompt from '#/components/Prompt'
 import {SendErrorReportDialog} from '#/components/SendErrorReportDialog'
 import * as Toast from '#/components/Toast'
+import {H2, Text} from '#/components/Typography'
 import {getDeviceId} from '#/analytics/identifiers'
 import * as env from '#/env'
 import {IS_ANDROID, IS_IOS, IS_NATIVE} from '#/env'
@@ -34,6 +40,7 @@ import {OTAInfo} from './components/OTAInfo'
 type Props = NativeStackScreenProps<CommonNavigatorParams, 'AboutSettings'>
 export function AboutSettingsScreen({}: Props) {
   const {_, i18n} = useLingui()
+  const t = useTheme()
   const [devModeEnabled, setDevModeEnabled] = useDevMode()
   const [demoModeEnabled, setDemoModeEnabled] = useDemoMode()
   const sendErrorReportControl = Prompt.usePromptControl()
@@ -88,6 +95,23 @@ export function AboutSettingsScreen({}: Props) {
         <Layout.Header.Slot />
       </Layout.Header.Outer>
       <Layout.Content>
+        <View
+          testID="plumbline-about-statement"
+          style={[
+            styles.statement,
+            {borderBottomColor: t.palette.contrast_200},
+          ]}>
+          <H2 style={styles.statementTitle}>
+            <Trans>A note on self-government</Trans>
+          </H2>
+          <Text style={styles.statementQuote}>
+            “{PLUMBLINE_TUCKER_SELF_GOVERNMENT_QUOTE}”
+          </Text>
+          <Text
+            style={[styles.statementCitation, t.atoms.text_contrast_medium]}>
+            — {PLUMBLINE_TUCKER_SELF_GOVERNMENT_CITATION}
+          </Text>
+        </View>
         <SettingsList.Container>
           <SettingsList.LinkItem
             to="/support/tos"
@@ -205,3 +229,34 @@ export function AboutSettingsScreen({}: Props) {
     </Layout.Screen>
   )
 }
+
+const styles = StyleSheet.create({
+  statement: {
+    gap: 8,
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 14,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+  },
+  statementTitle: {
+    fontFamily: 'Georgia, "Times New Roman", serif',
+    fontSize: 22,
+    fontWeight: '700',
+    lineHeight: 28,
+  },
+  statementQuote: {
+    fontFamily: 'Georgia, "Times New Roman", serif',
+    fontSize: 17,
+    fontStyle: 'italic',
+    lineHeight: 25,
+    maxWidth: 760,
+  },
+  statementCitation: {
+    fontFamily: 'Courier New, "Liberation Mono", monospace',
+    fontSize: 10,
+    fontWeight: '700',
+    letterSpacing: 0.6,
+    lineHeight: 15,
+    textTransform: 'uppercase',
+  },
+})

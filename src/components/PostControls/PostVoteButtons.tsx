@@ -99,6 +99,7 @@ export const PostVoteButtons = memo(function PostVoteButtons({
 
   return (
     <View
+      testID="plumbline-post-vote-control"
       style={[
         a.flex_row,
         a.align_center,

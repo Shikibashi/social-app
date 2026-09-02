@@ -177,7 +177,7 @@ msgstr ""
 
 #. How long it takes to read an article, in minutes. Displayed in a short form, e.g. "5m" for 5 minutes.
 #. placeholder {0}: view.readingTime
-#: src/components/Post/Embed/StandardSiteEmbed/index.tsx:254
+#: src/components/Post/Embed/StandardSiteEmbed/index.tsx:256
 msgid "{0, plural, one {#m} other {#m}}"
 msgstr "{0, plural, one {#m} other {#m}}"
 
@@ -1142,6 +1142,10 @@ msgstr ""
 msgid "A new form of verification"
 msgstr ""
 
+#: src/screens/Settings/AboutSettings.tsx:105
+msgid "A note on self-government"
+msgstr "A note on self-government"
+
 #: src/screens/Settings/IdentitySovereigntySettings.tsx:633
 msgid "A prepared key is not a recovery key until it is included in a verified PLC history. Registration uses the standard PDS identity APIs and requires a separate identity grant plus the PDS email authorization code."
 msgstr "A prepared key is not a recovery key until it is included in a verified PLC history. Registration uses the standard PDS identity APIs and requires a separate identity grant plus the PDS email authorization code."
@@ -1191,7 +1195,7 @@ msgid "A service makes an assertion, your rule interprets it, and Plumbline appl
 msgstr "A service makes an assertion, your rule interprets it, and Plumbline applies the resulting client action. These are separate authorities; changing a local rule does not erase the underlying record or label."
 
 #: src/Navigation.tsx:561
-#: src/screens/Settings/AboutSettings.tsx:85
+#: src/screens/Settings/AboutSettings.tsx:92
 #: src/screens/Settings/Settings.tsx:299
 #: src/screens/Settings/Settings.tsx:302
 msgid "About"
@@ -2002,8 +2006,8 @@ msgstr "An issue occurred starting the group chat, please try again."
 
 #: src/components/hooks/useFollowMethods.ts:35
 #: src/components/hooks/useFollowMethods.ts:52
-#: src/components/ProfileCard.tsx:509
-#: src/components/ProfileCard.tsx:531
+#: src/components/ProfileCard.tsx:505
+#: src/components/ProfileCard.tsx:527
 #: src/view/com/notifications/NotificationFeedItem.tsx:830
 #: src/view/com/notifications/NotificationFeedItem.tsx:851
 msgid "An issue occurred, please try again."
@@ -3425,8 +3429,8 @@ msgstr "Clear date"
 msgid "Clear GIF search"
 msgstr "Clear GIF search"
 
-#: src/screens/Settings/AboutSettings.tsx:134
-#: src/screens/Settings/AboutSettings.tsx:138
+#: src/screens/Settings/AboutSettings.tsx:158
+#: src/screens/Settings/AboutSettings.tsx:162
 msgid "Clear image cache"
 msgstr ""
 
@@ -3997,7 +4001,7 @@ msgstr "Conversation left"
 msgid "Conversation not found."
 msgstr "Conversation not found."
 
-#: src/screens/Settings/AboutSettings.tsx:169
+#: src/screens/Settings/AboutSettings.tsx:193
 msgid "Copied build version to clipboard"
 msgstr ""
 
@@ -4021,7 +4025,7 @@ msgstr ""
 msgid "Copied!"
 msgstr ""
 
-#: src/screens/Settings/AboutSettings.tsx:145
+#: src/screens/Settings/AboutSettings.tsx:169
 msgid "Copies build version to clipboard"
 msgstr ""
 
@@ -4140,6 +4144,11 @@ msgstr ""
 #: src/view/screens/CopyrightPolicy.tsx:25
 msgid "Copyright Policy"
 msgstr ""
+
+#: src/screens/PostThread/index.tsx:581
+msgctxt "description"
+msgid "Correspondence"
+msgstr "Correspondence"
 
 #: src/features/inviteFriends/InviteFriendsDialogInner.tsx:83
 msgid "Could not capture QR code"
@@ -4724,12 +4733,12 @@ msgstr ""
 msgid "Detach quote post?"
 msgstr ""
 
-#: src/screens/Settings/AboutSettings.tsx:158
+#: src/screens/Settings/AboutSettings.tsx:182
 msgctxt "toast"
 msgid "Developer mode disabled"
 msgstr ""
 
-#: src/screens/Settings/AboutSettings.tsx:152
+#: src/screens/Settings/AboutSettings.tsx:176
 msgctxt "toast"
 msgid "Developer mode enabled"
 msgstr ""
@@ -5238,12 +5247,12 @@ msgstr ""
 
 #: src/screens/Profile/Header/EditProfileDialog.tsx:286
 #: src/screens/Profile/Header/EditProfileDialog.tsx:292
-#: src/screens/Profile/Header/ProfileHeaderLabeler.tsx:303
+#: src/screens/Profile/Header/ProfileHeaderLabeler.tsx:301
 #: src/screens/Profile/Header/ProfileHeaderStandard.tsx:338
 msgid "Edit profile"
 msgstr ""
 
-#: src/screens/Profile/Header/ProfileHeaderLabeler.tsx:306
+#: src/screens/Profile/Header/ProfileHeaderLabeler.tsx:304
 #: src/screens/Profile/Header/ProfileHeaderStandard.tsx:340
 msgid "Edit Profile"
 msgstr ""
@@ -6524,7 +6533,7 @@ msgid "Focus the search field"
 msgstr "Focus the search field"
 
 #. User is not following this account, click to follow
-#: src/components/ProfileCard.tsx:547
+#: src/components/ProfileCard.tsx:543
 #: src/components/ProfileHoverCard/index.web.tsx:493
 #: src/components/ProfileHoverCard/index.web.tsx:504
 #: src/screens/Messages/ConversationSettings/Member.tsx:170
@@ -6584,7 +6593,7 @@ msgid "Follow all accounts"
 msgstr ""
 
 #. User is not following this account, click to follow back
-#: src/components/ProfileCard.tsx:543
+#: src/components/ProfileCard.tsx:539
 #: src/screens/PostThread/components/ThreadItemAnchorFollowButton.tsx:155
 #: src/screens/Profile/Header/ProfileHeaderStandard.tsx:413
 #: src/view/com/notifications/NotificationFeedItem.tsx:889
@@ -6651,7 +6660,7 @@ msgstr ""
 #. User is following this account, click to unfollow
 #. User is following this account, click to unfollow
 #: src/components/dialogs/lists/ReviewListMembersDialog.tsx:222
-#: src/components/ProfileCard.tsx:538
+#: src/components/ProfileCard.tsx:534
 #: src/components/ProfileHoverCard/index.web.tsx:492
 #: src/components/ProfileHoverCard/index.web.tsx:503
 #: src/screens/PostThread/components/ThreadItemAnchorFollowButton.tsx:160
@@ -6672,7 +6681,7 @@ msgstr ""
 #. placeholder {0}: sanitizeDisplayName( profile.displayName || profile.handle, moderation.ui('displayName'), )
 #. placeholder {0}: sanitizeDisplayName( profile.displayName || profile.handle, moderation.ui('displayName'), )
 #. placeholder {0}: sanitizeDisplayName( profile.displayName || profile.handle, )
-#: src/components/ProfileCard.tsx:499
+#: src/components/ProfileCard.tsx:495
 #: src/screens/Profile/Header/ProfileHeaderStandard.tsx:255
 #: src/view/com/notifications/NotificationFeedItem.tsx:823
 msgid "Following {0}"
@@ -6768,7 +6777,7 @@ msgstr "From {sanitizedAuthor}"
 msgid "From @{sanitizedAuthor}"
 msgstr ""
 
-#: src/view/com/posts/PostFeedReason.tsx:64
+#: src/view/com/posts/PostFeedReason.tsx:60
 msgctxt "from-feed"
 msgid "From <0/>"
 msgstr ""
@@ -7001,7 +7010,7 @@ msgstr ""
 msgid "Go to conversation with {0}"
 msgstr ""
 
-#: src/view/com/posts/PostFeedReason.tsx:55
+#: src/view/com/posts/PostFeedReason.tsx:56
 msgid "Go to feed"
 msgstr ""
 
@@ -7681,13 +7690,13 @@ msgstr ""
 msgid "Image {0} of {imageCount}"
 msgstr "Image {0} of {imageCount}"
 
-#: src/screens/Settings/AboutSettings.tsx:74
+#: src/screens/Settings/AboutSettings.tsx:81
 msgid "Image cache cleared"
 msgstr ""
 
 #. Android-only toast message which includes amount of space freed using localized number formatting
 #. placeholder {0}: i18n.number( Math.abs(sizeDiffBytes / 1024 / 1024), { notation: 'compact', style: 'unit', unit: 'megabyte', }, )
-#: src/screens/Settings/AboutSettings.tsx:60
+#: src/screens/Settings/AboutSettings.tsx:67
 msgid "Image cache cleared, freed {0}"
 msgstr ""
 
@@ -8459,14 +8468,14 @@ msgctxt "Name of app icon variant"
 msgid "Light"
 msgstr ""
 
-#: src/components/PostControls/index.tsx:297
+#: src/components/PostControls/index.tsx:300
 #: src/screens/CustomFeed/components/CustomFeedHeader.tsx:565
 msgid "Like"
 msgstr ""
 
 #. Accessibility label for the like button when the post has not been liked, verb form followed by number of likes and noun form
 #. placeholder {0}: post.likeCount || 0
-#: src/components/PostControls/index.tsx:307
+#: src/components/PostControls/index.tsx:310
 msgid "Like ({0, plural, one {# like} other {# likes}})"
 msgstr ""
 
@@ -9718,7 +9727,7 @@ msgstr "No login service"
 #. placeholder {0}: sanitizeDisplayName( profile.displayName || profile.handle, moderation.ui('displayName'), )
 #. placeholder {0}: sanitizeDisplayName( profile.displayName || profile.handle, moderation.ui('displayName'), )
 #. placeholder {0}: sanitizeDisplayName( profile.displayName || profile.handle, )
-#: src/components/ProfileCard.tsx:522
+#: src/components/ProfileCard.tsx:518
 #: src/screens/Profile/Header/ProfileHeaderStandard.tsx:281
 #: src/view/com/notifications/NotificationFeedItem.tsx:844
 msgid "No longer following {0}"
@@ -10410,7 +10419,7 @@ msgid "Open in Google Translate"
 msgstr "Open in Google Translate"
 
 #: src/components/Post/Embed/ExternalEmbed/index.tsx:88
-#: src/components/Post/Embed/StandardSiteEmbed/index.tsx:146
+#: src/components/Post/Embed/StandardSiteEmbed/index.tsx:147
 msgid "Open link to {niceUrl}"
 msgstr ""
 
@@ -11010,7 +11019,7 @@ msgstr ""
 msgid "Pin, reorder, compare, or remove"
 msgstr "Pin, reorder, compare, or remove"
 
-#: src/view/com/posts/PostFeedReason.tsx:132
+#: src/view/com/posts/PostFeedReason.tsx:120
 msgid "Pinned"
 msgstr ""
 
@@ -11367,11 +11376,6 @@ msgstr "Portable policy backup"
 
 #: src/view/com/composer/Composer.tsx:2051
 msgctxt "action"
-msgid "Post"
-msgstr ""
-
-#: src/screens/PostThread/index.tsx:581
-msgctxt "description"
 msgid "Post"
 msgstr ""
 
@@ -11883,8 +11887,8 @@ msgstr "Provider policy imported"
 msgid "Provider policy rejected"
 msgstr "Provider policy rejected"
 
-#: src/screens/Settings/AboutSettings.tsx:102
-#: src/screens/Settings/AboutSettings.tsx:105
+#: src/screens/Settings/AboutSettings.tsx:126
+#: src/screens/Settings/AboutSettings.tsx:129
 #: src/view/screens/PrivacyPolicy.tsx:26
 msgid "Provider Privacy Policy"
 msgstr "Provider Privacy Policy"
@@ -11897,8 +11901,8 @@ msgstr "Provider removed"
 msgid "Provider service fragment"
 msgstr "Provider service fragment"
 
-#: src/screens/Settings/AboutSettings.tsx:94
-#: src/screens/Settings/AboutSettings.tsx:97
+#: src/screens/Settings/AboutSettings.tsx:118
+#: src/screens/Settings/AboutSettings.tsx:121
 #: src/view/screens/TermsOfService.tsx:26
 msgid "Provider Terms of Service"
 msgstr "Provider Terms of Service"
@@ -12640,7 +12644,7 @@ msgstr ""
 
 #: src/components/dms/MessageContextMenu.tsx:180
 #: src/components/dms/MessageContextMenu.tsx:183
-#: src/components/PostControls/index.tsx:252
+#: src/components/PostControls/index.tsx:255
 msgid "Reply"
 msgstr "Reply"
 
@@ -12651,7 +12655,7 @@ msgstr ""
 
 #. Accessibility label for the reply button, verb form followed by number of replies and noun form
 #. placeholder {0}: post.replyCount || 0
-#: src/components/PostControls/index.tsx:253
+#: src/components/PostControls/index.tsx:256
 msgid "Reply ({0, plural, one {# reply} other {# replies}})"
 msgstr ""
 
@@ -12820,13 +12824,13 @@ msgstr "Reposted by"
 msgid "Reposted By"
 msgstr ""
 
-#: src/view/com/posts/PostFeedReason.tsx:94
-#: src/view/com/posts/PostFeedReason.tsx:113
+#: src/view/com/posts/PostFeedReason.tsx:86
+#: src/view/com/posts/PostFeedReason.tsx:101
 msgid "Reposted by {reposter}"
 msgstr ""
 
-#: src/view/com/posts/PostFeedReason.tsx:94
-#: src/view/com/posts/PostFeedReason.tsx:111
+#: src/view/com/posts/PostFeedReason.tsx:86
+#: src/view/com/posts/PostFeedReason.tsx:99
 msgid "Reposted by you"
 msgstr ""
 
@@ -13815,8 +13819,8 @@ msgstr ""
 
 #: src/components/SendErrorReportDialog.tsx:60
 #: src/components/SendErrorReportDialog.tsx:64
-#: src/screens/Settings/AboutSettings.tsx:125
-#: src/screens/Settings/AboutSettings.tsx:128
+#: src/screens/Settings/AboutSettings.tsx:149
+#: src/screens/Settings/AboutSettings.tsx:152
 msgid "Send error report"
 msgstr "Send error report"
 
@@ -14232,7 +14236,7 @@ msgstr "Show identity resolution details"
 
 #: src/components/PostControls/PostMenu/PostMenuItems.tsx:620
 #: src/components/PostControls/PostMenu/PostMenuItems.tsx:622
-#: src/components/PostControls/PostVoteButtons.tsx:141
+#: src/components/PostControls/PostVoteButtons.tsx:142
 msgid "Show less like this"
 msgstr ""
 
@@ -14254,7 +14258,7 @@ msgstr "Show more context"
 
 #: src/components/PostControls/PostMenu/PostMenuItems.tsx:612
 #: src/components/PostControls/PostMenu/PostMenuItems.tsx:614
-#: src/components/PostControls/PostVoteButtons.tsx:122
+#: src/components/PostControls/PostVoteButtons.tsx:123
 msgid "Show more like this"
 msgstr ""
 
@@ -14844,8 +14848,8 @@ msgstr "STATE"
 msgid "State: {0}"
 msgstr "State: {0}"
 
-#: src/screens/Settings/AboutSettings.tsx:110
-#: src/screens/Settings/AboutSettings.tsx:113
+#: src/screens/Settings/AboutSettings.tsx:134
+#: src/screens/Settings/AboutSettings.tsx:137
 msgid "Status Page"
 msgstr ""
 
@@ -14920,13 +14924,13 @@ msgid "Subscribe"
 msgstr ""
 
 #. placeholder {0}: highlightedPublisher.name
-#: src/components/Post/Embed/StandardSiteEmbed/index.tsx:450
-#: src/components/Post/Embed/StandardSiteEmbed/index.tsx:479
+#: src/components/Post/Embed/StandardSiteEmbed/index.tsx:453
+#: src/components/Post/Embed/StandardSiteEmbed/index.tsx:482
 msgid "Subscribe on {0}"
 msgstr "Subscribe on {0}"
 
 #. placeholder {0}: highlightedPublisher.name
-#: src/components/Post/Embed/StandardSiteEmbed/index.tsx:478
+#: src/components/Post/Embed/StandardSiteEmbed/index.tsx:481
 msgid "Subscribe to {publicationTitle} on {0}"
 msgstr "Subscribe to {publicationTitle} on {0}"
 
@@ -14939,11 +14943,11 @@ msgstr ""
 msgid "Subscribe to account activity"
 msgstr ""
 
-#: src/screens/Profile/Header/ProfileHeaderLabeler.tsx:354
+#: src/screens/Profile/Header/ProfileHeaderLabeler.tsx:352
 msgid "Subscribe to Labeler"
 msgstr ""
 
-#: src/screens/Profile/Header/ProfileHeaderLabeler.tsx:320
+#: src/screens/Profile/Header/ProfileHeaderLabeler.tsx:318
 msgid "Subscribe to this labeler"
 msgstr ""
 
@@ -15043,8 +15047,8 @@ msgid "System"
 msgstr ""
 
 #: src/screens/Log.tsx:49
-#: src/screens/Settings/AboutSettings.tsx:117
-#: src/screens/Settings/AboutSettings.tsx:120
+#: src/screens/Settings/AboutSettings.tsx:141
+#: src/screens/Settings/AboutSettings.tsx:144
 #: src/screens/Settings/Settings.tsx:494
 msgid "System log"
 msgstr ""
@@ -16409,14 +16413,14 @@ msgstr ""
 msgid "Unlabeled, abusive, or non-consensual adult content"
 msgstr ""
 
-#: src/components/PostControls/index.tsx:296
+#: src/components/PostControls/index.tsx:299
 #: src/screens/CustomFeed/components/CustomFeedHeader.tsx:565
 msgid "Unlike"
 msgstr ""
 
 #. Accessibility label for the like button when the post has been liked, verb followed by number of likes and noun
 #. placeholder {0}: post.likeCount || 0
-#: src/components/PostControls/index.tsx:299
+#: src/components/PostControls/index.tsx:302
 msgid "Unlike ({0, plural, one {# like} other {# likes}})"
 msgstr ""
 
@@ -16523,7 +16527,7 @@ msgstr "unresolved"
 msgid "Unsnooze email reminder"
 msgstr ""
 
-#: src/screens/Profile/Header/ProfileHeaderLabeler.tsx:352
+#: src/screens/Profile/Header/ProfileHeaderLabeler.tsx:350
 msgid "Unsubscribe"
 msgstr ""
 
@@ -16532,7 +16536,7 @@ msgstr ""
 msgid "Unsubscribe from list"
 msgstr ""
 
-#: src/screens/Profile/Header/ProfileHeaderLabeler.tsx:319
+#: src/screens/Profile/Header/ProfileHeaderLabeler.tsx:317
 msgid "Unsubscribe from this labeler"
 msgstr ""
 
@@ -16970,8 +16974,8 @@ msgid "Verifying..."
 msgstr ""
 
 #. placeholder {0}: env.APP_VERSION
-#: src/screens/Settings/AboutSettings.tsx:144
-#: src/screens/Settings/AboutSettings.tsx:173
+#: src/screens/Settings/AboutSettings.tsx:168
+#: src/screens/Settings/AboutSettings.tsx:197
 msgid "Version {0}"
 msgstr ""
 
@@ -17049,8 +17053,8 @@ msgid "View"
 msgstr ""
 
 #. placeholder {0}: view.source.title
-#: src/components/Post/Embed/StandardSiteEmbed/index.tsx:343
-#: src/components/Post/Embed/StandardSiteEmbed/index.tsx:673
+#: src/components/Post/Embed/StandardSiteEmbed/index.tsx:346
+#: src/components/Post/Embed/StandardSiteEmbed/index.tsx:676
 msgid "View {0}"
 msgstr "View {0}"
 
@@ -17079,7 +17083,7 @@ msgstr "View {0}’s profile"
 msgid "View {displayName}’s profile"
 msgstr "View {displayName}’s profile"
 
-#: src/components/Post/Embed/StandardSiteEmbed/index.tsx:481
+#: src/components/Post/Embed/StandardSiteEmbed/index.tsx:484
 msgid "View {publicationTitle}"
 msgstr "View {publicationTitle}"
 
@@ -17145,7 +17149,7 @@ msgstr ""
 #: src/components/ProfileHoverCard/index.web.tsx:510
 #: src/view/com/posts/PostFeedErrorMessage.tsx:220
 #: src/view/com/util/PostMeta.tsx:93
-#: src/view/com/util/PostMeta.tsx:121
+#: src/view/com/util/PostMeta.tsx:126
 msgid "View profile"
 msgstr ""
 
@@ -17153,10 +17157,10 @@ msgstr ""
 msgid "View profile banner"
 msgstr "View profile banner"
 
-#: src/components/Post/Embed/StandardSiteEmbed/index.tsx:343
-#: src/components/Post/Embed/StandardSiteEmbed/index.tsx:451
-#: src/components/Post/Embed/StandardSiteEmbed/index.tsx:482
-#: src/components/Post/Embed/StandardSiteEmbed/index.tsx:673
+#: src/components/Post/Embed/StandardSiteEmbed/index.tsx:346
+#: src/components/Post/Embed/StandardSiteEmbed/index.tsx:454
+#: src/components/Post/Embed/StandardSiteEmbed/index.tsx:485
+#: src/components/Post/Embed/StandardSiteEmbed/index.tsx:676
 msgid "View publication"
 msgstr "View publication"
 

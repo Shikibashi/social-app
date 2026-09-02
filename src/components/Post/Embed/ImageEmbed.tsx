@@ -120,7 +120,7 @@ export function ImageEmbed({
       }
 
       return (
-        <View style={[a.mt_sm, rest.style]}>
+        <View testID="plumbline-media-embed" style={[a.mt_sm, rest.style]}>
           <ImageContextMenu
             fullsizeUri={image.fullsize}
             thumbUri={image.thumb}
@@ -152,7 +152,7 @@ export function ImageEmbed({
 
     if (useExpandedLayout) {
       return (
-        <View style={[a.mt_sm, rest.style]}>
+        <View testID="plumbline-media-embed" style={[a.mt_sm, rest.style]}>
           <Gallery
             images={images}
             onPress={onPress}
@@ -166,7 +166,7 @@ export function ImageEmbed({
     }
 
     return (
-      <View style={[a.mt_sm, rest.style]}>
+      <View testID="plumbline-media-embed" style={[a.mt_sm, rest.style]}>
         <ImageLayoutGrid
           images={images}
           onPress={onPress}

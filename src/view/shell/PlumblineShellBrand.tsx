@@ -1,7 +1,15 @@
 import {type StyleProp, StyleSheet, View, type ViewStyle} from 'react-native'
 
-import {PLUMBLINE_BRASS, PRODUCT_NAME} from '#/lib/brand'
-import {PlumblineBrandMark} from '#/view/icons/PlumblineBrandMark'
+import {
+  PLUMBLINE_BRASS,
+  PLUMBLINE_TUCKER_MOTTO,
+  PLUMBLINE_TUCKER_MOTTO_CITATION,
+  PRODUCT_NAME,
+} from '#/lib/brand'
+import {
+  PlumblineBrandMark,
+  PlumblineMastheadSymbol,
+} from '#/view/icons/PlumblineBrandMark'
 import {atoms as a, useTheme} from '#/alf'
 import {Text} from '#/components/Typography'
 
@@ -115,16 +123,8 @@ export function PlumblinePageMasthead() {
         style={[styles.pageRule, {backgroundColor: t.palette.contrast_300}]}
       />
       <View testID="plumbline-page-masthead-content" style={styles.pageContent}>
-        <View testID="plumbline-page-masthead-meta" style={styles.pageMeta}>
-          <Text style={[styles.pageMetaText, t.atoms.text_contrast_medium]}>
-            LIBERTY / OPEN WEB EDITION
-          </Text>
-          <Text style={[styles.pageMetaText, t.atoms.text_contrast_medium]}>
-            AT PROTOCOL / USER AGENT
-          </Text>
-        </View>
         <View testID="plumbline-page-identity" style={styles.pageIdentity}>
-          <PlumblineBrandMark size={32} />
+          <PlumblineMastheadSymbol size={40} />
           <View style={styles.pageWordmarkBlock}>
             <Text testID="plumbline-page-wordmark" style={styles.pageWordmark}>
               {PRODUCT_NAME}
@@ -134,32 +134,17 @@ export function PlumblinePageMasthead() {
               style={[styles.pageDescriptor, t.atoms.text_contrast_medium]}>
               Social client for the open web
             </Text>
+            <Text
+              testID="plumbline-page-motto"
+              style={[styles.pageMotto, t.atoms.text_contrast_medium]}>
+              {PLUMBLINE_TUCKER_MOTTO}
+            </Text>
+            <Text
+              testID="plumbline-page-motto-citation"
+              style={[styles.pageMottoCitation, t.atoms.text_contrast_medium]}>
+              — {PLUMBLINE_TUCKER_MOTTO_CITATION}
+            </Text>
           </View>
-        </View>
-        <View testID="plumbline-page-motto" style={styles.pageMottoBlock}>
-          <View
-            aria-hidden={true}
-            testID="plumbline-page-masthead-marker"
-            style={styles.pageMarker}>
-            <View
-              style={[
-                styles.pageMarkerLine,
-                {backgroundColor: PLUMBLINE_BRASS},
-              ]}
-            />
-            <View
-              style={[
-                styles.pageMarkerBob,
-                {
-                  backgroundColor: PLUMBLINE_BRASS,
-                  borderColor: t.palette.contrast_975,
-                },
-              ]}
-            />
-          </View>
-          <Text style={[styles.pageMotto, t.atoms.text_contrast_medium]}>
-            Exit · Voice · Association
-          </Text>
         </View>
       </View>
       <View
@@ -230,33 +215,16 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     position: 'relative',
   },
-  pageMeta: {
-    position: 'absolute',
-    top: 8,
-    left: 40,
-    right: 40,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    minHeight: 15,
-  },
-  pageMetaText: {
-    fontFamily: 'Verdana, "DejaVu Sans", sans-serif',
-    fontSize: 9,
-    fontWeight: '700',
-    letterSpacing: 1.4,
-    lineHeight: 13,
-    textTransform: 'uppercase',
-  },
   pageIdentity: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 12,
+    gap: 10,
     minWidth: 0,
   },
   pageWordmarkBlock: {
-    gap: 2,
+    alignItems: 'center',
+    gap: 3,
     minWidth: 0,
   },
   pageWordmark: {
@@ -277,42 +245,23 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     textTransform: 'uppercase',
   },
-  pageMottoBlock: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 10,
-    position: 'absolute',
-    right: 40,
-    bottom: 8,
-  },
   pageMotto: {
     fontFamily: 'Georgia, "Times New Roman", serif',
-    fontSize: 15,
+    fontSize: 13.5,
     fontStyle: 'italic',
-    letterSpacing: 0.2,
-    lineHeight: 20,
+    letterSpacing: 0.1,
+    lineHeight: 18,
+    maxWidth: 760,
+    textAlign: 'center',
   },
-  pageMarker: {
-    width: 10,
-    height: 30,
-    position: 'relative',
-  },
-  pageMarkerLine: {
-    position: 'absolute',
-    top: 0,
-    bottom: 5,
-    left: 4,
-    width: 1,
-  },
-  pageMarkerBob: {
-    position: 'absolute',
-    bottom: 0,
-    left: 1,
-    width: 7,
-    height: 7,
-    borderWidth: 1,
-    transform: [{rotate: '45deg'}],
+  pageMottoCitation: {
+    fontFamily: 'Verdana, "DejaVu Sans", sans-serif',
+    fontSize: 8.5,
+    fontWeight: '700',
+    letterSpacing: 0.9,
+    lineHeight: 12,
+    textAlign: 'center',
+    textTransform: 'uppercase',
   },
   mastheadMarker: {
     width: 12,

@@ -412,6 +412,7 @@ export function QuoteEmbed({
   return (
     <GalleryBleed>
       <View
+        testID="plumbline-quote-embed"
         style={[viewContext !== PostEmbedViewContext.ChatMessage && a.mt_sm]}
         onPointerEnter={linkDisabled ? undefined : onPointerEnter}
         onPointerLeave={linkDisabled ? undefined : onPointerLeave}>
