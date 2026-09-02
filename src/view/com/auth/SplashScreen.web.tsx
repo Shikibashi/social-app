@@ -4,10 +4,10 @@ import {msg} from '@lingui/core/macro'
 import {useLingui} from '@lingui/react'
 import {Trans} from '@lingui/react/macro'
 
-import {useWebMediaQueries} from '#/lib/hooks/useWebMediaQueries'
+import {PRODUCT_NAME} from '#/lib/brand'
 import {ErrorBoundary} from '#/view/com/util/ErrorBoundary'
 import {Logo} from '#/view/icons/Logo'
-import {Logotype} from '#/view/icons/Logotype'
+import {PlumblinePageMasthead} from '#/view/shell/PlumblineShellBrand'
 import {
   AppClipOverlay,
   postAppClipMessage,
@@ -16,7 +16,6 @@ import {atoms as a, useTheme} from '#/alf'
 import {AppLanguageDropdown} from '#/components/AppLanguageDropdown'
 import {Button, ButtonText} from '#/components/Button'
 import {TimesLarge_Stroke2_Corner0_Rounded as TimesIcon} from '#/components/icons/Times'
-import * as Layout from '#/components/Layout'
 import {InlineLinkText} from '#/components/Link'
 import {H1, Text} from '#/components/Typography'
 
@@ -31,8 +30,10 @@ export const SplashScreen = ({
 }) => {
   const {_} = useLingui()
   const t = useTheme()
-  const {isTabletOrMobile: IS_WEB_MOBILE} = useWebMediaQueries()
   const [showClipOverlay, setShowClipOverlay] = useState(false)
+  const authShellWebProps = {
+    dataSet: {ecwMode: 'page'},
+  } as {dataSet: Record<string, string>}
 
   useEffect(() => {
     const getParams = new URLSearchParams(window.location.search)
@@ -64,81 +65,92 @@ export const SplashScreen = ({
         </Pressable>
       )}
 
-      <Layout.Center
+      <View
         role="main"
         id="plumbline-main-content"
         tabIndex={-1}
-        style={[a.h_full, a.flex_1]}
-        ignoreTabletLayoutOffset>
-        <View
-          testID="noSessionView"
-          style={[
-            a.h_full,
-            a.justify_center,
-            {paddingBottom: '20vh'},
-            IS_WEB_MOBILE && a.pb_5xl,
-            t.atoms.border_contrast_medium,
-            a.align_center,
-            a.gap_5xl,
-            a.flex_1,
-          ]}>
+        testID="plumbline-auth-shell"
+        {...authShellWebProps}
+        style={[a.h_full, a.flex_1, t.atoms.bg]}>
+        <PlumblinePageMasthead />
+        <View testID="noSessionView" style={a.flex_1}>
           <ErrorBoundary>
-            <View style={[a.justify_center, a.align_center]}>
-              <H1 style={a.sr_only}>
-                <Trans>Welcome to Plumbline</Trans>
-              </H1>
-              <Logo width={92} />
+            <View testID="plumbline-auth-entry" style={[a.flex_1, a.w_full]}>
+              <View testID="plumbline-auth-document" style={[a.w_full]}>
+                <View
+                  testID="plumbline-auth-identity"
+                  style={[a.flex_row, a.align_center, a.gap_md]}>
+                  <Logo width={52} />
+                  <View style={[a.flex_shrink, a.gap_xs]}>
+                    <Text testID="plumbline-auth-wordmark">{PRODUCT_NAME}</Text>
+                    <Text testID="plumbline-auth-descriptor">
+                      <Trans>Social client for the open web</Trans>
+                    </Text>
+                  </View>
+                </View>
 
-              <View style={[a.pb_sm, a.pt_5xl]}>
-                <Logotype width={161} fill={t.atoms.text.color} />
+                <View testID="plumbline-auth-introduction">
+                  <Text testID="plumbline-auth-kicker">
+                    <Trans>Account entry / user-held identity</Trans>
+                  </Text>
+                  <H1 testID="plumbline-auth-heading">
+                    <Trans>Choose how you enter the network.</Trans>
+                  </H1>
+                  <Text testID="plumbline-auth-copy">
+                    <Trans>
+                      Sign in with an account you already hold, or create one
+                      through a hosting provider. Your account host remains the
+                      write and identity authority; this client does not become
+                      your account provider.
+                    </Trans>
+                  </Text>
+                </View>
+
+                <View
+                  testID="signinOrCreateAccount"
+                  style={[a.w_full, a.gap_md]}>
+                  <Button
+                    testID="createAccountButton"
+                    onPress={onPressCreateAccount}
+                    label={_(msg`Create new account`)}
+                    accessibilityHint={_(
+                      msg`Opens flow to create a new ATmosphere account`,
+                    )}
+                    size="large"
+                    variant="solid"
+                    color="primary">
+                    <ButtonText>
+                      <Trans>Create account</Trans>
+                    </ButtonText>
+                  </Button>
+                  <Button
+                    testID="signInButton"
+                    onPress={onPressSignin}
+                    label={_(msg`Sign in`)}
+                    accessibilityHint={_(
+                      msg`Opens flow to sign in to your existing ATmosphere account`,
+                    )}
+                    size="large"
+                    variant="solid"
+                    color="secondary">
+                    <ButtonText>
+                      <Trans>Sign in</Trans>
+                    </ButtonText>
+                  </Button>
+                </View>
+
+                <Text testID="plumbline-auth-note">
+                  <Trans>
+                    Provider, ranking, moderation, export, and migration choices
+                    remain visible after you enter.
+                  </Trans>
+                </Text>
               </View>
-
-              <Text
-                style={[
-                  a.text_md,
-                  a.font_semi_bold,
-                  t.atoms.text_contrast_medium,
-                ]}>
-                <Trans>What's up?</Trans>
-              </Text>
-            </View>
-
-            <View
-              testID="signinOrCreateAccount"
-              style={[a.w_full, a.px_xl, a.gap_md, a.pb_2xl, {maxWidth: 320}]}>
-              <Button
-                testID="createAccountButton"
-                onPress={onPressCreateAccount}
-                label={_(msg`Create new account`)}
-                accessibilityHint={_(
-                  msg`Opens flow to create a new ATmosphere account`,
-                )}
-                size="large"
-                variant="solid"
-                color="primary">
-                <ButtonText>
-                  <Trans>Create account</Trans>
-                </ButtonText>
-              </Button>
-              <Button
-                testID="signInButton"
-                onPress={onPressSignin}
-                label={_(msg`Sign in`)}
-                accessibilityHint={_(
-                  msg`Opens flow to sign in to your existing ATmosphere account`,
-                )}
-                size="large"
-                variant="solid"
-                color="secondary">
-                <ButtonText>
-                  <Trans>Sign in</Trans>
-                </ButtonText>
-              </Button>
             </View>
           </ErrorBoundary>
         </View>
         <Footer />
-      </Layout.Center>
+      </View>
       <AppClipOverlay
         visible={showClipOverlay}
         setIsVisible={setShowClipOverlay}
@@ -153,10 +165,8 @@ function Footer() {
 
   return (
     <View
+      testID="plumbline-auth-footer"
       style={[
-        a.absolute,
-        a.inset_0,
-        {top: 'auto'},
         a.px_xl,
         a.py_lg,
         a.border_t,
@@ -164,13 +174,12 @@ function Footer() {
         a.align_center,
         a.flex_wrap,
         a.gap_xl,
-        a.flex_1,
         t.atoms.border_contrast_medium,
       ]}>
       <InlineLinkText
         label={_(msg`Visit Plumbline at plumblines.uk`)}
         to="https://plumblines.uk/">
-        <Trans>Website</Trans>
+        <Trans>plumblines.uk</Trans>
       </InlineLinkText>
 
       <View style={a.flex_1} />

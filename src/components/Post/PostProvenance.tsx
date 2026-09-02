@@ -7,7 +7,7 @@ import {useLingui} from '@lingui/react'
 import {type FeedProviderProvenance} from '#/lib/api/feed/types'
 import {
   buildWhyThisPostModel,
-  hasWhyThisPostPlacementDetails,
+  getPostProvenanceDisclosureKind,
 } from '#/lib/attention-ui'
 import {
   type ProviderCompositionStatus,
@@ -27,6 +27,7 @@ export function PostProvenance({
   providerProvenance,
   providerCompositionStatus,
   providerIndependence,
+  showRecordDetails = false,
 }: {
   postUri: string
   localExplanation?: readonly string[]
@@ -36,6 +37,8 @@ export function PostProvenance({
   providerProvenance?: readonly FeedProviderProvenance[]
   providerCompositionStatus?: ProviderCompositionStatus
   providerIndependence?: ProviderIndependence
+  /** Show record identity for a direct thread view without implying ranking. */
+  showRecordDetails?: boolean
 }) {
   const {_} = useLingui()
   const t = useTheme()
@@ -65,7 +68,31 @@ export function PostProvenance({
     ],
   )
 
-  if (!hasWhyThisPostPlacementDetails(model)) return null
+  const disclosureKind = getPostProvenanceDisclosureKind(model, {
+    includeRecordDetails: showRecordDetails,
+  })
+
+  if (!disclosureKind) return null
+
+  const isPlacementDisclosure = disclosureKind === 'placement'
+  const collapsedLabel = isPlacementDisclosure
+    ? _(msg`Why this post?`)
+    : _(msg`Post provenance`)
+  const expandedLabel = isPlacementDisclosure
+    ? _(msg`Hide why this post`)
+    : _(msg`Hide post provenance`)
+  const toggleHint = isPlacementDisclosure
+    ? _(msg`Show the public reasons and sources for this post's placement`)
+    : _(
+        msg`Show this post's stable record address and any available source information`,
+      )
+  const detailsAccessibilityHint = isPlacementDisclosure
+    ? _(
+        msg`Contains the placement reasons, read-provider evidence, and stable post record address`,
+      )
+    : _(
+        msg`Contains the stable post record address and any available source information`,
+      )
 
   const onCopyPostUri = (event: {stopPropagation: () => void}) => {
     event.stopPropagation()
@@ -81,12 +108,8 @@ export function PostProvenance({
       <Pressable
         testID="post-provenance-toggle"
         accessibilityRole="button"
-        accessibilityLabel={
-          expanded ? _(msg`Hide why this post`) : _(msg`Why this post?`)
-        }
-        accessibilityHint={_(
-          msg`Show the public reasons and sources for this post's placement`,
-        )}
+        accessibilityLabel={expanded ? expandedLabel : collapsedLabel}
+        accessibilityHint={toggleHint}
         accessibilityState={{expanded}}
         aria-expanded={expanded}
         aria-controls={expanded ? detailsId : undefined}
@@ -96,7 +119,7 @@ export function PostProvenance({
         }}
         style={({pressed}) => [styles.toggle, pressed && styles.pressed]}>
         <Text style={[styles.toggleText, {color: t.atoms.text_link.color}]}>
-          {expanded ? _(msg`Hide why this post`) : _(msg`Why this post?`)}
+          {expanded ? expandedLabel : collapsedLabel}
         </Text>
       </Pressable>
 
@@ -105,11 +128,19 @@ export function PostProvenance({
           testID="post-provenance-details"
           nativeID={detailsId}
           role="region"
-          accessibilityLabel={_(msg`Why this post details`)}
-          accessibilityHint={_(
-            msg`Contains the placement reasons, read-provider evidence, and stable post record address`,
-          )}
+          accessibilityLabel={
+            isPlacementDisclosure
+              ? _(msg`Why this post details`)
+              : _(msg`Post provenance details`)
+          }
+          accessibilityHint={detailsAccessibilityHint}
           style={styles.details}>
+          {!isPlacementDisclosure ? (
+            <Text style={styles.detail}>
+              <Text style={styles.label}>{_(msg`Placement`)}: </Text>
+              {_(msg`No public placement reason is available in this view.`)}
+            </Text>
+          ) : null}
           {model.localReasons.map((reason, index) => (
             <Text key={`${reason}-${index}`} style={styles.detail}>
               <Text style={styles.label}>{_(msg`Local policy`)}: </Text>

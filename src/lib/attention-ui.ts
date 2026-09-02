@@ -199,6 +199,20 @@ export function hasWhyThisPostPlacementDetails(
   )
 }
 
+/**
+ * A direct thread route always has a stable post address, but it does not
+ * necessarily retain feed-placement evidence. Keep that record identity
+ * inspectable without relabeling it as an explanation for why the post was
+ * shown.
+ */
+export function getPostProvenanceDisclosureKind(
+  model: WhyThisPostModel,
+  {includeRecordDetails = false}: {includeRecordDetails?: boolean} = {},
+): 'placement' | 'record' | undefined {
+  if (hasWhyThisPostPlacementDetails(model)) return 'placement'
+  return includeRecordDetails ? 'record' : undefined
+}
+
 export type WhyPostCategory =
   | 'followed'
   | 'explicit-interest'

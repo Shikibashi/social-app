@@ -345,7 +345,11 @@ function ServiceWorkbenchMatrix({
   return (
     <View
       testID="service-workbench-matrix"
-      accessibilityRole="summary"
+      role="table"
+      accessibilityLabel={_(msg`Service capability map`)}
+      accessibilityHint={_(
+        msg`Lists each capability, its current source, state, and an inspection action`,
+      )}
       style={[
         a.w_full,
         a.border,
@@ -371,13 +375,18 @@ function ServiceWorkbenchMatrix({
         </SettingsList.ItemText>
       </View>
 
-      {!compact && (
-        <View
-          aria-hidden
-          style={[a.flex_row, a.align_center, a.gap_sm, a.pb_xs]}>
+      <View
+        role="row"
+        style={[
+          a.flex_row,
+          a.align_center,
+          a.gap_sm,
+          a.pb_xs,
+          compact && a.sr_only,
+        ]}>
+        <View role="columnheader" style={a.flex_1}>
           <SettingsList.ItemText
             style={[
-              a.flex_1,
               {paddingHorizontal: 0},
               a.text_xs,
               a.font_semi_bold,
@@ -385,9 +394,10 @@ function ServiceWorkbenchMatrix({
             ]}>
             {_(msg`CAPABILITY`)}
           </SettingsList.ItemText>
+        </View>
+        <View role="columnheader" style={a.flex_1}>
           <SettingsList.ItemText
             style={[
-              a.flex_1,
               {paddingHorizontal: 0},
               a.text_xs,
               a.font_semi_bold,
@@ -395,9 +405,10 @@ function ServiceWorkbenchMatrix({
             ]}>
             {_(msg`CURRENT SOURCE`)}
           </SettingsList.ItemText>
+        </View>
+        <View role="columnheader" style={a.flex_1}>
           <SettingsList.ItemText
             style={[
-              a.flex_1,
               {paddingHorizontal: 0},
               a.text_xs,
               a.font_semi_bold,
@@ -405,14 +416,25 @@ function ServiceWorkbenchMatrix({
             ]}>
             {_(msg`STATE`)}
           </SettingsList.ItemText>
-          <View style={{width: 66}} />
         </View>
-      )}
+        <View role="columnheader" style={{width: 66}}>
+          <SettingsList.ItemText
+            style={[
+              {paddingHorizontal: 0},
+              a.text_xs,
+              a.font_semi_bold,
+              t.atoms.text_contrast_medium,
+            ]}>
+            {_(msg`ACTIONS`)}
+          </SettingsList.ItemText>
+        </View>
+      </View>
 
       {rows.map(row => (
         <View
           key={row.id}
           testID={`service-workbench-row-${row.id}`}
+          role="row"
           style={[
             a.flex_row,
             a.align_start,
@@ -423,6 +445,7 @@ function ServiceWorkbenchMatrix({
             t.atoms.border_contrast_low,
           ]}>
           <View
+            role="cell"
             style={[compact ? a.w_full : a.flex_1, {minWidth: 0}, a.gap_2xs]}>
             <SettingsList.ItemText
               style={[{paddingHorizontal: 0}, a.font_semi_bold]}>
@@ -437,7 +460,9 @@ function ServiceWorkbenchMatrix({
               {row.detail}
             </SettingsList.ItemText>
           </View>
-          <View style={[compact ? a.w_full : a.flex_1, {minWidth: 0}]}>
+          <View
+            role="cell"
+            style={[compact ? a.w_full : a.flex_1, {minWidth: 0}]}>
             <SettingsList.ItemText
               selectable
               style={[
@@ -448,7 +473,7 @@ function ServiceWorkbenchMatrix({
               {row.provider}
             </SettingsList.ItemText>
           </View>
-          <View style={[a.flex_1, {minWidth: 0}]}>
+          <View role="cell" style={[a.flex_1, {minWidth: 0}]}>
             <View
               style={[
                 a.self_start,
@@ -463,7 +488,7 @@ function ServiceWorkbenchMatrix({
               </SettingsList.ItemText>
             </View>
           </View>
-          <View style={{width: 66, alignItems: 'flex-end'}}>
+          <View role="cell" style={{width: 66, alignItems: 'flex-end'}}>
             <Button
               label={_(msg`Inspect ${row.label} service`)}
               size="small"

@@ -218,6 +218,140 @@ body {
   transform: translateY(0);
 }
 
+/* Auth-gated routes are part of the same publication, not a disconnected
+ * product splash. The entry document names the account boundary before either
+ * account flow starts, while retaining the native controls and OAuth path. */
+[data-testid='plumbline-auth-shell'] {
+  display: flex !important;
+  flex-direction: column;
+  min-height: 100dvh;
+  background-color: var(--ecw-workspace) !important;
+}
+
+[data-testid='plumbline-auth-shell'] > [data-testid='plumbline-page-masthead'] {
+  flex: 0 0 auto;
+}
+
+[data-testid='plumbline-auth-shell'] > [data-testid='noSessionView'] {
+  display: flex;
+  width: 100%;
+  min-height: 0;
+}
+
+[data-testid='plumbline-auth-entry'] {
+  display: grid !important;
+  place-items: center;
+  box-sizing: border-box;
+  width: 100%;
+  padding: clamp(32px, 7vh, 88px) clamp(24px, 5vw, 56px);
+}
+
+[data-testid='plumbline-auth-document'] {
+  box-sizing: border-box;
+  width: min(100%, 640px) !important;
+  background-color: var(--ecw-surface) !important;
+  border-top: 2px solid var(--ecw-border-strong);
+  border-bottom: 1px solid var(--ecw-border-strong);
+  box-shadow: none !important;
+  padding: clamp(24px, 4vw, 40px);
+}
+
+[data-testid='plumbline-auth-identity'] {
+  border-bottom: 1px solid var(--ecw-rule-decorative);
+  padding-bottom: 18px;
+}
+
+[data-testid='plumbline-auth-wordmark'] {
+  color: var(--ecw-text) !important;
+  font-family: var(--ecw-font-display) !important;
+  font-size: clamp(1.8rem, 4vw, 2.45rem) !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.035em !important;
+  line-height: 1 !important;
+  text-transform: uppercase;
+}
+
+[data-testid='plumbline-auth-descriptor'],
+[data-testid='plumbline-auth-kicker'],
+[data-testid='plumbline-auth-note'] {
+  color: var(--ecw-text-muted) !important;
+  font-family: var(--ecw-font-system) !important;
+  font-size: var(--ecw-font-size-micro) !important;
+  letter-spacing: 0.08em !important;
+  line-height: 1.5 !important;
+  text-transform: uppercase;
+}
+
+[data-testid='plumbline-auth-introduction'] {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 28px 0 24px;
+}
+
+[data-testid='plumbline-auth-heading'] {
+  color: var(--ecw-text) !important;
+  font-family: var(--ecw-font-display) !important;
+  font-size: clamp(2rem, 4vw, 3rem) !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.01em !important;
+  line-height: 1.08 !important;
+}
+
+[data-testid='plumbline-auth-copy'] {
+  color: var(--ecw-text-secondary) !important;
+  font-family: var(--ecw-font-ui) !important;
+  font-size: var(--ecw-font-size-body) !important;
+  line-height: 1.6 !important;
+}
+
+[data-testid='plumbline-auth-document'] [data-testid='signinOrCreateAccount'] {
+  border-top: 1px solid var(--ecw-rule-decorative);
+  border-bottom: 1px solid var(--ecw-rule-decorative);
+  padding: 18px 0;
+}
+
+[data-testid='plumbline-auth-document']
+  [data-testid='signinOrCreateAccount']
+  > * {
+  width: 100%;
+}
+
+[data-testid='plumbline-auth-note'] {
+  display: block;
+  padding-top: 18px;
+  text-transform: none;
+}
+
+[data-testid='plumbline-auth-footer'] {
+  box-sizing: border-box;
+  width: 100%;
+  margin-top: auto;
+  background-color: var(--ecw-surface) !important;
+  border-top-color: var(--ecw-border-strong) !important;
+}
+
+@media (max-width: 799px) {
+  [data-testid='plumbline-auth-shell']
+    > [data-testid='plumbline-page-masthead'] {
+    display: none !important;
+  }
+
+  [data-testid='plumbline-auth-entry'] {
+    align-items: start;
+    padding: 24px 16px 32px;
+  }
+
+  [data-testid='plumbline-auth-document'] {
+    width: 100% !important;
+    padding: 24px;
+  }
+
+  [data-testid='plumbline-auth-footer'] {
+    padding: 14px 16px !important;
+  }
+}
+
 /* The shared screen boundary supplies these attributes without changing routes. */
 [data-ecw-mode='page'] {
   background-color: var(--ecw-workspace) !important;

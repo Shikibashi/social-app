@@ -193,7 +193,10 @@ export function CommunityBoardScreen({route}: Props) {
     muted: t.palette.contrast_400,
     border: t.palette.contrast_200,
     borderStrong: t.palette.contrast_300,
-    accent: t.palette.pink,
+    // Use ALF's theme-aware yellow as the readable brass/reference role.
+    // The exact Plumbline brass mark is structural; this companion role keeps
+    // editorial metadata and state legible on light, dark, and dim surfaces.
+    accent: t.palette.yellow,
     positive: t.palette.positive_500,
     negative: t.palette.negative_500,
   }

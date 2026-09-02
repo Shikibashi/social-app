@@ -1,5 +1,6 @@
 import {
   buildWhyThisPostModel,
+  getPostProvenanceDisclosureKind,
   hasWhyThisPostDetails,
   hasWhyThisPostPlacementDetails,
   healthLabel,
@@ -125,6 +126,10 @@ describe('attention sovereignty UI models', () => {
 
     expect(hasWhyThisPostDetails(model)).toBe(true)
     expect(hasWhyThisPostPlacementDetails(model)).toBe(false)
+    expect(getPostProvenanceDisclosureKind(model)).toBeUndefined()
+    expect(
+      getPostProvenanceDisclosureKind(model, {includeRecordDetails: true}),
+    ).toBe('record')
   })
 
   it('does not create a placement disclosure for empty evidence', () => {
@@ -138,5 +143,8 @@ describe('attention sovereignty UI models', () => {
     expect(model.localReasons).toEqual([])
     expect(hasWhyThisPostDetails(model)).toBe(false)
     expect(hasWhyThisPostPlacementDetails(model)).toBe(false)
+    expect(
+      getPostProvenanceDisclosureKind(model, {includeRecordDetails: true}),
+    ).toBe('record')
   })
 })

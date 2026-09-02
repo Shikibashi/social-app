@@ -20,6 +20,7 @@ import * as SettingsList from '#/screens/Settings/components/SettingsList'
 import {atoms as a, useTheme} from '#/alf'
 import {Button, ButtonText} from '#/components/Button'
 import * as Layout from '#/components/Layout'
+import {PlumblineAuthoritySummary} from '#/components/PlumblineAuthoritySummary'
 import {Text} from '#/components/Typography'
 import {LEGACY_RADLIB_PRIVATE_ENABLED, SPACES_ALPHA_ENABLED} from '#/env'
 import {us} from '#/lexicons'
@@ -58,6 +59,20 @@ export function PermissionedSpacesSettingsScreen({}: Props) {
   const [communitySpace, setCommunitySpace] = useState('')
   const [inviteToken, setInviteToken] = useState('')
   const [status, setStatus] = useState<string>()
+  const permissionedSource = SPACES_ALPHA_ENABLED
+    ? _(msg`Selected PDS Spaces alpha API`)
+    : LEGACY_RADLIB_PRIVATE_ENABLED
+      ? _(msg`Selected PDS legacy private API`)
+      : _(msg`No permissioned PDS transport enabled`)
+  const permissionedState = accountQuery.isPending
+    ? _(msg`Checking protected-account space`)
+    : accountQuery.isError
+      ? _(msg`Protected account space unavailable on this PDS`)
+      : accountQuery.data
+        ? _(
+            msg`${accountQuery.data.visibility} account space: ${accountQuery.data.space}`,
+          )
+        : _(msg`No protected account space reported`)
 
   function requirePrivateTransport() {
     if (!SPACES_ALPHA_ENABLED && !LEGACY_RADLIB_PRIVATE_ENABLED) {
@@ -228,6 +243,15 @@ export function PermissionedSpacesSettingsScreen({}: Props) {
         <Layout.Header.Slot />
       </Layout.Header.Outer>
       <Layout.Content>
+        <PlumblineAuthoritySummary
+          testID="permissioned-spaces-authority-summary"
+          title={_(msg`Private association authority`)}
+          source={permissionedSource}
+          rule={_(
+            msg`Private reads are authorized by the PDS; a community's declared authority owns its membership rule, not an AppView or network policy.`,
+          )}
+          state={permissionedState}
+        />
         <SettingsList.Container>
           <SettingsList.Item>
             <View style={[a.flex_1, a.gap_sm]}>

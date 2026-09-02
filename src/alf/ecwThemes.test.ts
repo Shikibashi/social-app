@@ -50,4 +50,16 @@ describe('ECW theme contract', () => {
       expect(actionContrast!).toBeGreaterThanOrEqual(4.5)
     }
   })
+
+  it('keeps the theme-aware brass reference role legible on editorial surfaces', () => {
+    for (const theme of [themes.light, themes.dark, themes.dim]) {
+      const referenceContrast = contrastRatio(
+        theme.palette.yellow,
+        theme.palette.contrast_50,
+      )
+
+      expect(referenceContrast).not.toBeNull()
+      expect(referenceContrast!).toBeGreaterThanOrEqual(4.5)
+    }
+  })
 })

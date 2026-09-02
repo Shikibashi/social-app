@@ -15,6 +15,7 @@ import {atoms as a, useTheme} from '#/alf'
 import {Button, ButtonText} from '#/components/Button'
 import {ShieldCheck_Stroke2_Corner0_Rounded as ShieldIcon} from '#/components/icons/Shield'
 import * as Layout from '#/components/Layout'
+import {PlumblineAuthoritySummary} from '#/components/PlumblineAuthoritySummary'
 import {Text} from '#/components/Typography'
 
 type Props = NativeStackScreenProps<
@@ -45,6 +46,19 @@ export function ProtectedAccessSettingsScreen({}: Props) {
     requester,
     currentAccount?.did ?? '',
   )
+  const protectedAccessState = mutation.isPending
+    ? _(msg`Updating protected-access state`)
+    : message
+      ? message
+      : requestState.isFetching || manageState.isFetching
+        ? _(msg`Checking the selected relationship`)
+        : requestState.data
+          ? _(msg`Requested relationship: ${requestState.data.state}`)
+          : manageState.data
+            ? _(msg`Managed relationship: ${manageState.data.state}`)
+            : requestState.isError || manageState.isError
+              ? _(msg`Access state unavailable from the relevant PDS`)
+              : _(msg`No directional relationship selected`)
 
   async function run(
     input:
@@ -76,6 +90,15 @@ export function ProtectedAccessSettingsScreen({}: Props) {
         <Layout.Header.Slot />
       </Layout.Header.Outer>
       <Layout.Content>
+        <PlumblineAuthoritySummary
+          testID="protected-access-authority-summary"
+          title={_(msg`Protected access authority`)}
+          source={_(msg`Protected account PDS private-access API`)}
+          rule={_(
+            msg`The protected account's PDS evaluates a directional personal request; it does not create a public follow or an AppView policy.`,
+          )}
+          state={protectedAccessState}
+        />
         <SettingsList.Container>
           <SettingsList.Item>
             <SettingsList.ItemIcon icon={ShieldIcon} />
