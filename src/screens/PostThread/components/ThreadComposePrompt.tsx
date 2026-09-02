@@ -38,6 +38,7 @@ export function ThreadComposePrompt({
 
   return (
     <View
+      testID="plumbline-thread-compose-prompt"
       style={[
         a.px_sm,
         gtMobile

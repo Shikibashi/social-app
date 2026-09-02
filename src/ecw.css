@@ -1541,8 +1541,7 @@ body {
 
 /* Section feeds are reading surfaces, not diagrams. Keep their information
  * hierarchy and controls, but let type, whitespace, and content provide the
- * structure. Thread pages keep the ancestry treatment above because their
- * lines explain reply relationships rather than decorate a feed. */
+ * structure. */
 [data-ecw-mode='page'][data-testid='HomeScreen']
   [data-testid='plumbline-document-stream-marker'],
 [data-ecw-mode='page'][data-testid='HomeScreen']
@@ -1625,6 +1624,70 @@ body {
   border: 0 !important;
   border-radius: 0 !important;
   box-shadow: none !important;
+}
+
+/* Post pages use a separate thread renderer. Keep readable content and
+ * provenance copy, but remove the legacy diagram layer: the page itself
+ * supplies the document rhythm through spacing and typography. */
+[data-ecw-mode='page'][data-testid='postThreadScreen']
+  > [data-ecw-region='header'] {
+  box-shadow: none !important;
+}
+
+[data-ecw-mode='page'][data-testid='postThreadScreen']::before {
+  display: none !important;
+  content: none !important;
+}
+
+[data-ecw-mode='page'][data-testid='postThreadScreen']
+  [data-testid='provider-composition-summary-threads'],
+[data-ecw-mode='page'][data-testid='postThreadScreen']
+  [data-testid='post-provenance'] {
+  border-left: 0 !important;
+  padding-left: 0 !important;
+}
+
+[data-ecw-mode='page'][data-testid='postThreadScreen']
+  [data-testid='provider-composition-summary-threads-marker'] {
+  display: none !important;
+}
+
+[data-ecw-mode='page'][data-testid='postThreadScreen']
+  [data-testid^='postThreadItem-by-'] {
+  border-top: 0 !important;
+  border-bottom: 0 !important;
+  box-shadow: none !important;
+}
+
+[data-ecw-mode='page'][data-testid='postThreadScreen']
+  div:has(> div > [data-testid^='postThreadItem-by-']) {
+  border-top: 0 !important;
+  border-bottom: 0 !important;
+}
+
+[data-ecw-mode='page'][data-testid='postThreadScreen']
+  [style*='border-right-width: 2px'],
+[data-ecw-mode='page'][data-testid='postThreadScreen']
+  [style*='border-left-width: 2px'][style*='border-bottom-width: 2px'] {
+  border-right-width: 0 !important;
+  border-left-width: 0 !important;
+  border-bottom-width: 0 !important;
+  background-color: transparent !important;
+}
+
+[data-ecw-mode='page'][data-testid='postThreadScreen']
+  [data-testid='plumbline-quote-embed']
+  [style*='border-radius: 12px'] {
+  background-color: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+[data-ecw-mode='page'][data-testid='postThreadScreen']
+  [data-testid='plumbline-thread-compose-prompt'] {
+  background-color: transparent !important;
+  border: 0 !important;
 }
 
 /* The publication frame owns its column rules. The legacy centered border
